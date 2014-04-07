@@ -1,0 +1,44 @@
+{
+    "name": "sparrow-shape",
+    "version": "1.0.0",
+    "description": "JavaScript Engine for Building 2D Element with HTML5 Canvas",
+    "keywords": ["javascript", "canvas", "draw", "vector", "cad", "2d", "svg", "dxf"],
+    "homepage": "http://sp.c37.co/",
+    "bugs": {
+        "url": "https://github.com/c37/sparrow-shape/issues"
+    },
+    "license": "CC-BY-SA-3.0",
+    "author": {
+        "name": "Ciro Cesar Maciel",
+        "email": "lilo@c37.co"
+    },
+    "contributors": [{
+        "name": "Andréa Fabiana de Oliveira",
+        "email": "ser@c37.co"
+    }],
+    "main": "./src/sparrow.shape.js",
+    "bin": "./dist/sparrow.shape.js",
+    "directories": {
+        "dist": "./dist",
+        "doc": "./doc",
+        "src": "./src",
+        "test": "./test"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/c37/sparrow-shape.git"
+    },
+    "dependencies": {
+        "grunt": "~0.4.1"
+    },
+    "devDependencies": {
+        "grunt-contrib-watch": "*",
+        "grunt-contrib-concat": "*",
+        "grunt-contrib-uglify": "*",
+        "grunt-contrib-yuidoc": "*",
+        "grunt-contrib-qunit": "*"
+    },
+    "scripts": {
+        "install": "grunt"
+    }
+}
