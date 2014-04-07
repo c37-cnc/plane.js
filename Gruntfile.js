@@ -101,8 +101,8 @@ module.exports = function (grunt) {
     // task: default
     grunt.registerTask('default', [
         'dist',
-        'doc',
+//        'doc',
         'test',
-        'watch'
+//        'watch'
     ]);
 };
