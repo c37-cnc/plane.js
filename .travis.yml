@@ -2,3 +2,8 @@ language: node_js
 node_js:
   - "0.10"
 install: npm install
+notifications:
+  email:
+    recipients:
+      - ser@c37.co
+      - lilo@c37.co
