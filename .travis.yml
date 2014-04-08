@@ -4,5 +4,5 @@ node_js:
 install: npm install
 notifications:
   email:
-	- lilo@c37.co
+    - lilo@c37.co
     - ser@c37.co
