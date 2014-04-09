@@ -39,6 +39,7 @@
         "grunt-contrib-qunit": "*"
     },
     "scripts": {
+        "preinstall": "npm install grunt-cli",
         "install": "grunt"
     }
 }

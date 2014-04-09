@@ -6,8 +6,8 @@
 
 (function (window) {
     "use strict";
-    
-    var Sparrow = {}; 
+
+    var Sparrow = {};
 
     /**
      * Static class holding library specific information
@@ -29,12 +29,12 @@
      * @static
      **/
     Sparrow.Shape.author = 'lilo@c37.co';
-    
+
 
     Sparrow.Shape.Geometry = function () {};
     Sparrow.Shape.Object = function () {};
     Sparrow.Shape.Math = function () {};
-    
+
 
     window.Sparrow.Shape = Sparrow.Shape;
 }(window));
