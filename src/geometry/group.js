@@ -9,7 +9,6 @@
      *
      * @namespace Shape.Geometry
      * @class Group
-     * @constructor
      */
     function Group(x, y) {
 
@@ -28,7 +27,6 @@
         this.data = {};
 
         this.children = [];
-
 
     }
 

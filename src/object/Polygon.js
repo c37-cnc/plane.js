@@ -9,6 +9,7 @@
      *
      * @namespace Shape.Object
      * @class Polygon
+     * @extends Shape.Geometry.Object
      * @constructor
      */
     function Polygon(x, y, sides) {

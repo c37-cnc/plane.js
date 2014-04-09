@@ -16,8 +16,8 @@
         "name": "Andréa Fabiana de Oliveira",
         "email": "ser@c37.co"
     }],
-    "main": "./src/sparrow.shape.js",
-    "bin": "./dist/sparrow.shape.js",
+    "main": "./src/shape.js",
+    "bin": "./dist/sparrow-shape-1.0.0.js",
     "directories": {
         "dist": "./dist",
         "doc": "./doc",

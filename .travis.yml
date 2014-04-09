@@ -6,3 +6,5 @@ notifications:
   email:
     - lilo@c37.co
     - ser@c37.co
+  on_success: always
+  on_failure: always

@@ -7,9 +7,9 @@
     var Sparrow = {};
 
     /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam 
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat 
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation 
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
      * @class Shape
@@ -33,10 +33,10 @@
 
 
     // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
-    Sparrow.Shape.Geometry = function () {};
-    Sparrow.Shape.Object = function () {};
-    Sparrow.Shape.Math = function () {};
-    Sparrow.Shape.Utility = function () {};
+    Sparrow.Shape.Geometry = {};
+    Sparrow.Shape.Object = {};
+    Sparrow.Shape.Math = {};
+    Sparrow.Shape.Utility = {};
     // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
 
 

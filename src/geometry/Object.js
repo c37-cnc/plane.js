@@ -9,7 +9,6 @@
      *
      * @namespace Shape.Geometry
      * @class Object
-     * @constructor
      */
     function Object(x, y) {
 
