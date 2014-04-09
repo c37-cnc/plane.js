@@ -1,16 +1,56 @@
 (function (Sparrow) {
     "use strict";
 
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape.Geometry
+     * @class Object
+     * @constructor
+     */
     function Object(x, y) {
 
-        // public properties
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = 'uuid';
+
+        /**
+         * Template for this view's container...
+         *
+         * @property name
+         * @type String
+         * @default ''
+         */
+        this.name = '';
+
+        this.visible = true;
+        this.data = {};
+
+        this.position = '';
+        this.scale = 'Math.Vector';
+        this.rotate = 'Math.Euler';
         this.x = x || 0;
         this.y = y || 0;
 
         // private properties
         arguments = arguments;
 
-        // public methods
+
+        /**
+         * Returns this model's attributes as MOVE
+         *
+         * @method move
+         * @return {Object} Copy of ...
+         */
         this.move = function (x, y) {
             return true;
         }
@@ -27,7 +67,6 @@
         function getPosition() {
             return [this.x + 100, this.y + 100];
         }
-
 
     }
 

@@ -1,19 +1,20 @@
-/*global window:true*/
-
-/*
- * Sparrow Shape
- */
-
 (function (window) {
     "use strict";
 
+    /**
+     * @module Sparrow
+     */
     var Sparrow = {};
 
     /**
-     * Static class holding library specific information
-     * the library.
-     * @class Sparrow Shape
-     **/
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam 
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat 
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation 
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @class Shape
+     * @static
+     */
     Sparrow.Shape = function () {};
 
     /**
@@ -27,14 +28,17 @@
      * @property author
      * @type String
      * @static
-     **/
+     */
     Sparrow.Shape.author = 'lilo@c37.co';
 
 
+    // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
     Sparrow.Shape.Geometry = function () {};
     Sparrow.Shape.Object = function () {};
     Sparrow.Shape.Math = function () {};
+    Sparrow.Shape.Utility = function () {};
+    // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
 
 
-    window.Sparrow.Shape = Sparrow.Shape;
+    window.Sparrow = Sparrow;
 }(window));

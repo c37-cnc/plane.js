@@ -27,7 +27,7 @@ module.exports = function (grunt) {
             },
             dist: {
                 src: [
-                    '<%= dirs.src %>/namespace.js',
+                    '<%= dirs.src %>/shape.js',
                     '<%= dirs.src %>/*/**/*.js'
                 ],
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'
@@ -71,7 +71,7 @@ module.exports = function (grunt) {
             },
             scripts: {
                 files: [
-                    '<%= dirs.src %>/**/*.js'
+                    '<%= dirs.src %>/**'
                 ],
                 tasks: ['concat']
             }
@@ -101,8 +101,8 @@ module.exports = function (grunt) {
     // task: default
     grunt.registerTask('default', [
         'dist',
-        'doc',
-//        'test',
+//        'doc',
+        'test',
 //        'watch'
     ]);
 };
