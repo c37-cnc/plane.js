@@ -6,27 +6,35 @@
 
 (function (window) {
     "use strict";
+    
+    var Sparrow = {}; 
 
     /**
      * Static class holding library specific information
      * the library.
      * @class Sparrow Shape
      **/
-    var sparrowShape = {};
+    Sparrow.Shape = function () {};
 
     /**
      * @property version
      * @type String
      * @static
      **/
-    sparrowShape.version = '1.0.0';
+    Sparrow.Shape.version = '1.0.0';
 
     /**
      * @property author
      * @type String
      * @static
      **/
-    sparrowShape.author = 'lilo@c37.co';
+    Sparrow.Shape.author = 'lilo@c37.co';
+    
 
-    window.sparrowShape = shape;
+    Sparrow.Shape.Geometry = function () {};
+    Sparrow.Shape.Object = function () {};
+    Sparrow.Shape.Math = function () {};
+    
+
+    window.Sparrow.Shape = Sparrow.Shape;
 }(window));

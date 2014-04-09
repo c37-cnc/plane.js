@@ -1,4 +1,4 @@
-(function (sparrowShape) {
+(function (Sparrow) {
     "use strict";
 
     function Polygon(x, y, sides) {
@@ -8,6 +8,6 @@
 
     }
 
-    sparrowShape.Polygon = Polygon;
+    Sparrow.Shape.Object.Polygon = Polygon;
 
-}(sparrowShape));
+}(Sparrow));

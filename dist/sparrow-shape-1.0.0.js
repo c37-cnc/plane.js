@@ -1,47 +1,15 @@
 /*!
- * C37 in 06-04-2014 at 21:54:40 
+ * C37 in 08-04-2014 at 21:43:05 
  *
  * sparrow-shape version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
  *
  * Copyright - C37 http://c37.co - 2014
  */
-/*global window:true*/
-
-/*
- * Sparrow Shape
- */
-
-(function (window) {
+(function (Sparrow) {
     "use strict";
 
-    /**
-     * Static class holding library specific information
-     * the library.
-     * @class Sparrow Shape
-     **/
-    var sparrowShape = {};
-
-    /**
-     * @property version
-     * @type String
-     * @static
-     **/
-    sparrowShape.version = '1.0.0';
-
-    /**
-     * @property author
-     * @type String
-     * @static
-     **/
-    sparrowShape.author = 'lilo@c37.co';
-
-    window.sparrowShape = shape;
-}(window));
-(function (sparrowShape) {
-    "use strict";
-
-    function Shape(x, y) {
+    function Object(x, y) {
 
         // public properties
         this.x = x || 0;
@@ -59,7 +27,7 @@
             return true;
         }
 
-        this.toString = function () { 
+        this.toString = function () {
             return "[" + this.constructor.name + " x : " + this.x + ", y : " + this.y + ", position : " + getPosition() + "]";
         }
 
@@ -71,10 +39,13 @@
 
     }
 
-    sparrowShape.Geometry.Shape = Shape;
+    Sparrow.Shape.Geometry.Object = Object;
 
-}(sparrowShape));
-(function (sparrowShape) {
+}(Sparrow));
+
+ 
+
+(function (Sparrow) {
     "use strict";
 
     function Polygon(x, y, sides) {
@@ -84,6 +55,6 @@
 
     }
 
-    sparrowShape.Polygon = Polygon;
+    Sparrow.Shape.Object.Polygon = Polygon;
 
-}(sparrowShape));
+}(Sparrow));

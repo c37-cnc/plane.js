@@ -1,7 +1,7 @@
-(function (sparrowShape) {
+(function (Sparrow) {
     "use strict";
 
-    function Shape(x, y) {
+    function Object(x, y) {
 
         // public properties
         this.x = x || 0;
@@ -19,7 +19,7 @@
             return true;
         }
 
-        this.toString = function () { 
+        this.toString = function () {
             return "[" + this.constructor.name + " x : " + this.x + ", y : " + this.y + ", position : " + getPosition() + "]";
         }
 
@@ -31,6 +31,6 @@
 
     }
 
-    sparrowShape.Geometry.Shape = Shape;
+    Sparrow.Shape.Geometry.Object = Object;
 
-}(sparrowShape));
+}(Sparrow));
