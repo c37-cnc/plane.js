@@ -1,11 +1,11 @@
 {
-    "name": "sparrow-shape",
+    "name": "draw",
     "version": "1.0.0",
     "description": "JavaScript Engine for Building 2D Element with HTML5 Canvas",
     "keywords": ["javascript", "canvas", "draw", "vector", "cad", "2d", "svg", "dxf"],
     "homepage": "http://sp.c37.co/",
     "bugs": {
-        "url": "https://github.com/c37/sparrow-shape/issues"
+        "url": "https://github.com/c37/draw/issues"
     },
     "license": "CC-BY-SA-3.0",
     "author": {
@@ -16,8 +16,8 @@
         "name": "Andréa Fabiana de Oliveira",
         "email": "ser@c37.co"
     }],
-    "main": "./src/shape.js",
-    "bin": "./dist/sparrow-shape-1.0.0.js",
+    "main": "./src/draw.js",
+    "bin": "./dist/draw-1.0.0.js",
     "directories": {
         "dist": "./dist",
         "doc": "./doc",
@@ -26,7 +26,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/c37/sparrow-shape.git"
+        "url": "https://github.com/c37/draw.git"
     },
     "dependencies": {
         "grunt": "~0.4.1"

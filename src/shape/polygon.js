@@ -7,19 +7,19 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Shape.Object
+     * @namespace Draw.Shape
      * @class Polygon
-     * @extends Shape.Geometry.Object
+     * @extends Draw.Geometry.Shape
      * @constructor
      */
     function Polygon(x, y, sides) {
 
-        Sparrow.Shape.Geometry.Object.call(this, x, y);
+        Sparrow.Draw.Geometry.Shape.call(this, x, y);
 
         this.sides = sides || 3;
 
     }
 
-    Sparrow.Shape.Object.Polygon = Polygon;
+    Sparrow.Draw.Shape.Polygon = Polygon;
 
 }(Sparrow));

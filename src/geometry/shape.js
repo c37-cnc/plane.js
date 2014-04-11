@@ -7,14 +7,14 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Shape.Geometry
-     * @class Object
+     * @namespace Draw.Geometry
+     * @class Shape
      */
-    function Object(x, y) {
+    function Shape(x, y) {
 
         /**
          * A Universally unique identifier for
-         * a single instance of Object
+         * a single instance of Shape
          *
          * @property uuid
          * @type String
@@ -48,7 +48,6 @@
          * Returns this model's attributes as MOVE
          *
          * @method move
-         * @return {Object} Copy of ...
          */
         this.move = function (x, y) {
             return true;
@@ -69,6 +68,6 @@
 
     }
 
-    Sparrow.Shape.Geometry.Object = Object;
+    Sparrow.Shape.Geometry.Shape = Shape;
 
 }(Sparrow));

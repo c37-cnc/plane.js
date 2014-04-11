@@ -7,7 +7,7 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Shape.Geometry
+     * @namespace Draw.Geometry
      * @class Group
      */
     function Group(x, y) {
@@ -30,6 +30,6 @@
 
     }
 
-    Sparrow.Shape.Geometry.Group = Group;
+    Sparrow.Draw.Geometry.Group = Group;
 
 }(Sparrow));

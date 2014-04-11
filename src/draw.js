@@ -12,24 +12,24 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @class Shape
+     * @class Draw
      * @static
      */
-    Sparrow.Shape = function () {};
+    Sparrow.Draw = function () {};
 
     /**
      * @property version
      * @type String
      * @static
      **/
-    Sparrow.Shape.version = '1.0.0';
+    Sparrow.Draw.version = '1.0.0';
 
     /**
      * @property author
      * @type String
      * @static
      */
-    Sparrow.Shape.author = 'lilo@c37.co';
+    Sparrow.Draw.author = 'lilo@c37.co';
 
 
     // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
@@ -39,11 +39,11 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Shape
+     * @namespace Draw
      * @class Geometry
      * @static
      */
-    Sparrow.Shape.Geometry = function() {};
+    Sparrow.Draw.Geometry = function() {};
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -51,11 +51,11 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Shape
-     * @class Object
+     * @namespace Draw
+     * @class Shape
      * @static
      */
-    Sparrow.Shape.Object = {};
+    Sparrow.Draw.Shape = {};
     
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -63,11 +63,11 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Shape
+     * @namespace Draw
      * @class Math
      * @static
      */
-    Sparrow.Shape.Math = {};
+    Sparrow.Draw.Math = {};
     
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -75,11 +75,11 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Shape
+     * @namespace Draw
      * @class Utility
      * @static
      */
-    Sparrow.Shape.Utility = {};
+    Sparrow.Draw.Utility = {};
     // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
 
 
