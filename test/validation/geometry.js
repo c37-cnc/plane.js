@@ -1,7 +1,7 @@
 (function (Qunit, Draw) {
     "use strict";
 
-    Qunit.module("Geometry");
+    Qunit.module("Geometry - Sync");
     Qunit.test('Group', function () {
 
         Qunit.ok(true, 'Object Group - Initialize');
