@@ -47,7 +47,7 @@ module.exports = function (grunt) {
         qunit: {
             all: ['<%= dirs.test %>/*.html']
         },
-        
+
         yuidoc: {
             compile: {
                 name: '<%= pkg.name %>',
@@ -99,10 +99,5 @@ module.exports = function (grunt) {
     grunt.registerTask('test', ['qunit']);
 
     // task: default
-    grunt.registerTask('default', [
-        'dist',
-//        'doc',
-        'test',
-//        'watch'
-    ]);
+    grunt.registerTask('default', ['dist', 'test']);
 };
