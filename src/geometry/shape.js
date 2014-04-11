@@ -1,4 +1,4 @@
-(function (Sparrow) {
+(function (Draw) {
     "use strict";
 
     /**
@@ -7,8 +7,9 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Draw.Geometry
+     * @namespace Geometry
      * @class Shape
+     * @constructor
      */
     function Shape(x, y) {
 
@@ -40,10 +41,6 @@
         this.x = x || 0;
         this.y = y || 0;
 
-        // private properties
-        arguments = arguments;
-
-
         /**
          * Returns this model's attributes as MOVE
          *
@@ -63,11 +60,11 @@
 
         // private methods
         function getPosition() {
-            return [this.x + 100, this.y + 100];
+            return [this.x + 100, this.y + 100]; 
         }
 
     }
 
-    Sparrow.Shape.Geometry.Shape = Shape;
+    Draw.Geometry.Shape = Shape;
 
-}(Sparrow));
+}(Draw));

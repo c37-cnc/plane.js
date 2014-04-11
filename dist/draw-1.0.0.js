@@ -1,5 +1,5 @@
 /*!
- * C37 in 10-04-2014 at 21:43:54 
+ * C37 in 11-04-2014 at 10:17:52 
  *
  * draw version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -10,34 +10,30 @@
     "use strict";
 
     /**
-     * @module Sparrow
-     */
-    var Sparrow = {};
-
-    /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @class Draw
-     * @static
+     * @module Draw
      */
-    Sparrow.Draw = function () {};
+    var Draw = {};
 
     /**
+     * @for Draw
      * @property version
      * @type String
      * @static
      **/
-    Sparrow.Draw.version = '1.0.0';
+    Draw.version = '1.0.0';
 
     /**
+     * @for Draw
      * @property author
      * @type String
      * @static
      */
-    Sparrow.Draw.author = 'lilo@c37.co';
+    Draw.author = 'lilo@c37.co';
 
 
     // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
@@ -47,11 +43,10 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Draw
      * @class Geometry
      * @static
      */
-    Sparrow.Draw.Geometry = function() {};
+    Draw.Geometry = {};
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -59,11 +54,10 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Draw
-     * @class Object
+     * @class Shape
      * @static
      */
-    Sparrow.Draw.Object = {};
+    Draw.Shape = {};
     
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -71,29 +65,23 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Draw
      * @class Math
      * @static
      */
-    Sparrow.Draw.Math = {};
+    Draw.Math = {};
     
     /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     * Descrição para o objeto Utility no arquivo draw.js
      *
-     * @namespace Draw
-     * @class Utility
+     * @class Utility 
      * @static
      */
-    Sparrow.Draw.Utility = {};
+    Draw.Utility = {};
     // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
-
-
-    window.Sparrow = Sparrow;
+    
+    window.Draw = Draw;
 }(window));
-(function (Sparrow) {
+(function (Draw) {
     "use strict";
 
     /**
@@ -102,8 +90,9 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Shape.Geometry
+     * @namespace Geometry
      * @class Group
+     * @constructor
      */
     function Group(x, y) {
 
@@ -125,10 +114,11 @@
 
     }
 
-    Sparrow.Shape.Geometry.Group = Group;
+    Draw.Geometry.Group = Group;
 
-}(Sparrow));
-(function (Sparrow) {
+}(Draw));
+
+(function (Draw) {
     "use strict";
 
     /**
@@ -137,8 +127,9 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Shape.Geometry
+     * @namespace Geometry
      * @class Shape
+     * @constructor
      */
     function Shape(x, y) {
 
@@ -170,15 +161,10 @@
         this.x = x || 0;
         this.y = y || 0;
 
-        // private properties
-        arguments = arguments;
-
-
         /**
          * Returns this model's attributes as MOVE
          *
          * @method move
-         * @return {Shape} Copy of ...
          */
         this.move = function (x, y) {
             return true;
@@ -194,18 +180,18 @@
 
         // private methods
         function getPosition() {
-            return [this.x + 100, this.y + 100];
+            return [this.x + 100, this.y + 100]; 
         }
 
     }
 
-    Sparrow.Shape.Geometry.Shape = Shape;
+    Draw.Geometry.Shape = Shape;
 
-}(Sparrow));
+}(Draw));
 
  
 
-(function (Sparrow) {
+(function (Draw) {
     "use strict";
 
     /**
@@ -214,19 +200,46 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Shape.Object
+     * @namespace Shape
      * @class Polygon
-     * @extends Shape.Geometry.Object
+     * @extends Geometry.Shape
      * @constructor
      */
     function Polygon(x, y, sides) {
 
-        Sparrow.Shape.Geometry.Object.call(this, x, y);
+        Draw.Geometry.Shape.call(this, x, y);
 
         this.sides = sides || 3;
 
     }
 
-    Sparrow.Shape.Object.Polygon = Polygon;
+    Draw.Shape.Polygon = Polygon;
 
-}(Sparrow));
+}(Draw));
+(function (Draw) {
+    "use strict";
+
+    /**
+     * Descrição para Utility.Math no arquivo math.js
+     *
+     * @namespace Utility
+     * @class Math
+     * @static
+     */
+    Draw.Utility.Math = {
+
+        /**
+         * Descrição para o metodo calculeX
+         *
+         * @method calculeX
+         * @return {Number} Copy of ...
+         */
+        calculeX: function (a, b) {
+            return a + b;
+        }
+
+
+
+    }
+
+}(Draw));

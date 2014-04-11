@@ -63,12 +63,6 @@ module.exports = function (grunt) {
         },
 
         watch: {
-            options: {
-                dateFormat: function (time) {
-                    grunt.log.writeln('The watch finished in ' + time + 'ms at' + (new Date()).toString());
-                    grunt.log.writeln('Waiting for more changes...');
-                },
-            },
             scripts: {
                 files: [
                     '<%= dirs.src %>/**'

@@ -1,4 +1,4 @@
-(function (Sparrow) {
+(function (Draw) {
     "use strict";
 
     /**
@@ -7,8 +7,9 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Draw.Geometry
+     * @namespace Geometry
      * @class Group
+     * @constructor
      */
     function Group(x, y) {
 
@@ -30,6 +31,6 @@
 
     }
 
-    Sparrow.Draw.Geometry.Group = Group;
+    Draw.Geometry.Group = Group;
 
-}(Sparrow));
+}(Draw));

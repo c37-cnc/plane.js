@@ -2,34 +2,30 @@
     "use strict";
 
     /**
-     * @module Sparrow
-     */
-    var Sparrow = {};
-
-    /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @class Draw
-     * @static
+     * @module Draw
      */
-    Sparrow.Draw = function () {};
+    var Draw = {};
 
     /**
+     * @for Draw
      * @property version
      * @type String
      * @static
      **/
-    Sparrow.Draw.version = '1.0.0';
+    Draw.version = '1.0.0';
 
     /**
+     * @for Draw
      * @property author
      * @type String
      * @static
      */
-    Sparrow.Draw.author = 'lilo@c37.co';
+    Draw.author = 'lilo@c37.co';
 
 
     // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
@@ -39,11 +35,10 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Draw
      * @class Geometry
      * @static
      */
-    Sparrow.Draw.Geometry = function() {};
+    Draw.Geometry = {};
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -51,11 +46,10 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Draw
      * @class Shape
      * @static
      */
-    Sparrow.Draw.Shape = {};
+    Draw.Shape = {};
     
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -63,25 +57,19 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Draw
      * @class Math
      * @static
      */
-    Sparrow.Draw.Math = {};
+    Draw.Math = {};
     
     /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     * Descrição para o objeto Utility no arquivo draw.js
      *
-     * @namespace Draw
-     * @class Utility
+     * @class Utility 
      * @static
      */
-    Sparrow.Draw.Utility = {};
+    Draw.Utility = {};
     // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
-
-
-    window.Sparrow = Sparrow;
+    
+    window.Draw = Draw;
 }(window));
