@@ -18,4 +18,4 @@
 
     });
 
-})(window.QUnit, window.Draw);
+})(QUnit, Draw);

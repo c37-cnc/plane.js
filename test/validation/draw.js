@@ -2,12 +2,12 @@
     "use strict";
 
     Qunit.module("Draw");
-    Qunit.test('Initialize :-]', function () {
+    Qunit.test('Initialize :-]', 2, function () {
 
         Qunit.ok(true, 'version: ' + Draw.version + ' - autor: ' + Draw.author);
         Qunit.equal(0, false, 'true');
-        Qunit.equal(1, false, 'true');
+        Qunit.equal(1, true, 'true');
 
     });
 
-})(window.QUnit, window.Draw);
+})(QUnit, Draw);
