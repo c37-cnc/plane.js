@@ -40,34 +40,29 @@
         this.angle = 'Math.Euler';
         this.x = x || 0;
         this.y = y || 0;
-        
-        
-        
-        //this.initialize();
-        
 
-        /**
-         * Returns this model's attributes as MOVE
-         *
-         * @method move
-         */
-        this.move = function (x, y) {
+
+        this.initialize();
+
+    }
+
+    Shape.prototype = {
+        initialize: function () {
+
+            return this;
+        },
+        move: function (x, y) {
             return true;
-        }
-
-        this.delete = function () {
+        },
+        delete: function () {
             return true;
-        }
-
-        this.toString = function () {
+        },
+        toString: function () {
             return "[" + this.constructor.name + " x : " + this.x + ", y : " + this.y + ", position : " + getPosition() + "]";
-        }
+        },
+        render: function () {
 
-        // private methods
-        function getPosition() {
-            return [this.x + 100, this.y + 100]; 
         }
-
     }
 
     Draw.Geometry.Shape = Shape;

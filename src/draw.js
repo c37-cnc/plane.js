@@ -50,20 +50,13 @@
             type: 'Line'
         });
         
-        
 
         console.log(context.shape.locate());
+        
+        
 
 
 
-
-
-        //            projector = new Draw.Render.Projector(render),
-        //            context = projector.context();
-        //        
-
-
-        //Draw.Render.Projector.initialize(render);
 
 
         return element !== undefined ? true : render;

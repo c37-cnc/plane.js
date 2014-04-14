@@ -1,5 +1,5 @@
 /*!
- * C37 in 13-04-2014 at 22:51:22 
+ * C37 in 13-04-2014 at 23:07:13 
  *
  * draw version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -58,20 +58,12 @@
             type: 'Line'
         });
         
+        console.log(context.shape.locate());
+        
         
 
-        console.log(context.shape.locate());
 
 
-
-
-
-        //            projector = new Draw.Render.Projector(render),
-        //            context = projector.context();
-        //        
-
-
-        //Draw.Render.Projector.initialize(render);
 
 
         return element !== undefined ? true : render;
