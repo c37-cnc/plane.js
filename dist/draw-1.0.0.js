@@ -1,5 +1,5 @@
 /*!
- * C37 in 11-04-2014 at 13:12:02 
+ * C37 in 13-04-2014 at 22:51:22 
  *
  * draw version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -35,8 +35,48 @@
      */
     Draw.author = 'lilo@c37.co';
 
+    /**
+     * Returns this model's attributes as...
+     *
+     * @method initialize
+     * @param element {HTMLElement} <canvas></canvas> or <svg></svg>
+     * @param renderType {String} 'automatic' or 'manual'
+     * @return {Object} instance of Projector
+     */
+    Draw.initialize = function (element, renderType) {
 
-    // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
+        var renderer = element != undefined ? element : document.createElement('canvas'),
+            renderType = renderType !== undefined ? renderType : 'automatic';
+
+        var context = new Draw.Context(renderer);
+
+        context.shape.add({
+            type: 'Polygon'
+        });
+        
+        context.shape.add({
+            type: 'Line'
+        });
+        
+        
+
+        console.log(context.shape.locate());
+
+
+
+
+
+        //            projector = new Draw.Render.Projector(render),
+        //            context = projector.context();
+        //        
+
+
+        //Draw.Render.Projector.initialize(render);
+
+
+        return element !== undefined ? true : render;
+    }
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -54,33 +94,105 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @class Shape
+     * @class Math
      * @static
      */
-    Draw.Shape = {};
-    
+    Draw.Math = {};
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @class Math
+     * @class Shape
      * @static
      */
-    Draw.Math = {};
-    
+    Draw.Shape = {};
+
     /**
      * Descrição para o objeto Utility no arquivo draw.js
      *
-     * @class Utility 
+     * @class Utility
      * @static
      */
     Draw.Utility = {};
-    // https://github.com/jquery/jquery-ui/blob/master/ui/widget.js#L58
-    
+
     window.Draw = Draw;
 }(window));
+(function (Draw) {
+    "use strict";
+
+    function Context(renderer) {
+
+        var shapes = [],
+            renderer = renderer;
+
+        
+        this.shape = {
+            
+            add: function(shape) {
+                
+                shapes.push(shape);
+
+            },
+
+            locate: function(selector) {
+
+                return shapes;
+
+            },
+
+            remove: function(shape) {
+                
+                shapes.slice(shapes.indexOf(shape));
+
+            }
+        }
+
+
+
+
+        //        var shapes = [],
+        //            renderer = renderer;
+        //
+        //        this.shapes = function () {
+        //
+        //            return shapes;
+        //        };
+        //
+        //        this.add(object) {
+        //            return shapes.push(object);
+        //        }
+
+
+        //        this.initialize(renderer);
+
+    }
+
+    Context.prototype = {
+        //        initialize: function (renderer) {
+        //
+        //            return this;
+        //        },
+        render: function () {
+
+        }
+    }
+
+    Draw.Context = Context;
+
+}(Draw));
+
+
+
+
+//            {
+//                type: 'Polygon'
+//            },
+//            {
+//                type: 'Line'
+//            }
 (function (Draw) {
     "use strict";
 
@@ -157,9 +269,14 @@
 
         this.position = '';
         this.scale = 'Math.Vector';
-        this.rotate = 'Math.Euler';
+        this.angle = 'Math.Euler';
         this.x = x || 0;
         this.y = y || 0;
+        
+        
+        
+        //this.initialize();
+        
 
         /**
          * Returns this model's attributes as MOVE
@@ -189,6 +306,8 @@
 
 }(Draw));
 
+
+
  
 
 (function (Draw) {
@@ -216,6 +335,8 @@
     Draw.Shape.Polygon = Polygon;
 
 }(Draw));
+
+
 (function (Draw) {
     "use strict";
 
@@ -236,9 +357,17 @@
          */
         calculeX: function (a, b) {
             return a + b;
+        },
+
+        /**
+         * Descrição para o metodo uuid
+         *
+         * @method calculeX
+         * @return {String} Copy of ...
+         */
+        uuid: function () {
+            return '';
         }
-
-
 
     }
 

@@ -1,1 +1,0 @@
-How to use should be under the "how-to" directory

@@ -37,9 +37,14 @@
 
         this.position = '';
         this.scale = 'Math.Vector';
-        this.rotate = 'Math.Euler';
+        this.angle = 'Math.Euler';
         this.x = x || 0;
         this.y = y || 0;
+        
+        
+        
+        //this.initialize();
+        
 
         /**
          * Returns this model's attributes as MOVE

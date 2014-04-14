@@ -18,9 +18,17 @@
          */
         calculeX: function (a, b) {
             return a + b;
+        },
+
+        /**
+         * Descrição para o metodo uuid
+         *
+         * @method calculeX
+         * @return {String} Copy of ...
+         */
+        uuid: function () {
+            return '';
         }
-
-
 
     }
 

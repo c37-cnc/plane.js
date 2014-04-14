@@ -1,12 +1,11 @@
-(function (Qunit, Draw) {
+(function (QUnit, Draw) {
     "use strict";
 
-    Qunit.module("Draw - Sync");
-    Qunit.test('Initialize :-]', 3, function () {
+    QUnit.module("Draw - Sync");
+    QUnit.test('Initialize :-]', function () {
 
-        Qunit.ok(true, 'version: ' + Draw.version + ' - autor: ' + Draw.author);
-        Qunit.equal(0, false, 'true');
-        Qunit.equal(1, true, 'true');
+        QUnit.ok(true, 'version: ' + Draw.version + ' - autor: ' + Draw.author);
+        QUnit.ok(Draw.initialize(), 'Initialize Ok')
 
     });
 
