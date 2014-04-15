@@ -45,7 +45,7 @@ module.exports = function (grunt) {
         },
 
         qunit: {
-            all: ['<%= dirs.test %>/*.html']
+            all: ['<%= dirs.test %>/unit/*.html']
         },
 
         yuidoc: {

@@ -1,5 +1,5 @@
 /*!
- * C37 in 13-04-2014 at 23:07:13 
+ * C37 in 14-04-2014 at 12:04:01 
  *
  * draw version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -35,38 +35,49 @@
      */
     Draw.author = 'lilo@c37.co';
 
+
+    Draw.Options = {
+        render: {
+            type: {
+                automatic: 'automatic',
+                manual: 'manual'
+            }
+        }
+    }
+
+
+
+
+
     /**
      * Returns this model's attributes as...
      *
      * @method initialize
-     * @param element {HTMLElement} <canvas></canvas> or <svg></svg>
+     * @param htmlElement {HTMLElement} <canvas></canvas> or <svg></svg>
      * @param renderType {String} 'automatic' or 'manual'
      * @return {Object} instance of Projector
      */
-    Draw.initialize = function (element, renderType) {
+    Draw.initialize = function (htmlElement, renderType) {
 
-        var renderer = element != undefined ? element : document.createElement('canvas'),
-            renderType = renderType !== undefined ? renderType : 'automatic';
+        var renderer = htmlElement !== undefined ? htmlElement : document.createElement('canvas'),
+            renderType = renderType !== undefined ? renderType : 'automatic',
+            context = new Draw.Context(renderer),
+            render = new Draw.Render(renderer);
 
-        var context = new Draw.Context(renderer);
 
-        context.shape.add({
-            type: 'Polygon'
-        });
+
+
         
-        context.shape.add({
-            type: 'Line'
-        });
         
-        console.log(context.shape.locate());
         
         
 
-
-
-
-
-        return element !== undefined ? true : render;
+        return {
+            status: 'true',
+            renderer: renderer,
+            context: context,
+            render: render
+        }
     }
 
     /**
@@ -120,53 +131,35 @@
         var shapes = [],
             renderer = renderer;
 
-        
+
         this.shape = {
-            
-            add: function(shape) {
-                
+
+            add: function (shape) {
+
                 shapes.push(shape);
 
             },
 
-            locate: function(selector) {
+            locate: function (selector) {
 
                 return shapes;
 
             },
 
-            remove: function(shape) {
-                
+            remove: function (shape) {
+
                 shapes.slice(shapes.indexOf(shape));
 
             }
         }
 
-
-
-
-        //        var shapes = [],
-        //            renderer = renderer;
-        //
-        //        this.shapes = function () {
-        //
-        //            return shapes;
-        //        };
-        //
-        //        this.add(object) {
-        //            return shapes.push(object);
-        //        }
-
-
-        //        this.initialize(renderer);
-
     }
 
     Context.prototype = {
-        //        initialize: function (renderer) {
-        //
-        //            return this;
-        //        },
+        initialize: function (renderer) {
+
+            return this;
+        },
         render: function () {
 
         }
@@ -175,16 +168,22 @@
     Draw.Context = Context;
 
 }(Draw));
+(function (Draw) {
+    "use strict";
 
+    function Render(renderer) {
 
+    }
 
+    Render.prototype = {
+        update: function () {
 
-//            {
-//                type: 'Polygon'
-//            },
-//            {
-//                type: 'Line'
-//            }
+        }
+    }
+
+    Draw.Render = Render;
+
+}(Draw));
 (function (Draw) {
     "use strict";
 
@@ -264,34 +263,29 @@
         this.angle = 'Math.Euler';
         this.x = x || 0;
         this.y = y || 0;
-        
-        
-        
-        //this.initialize();
-        
 
-        /**
-         * Returns this model's attributes as MOVE
-         *
-         * @method move
-         */
-        this.move = function (x, y) {
+
+        this.initialize();
+
+    }
+
+    Shape.prototype = {
+        initialize: function () {
+
+            return this;
+        },
+        move: function (x, y) {
             return true;
-        }
-
-        this.delete = function () {
+        },
+        delete: function () {
             return true;
-        }
-
-        this.toString = function () {
+        },
+        toString: function () {
             return "[" + this.constructor.name + " x : " + this.x + ", y : " + this.y + ", position : " + getPosition() + "]";
-        }
+        },
+        render: function () {
 
-        // private methods
-        function getPosition() {
-            return [this.x + 100, this.y + 100]; 
         }
-
     }
 
     Draw.Geometry.Shape = Shape;

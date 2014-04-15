@@ -7,20 +7,45 @@
     <title>Draw - How-To</title>
 
     <script src="../../dist/draw-1.0.0.js"></script>
-    
-    <script type="text/javascript">
-        
-        Draw.initialize(document.getElementById('draw'), 'automatic')
-        
-    </script>
-
 </head>
 
 <body>
-    
-    <canvas id="draw">
-    </canvas>
+    <script>
+        
+        var options = {
+            htmlElement: undefined,
+            renderType: Draw.Options.render.type.automatic
+        }
+        
+        var draw = Draw.initialize();
 
+        if (draw.status) {
+
+            var renderer = draw.renderer,
+                context = draw.context;
+
+            document.body.appendChild(draw.renderer);
+
+
+            context.shape.add({
+                type: 'Polygon'
+            });
+
+            context.shape.add({
+                type: 'Line'
+            });
+
+            context.shape.add({
+                type: 'Circle'
+            });
+
+
+            console.log(context.shape.locate());
+
+
+
+        }
+    </script>
 </body>
 
 </html>

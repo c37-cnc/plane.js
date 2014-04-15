@@ -27,39 +27,49 @@
      */
     Draw.author = 'lilo@c37.co';
 
+
+    Draw.Options = {
+        render: {
+            type: {
+                automatic: 'automatic',
+                manual: 'manual'
+            }
+        }
+    }
+
+
+
+
+
     /**
      * Returns this model's attributes as...
      *
      * @method initialize
-     * @param element {HTMLElement} <canvas></canvas> or <svg></svg>
+     * @param htmlElement {HTMLElement} <canvas></canvas> or <svg></svg>
      * @param renderType {String} 'automatic' or 'manual'
      * @return {Object} instance of Projector
      */
-    Draw.initialize = function (element, renderType) {
+    Draw.initialize = function (htmlElement, renderType) {
 
-        var renderer = element != undefined ? element : document.createElement('canvas'),
-            renderType = renderType !== undefined ? renderType : 'automatic';
+        var renderer = htmlElement !== undefined ? htmlElement : document.createElement('canvas'),
+            renderType = renderType !== undefined ? renderType : 'automatic',
+            context = new Draw.Context(renderer),
+            render = new Draw.Render(renderer);
 
-        var context = new Draw.Context(renderer);
 
-        context.shape.add({
-            type: 'Polygon'
-        });
+
+
         
-        context.shape.add({
-            type: 'Line'
-        });
         
-
-        console.log(context.shape.locate());
         
         
 
-
-
-
-
-        return element !== undefined ? true : render;
+        return {
+            status: 'true',
+            renderer: renderer,
+            context: context,
+            render: render
+        }
     }
 
     /**
