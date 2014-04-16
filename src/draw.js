@@ -27,20 +27,6 @@
      */
     Draw.author = 'lilo@c37.co';
 
-
-    Draw.Options = {
-        render: {
-            type: {
-                automatic: 'automatic',
-                manual: 'manual'
-            }
-        }
-    }
-
-
-
-
-
     /**
      * Returns this model's attributes as...
      *

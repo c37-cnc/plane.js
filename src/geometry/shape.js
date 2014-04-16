@@ -11,7 +11,13 @@
      * @class Shape
      * @constructor
      */
-    function Shape(x, y) {
+    function Shape() {
+
+        
+        if (arguments.length == 0) {
+            return 'no arguments';
+        }
+
 
         /**
          * A Universally unique identifier for
@@ -35,11 +41,9 @@
         this.visible = true;
         this.data = {};
 
-        this.position = '';
+        this.position = 'arguments[0].point';
         this.scale = 'Math.Vector';
         this.angle = 'Math.Euler';
-        this.x = x || 0;
-        this.y = y || 0;
 
 
         this.initialize();
@@ -51,7 +55,7 @@
 
             return this;
         },
-        move: function (x, y) {
+        moveTo: function () {
             return true;
         },
         delete: function () {
@@ -59,9 +63,6 @@
         },
         toString: function () {
             return "[" + this.constructor.name + " x : " + this.x + ", y : " + this.y + ", position : " + getPosition() + "]";
-        },
-        render: function () {
-
         }
     }
 

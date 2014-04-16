@@ -1,5 +1,5 @@
 /*!
- * C37 in 14-04-2014 at 12:04:01 
+ * C37 in 16-04-2014 at 12:33:23 
  *
  * draw version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -34,20 +34,6 @@
      * @static
      */
     Draw.author = 'lilo@c37.co';
-
-
-    Draw.Options = {
-        render: {
-            type: {
-                automatic: 'automatic',
-                manual: 'manual'
-            }
-        }
-    }
-
-
-
-
 
     /**
      * Returns this model's attributes as...
@@ -126,11 +112,9 @@
 (function (Draw) {
     "use strict";
 
-    function Context(renderer) {
+    function Context() {
 
-        var shapes = [],
-            renderer = renderer;
-
+        var shapes = [];
 
         this.shape = {
 
@@ -156,12 +140,9 @@
     }
 
     Context.prototype = {
-        initialize: function (renderer) {
+        initialize: function () {
 
             return this;
-        },
-        render: function () {
-
         }
     }
 
@@ -171,7 +152,9 @@
 (function (Draw) {
     "use strict";
 
-    function Render(renderer) {
+    function Render(renderer, renderType) {
+
+        var renderType = renderType;
 
     }
 
@@ -220,7 +203,58 @@
     Draw.Geometry.Group = Group;
 
 }(Draw));
+(function (Draw) {
+    "use strict";
 
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Geometry
+     * @class Point
+     * @constructor
+     */
+    function Point(x, y) {
+
+        /**
+         * A x point
+         *
+         * @property x
+         * @type String
+         * @default '0'
+         */
+        this.x = 0;
+
+        /**
+         * A y point
+         *
+         * @property y
+         * @type String
+         * @default '0'
+         */
+        this.y = 0;
+    }
+
+    Point.prototype = {
+        addition: function () {
+
+        },
+        subtract: function () {
+
+        },
+        multiply: function () {
+
+        },
+        divide: function () {
+
+        }
+    }
+
+    Draw.Geometry.Point = Point;
+
+}(Draw));
 (function (Draw) {
     "use strict";
 
@@ -234,7 +268,13 @@
      * @class Shape
      * @constructor
      */
-    function Shape(x, y) {
+    function Shape() {
+
+        
+        if (arguments.length == 0) {
+            return 'no arguments';
+        }
+
 
         /**
          * A Universally unique identifier for
@@ -258,11 +298,9 @@
         this.visible = true;
         this.data = {};
 
-        this.position = '';
+        this.position = 'arguments[0].point';
         this.scale = 'Math.Vector';
         this.angle = 'Math.Euler';
-        this.x = x || 0;
-        this.y = y || 0;
 
 
         this.initialize();
@@ -274,7 +312,7 @@
 
             return this;
         },
-        move: function (x, y) {
+        moveTo: function () {
             return true;
         },
         delete: function () {
@@ -282,9 +320,6 @@
         },
         toString: function () {
             return "[" + this.constructor.name + " x : " + this.x + ", y : " + this.y + ", position : " + getPosition() + "]";
-        },
-        render: function () {
-
         }
     }
 
@@ -295,7 +330,43 @@
 
 
  
+(function (Draw) {
+    "use strict";
 
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Line
+     * @extends Geometry.Shape
+     * @constructor
+     */
+    function Line(x, y) {
+
+        Draw.Geometry.Shape.apply(this, arguments[0]);
+        
+        this.initialize();
+
+    }
+    
+    Line.prototype = new Draw.Geometry.Shape();
+    
+    Line.prototype = {
+        initialize: function(){
+            
+            
+            return this;
+        }
+    }
+    
+    
+
+    Draw.Shape.Line = Line;
+
+}(Draw));
 (function (Draw) {
     "use strict";
 
@@ -356,5 +427,12 @@
         }
 
     }
+
+}(Draw));
+(function (Draw) {
+    "use strict";
+
+    Draw.Option = {
+    };
 
 }(Draw));

@@ -1,11 +1,9 @@
 (function (Draw) {
     "use strict";
 
-    function Context(renderer) {
+    function Context() {
 
-        var shapes = [],
-            renderer = renderer;
-
+        var shapes = [];
 
         this.shape = {
 
@@ -31,12 +29,9 @@
     }
 
     Context.prototype = {
-        initialize: function (renderer) {
+        initialize: function () {
 
             return this;
-        },
-        render: function () {
-
         }
     }
 

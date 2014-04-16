@@ -1,7 +1,9 @@
 (function (Draw) {
     "use strict";
 
-    function Render(renderer) {
+    function Render(renderer, renderType) {
+
+        var renderType = renderType;
 
     }
 
