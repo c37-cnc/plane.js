@@ -1,40 +1,29 @@
 (function (Draw) {
     "use strict";
 
-    function Context() {
+    Draw.Context = {
 
-        var shapes = [];
-
-        this.shape = {
+        shapes: [],
+        shape: {
 
             add: function (shape) {
 
-                shapes.push(shape);
+                Draw.Context.shapes.push(shape);
 
             },
 
             locate: function (selector) {
 
-                return shapes;
+                return Draw.Context.shapes;
 
             },
 
             remove: function (shape) {
 
-                shapes.slice(shapes.indexOf(shape));
+                Draw.Context.shapes.slice(Draw.Context.shapes.indexOf(shape));
 
             }
         }
-
-    }
-
-    Context.prototype = {
-        initialize: function () {
-
-            return this;
-        }
-    }
- 
-    Draw.Context = Context;
+    };
 
 }(Draw));

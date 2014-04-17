@@ -52,6 +52,8 @@
 
     Shape.prototype = {
         initialize: function () {
+            
+            Draw
 
             return this;
         },

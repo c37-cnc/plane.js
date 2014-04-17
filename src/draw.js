@@ -32,15 +32,14 @@
      *
      * @method initialize
      * @param htmlElement {HTMLElement} <canvas></canvas> or <svg></svg>
-     * @param renderType {String} 'automatic' or 'manual'
+     * @param renderType {String} 'automatic', 'manual' or 'event'
      * @return {Object} instance of Projector
      */
     Draw.initialize = function (htmlElement, renderType) {
 
         var renderer = htmlElement !== undefined ? htmlElement : document.createElement('canvas'),
             renderType = renderType !== undefined ? renderType : 'automatic',
-            context = new Draw.Context(renderer),
-            render = new Draw.Render(renderer);
+            render = new Draw.Render(renderer, renderType);
 
 
 
@@ -53,7 +52,6 @@
         return {
             status: 'true',
             renderer: renderer,
-            context: context,
             render: render
         }
     }

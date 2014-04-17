@@ -1,5 +1,5 @@
 /*!
- * C37 in 16-04-2014 at 15:40:12 
+ * C37 in 16-04-2014 at 23:54:38 
  *
  * draw version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -40,15 +40,14 @@
      *
      * @method initialize
      * @param htmlElement {HTMLElement} <canvas></canvas> or <svg></svg>
-     * @param renderType {String} 'automatic' or 'manual'
+     * @param renderType {String} 'automatic', 'manual' or 'event'
      * @return {Object} instance of Projector
      */
     Draw.initialize = function (htmlElement, renderType) {
 
         var renderer = htmlElement !== undefined ? htmlElement : document.createElement('canvas'),
             renderType = renderType !== undefined ? renderType : 'automatic',
-            context = new Draw.Context(renderer),
-            render = new Draw.Render(renderer);
+            render = new Draw.Render(renderer, renderType);
 
 
 
@@ -61,7 +60,6 @@
         return {
             status: 'true',
             renderer: renderer,
-            context: context,
             render: render
         }
     }
@@ -112,41 +110,30 @@
 (function (Draw) {
     "use strict";
 
-    function Context() {
+    Draw.Context = {
 
-        var shapes = [];
-
-        this.shape = {
+        shapes: [],
+        shape: {
 
             add: function (shape) {
 
-                shapes.push(shape);
+                Draw.Context.shapes.push(shape);
 
             },
 
             locate: function (selector) {
 
-                return shapes;
+                return Draw.Context.shapes;
 
             },
 
             remove: function (shape) {
 
-                shapes.slice(shapes.indexOf(shape));
+                Draw.Context.shapes.slice(Draw.Context.shapes.indexOf(shape));
 
             }
         }
-
-    }
-
-    Context.prototype = {
-        initialize: function () {
-
-            return this;
-        }
-    }
- 
-    Draw.Context = Context;
+    };
 
 }(Draw));
 (function (Draw) {
@@ -309,6 +296,8 @@
 
     Shape.prototype = {
         initialize: function () {
+            
+            Draw
 
             return this;
         },

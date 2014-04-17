@@ -16,26 +16,25 @@
 
         if (draw.status) {
 
-            var renderer = draw.renderer,
-                context = draw.context;
+            var renderer = draw.renderer;
 
             document.body.appendChild(draw.renderer);
 
 
-            context.shape.add({
+            Draw.Context.shape.add({
                 type: 'Polygon'
             });
 
-            context.shape.add({
+            Draw.Context.shape.add({
                 type: 'Line'
             });
 
-            context.shape.add({
+            Draw.Context.shape.add({
                 type: 'Circle'
             });
 
 
-            console.log(context.shape.locate());
+            console.log(Draw.Context.shape.locate());
 
 
 
