@@ -1,4 +1,4 @@
-(function (Draw) {
+(function (draw) {
     "use strict";
 
     /**
@@ -11,7 +11,14 @@
      * @class Point
      * @constructor
      */
-    function Point(x, y) {
+    function point(x, y) {
+
+        if (!(this instanceof point)) {
+
+            var xxx = new point(x, y);
+
+            return xxx;
+        }
 
         /**
          * A x point
@@ -20,7 +27,7 @@
          * @type String
          * @default '0'
          */
-        this.x = 0;
+        this.x = x || 0;
 
         /**
          * A y point
@@ -29,10 +36,13 @@
          * @type String
          * @default '0'
          */
-        this.y = 0;
+        this.y = y || 0;
+
+
+
     }
 
-    Point.prototype = {
+    point.prototype = {
         addition: function () {
 
         },
@@ -47,6 +57,6 @@
         }
     }
 
-    Draw.Geometry.Point = Point;
+    draw.geometry.point = point;
 
-}(Draw));
+}(draw));

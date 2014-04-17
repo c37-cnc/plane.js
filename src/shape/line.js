@@ -1,4 +1,4 @@
-(function (Draw) {
+(function (draw) {
     "use strict";
 
     /**
@@ -12,26 +12,45 @@
      * @extends Geometry.Shape
      * @constructor
      */
-    function Line(x, y) {
-
-        Draw.Geometry.Shape.apply(this, arguments[0]);
+    function line(attrs) {
         
+        if (arguments.length == 0) {
+            return 'no arguments';
+        }
+        
+
+        if (!(this instanceof line)) {
+            return new line(attrs);
+        }
+
+        for (var name in attrs) {
+            this[name] = attrs[name];
+        }
+
+
+        //        this.from = this.from ? this.from : null;
+        //        
+        //        this.to = this.to ? this.to : null;
+
+
+        draw.geometry.shape.call(this, attrs);
+
         this.initialize();
 
     }
-    
-    Line.prototype = new Draw.Geometry.Shape();
-    
-    Line.prototype = {
-        initialize: function(){
-            
-            
-            return this;
-        }
-    }
-    
-    
 
-    Draw.Shape.Line = Line;
+    line.prototype = new draw.geometry.shape();
+    //line.prototype.constructor = line;
 
-}(Draw));
+//    line.prototype.initialize = function () {
+//
+//        return draw.context.shape.add(this);
+//
+//        //return draw.render.update(this);
+//    }
+
+
+
+    draw.shape.line = line;
+
+}(draw));

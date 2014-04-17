@@ -1,5 +1,5 @@
 /*!
- * C37 in 16-04-2014 at 23:54:38 
+ * C37 in 17-04-2014 at 12:03:13 
  *
  * draw version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -15,25 +15,25 @@
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @module Draw
+     * @module draw
      */
-    var Draw = {};
+    var draw = {};
 
     /**
-     * @for Draw
+     * @for draw
      * @property version
      * @type String
      * @static
      **/
-    Draw.version = '1.0.0';
+    draw.version = '1.0.0';
 
     /**
-     * @for Draw
+     * @for draw
      * @property author
      * @type String
      * @static
      */
-    Draw.author = 'lilo@c37.co';
+    draw.author = 'lilo@c37.co';
 
     /**
      * Returns this model's attributes as...
@@ -43,25 +43,23 @@
      * @param renderType {String} 'automatic', 'manual' or 'event'
      * @return {Object} instance of Projector
      */
-    Draw.initialize = function (htmlElement, renderType) {
+    draw.initialize = function (htmlElement, renderType) {
 
         var renderer = htmlElement !== undefined ? htmlElement : document.createElement('canvas'),
-            renderType = renderType !== undefined ? renderType : 'automatic',
-            render = new Draw.Render(renderer, renderType);
-
-
+            renderType = renderType !== undefined ? renderType : 'automatic';
+            //render = new draw.Render(renderer, renderType);
 
 
         
         
-        
-        
+        draw.render.renderer = renderer;
 
-        return {
-            status: 'true',
-            renderer: renderer,
-            render: render
-        }
+
+
+
+
+
+        return renderer;
     }
 
     /**
@@ -73,7 +71,7 @@
      * @class Geometry
      * @static
      */
-    Draw.Geometry = {};
+    draw.geometry = {};
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -84,7 +82,7 @@
      * @class Math
      * @static
      */
-    Draw.Math = {};
+    draw.math = {};
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -95,7 +93,7 @@
      * @class Shape
      * @static
      */
-    Draw.Shape = {};
+    draw.shape = {};
 
     /**
      * Descrição para o objeto Utility no arquivo draw.js
@@ -103,58 +101,119 @@
      * @class Utility
      * @static
      */
-    Draw.Utility = {};
+    draw.utility = {};
 
-    window.Draw = Draw;
+    window.draw = draw;
 }(window));
-(function (Draw) {
+(function (draw) {
     "use strict";
 
-    Draw.Context = {
+    draw.context = {
 
-        shapes: [],
         shape: {
+            shapes: [],
 
             add: function (shape) {
 
-                Draw.Context.shapes.push(shape);
+                draw.context.shape.shapes.push(shape);
+                
+                
+                
+                draw.render.update(shape);
 
             },
 
             locate: function (selector) {
 
-                return Draw.Context.shapes;
+                return draw.context.shape.shapes;
 
             },
 
             remove: function (shape) {
 
-                Draw.Context.shapes.slice(Draw.Context.shapes.indexOf(shape));
+                draw.context.shape.shapes.slice(draw.context.shape.shapes.indexOf(shape));
 
             }
         }
     };
 
-}(Draw));
-(function (Draw) {
+}(draw));
+(function (draw) {
     "use strict";
 
-    function Render(renderer, renderType) {
+    draw.render = {
+        renderer: null,
+        update: function (shape) {
+            var context = draw.render.renderer.getContext('2d');
 
-        var renderType = renderType;
+            if (shape instanceof draw.shape.line) {
+                var from = shape.position.from,
+                    to = shape.position.to;
 
-    }
+                context.beginPath();
+                context.moveTo(from.x, from.y);
+                context.lineTo(to.x, to.y);
+                context.stroke();
+            }
 
-    Render.prototype = {
-        update: function () {
+            if (shape instanceof draw.shape.circle) {
+
+                context.beginPath();
+                context.arc(shape.position.x, shape.position.y, shape.radius, 0, Math.PI * 2, true);
+                context.stroke();
+            }
+
+            if (shape instanceof draw.shape.polygon) {
+
+                if (shape.sides < 3) {
+                    return;
+                }
+
+                context.beginPath();
+
+
+                var a = ((Math.PI * 2) / shape.sides);
+
+                context.translate(shape.position.x, shape.position.y);
+                context.moveTo(shape.radius, 0);
+
+
+                for (var i = 1; i < shape.sides; i++) {
+                    context.lineTo(shape.radius * Math.cos(a * i), shape.radius * Math.sin(a * i));
+                }
+                
+                context.closePath();
+                context.stroke();
+
+
+            }
+
+
+
+
+
 
         }
     }
 
-    Draw.Render = Render;
 
-}(Draw));
-(function (Draw) {
+
+    //    function Render(renderer, renderType) {
+    //
+    //        var renderType = renderType;
+    //
+    //    }
+    //
+    //    Render.prototype = {
+    //        update: function () {
+    //
+    //        }
+    //    }
+    //
+    //    draw.Render = Render;
+
+}(draw));
+(function (draw) {
     "use strict";
 
     /**
@@ -187,10 +246,10 @@
 
     }
 
-    Draw.Geometry.Group = Group;
+    draw.geometry.Group = Group;
 
-}(Draw));
-(function (Draw) {
+}(draw));
+(function (draw) {
     "use strict";
 
     /**
@@ -203,7 +262,14 @@
      * @class Point
      * @constructor
      */
-    function Point(x, y) {
+    function point(x, y) {
+
+        if (!(this instanceof point)) {
+
+            var xxx = new point(x, y);
+
+            return xxx;
+        }
 
         /**
          * A x point
@@ -212,7 +278,7 @@
          * @type String
          * @default '0'
          */
-        this.x = 0;
+        this.x = x || 0;
 
         /**
          * A y point
@@ -221,10 +287,13 @@
          * @type String
          * @default '0'
          */
-        this.y = 0;
+        this.y = y || 0;
+
+
+
     }
 
-    Point.prototype = {
+    point.prototype = {
         addition: function () {
 
         },
@@ -239,10 +308,10 @@
         }
     }
 
-    Draw.Geometry.Point = Point;
+    draw.geometry.point = point;
 
-}(Draw));
-(function (Draw) {
+}(draw));
+(function (draw) {
     "use strict";
 
     /**
@@ -255,13 +324,21 @@
      * @class Shape
      * @constructor
      */
-    function Shape() {
+    function shape(attrs) {
 
-        
+
         if (arguments.length == 0) {
             return 'no arguments';
         }
 
+
+        if (!(this instanceof shape)) {
+            return new shape(attrs);
+        }
+
+        for (var name in attrs) {
+            this[name] = attrs[name];
+        }
 
         /**
          * A Universally unique identifier for
@@ -282,24 +359,34 @@
          */
         this.name = '';
 
+
+//        this.from = this.from ? this.from : null;
+//
+//        this.to = this.to ? this.to : null;
+
+
+
         this.visible = true;
         this.data = {};
 
-        this.position = 'arguments[0].point';
+        this.position = this.position || null;
+        
+        this.radius = this.radius || 0;
+        
         this.scale = 'Math.Vector';
         this.angle = 'Math.Euler';
 
 
-        this.initialize();
+        //this.initialize();
 
     }
 
-    Shape.prototype = {
+    shape.prototype = {
         initialize: function () {
-            
-            Draw
 
-            return this;
+            return draw.context.shape.add(this);
+
+            //            return this;
         },
         moveTo: function () {
             return true;
@@ -312,14 +399,13 @@
         }
     }
 
-    Draw.Geometry.Shape = Shape;
+    draw.geometry.shape = shape;
 
-}(Draw));
+}(draw));
 
 
 
- 
-(function (Draw) {
+ (function (draw) {
     "use strict";
 
     /**
@@ -333,30 +419,96 @@
      * @extends Geometry.Shape
      * @constructor
      */
-    function Line(x, y) {
-
-        Draw.Geometry.Shape.apply(this, arguments[0]);
+    function circle(attrs) {
         
+        if (arguments.length == 0) {
+            return 'no arguments';
+        }
+        
+
+        if (!(this instanceof circle)) {
+            return new circle(attrs);
+        }
+
+        for (var name in attrs) {
+            this[name] = attrs[name];
+        }
+
+
+        //        this.from = this.from ? this.from : null;
+        //        
+        //        this.to = this.to ? this.to : null;
+
+
+        draw.geometry.shape.call(this, attrs);
+
         this.initialize();
 
     }
-    
-    Line.prototype = new Draw.Geometry.Shape();
-    
-    Line.prototype = {
-        initialize: function(){
-            
-            
-            return this;
+
+    circle.prototype = new draw.geometry.shape();
+
+
+    draw.shape.circle = circle;
+
+}(draw));
+(function (draw) {
+    "use strict";
+
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Line
+     * @extends Geometry.Shape
+     * @constructor
+     */
+    function line(attrs) {
+        
+        if (arguments.length == 0) {
+            return 'no arguments';
         }
+        
+
+        if (!(this instanceof line)) {
+            return new line(attrs);
+        }
+
+        for (var name in attrs) {
+            this[name] = attrs[name];
+        }
+
+
+        //        this.from = this.from ? this.from : null;
+        //        
+        //        this.to = this.to ? this.to : null;
+
+
+        draw.geometry.shape.call(this, attrs);
+
+        this.initialize();
+
     }
-    
-    
 
-    Draw.Shape.Line = Line;
+    line.prototype = new draw.geometry.shape();
+    //line.prototype.constructor = line;
 
-}(Draw));
-(function (Draw) {
+//    line.prototype.initialize = function () {
+//
+//        return draw.context.shape.add(this);
+//
+//        //return draw.render.update(this);
+//    }
+
+
+
+    draw.shape.line = line;
+
+}(draw));
+(function (draw) {
     "use strict";
 
     /**
@@ -370,20 +522,41 @@
      * @extends Geometry.Shape
      * @constructor
      */
-    function Polygon(x, y, sides) {
+    function polygon(attrs) {
 
-        Draw.Geometry.Shape.call(this, x, y);
+      if (arguments.length == 0) {
+            return 'no arguments';
+        }
+        
 
-        this.sides = sides || 3;
+        if (!(this instanceof polygon)) {
+            return new polygon(attrs);
+        }
+
+        for (var name in attrs) {
+            this[name] = attrs[name];
+        }
+
+
+        this.sides = this.sides || 3;
+        this.radius = this.radius || 20;
+        
+        
+        draw.geometry.shape.call(this, attrs);
+
+        this.initialize();
+        
 
     }
 
-    Draw.Shape.Polygon = Polygon;
+    polygon.prototype = new draw.geometry.shape();
+    
+    draw.shape.polygon = polygon;
 
-}(Draw));
+}(draw));
 
 
-(function (Draw) {
+(function (draw) {
     "use strict";
 
     /**
@@ -393,7 +566,7 @@
      * @class Math
      * @static
      */
-    Draw.Utility.Math = {
+    draw.utility.math = {
 
         /**
          * Descrição para o metodo calculeX
@@ -417,11 +590,11 @@
 
     }
 
-}(Draw));
-(function (Draw) {
+}(draw));
+(function (draw) {
     "use strict";
 
-    Draw.Option = {
+    draw.option = {
     };
 
-}(Draw));
+}(draw));

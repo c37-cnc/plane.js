@@ -1,7 +1,7 @@
-(function (Draw) {
+(function (draw) {
     "use strict";
 
-    Draw.Option = {
+    draw.option = {
     };
 
-}(Draw));
+}(draw));

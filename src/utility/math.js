@@ -1,4 +1,4 @@
-(function (Draw) {
+(function (draw) {
     "use strict";
 
     /**
@@ -8,7 +8,7 @@
      * @class Math
      * @static
      */
-    Draw.Utility.Math = {
+    draw.utility.math = {
 
         /**
          * Descrição para o metodo calculeX
@@ -32,4 +32,4 @@
 
     }
 
-}(Draw));
+}(draw));

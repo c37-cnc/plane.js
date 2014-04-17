@@ -1,4 +1,4 @@
-(function (Draw) {
+(function (draw) {
     "use strict";
 
     /**
@@ -11,13 +11,21 @@
      * @class Shape
      * @constructor
      */
-    function Shape() {
+    function shape(attrs) {
 
-        
+
         if (arguments.length == 0) {
             return 'no arguments';
         }
 
+
+        if (!(this instanceof shape)) {
+            return new shape(attrs);
+        }
+
+        for (var name in attrs) {
+            this[name] = attrs[name];
+        }
 
         /**
          * A Universally unique identifier for
@@ -38,24 +46,34 @@
          */
         this.name = '';
 
+
+//        this.from = this.from ? this.from : null;
+//
+//        this.to = this.to ? this.to : null;
+
+
+
         this.visible = true;
         this.data = {};
 
-        this.position = 'arguments[0].point';
+        this.position = this.position || null;
+        
+        this.radius = this.radius || 0;
+        
         this.scale = 'Math.Vector';
         this.angle = 'Math.Euler';
 
 
-        this.initialize();
+        //this.initialize();
 
     }
 
-    Shape.prototype = {
+    shape.prototype = {
         initialize: function () {
-            
-            Draw
 
-            return this;
+            return draw.context.shape.add(this);
+
+            //            return this;
         },
         moveTo: function () {
             return true;
@@ -68,6 +86,6 @@
         }
     }
 
-    Draw.Geometry.Shape = Shape;
+    draw.geometry.shape = shape;
 
-}(Draw));
+}(draw));

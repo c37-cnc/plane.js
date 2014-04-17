@@ -6,40 +6,115 @@
 
     <title>Draw - How-To</title>
 
+    <style>
+        html,
+        body {
+            height: 100%;
+        }
+        /*
+        canvas {
+            height: 99%;
+            width: 99%;
+        }
+*/
+    </style>
+
     <script src="../../dist/draw-1.0.0.js"></script>
 </head>
 
 <body>
+
+    <canvas id="myCanvas" width="800" height="600"></canvas>
+
     <script>
-        
-        var draw = Draw.initialize();
+        draw.initialize(document.getElementById('myCanvas'), 'automatic');
 
-        if (draw.status) {
-
-            var renderer = draw.renderer;
-
-            document.body.appendChild(draw.renderer);
+         //document.body.appendChild(renderer);
 
 
-            Draw.Context.shape.add({
-                type: 'Polygon'
-            });
+        draw.shape.line({
+            position: {
+                from: draw.geometry.point(100, 100),
+                to: draw.geometry.point(200, 200)
+            }
+        });
 
-            Draw.Context.shape.add({
-                type: 'Line'
-            });
+        draw.shape.circle({
+            position: {
+                x: 100,
+                y: 300
+            },
+            radius: 20
+        });
 
-            Draw.Context.shape.add({
-                type: 'Circle'
-            });
+        draw.shape.polygon({
+            position: {
+                x: 400,
+                y: 300
+            },
+            radius: 100,
+            sides: 4
+        });
 
 
-            console.log(Draw.Context.shape.locate());
+
+
+//        draw.shape({
+//            type: 'line',
+//            begin: [100, 100],
+//            end: [200, 200],
+//            fillColor: 'rgb(255,0,0)',
+//            lineCap: 'round',
+//            lineWidth: 10,
+//            lineColor: 'rgb(255,0,0)',
+//            layer: 0
+//        });
+//
+//        draw.shape({
+//            type: 'circle',
+//            x: 300,
+//            y: 400,
+//            radius: 30
+//        });
+//
+//        draw.shape({
+//            type: 'polygon',
+//            x: 400,
+//            y: 300,
+//            radius: 30,
+//            sides: 5
+//        });
+//
+//        draw.shape.locate('line-01').moveTo(20, 30);
 
 
 
-        }
+
+
+
+
+
+
+
+
+
+         //
+         //        draw.context.shape.add({
+         //            type: 'Polygon'
+         //        });
+         //
+         //        draw.context.shape.add({
+         //            type: 'Line'
+         //        });
+         //
+         //        draw.context.shape.add({
+         //            type: 'Circle'
+         //        });
+         //
+
+        console.log(draw.context.shape.locate());
     </script>
+
 </body>
 
 </html>

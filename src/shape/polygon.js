@@ -1,4 +1,4 @@
-(function (Draw) {
+(function (draw) {
     "use strict";
 
     /**
@@ -12,14 +12,35 @@
      * @extends Geometry.Shape
      * @constructor
      */
-    function Polygon(x, y, sides) {
+    function polygon(attrs) {
 
-        Draw.Geometry.Shape.call(this, x, y);
+      if (arguments.length == 0) {
+            return 'no arguments';
+        }
+        
 
-        this.sides = sides || 3;
+        if (!(this instanceof polygon)) {
+            return new polygon(attrs);
+        }
+
+        for (var name in attrs) {
+            this[name] = attrs[name];
+        }
+
+
+        this.sides = this.sides || 3;
+        this.radius = this.radius || 20;
+        
+        
+        draw.geometry.shape.call(this, attrs);
+
+        this.initialize();
+        
 
     }
 
-    Draw.Shape.Polygon = Polygon;
+    polygon.prototype = new draw.geometry.shape();
+    
+    draw.shape.polygon = polygon;
 
-}(Draw));
+}(draw));

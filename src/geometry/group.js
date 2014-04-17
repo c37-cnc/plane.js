@@ -1,4 +1,4 @@
-(function (Draw) {
+(function (draw) {
     "use strict";
 
     /**
@@ -31,6 +31,6 @@
 
     }
 
-    Draw.Geometry.Group = Group;
+    draw.geometry.Group = Group;
 
-}(Draw));
+}(draw));
