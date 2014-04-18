@@ -26,7 +26,7 @@
         for (var name in attrs) {
             this[name] = attrs[name];
         }
-
+        
         /**
          * A Universally unique identifier for
          * a single instance of Shape
@@ -56,7 +56,8 @@
         this.visible = true;
         this.data = {};
 
-        this.position = this.position || null;
+        this.x = this.x || 0;
+        this.y = this.y || 0;
         
         this.radius = this.radius || 0;
         
