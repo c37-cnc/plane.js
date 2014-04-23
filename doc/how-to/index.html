@@ -6,64 +6,41 @@
 
     <title>Draw - How-To</title>
 
-    <style>
-        html,
-        body {
-            height: 100%;
-            margin: 0px;
-            padding: 0px;
-        }
-    </style>
-
     <script src="../../dist/draw-1.0.0.js"></script>
 </head>
 
 <body>
 
     <script>
-        //        draw.initialize(document.getElementById('myCanvas'), 'automatic');
-         //
-         //         //document.body.appendChild(renderer);
-         //
-         //
-         //        draw.shape.line({
-         //            x: [100, 100],
-         //            y: [200, 200]
-         //        });
-         //
-         //        draw.shape.circle({
-         //            x: 100,
-         //            y: 300,
-         //            radius: 20
-         //        });
-         //
-         //        draw.shape.polygon({
-         //            x: 400,
-         //            y: 300,
-         //            radius: 100,
-         //            sides: 4
-         //        });
-         //        
-
-
-
-        var renderer = draw.init({
+        var renderer = draw.initialize({
             renderType: 'canvas',
             updateType: 'automatic'
         });
 
-
-        console.log(renderer);
-
         document.body.appendChild(renderer);
 
+        
+//        draw.shape.create({
+//            type: 'polygon',
+//            x: 400,
+//            y: 300,
+//            radius: 30,
+//            sides: 5
+//        });
 
         draw.shape.create({
             type: 'line',
             x: [100, 100],
-            y: [200, 200]
+            y: [300, 200]
         });
 
+        draw.shape.create({
+            type: 'circle',
+            x: 1200,
+            y: 300,
+            radius: 30
+        });
+        
         draw.shape.create({
             type: 'polygon',
             x: 400,
@@ -73,63 +50,6 @@
         });
 
         console.log(draw.shape.locate());
-        console.log(draw.shape.locate().length);
-
-
-         //        draw.shape({
-         //            type: 'line',
-         //            x: [100, 100],
-         //            y: [200, 200]
-         //        });
-
-
-
-
-
-
-         //        draw.shape({
-         //            type: 'line',
-         //            begin: [100, 100],
-         //            end: [200, 200],
-         //            fillColor: 'rgb(255,0,0)',
-         //            lineCap: 'round',
-         //            lineWidth: 10,
-         //            lineColor: 'rgb(255,0,0)',
-         //            layer: 0
-         //        });
-         //
-         //        draw.shape({
-         //            type: 'circle',
-         //            x: 300,
-         //            y: 400,
-         //            radius: 30
-         //        });
-         //
-         //        draw.shape({
-         //            type: 'polygon',
-         //            x: 400,
-         //            y: 300,
-         //            radius: 30,
-         //            sides: 5
-         //        });
-         //
-         //        draw.shape.locate('line-01').moveTo(20, 30);
-
-
-         //        draw.context.shape.add({
-         //            type: 'Polygon'
-         //        });
-         //
-         //        draw.context.shape.add({
-         //            type: 'Line'
-         //        });
-         //
-         //        draw.context.shape.add({
-         //            type: 'Circle'
-         //        });
-         //
-
-         //console.log(draw.context.shape.locate());
     </script>
 
 </body>

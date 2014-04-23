@@ -1,5 +1,5 @@
 /*!
- * C37 in 17-04-2014 at 23:26:41 
+ * C37 in 23-04-2014 at 03:22:09 
  *
  * draw version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -43,29 +43,15 @@
      * @param renderType {String} 'automatic', 'manual' or 'event'
      * @return {Object} instance of Projector
      */
-//    draw.initialize = function (htmlElement, renderType) {
-//
-//        var renderer = htmlElement !== undefined ? htmlElement : document.createElement('canvas'),
-//            renderType = renderType !== undefined ? renderType : 'automatic';
-//        //render = new draw.Render(renderer, renderType);
-//
-//
-//
-//
-//        draw.render.renderer = renderer;
-//
-//
-//
-//
-//
-//
-//        return renderer;
-//    }
+    draw.initialize = function (params) {
 
-
-    draw.init = function (params) {
-
-        return draw.render.init(params);
+        // configuration
+        // layers
+        // events
+        // renderer
+        
+        
+        return draw.render.initialize(params);
         
     }
 
@@ -214,134 +200,29 @@ draw.context = (function (draw) {
 draw.render = (function (draw) {
     "use strict";
 
-    var renderType = null,
-        htmlElement = null;
+    var render = null;
 
 
     return {
-        init: function (params) {
+        initialize: function (params) {
 
             var types = {
                 canvas: draw.render.canvas,
                 svg: draw.render.svg
             };
 
-            renderType = types[params.renderType];
-            htmlElement = renderType.init(params);
+            render = types[params.renderType];
 
-            return htmlElement;
+            return render.initialize(params);
         },
         update: function () {
-            
-            renderType.render(htmlElement, draw.shape.locate());
+
+            render.update(draw.shape.locate());
 
         }
     };
 
 }(draw));
-
-
-//(function (draw) {
-//    "use strict";
-//
-//    function render(params) {
-//
-//        if (arguments.length == 0) {
-//            throw new SyntaxError('render - no arguments');
-//        } else if (!(this instanceof render)) {
-//            return new render(params);
-//        }
-//        
-//        var types = {
-//            canvas: draw.render.canvas,
-//            svg: draw.render.svg
-//        };
-//
-//
-//        return types[params.renderType].call(this, params);
-//
-//    }
-//
-//    draw.render = render;
-
-
-
-
-
-
-
-//    draw.render = {
-//        renderer: null,
-//        update: function (shape) {
-//            var context = draw.render.renderer.getContext('2d');
-//
-//            if (shape instanceof draw.shape.line) {
-//                var from = shape.x,
-//                    to = shape.y;
-//
-//                context.beginPath();
-//                context.moveTo(from[0], from[1]);
-//                context.lineTo(to[0], to[1]);
-//                context.stroke();
-//            }
-//
-//            if (shape instanceof draw.shape.circle) {
-//
-//                context.beginPath();
-//                context.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2, true);
-//                context.stroke();
-//            }
-//
-//            if (shape instanceof draw.shape.polygon) {
-//
-//                if (shape.sides < 3) {
-//                    return;
-//                }
-//
-//                context.beginPath();
-//
-//
-//                var a = ((Math.PI * 2) / shape.sides);
-//
-//                context.translate(shape.x, shape.y);
-//                context.moveTo(shape.radius, 0);
-//
-//
-//                for (var i = 1; i < shape.sides; i++) {
-//                    context.lineTo(shape.radius * Math.cos(a * i), shape.radius * Math.sin(a * i));
-//                }
-//                
-//                context.closePath();
-//                context.stroke();
-//
-//
-//            }
-//
-//
-//
-//
-//
-//
-//        }
-//    }
-
-
-
-//    function Render(renderer, renderType) {
-//
-//        var renderType = renderType;
-//
-//    }
-//
-//    Render.prototype = {
-//        update: function () {
-//
-//        }
-//    }
-//
-//    draw.Render = Render;
-
-//}(draw));
 (function (draw) {
     "use strict";
 
@@ -378,7 +259,12 @@ draw.render = (function (draw) {
     draw.geometry.Group = Group;
 
 }(draw));
+// style 
 
+// fillColor: 'rgb(255,0,0)',
+// lineCap: 'round',
+// lineWidth: 10,
+// lineColor: 'rgb(255,0,0)',
 (function (draw) {
     "use strict";
 
@@ -473,30 +359,70 @@ draw.render = (function (draw) {
 }(draw));
 draw.render.canvas = (function () {
 
-
+    var htmlElement = null,
+        htmlContext = null;
 
 
     return {
-        init: function (params) {
+        initialize: function (params) {
 
-            var xxx = document.createElement('canvas');
+            htmlElement = document.createElement('canvas'),
+            htmlContext = htmlElement.getContext('2d');
 
-            xxx.width = window.innerWidth;
-            xxx.height = window.innerHeight;
+            htmlElement.width = window.innerWidth;
+            htmlElement.height = window.innerHeight;
 
-            return xxx;
-            
+            return htmlElement;
+
         },
-        render: function (htmlElement, shapes) {
+        update: function (shapes) {
 
-            var context = htmlElement.getContext('2d');
+            htmlContext.clearRect(0, 0, htmlElement.width, htmlElement.height);
 
-            context.beginPath();
-            context.moveTo(100, 100);
-            context.lineTo(600, 600);
-            context.stroke();
+            shapes.forEach(function (shape) {
 
-            console.log(shapes.length);
+                htmlContext.translate(0, 0);
+                htmlContext.beginPath();
+
+                switch (shape.type) {
+                case 'line':
+                    {
+                        htmlContext.moveTo(shape.x[0], shape.x[1]);
+                        htmlContext.lineTo(shape.y[0], shape.y[1]);
+
+                        break;
+                    }
+                case 'circle':
+                    {
+                        htmlContext.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2, true);
+                        break;
+                    }
+                case 'polygon':
+                    {
+                        if (shape.sides < 3) {
+                            return;
+                        }
+
+                        var a = ((Math.PI * 2) / shape.sides);
+
+                        htmlContext.translate(shape.x, shape.y);
+                        htmlContext.moveTo(shape.radius, 0);
+
+                        for (var i = 1; i < shape.sides; i++) {
+                            htmlContext.lineTo(shape.radius * Math.cos(a * i), shape.radius * Math.sin(a * i));
+                        }
+
+                        htmlContext.closePath();
+
+                        break;
+                    }
+                default:
+                    break;
+                }
+
+                htmlContext.stroke();
+
+            });
 
         }
     }
@@ -504,54 +430,6 @@ draw.render.canvas = (function () {
 
 
 }(draw));
-
-
-//(function (draw) {
-//    "use strict";
-//
-//    function canvas(params) {
-//
-//        if (arguments.length == 0) {
-//            throw new SyntaxError('canvas - no arguments');
-//        } else if (!(this instanceof canvas)) {
-//            return new canvas(params);
-//        }
-//
-//
-//        this.type = 'canvas';
-//
-//        var xxx = document.createElement('canvas');
-//
-//
-//        xxx.width = window.innerWidth;
-//        xxx.height = window.innerHeight;
-//
-//        return xxx;
-//
-//    };
-//
-//    canvas.prototype = {
-//        render: function (htmlElement, shapes) {
-//
-//            var context = htmlElement.getContext('2d');
-//
-//            context.beginPath();
-//            context.moveTo(100, 100);
-//            context.lineTo(600, 600);
-//            context.stroke();
-//
-//            console.log(shapes.length);
-//
-//
-//        }
-//    }
-//
-//
-//
-//    draw.render.canvas = canvas;
-//
-//
-//}(draw));
 (function (draw) {
     "use strict";
 

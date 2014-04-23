@@ -35,29 +35,15 @@
      * @param renderType {String} 'automatic', 'manual' or 'event'
      * @return {Object} instance of Projector
      */
-//    draw.initialize = function (htmlElement, renderType) {
-//
-//        var renderer = htmlElement !== undefined ? htmlElement : document.createElement('canvas'),
-//            renderType = renderType !== undefined ? renderType : 'automatic';
-//        //render = new draw.Render(renderer, renderType);
-//
-//
-//
-//
-//        draw.render.renderer = renderer;
-//
-//
-//
-//
-//
-//
-//        return renderer;
-//    }
+    draw.initialize = function (params) {
 
-
-    draw.init = function (params) {
-
-        return draw.render.init(params);
+        // configuration
+        // layers
+        // events
+        // renderer
+        
+        
+        return draw.render.initialize(params);
         
     }
 

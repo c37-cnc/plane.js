@@ -1,29 +1,69 @@
 draw.render.canvas = (function () {
 
-
+    var htmlElement = null,
+        htmlContext = null;
 
 
     return {
-        init: function (params) {
+        initialize: function (params) {
 
-            var xxx = document.createElement('canvas');
+            htmlElement = document.createElement('canvas'),
+            htmlContext = htmlElement.getContext('2d');
 
-            xxx.width = window.innerWidth;
-            xxx.height = window.innerHeight;
+            htmlElement.width = window.innerWidth;
+            htmlElement.height = window.innerHeight;
 
-            return xxx;
-            
+            return htmlElement;
+
         },
-        render: function (htmlElement, shapes) {
+        update: function (shapes) {
 
-            var context = htmlElement.getContext('2d');
+            htmlContext.clearRect(0, 0, htmlElement.width, htmlElement.height);
 
-            context.beginPath();
-            context.moveTo(100, 100);
-            context.lineTo(600, 600);
-            context.stroke();
+            shapes.forEach(function (shape) {
 
-            console.log(shapes.length);
+                htmlContext.translate(0, 0);
+                htmlContext.beginPath();
+
+                switch (shape.type) {
+                case 'line':
+                    {
+                        htmlContext.moveTo(shape.x[0], shape.x[1]);
+                        htmlContext.lineTo(shape.y[0], shape.y[1]);
+
+                        break;
+                    }
+                case 'circle':
+                    {
+                        htmlContext.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2, true);
+                        break;
+                    }
+                case 'polygon':
+                    {
+                        if (shape.sides < 3) {
+                            return;
+                        }
+
+                        var a = ((Math.PI * 2) / shape.sides);
+
+                        htmlContext.translate(shape.x, shape.y);
+                        htmlContext.moveTo(shape.radius, 0);
+
+                        for (var i = 1; i < shape.sides; i++) {
+                            htmlContext.lineTo(shape.radius * Math.cos(a * i), shape.radius * Math.sin(a * i));
+                        }
+
+                        htmlContext.closePath();
+
+                        break;
+                    }
+                default:
+                    break;
+                }
+
+                htmlContext.stroke();
+
+            });
 
         }
     }
@@ -31,51 +71,3 @@ draw.render.canvas = (function () {
 
 
 }(draw));
-
-
-//(function (draw) {
-//    "use strict";
-//
-//    function canvas(params) {
-//
-//        if (arguments.length == 0) {
-//            throw new SyntaxError('canvas - no arguments');
-//        } else if (!(this instanceof canvas)) {
-//            return new canvas(params);
-//        }
-//
-//
-//        this.type = 'canvas';
-//
-//        var xxx = document.createElement('canvas');
-//
-//
-//        xxx.width = window.innerWidth;
-//        xxx.height = window.innerHeight;
-//
-//        return xxx;
-//
-//    };
-//
-//    canvas.prototype = {
-//        render: function (htmlElement, shapes) {
-//
-//            var context = htmlElement.getContext('2d');
-//
-//            context.beginPath();
-//            context.moveTo(100, 100);
-//            context.lineTo(600, 600);
-//            context.stroke();
-//
-//            console.log(shapes.length);
-//
-//
-//        }
-//    }
-//
-//
-//
-//    draw.render.canvas = canvas;
-//
-//
-//}(draw));
