@@ -3,23 +3,25 @@ draw.render = (function (draw) {
 
     var render = null;
 
-
     return {
-        initialize: function (params) {
+        initialize: function (config) {
 
-            var types = {
+            var renderTypes = {
                 canvas: draw.render.canvas,
                 svg: draw.render.svg
             };
 
-            render = types[params.renderType];
+            render = renderTypes[config.renderType];
 
-            return render.initialize(params);
+            return render.initialize(config);
         },
         update: function () {
-
-            render.update(draw.shape.locate());
-
+            
+            var shapes = draw.shape.search();
+            
+            if (shapes.length > 0) {
+                render.update(shapes);
+            }
         }
     };
 

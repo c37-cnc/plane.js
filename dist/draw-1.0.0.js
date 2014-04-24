@@ -1,5 +1,5 @@
 /*!
- * C37 in 23-04-2014 at 03:22:09 
+ * C37 in 23-04-2014 at 22:34:47 
  *
  * draw version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -43,81 +43,23 @@
      * @param renderType {String} 'automatic', 'manual' or 'event'
      * @return {Object} instance of Projector
      */
-    draw.initialize = function (params) {
+    draw.initialize = function (config) {
+        
+//        draw.layer.initialize(config);
+        
+        
+        
 
         // configuration
         // layers
         // events
+        // render
         // renderer
         
         
-        return draw.render.initialize(params);
+        return draw.render.initialize(config);
         
     }
-
-
-
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @class Geometry
-     * @static
-     */
-    draw.geometry = {};
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @class Shape
-     * @static
-     */
-    draw.shape = (function (draw) {
-
-        var shapes = [];
-        
-
-        return {
-            create: function (params) {
-                
-                shapes.push(params);
-                
-                draw.render.update();
-            },
-
-            locate: function (selector) {
-                return shapes;
-            },
-
-            destroy: function (shape) {
-                
-                
-                
-                
-                shapes.slice(shapes.indexOf(shape));
-            }
-        };
-
-    }(draw));
-    //    draw.shape = function (params) {
-    //
-    //        var context = draw.render.renderer.getContext('2d');
-    //
-    //        context.beginPath();
-    //        context.moveTo(params.x[0], params.x[1]);
-    //        context.lineTo(params.y[0], params.y[1]);
-    //        context.stroke();
-    //
-    //
-    //
-    //
-    //    };
 
     /**
      * Descrição para o objeto Utility no arquivo draw.js
@@ -128,291 +70,312 @@
     draw.utility = {};
 
     window.draw = draw;
+    
 }(window));
-draw.context = (function (draw) {
-    "use strict";
-
-    // Private attribute
-    var shapes = [];
-
-    // Private method
-    function oo() {
-        return ''
-    };
-
-    return {
-        add: function (shape) {
-            
-            shapes.push(shape);
-
-            draw.render.update();
-
-        },
-
-        locate: function (selector) {
-
-            return shapes;
-
-        },
-
-        remove: function (shape) {
-
-            shapes.slice(shapes.indexOf(shape));
-
-        }
-    }
-}(draw));
 
 
-
-
-
-//(function (draw) {
-//    draw.context = {
-//
-//        shape: {
-//            shapes: [],
-//
-//            add: function (shape) {
-//
-//                draw.context.shape.shapes.push(shape);
-//                
-//                
-//                
-//                draw.render.update(shape);
-//
-//            },
-//
-//            locate: function (selector) {
-//
-//                return draw.context.shape.shapes;
-//
-//            },
-//
-//            remove: function (shape) {
-//
-//                draw.context.shape.shapes.slice(draw.context.shape.shapes.indexOf(shape));
-//
-//            }
-//        }
-//    };
-//}(draw));
-draw.render = (function (draw) {
-    "use strict";
-
-    var render = null;
-
-
-    return {
-        initialize: function (params) {
-
-            var types = {
-                canvas: draw.render.canvas,
-                svg: draw.render.svg
-            };
-
-            render = types[params.renderType];
-
-            return render.initialize(params);
-        },
-        update: function () {
-
-            render.update(draw.shape.locate());
-
-        }
-    };
-
-}(draw));
-(function (draw) {
-    "use strict";
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Geometry
-     * @class Group
-     * @constructor
-     */
-    function Group(x, y) {
-
-        /**
-         * A Universally unique identifier for 
-         * a single instance of Object
-         *
-         * @property uuid
-         * @type String
-         * @default 'uuid'
-         */
-        this.uuid = 'uuid';
-        this.name = '';
-
-        this.visible = true;
-        this.data = {};
-
-        this.children = [];
-
-    }
-
-    draw.geometry.Group = Group;
-
-}(draw));
 // style 
 
 // fillColor: 'rgb(255,0,0)',
 // lineCap: 'round',
 // lineWidth: 10,
 // lineColor: 'rgb(255,0,0)',
-(function (draw) {
+draw.render = (function (draw) {
     "use strict";
 
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Geometry
-     * @class Shape
-     * @constructor
-     */
-    function shape(attrs) {
+    var render = null;
 
+    return {
+        initialize: function (config) {
 
-        if (arguments.length == 0) {
-            return 'no arguments';
-        }
+            var renderTypes = {
+                canvas: draw.render.canvas,
+                svg: draw.render.svg
+            };
 
+            render = renderTypes[config.renderType];
 
-        if (!(this instanceof shape)) {
-            return new shape(attrs);
-        }
-
-        for (var name in attrs) {
-            this[name] = attrs[name];
-        }
-        
-        /**
-         * A Universally unique identifier for
-         * a single instance of Shape
-         *
-         * @property uuid
-         * @type String
-         * @default 'uuid'
-         */
-        this.uuid = 'uuid';
-
-        /**
-         * Template for this view's container...
-         *
-         * @property name
-         * @type String
-         * @default ''
-         */
-        this.name = '';
-
-
-//        this.from = this.from ? this.from : null;
-//
-//        this.to = this.to ? this.to : null;
-
-
-
-        this.visible = true;
-        this.data = {};
-
-        this.x = this.x || 0;
-        this.y = this.y || 0;
-        
-        this.radius = this.radius || 0;
-        
-        this.scale = 'Math.Vector';
-        this.angle = 'Math.Euler';
-
-
-        //this.initialize();
-
-    }
-
-    shape.prototype = {
-        initialize: function () {
-
-            return draw.context.shape.add(this);
-
-            //            return this;
+            return render.initialize(config);
         },
-        moveTo: function () {
-            return true;
-        },
-        delete: function () {
-            return true;
-        },
-        toString: function () {
-            return "[" + this.constructor.name + " x : " + this.x + ", y : " + this.y + ", position : " + getPosition() + "]";
+        update: function () {
+            
+            var shapes = draw.shape.search();
+            
+            if (shapes.length > 0) {
+                render.update(shapes);
+            }
         }
-    }
-
-    draw.geometry.shape = shape;
+    };
 
 }(draw));
-draw.render.canvas = (function () {
+/**
+ * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+ * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+ * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+ * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+ *
+ * @class Shape
+ * @static
+ */
+draw.shape = (function (draw) {
+    "use strict";
 
-    var htmlElement = null,
-        htmlContext = null;
+    var shapes = [];
 
 
     return {
-        initialize: function (params) {
+        create: function (params) {
 
-            htmlElement = document.createElement('canvas'),
-            htmlContext = htmlElement.getContext('2d');
+            shapes.push(params);
 
-            htmlElement.width = window.innerWidth;
-            htmlElement.height = window.innerHeight;
+            return this;
+        },
+
+        search: function (selector) {
+            return shapes;
+        },
+
+        destroy: function (shape) {
+
+            shapes.slice(shapes.indexOf(shape));
+
+            return this;
+        }
+    };
+
+}(draw));
+
+
+//(function (draw) {
+//    "use strict";
+//
+//    /**
+//     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+//     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+//     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+//     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+//     *
+//     * @namespace Geometry
+//     * @class Shape
+//     * @constructor
+//     */
+//    function shape(attrs) {
+//
+//
+//        if (arguments.length == 0) {
+//            return 'no arguments';
+//        }
+//
+//
+//        if (!(this instanceof shape)) {
+//            return new shape(attrs);
+//        }
+//
+//        for (var name in attrs) {
+//            this[name] = attrs[name];
+//        }
+//        
+//        /**
+//         * A Universally unique identifier for
+//         * a single instance of Shape
+//         *
+//         * @property uuid
+//         * @type String
+//         * @default 'uuid'
+//         */
+//        this.uuid = 'uuid';
+//
+//        /**
+//         * Template for this view's container...
+//         *
+//         * @property name
+//         * @type String
+//         * @default ''
+//         */
+//        this.name = '';
+
+//        this.uuid = 'uuid';
+//        this.name = '';
+//
+//        this.visible = true;
+//        this.data = {};
+//
+//        this.children = [];
+
+
+//
+//
+////        this.from = this.from ? this.from : null;
+////
+////        this.to = this.to ? this.to : null;
+//
+//
+//
+//        this.visible = true;
+//        this.data = {};
+//
+//        this.x = this.x || 0;
+//        this.y = this.y || 0;
+//        
+//        this.radius = this.radius || 0;
+//        
+//        this.scale = 'Math.Vector';
+//        this.angle = 'Math.Euler';
+//
+//
+//        //this.initialize();
+//
+//    }
+//
+//    shape.prototype = {
+//        initialize: function () {
+//
+//            return draw.context.shape.add(this);
+//
+//            //            return this;
+//        },
+//        moveTo: function () {
+//            return true;
+//        },
+//        delete: function () {
+//            return true;
+//        },
+//        toString: function () {
+//            return "[" + this.constructor.name + " x : " + this.x + ", y : " + this.y + ", position : " + getPosition() + "]";
+//        }
+//    }
+//
+//    draw.geometry.shape = shape;
+//
+//}(draw));
+draw.render.canvas = (function () {
+
+    var htmlElement = null,
+        elementContext = null;
+
+    return {
+        initialize: function (config) {
+
+            htmlElement = document.createElement('canvas');
+
+            htmlElement = config.renderer;
+
+            htmlElement.width = config.renderer.clientWidth;
+            htmlElement.height = config.renderer.clientHeight;
+
+            if (!htmlElement.getContext) {
+                throw new Error('no canvas suport');
+            }
+
+            elementContext = htmlElement.getContext('2d');
+
+            // Cartesian coordinate system
+            elementContext.translate(0, htmlElement.height);
+            elementContext.scale(1, -1);
+
+
+
+
+
+
+
+
+            function getMousePos(canvas, evt) {
+                var rect = canvas.getBoundingClientRect();
+                return {
+                    x: evt.clientX - rect.left,
+                    y: canvas.height - (evt.clientY - rect.top)
+                    //                    y: canvas.height - (evt.clientY - rect.top)
+                };
+            }
+
+            htmlElement.onmousewheel = function (event) {
+                console.log(event);
+            };
+            //            htmlElement.onmousemove = function (event) {
+            //                console.log(event);
+            //            };
+            htmlElement.onclick = function (event) {
+
+                var zzz = getMousePos(htmlElement, event);
+
+                var element = elementContext.isPointInPath(zzz.x, (parseInt(htmlElement.height) - zzz.y));
+                var debug = document.getElementById('debug');
+
+                debug.innerHTML = 'x: ' + zzz.x + ', y:' + zzz.y + ', k:' + (parseInt(htmlElement.height) - zzz.y) + ', selected: ' + element;;
+
+                console.log(zzz);
+
+            };
 
             return htmlElement;
 
         },
         update: function (shapes) {
 
-            htmlContext.clearRect(0, 0, htmlElement.width, htmlElement.height);
+            elementContext.clearRect(0, 0, htmlElement.width, htmlElement.height);
 
             shapes.forEach(function (shape) {
 
-                htmlContext.translate(0, 0);
-                htmlContext.beginPath();
+                // save state of all configuration
+                elementContext.save();
+
+                elementContext.beginPath();
 
                 switch (shape.type) {
                 case 'line':
                     {
-                        htmlContext.moveTo(shape.x[0], shape.x[1]);
-                        htmlContext.lineTo(shape.y[0], shape.y[1]);
+
+                        elementContext.lineWidth = shape.strokeWidth || 1;
+                        elementContext.strokeStyle = shape.strokeColor || 'black';
+
+                        elementContext.moveTo(shape.x[0], shape.x[1]);
+                        elementContext.lineTo(shape.y[0], shape.y[1]);
+
+                        break;
+                    }
+                case 'rectangle':
+                    {
+
+                        elementContext.lineWidth = shape.strokeWidth || 1;
+                        elementContext.strokeStyle = shape.strokeColor || 'black';
+                        
+                        elementContext.strokeRect(shape.x, shape.y, shape.width, shape.height);
+
+                        break;
+                    }
+                case 'arc':
+                    {
 
                         break;
                     }
                 case 'circle':
                     {
-                        htmlContext.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2, true);
+                        elementContext.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2, true);
+
+                        break;
+                    }
+                case 'ellipse':
+                    {
+
                         break;
                     }
                 case 'polygon':
                     {
                         if (shape.sides < 3) {
-                            return;
+                            throw new Error('shape.sides < 3');
                         }
 
                         var a = ((Math.PI * 2) / shape.sides);
 
-                        htmlContext.translate(shape.x, shape.y);
-                        htmlContext.moveTo(shape.radius, 0);
+                        elementContext.translate(shape.x, shape.y);
+                        elementContext.moveTo(shape.radius, 0);
 
                         for (var i = 1; i < shape.sides; i++) {
-                            htmlContext.lineTo(shape.radius * Math.cos(a * i), shape.radius * Math.sin(a * i));
+                            elementContext.lineTo(shape.radius * Math.cos(a * i), shape.radius * Math.sin(a * i));
                         }
 
-                        htmlContext.closePath();
+                        elementContext.closePath();
 
                         break;
                     }
@@ -420,10 +383,12 @@ draw.render.canvas = (function () {
                     break;
                 }
 
-                htmlContext.stroke();
+                elementContext.stroke();
+
+                // restore state of all configuration
+                elementContext.restore();
 
             });
-
         }
     }
 
@@ -447,155 +412,6 @@ draw.render.canvas = (function () {
 
     draw.render.svg = svg;
 
-
-}(draw));
- (function (draw) {
-    "use strict";
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Shape
-     * @class Line
-     * @extends Geometry.Shape
-     * @constructor
-     */
-    function circle(attrs) {
-        
-        if (arguments.length == 0) {
-            return 'no arguments';
-        }
-        
-
-        if (!(this instanceof circle)) {
-            return new circle(attrs);
-        }
-
-        for (var name in attrs) {
-            this[name] = attrs[name];
-        }
-
-
-        //        this.from = this.from ? this.from : null;
-        //        
-        //        this.to = this.to ? this.to : null;
-
-
-        draw.geometry.shape.call(this, attrs);
-
-        this.initialize();
-
-    }
-
-    circle.prototype = new draw.geometry.shape();
-
-
-    draw.shape.circle = circle;
-
-}(draw));
-(function (draw) {
-    "use strict";
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Shape
-     * @class Line
-     * @extends Geometry.Shape
-     * @constructor
-     */
-    function line(attrs) {
-        
-        if (arguments.length == 0) {
-            return 'no arguments';
-        }
-        
-
-        if (!(this instanceof line)) {
-            return new line(attrs);
-        }
-
-        for (var name in attrs) {
-            this[name] = attrs[name];
-        }
-
-
-        //        this.from = this.from ? this.from : null;
-        //        
-        //        this.to = this.to ? this.to : null;
-
-
-        draw.geometry.shape.call(this, attrs);
-
-        this.initialize();
-
-    }
-
-    line.prototype = new draw.geometry.shape();
-    //line.prototype.constructor = line;
-
-//    line.prototype.initialize = function () {
-//
-//        return draw.context.shape.add(this);
-//
-//        //return draw.render.update(this);
-//    }
-
-
-
-    draw.shape.line = line;
-
-}(draw));
-(function (draw) {
-    "use strict";
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Shape
-     * @class Polygon
-     * @extends Geometry.Shape
-     * @constructor
-     */
-    function polygon(attrs) {
-
-      if (arguments.length == 0) {
-            return 'no arguments';
-        }
-        
-
-        if (!(this instanceof polygon)) {
-            return new polygon(attrs);
-        }
-
-        for (var name in attrs) {
-            this[name] = attrs[name];
-        }
-
-
-        this.sides = this.sides || 3;
-        this.radius = this.radius || 20;
-        
-        
-        draw.geometry.shape.call(this, attrs);
-
-        this.initialize();
-        
-
-    }
-
-    polygon.prototype = new draw.geometry.shape();
-    
-    draw.shape.polygon = polygon;
 
 }(draw));
 
