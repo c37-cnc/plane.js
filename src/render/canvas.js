@@ -1,10 +1,10 @@
-draw.render.canvas = (function () {
+plane.render.canvas = (function () {
 
     var htmlElement = null,
         elementContext = null;
 
     return {
-        initialize: function (config) {
+        create: function (config) {
 
             htmlElement = document.createElement('canvas');
 
@@ -30,33 +30,53 @@ draw.render.canvas = (function () {
 
 
 
-            function getMousePos(canvas, evt) {
-                var rect = canvas.getBoundingClientRect();
+            function getMousePos(canvas, event) {
+                var bb = canvas.getBoundingClientRect();
+
+                var x = (event.clientX - bb.left) * (canvas.width / bb.width);
+                var y = (event.clientY - bb.top) * (canvas.height / bb.height);
+
                 return {
-                    x: evt.clientX - rect.left,
-                    y: canvas.height - (evt.clientY - rect.top)
-                    //                    y: canvas.height - (evt.clientY - rect.top)
+                    x: x,
+                    y: y
                 };
             }
+
+
+            function hitPath(canvas, event) {
+                var bb = canvas.getBoundingClientRect();
+
+                var x = (event.clientX - bb.left) * (canvas.width / bb.width);
+                var y = (event.clientY - bb.top) * (canvas.height / bb.height);
+
+                return elementContext.isPointInPath(x, y);
+            }
+
+
+
 
             htmlElement.onmousewheel = function (event) {
                 console.log(event);
             };
-            //            htmlElement.onmousemove = function (event) {
-            //                console.log(event);
-            //            };
+
+
             htmlElement.onclick = function (event) {
 
                 var zzz = getMousePos(htmlElement, event);
 
-                var element = elementContext.isPointInPath(zzz.x, (parseInt(htmlElement.height) - zzz.y));
                 var debug = document.getElementById('debug');
 
-                debug.innerHTML = 'x: ' + zzz.x + ', y:' + zzz.y + ', k:' + (parseInt(htmlElement.height) - zzz.y) + ', selected: ' + element;;
+                debug.innerHTML = 'x: ' + zzz.x + ', y:' + zzz.y + ', selected: ' + hitPath(htmlElement, event);
 
-                console.log(zzz);
+                console.log(elementContext.getImageData(zzz.x, zzz.y, 3, 3).data);
 
             };
+
+            htmlElement.oncontextmenu = function (event) {
+                console.log(event);
+
+                return false;
+            }
 
             return htmlElement;
 
@@ -89,7 +109,7 @@ draw.render.canvas = (function () {
 
                         elementContext.lineWidth = shape.strokeWidth || 1;
                         elementContext.strokeStyle = shape.strokeColor || 'black';
-                        
+
                         elementContext.strokeRect(shape.x, shape.y, shape.width, shape.height);
 
                         break;
@@ -102,6 +122,7 @@ draw.render.canvas = (function () {
                 case 'circle':
                     {
                         elementContext.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2, true);
+                        elementContext.closePath();
 
                         break;
                     }
@@ -133,6 +154,7 @@ draw.render.canvas = (function () {
                     break;
                 }
 
+                elementContext.fill();
                 elementContext.stroke();
 
                 // restore state of all configuration
@@ -144,4 +166,4 @@ draw.render.canvas = (function () {
 
 
 
-}(draw));
+}(plane));

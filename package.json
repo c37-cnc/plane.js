@@ -1,11 +1,11 @@
 {
-    "name": "draw",
+    "name": "plane",
     "version": "1.0.0",
     "description": "JavaScript Engine for Building 2D Element with HTML5 Canvas",
-    "keywords": ["javascript", "canvas", "draw", "vector", "cad", "2d", "svg", "dxf"],
+    "keywords": ["javascript", "canvas", "geometry", "space", "euclidean", "draw", "vector", "cad", "2d", "svg", "dxf"],
     "homepage": "http://sp.c37.co/",
     "bugs": {
-        "url": "https://github.com/c37/draw/issues"
+        "url": "https://github.com/c37/plane/issues"
     },
     "license": "CC-BY-SA-3.0",
     "author": {
@@ -16,8 +16,8 @@
         "name": "Andréa Fabiana de Oliveira",
         "email": "ser@c37.co"
     }],
-    "main": "./src/draw.js",
-    "bin": "./dist/draw-1.0.0.js",
+    "main": "./src/plane.js",
+    "bin": "./dist/plane-1.0.0.js",
     "directories": {
         "dist": "./dist",
         "doc": "./doc",
@@ -26,7 +26,7 @@
     },
     "repository": {
         "type": "git",
-        "url": "https://github.com/c37/draw.git"
+        "url": "https://github.com/c37/plane.git"
     },
     "dependencies": {
         "grunt": "~0.4.1"

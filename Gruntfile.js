@@ -27,7 +27,7 @@ module.exports = function (grunt) {
             },
             dist: {
                 src: [
-                    '<%= dirs.src %>/draw.js',
+                    '<%= dirs.src %>/plane.js',
                     '<%= dirs.src %>/*/**/*.js'
                 ],
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'

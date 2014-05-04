@@ -1,4 +1,4 @@
-(function (draw) {
+(function (plane) {
     "use strict";
 
     function svg(params) {
@@ -13,7 +13,7 @@
         
     }
 
-    draw.render.svg = svg;
+    plane.render.svg = svg;
 
 
-}(draw));
+}(plane));

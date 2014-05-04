@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
 
-    <title>Draw - How-To</title>
+    <title>Plane - How-To</title>
 
     <style>
         /* html structure */
@@ -69,7 +69,7 @@
             width: 100%;
             background-color: rgb(204, 139, 139);
         }
-        div[id="paper"] {
+        div[id="view-port"] {
             position: absolute;
             top: 0px;
             left: 15px;
@@ -77,117 +77,42 @@
             bottom: 15px;
             background-color: white;
         }
-        div[id="paper"] > canvas[id="draw"] {
+        div[id="view-port"] > canvas[id="view-box"] {
             height: 100%;
             width: 100%;
         }
         /* application components */
     </style>
 
-    <script src="../../dist/draw-1.0.0.js"></script>
+    <script src="../../dist/plane-1.0.0.js"></script>
+    <script src="editor.js"></script>
 
     <script>
         window.onload = function() {
 
-            var renderer = document.getElementById("draw");
+            // plane - initialize
+            var renderer = document.getElementById("view-box");
 
-            draw.initialize({
+            plane.initialize({
                 renderType: 'canvas',
                 renderer: renderer,
                 updateType: 'automatic'
             });
+            // plane - initialize
+
 
             drawGrid(renderer.width, renderer.height);
 
 
+            plane.layers.create();
 
-
-            function drawGrid(width, height) {
-
-                for (xActual = 0; xActual < width; xActual += 50) {
-
-                    draw.shape.create({
-                        type: 'line',
-                        x: [xActual, 0],
-                        y: [xActual, height],
-                        strokeColor: 'rgb(218, 222, 215)',
-                        strokeWidth: .6
-                    });
-
-                    for (xInternalSub = 1; xInternalSub <= 4; xInternalSub++) {
-                        // small part = 50/5 = 10px espaço entre as linhas
-                        var xActualSub = Math.round(xActual + 10 * xInternalSub);
-
-                        // como é somado + 10 (afrente) para fazer as sub-linhas
-                        // verifico se não ultrapassou o width
-                        if (xActualSub > width) {
-                            break;
-                        }
-
-                        draw.shape.create({
-                            type: 'line',
-                            x: [xActualSub, 0],
-                            y: [xActualSub, height],
-                            strokeColor: 'rgb(218, 222, 215)',
-                            strokeWidth: .3
-                        });
-
-
-                    }
-
-                }
-
-                for (yActual = 0; yActual < height; yActual += 50) {
-
-                    draw.shape.create({
-                        type: 'line',
-                        x: [0, yActual],
-                        y: [width, yActual],
-                        strokeColor: 'rgb(218, 222, 215)',
-                        strokeWidth: .6
-                    });
-
-
-                    // 10/20/30/40 = 4 linhas internas
-                    for (yInternalSub = 1; yInternalSub <= 4; yInternalSub++) {
-                        // small part = 50/5 = 10px espaço entre as linhas
-                        var yActualSub = Math.round(yActual - 10 * yInternalSub);
-
-                        // como é subtraido - 10 (atrás/acima) para fazer as sub-linhas
-                        // verifico se não ultrapassou o height
-                        if (yActualSub < 0) {
-                            break;
-                        }
-
-                        draw.shape.create({
-                            type: 'line',
-                            x: [0, yActualSub],
-                            y: [width, yActualSub],
-                            strokeColor: 'rgb(218, 222, 215)',
-                            strokeWidth: .3
-                        });
-
-                    }
-
-
-                }
-
-                draw.render.update();
-
-            };
-
-
-
-
-
-
-            draw.shape
+            plane.shape
                 .create({
                     type: 'polygon',
                     x: 900,
                     y: 500,
                     radius: 70,
-                    sides: 7
+                    sides: 5
                 })
                 .create({
                     type: 'rectangle',
@@ -220,24 +145,21 @@
                     sides: 5
                 });
 
-            draw.render.update();
-
-            console.log(draw.shape.search());
-            console.log(JSON.parse(draw.shape.search()));
+            plane.render.update();
 
 
-            //            var canvas = document.getElementById("draw"),
-            //                context = canvas.getContext("2d");
-            //
-            //            console.log(canvas);
-            //
-            //            // Cartesian coordinate system
-            //            context.translate(0, canvas.height);
-            //            context.scale(1, -1);
-            //
-            //            context.beginPath();
-            //            context.arc(100, 100, 30, 0, Math.PI * 2, true);
-            //            context.stroke();
+            var layersControl = document.getElementById('layersControl');
+            
+            
+            plane.layers.select('New Layer 0');
+            
+
+            plane.layers.list().forEach(function(layer) {
+                var layerItem = document.createElement('li');
+                layerItem.innerHTML = '<a href="#">' + layer.name + '</a>'
+                layersControl.appendChild(layerItem);
+            });
+
         }
     </script>
 
@@ -253,30 +175,21 @@
 
     <section>
         <canvas id="ruller-x"></canvas>
-        <div id="paper">
-            <canvas id="draw"></canvas>
+        <div id="view-port">
+            <canvas id="view-box"></canvas>
             <!--
             <ul>
                 <li></li>
                 <li></li>
                 <li></li>
             </ul>
--->
+            -->
         </div>
         <canvas id="ruller-y"></canvas>
     </section>
 
     <aside id="right">
-        <ul>
-            <li>
-                <a href="#">Camada 001</a>
-            </li>
-            <li>
-                <a href="#">Camada 002</a>
-            </li>
-            <li>
-                <a href="#">Camada 003</a>
-            </li>
+        <ul id="layersControl">
         </ul>
         <div id="debug" style="height:200px;border:1px solid red">
         </div>

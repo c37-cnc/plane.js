@@ -7,36 +7,30 @@
  * @class Shape
  * @static
  */
-draw.shape = (function (draw) {
+plane.shape = (function (plane) {
     "use strict";
-
-    var shapes = [];
-
 
     return {
         create: function (params) {
-
-            shapes.push(params);
+            
+            plane.layers.active.shapes.add(params);
 
             return this;
         },
 
         search: function (selector) {
-            return shapes;
+            return plane.layers.active.shapes.search();
         },
 
-        destroy: function (shape) {
-
-            shapes.slice(shapes.indexOf(shape));
-
-            return this;
+        remove: function (shape) {
+            return plane.layers.active.shapes.remove(shape);
         }
     };
 
-}(draw));
+}(plane));
 
 
-//(function (draw) {
+//(function (plane) {
 //    "use strict";
 //
 //    /**
@@ -120,7 +114,7 @@ draw.shape = (function (draw) {
 //    shape.prototype = {
 //        initialize: function () {
 //
-//            return draw.context.shape.add(this);
+//            return plane.context.shape.add(this);
 //
 //            //            return this;
 //        },
@@ -135,6 +129,6 @@ draw.shape = (function (draw) {
 //        }
 //    }
 //
-//    draw.geometry.shape = shape;
+//    plane.geometry.shape = shape;
 //
-//}(draw));
+//}(plane));
