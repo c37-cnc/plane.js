@@ -1,11 +1,71 @@
 /*!
- * C37 in 07-05-2014 at 21:31:18 
+ * C37 in 08-05-2014 at 14:08:56 
  *
  * plane version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
  *
  * Copyright - C37 http://c37.co - 2014
  */
+/**
+ * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+ * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+ * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+ * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+ *
+ * @module plane
+ */
+//window.plane = (function (window) {
+//    "use strict";
+//
+//
+//
+//    return {
+//        /**
+//         * @for plane
+//         * @property version
+//         * @type String
+//         * @static
+//         **/
+//        version: '1.0.0',
+//        /**
+//         * @for plane
+//         * @property author
+//         * @type String
+//         * @static
+//         */
+//        author: 'lilo@c37.co',
+//        initialize: function (config) {
+//
+//            if ((config == null) || (typeof config == "function")) {
+//                throw new Error('Plane - Initialize - Config is not valid - See the documentation');
+//            }
+//
+//            plane.render.initialize(config, function () {
+//                plane.layers.initialize(config);
+//                plane.events.initialize(config);
+//            });
+//
+//
+//            return true;
+//
+//        },
+//        renderer: {},
+//        utility: {},
+//        onChange: function () {
+//
+//        },
+//        onResize: function () {
+//
+//        }
+//
+//
+//
+//    }
+//
+//}(window));
+
+
+
 (function (window) {
     "use strict";
 
@@ -44,27 +104,21 @@
      * @return {Object} instance of Projector
      */
     plane.initialize = function (config) {
-        if (typeof config == "function") {
-            throw new Error('Plane - Initialize - Config is not valid');
+        if ((config == null) || (typeof config == "function")) {
+            throw new Error('Plane - Initialize - Config is not valid - See the documentation');
         }
 
         plane.layers.initialize(config);
         plane.render.initialize(config);
+        plane.events.initialize(config);
 
-        // event
-
+        //        plane.render.initialize(config, function () {
+        //            plane.layers.initialize(config);
+        //            plane.events.initialize(config);
+        //        });
 
         return true;
-
     }
-
-    /**
-     * Descrição para o objeto Utility no arquivo plane.js
-     *
-     * @class Renderer
-     * @static
-     */
-    plane.renderer = {};
 
     /**
      * Descrição para o objeto Utility no arquivo plane.js
@@ -76,7 +130,7 @@
 
     window.plane = plane;
 
-}(window));
+})(window);
 
 
 
@@ -148,44 +202,36 @@
 //
 //plane.utility.math
 //plane.utility.event
-//(function (Draw) {
-//    "use strict";
-//
-//    /**
-//     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-//     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-//     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-//     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-//     *
-//     * @namespace Geometry
-//     * @class Group
-//     * @constructor
-//     */
-//    function Group(x, y) {
-//
-//        /**
-//         * A Universally unique identifier for
-//         * a single instance of Object
-//         *
-//         * @property uuid
-//         * @type String
-//         * @default 'uuid'
-//         */
-//        this.uuid = 'uuid';
-//        this.name = '';
-//
-//        this.visible = true;
-//
-//        this.children = [];
-//
-//    }
-//
-//    Draw.Geometry.Group = Group;
-//
-//}(Draw));
+plane.events = (function (window, render) {
+    "use strict";
+
+    var viewPort = null,
+        duru = render;
 
 
-plane.layers = (function (utility, renderer) {
+    return {
+        initialize: function (config, callback) {
+            if ((typeof config == "function") || (config == null) || (config.viewPort == null)) {
+                throw new Error('Events - Initialize - Config is not valid - See the documentation');
+            }
+
+
+            window.addEventListener('resize', function (event) {
+                console.log(event);
+                render.update();
+            });
+
+
+
+
+
+
+            return true;
+        }
+    }
+
+})(window, plane.render);
+plane.layers = (function (utility, render) {
     "use strict";
 
     var layersArray = [],
@@ -200,7 +246,7 @@ plane.layers = (function (utility, renderer) {
             locked = false,
             visible = true,
             shapes = [],
-            renderer = null;
+            render = null;
 
         this.getUuid = function () {
             return uuid;
@@ -252,8 +298,8 @@ plane.layers = (function (utility, renderer) {
             return this;
         }
 
-        this.setRenderer = function (newRenderer) {
-            return renderer = newRenderer;
+        this.setRender = function (newRender) {
+            return render = newRender;
         }
 
         this.shapes = {
@@ -269,8 +315,8 @@ plane.layers = (function (utility, renderer) {
                 return this;
             }
         }
-        this.renderer = function () {
-            return renderer;
+        this.render = function () {
+            return render;
         }
 
     }
@@ -289,7 +335,7 @@ plane.layers = (function (utility, renderer) {
     }
 
     return {
-        initialize: function (config) {
+        initialize: function (config, callback) {
             if ((typeof config == "function") || (config == null) || (config.viewPort == null)) {
                 throw new Error('Layer - Initialize - Config is not valid - See the documentation');
             }
@@ -299,8 +345,8 @@ plane.layers = (function (utility, renderer) {
 
             // tipos de render implementados
             var renderTypes = {
-                canvas: renderer.canvas,
-                svg: renderer.svg
+                canvas: render.canvas,
+                svg: render.svg
             };
 
             // render Type choice
@@ -322,7 +368,7 @@ plane.layers = (function (utility, renderer) {
                 layer.setName(layerName);
 
                 var render = renderType.create(viewPort);
-                layer.setRenderer(render.renderer);
+                layer.setRender(render.render);
 
                 // seleciono como ativa
                 this.active = layer;
@@ -368,38 +414,32 @@ plane.layers = (function (utility, renderer) {
             }
             return this;
         },
-        active: null
+        active: {}
     };
 
-}(plane.utility, plane.renderer));
+})(plane.utility, plane.render);
 plane.render = (function (layers) {
     "use strict";
-
-    function performanceCalculating() {
-        return 'canvas';
-    }
 
     return {
         initialize: function (config) {
 
+            //            return callback.call(this, true);
             return true;
         },
         update: function () {
             var shapes = layers.active.shapes.search(),
-                renderer = layers.active.renderer();
+                render = layers.active.render();
 
             console.log(shapes);
 
             if (shapes.length > 0) {
                 renderer.update(shapes);
             }
-        },
-        rendererType: function () {
-            return rendererType;
         }
     };
 
-}(plane.layers));
+})(plane.layers);
 /**
  * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
  * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -427,8 +467,9 @@ plane.shape = (function (layers) {
         }
     };
 
-}(plane.layers));
-plane.renderer.canvas = (function () {
+})(plane.layers);
+
+plane.render.canvas = (function () {
 
     var htmlElement = null,
         elementContext = null;
@@ -438,11 +479,6 @@ plane.renderer.canvas = (function () {
 
             htmlElement = document.createElement('canvas');
 
-            //htmlElement = viewPort;
-
-            //            htmlElement.width = 1100;
-            //            htmlElement.height = 800;
-
             htmlElement.width = viewPort.clientWidth;
             htmlElement.height = viewPort.clientHeight;
 
@@ -451,8 +487,6 @@ plane.renderer.canvas = (function () {
             }
 
             elementContext = htmlElement.getContext('2d');
-            //elementContext.globalAlpha = .1;
-            
 
             // Cartesian coordinate system
             elementContext.translate(0, htmlElement.height);
@@ -603,7 +637,7 @@ plane.renderer.canvas = (function () {
 
 
 
-}(plane));
+})(plane);
 (function (plane) {
     "use strict";
 
@@ -614,15 +648,15 @@ plane.renderer.canvas = (function () {
         } else if (!(this instanceof svg)) {
             return new svg(params);
         }
-        
+
         this.type = 'svg';
-        
+
     }
 
-    plane.renderer.svg = svg;
+    plane.render.svg = svg;
 
 
-}(plane));
+})(plane);
 /**
 In other terms, producers publish
 information on a software bus (an event
@@ -650,35 +684,43 @@ as a proxy for the subscribers.
 plane.utility.events = (function (plane) {
     "use strict";
 
-    var subscribers = [];
+    Object.prototype.addEventListener = function (type, fn) {
 
-    return {
+        if ((this[type]) && (this[type] instanceof Function)) {
+            var firstFn = this[type];
 
-        subscribe: function () {
+            this[type] = [];
+            this[type].push(firstFn);
+            this[type].push(fn);
 
-
-        },
-        
-//        notify: function(){
-//            
-//        },
-//        
-//        publish: function(){
-//            
-//        },
-//        
-//        advertise: function(){
-//            
-//        },
-
-        unsubscribe: function () {
-
-            
+            return this;
+        } else if ((this[type]) && (this[type] instanceof Array)) {
+            this[type].push(fn);
+        } else {
+            this[type] = fn;
         }
 
-    };
+        return this;
+    }
 
-}(plane));
+    Object.prototype.dispatchEvent = function (type, params) {
+
+        if ((this[type] == undefined) || (this[type] == null)) {
+            throw new Error('Event is not defined');
+        }
+
+        if (this[type] instanceof Function) {
+            this[type](params);
+        } else if (this[type] instanceof Array) {
+            for (var i = 0; i <= this[type].length - 1; i++) {
+                this[type][i].call(this, params);
+            }
+        }
+
+        return this;
+    }
+
+})(plane);
 (function (plane) {
     "use strict";
 
@@ -759,4 +801,4 @@ plane.utility.events = (function (plane) {
 
     }
 
-}(plane));
+})(plane);

@@ -1,3 +1,63 @@
+/**
+ * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+ * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+ * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+ * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+ *
+ * @module plane
+ */
+//window.plane = (function (window) {
+//    "use strict";
+//
+//
+//
+//    return {
+//        /**
+//         * @for plane
+//         * @property version
+//         * @type String
+//         * @static
+//         **/
+//        version: '1.0.0',
+//        /**
+//         * @for plane
+//         * @property author
+//         * @type String
+//         * @static
+//         */
+//        author: 'lilo@c37.co',
+//        initialize: function (config) {
+//
+//            if ((config == null) || (typeof config == "function")) {
+//                throw new Error('Plane - Initialize - Config is not valid - See the documentation');
+//            }
+//
+//            plane.render.initialize(config, function () {
+//                plane.layers.initialize(config);
+//                plane.events.initialize(config);
+//            });
+//
+//
+//            return true;
+//
+//        },
+//        renderer: {},
+//        utility: {},
+//        onChange: function () {
+//
+//        },
+//        onResize: function () {
+//
+//        }
+//
+//
+//
+//    }
+//
+//}(window));
+
+
+
 (function (window) {
     "use strict";
 
@@ -36,27 +96,21 @@
      * @return {Object} instance of Projector
      */
     plane.initialize = function (config) {
-        if (typeof config == "function") {
-            throw new Error('Plane - Initialize - Config is not valid');
+        if ((config == null) || (typeof config == "function")) {
+            throw new Error('Plane - Initialize - Config is not valid - See the documentation');
         }
 
         plane.layers.initialize(config);
         plane.render.initialize(config);
+        plane.events.initialize(config);
 
-        // event
-
+        //        plane.render.initialize(config, function () {
+        //            plane.layers.initialize(config);
+        //            plane.events.initialize(config);
+        //        });
 
         return true;
-
     }
-
-    /**
-     * Descrição para o objeto Utility no arquivo plane.js
-     *
-     * @class Renderer
-     * @static
-     */
-    plane.renderer = {};
 
     /**
      * Descrição para o objeto Utility no arquivo plane.js
@@ -68,7 +122,7 @@
 
     window.plane = plane;
 
-}(window));
+})(window);
 
 
 

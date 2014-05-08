@@ -1,4 +1,4 @@
-plane.renderer.canvas = (function () {
+plane.render.canvas = (function () {
 
     var htmlElement = null,
         elementContext = null;
@@ -8,11 +8,6 @@ plane.renderer.canvas = (function () {
 
             htmlElement = document.createElement('canvas');
 
-            //htmlElement = viewPort;
-
-            //            htmlElement.width = 1100;
-            //            htmlElement.height = 800;
-
             htmlElement.width = viewPort.clientWidth;
             htmlElement.height = viewPort.clientHeight;
 
@@ -21,8 +16,6 @@ plane.renderer.canvas = (function () {
             }
 
             elementContext = htmlElement.getContext('2d');
-            //elementContext.globalAlpha = .1;
-            
 
             // Cartesian coordinate system
             elementContext.translate(0, htmlElement.height);
@@ -173,4 +166,4 @@ plane.renderer.canvas = (function () {
 
 
 
-}(plane));
+})(plane);

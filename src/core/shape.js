@@ -25,4 +25,4 @@ plane.shape = (function (layers) {
         }
     };
 
-}(plane.layers));
+})(plane.layers);

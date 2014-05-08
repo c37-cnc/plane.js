@@ -1,4 +1,4 @@
-plane.layers = (function (utility, renderer) {
+plane.layers = (function (utility, render) {
     "use strict";
 
     var layersArray = [],
@@ -13,7 +13,7 @@ plane.layers = (function (utility, renderer) {
             locked = false,
             visible = true,
             shapes = [],
-            renderer = null;
+            render = null;
 
         this.getUuid = function () {
             return uuid;
@@ -65,8 +65,8 @@ plane.layers = (function (utility, renderer) {
             return this;
         }
 
-        this.setRenderer = function (newRenderer) {
-            return renderer = newRenderer;
+        this.setRender = function (newRender) {
+            return render = newRender;
         }
 
         this.shapes = {
@@ -82,8 +82,8 @@ plane.layers = (function (utility, renderer) {
                 return this;
             }
         }
-        this.renderer = function () {
-            return renderer;
+        this.render = function () {
+            return render;
         }
 
     }
@@ -102,7 +102,7 @@ plane.layers = (function (utility, renderer) {
     }
 
     return {
-        initialize: function (config) {
+        initialize: function (config, callback) {
             if ((typeof config == "function") || (config == null) || (config.viewPort == null)) {
                 throw new Error('Layer - Initialize - Config is not valid - See the documentation');
             }
@@ -112,8 +112,8 @@ plane.layers = (function (utility, renderer) {
 
             // tipos de render implementados
             var renderTypes = {
-                canvas: renderer.canvas,
-                svg: renderer.svg
+                canvas: render.canvas,
+                svg: render.svg
             };
 
             // render Type choice
@@ -135,7 +135,7 @@ plane.layers = (function (utility, renderer) {
                 layer.setName(layerName);
 
                 var render = renderType.create(viewPort);
-                layer.setRenderer(render.renderer);
+                layer.setRender(render.render);
 
                 // seleciono como ativa
                 this.active = layer;
@@ -181,7 +181,7 @@ plane.layers = (function (utility, renderer) {
             }
             return this;
         },
-        active: null
+        active: {}
     };
 
-}(plane.utility, plane.renderer));
+})(plane.utility, plane.render);
