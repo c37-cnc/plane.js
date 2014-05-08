@@ -1,28 +1,34 @@
-plane.layers = (function (plane) {
+plane.layers = (function (utility, renderer) {
     "use strict";
 
-    var layers = [];
+    var layersArray = [],
+        renderType = null,
+        viewPort = null;
 
-    function Layer(config) {
+    function Layer() {
 
-        var uuid = plane.utility.math.uuid(9, 16),
+        var uuid = utility.math.uuid(9, 16),
             name = '',
             style = {},
             locked = false,
             visible = true,
-            shapes = [];
+            shapes = [],
+            renderer = null;
 
         this.getUuid = function () {
             return uuid;
         }
 
+        this.getName = function () {
+            return name;
+        }
         this.setName = function (newName) {
             if ((newName == null) || (newName == undefined) || (newName == '')) {
                 throw new Error('New name is not defined');
             }
 
-            for (var i = 0; i <= layers.length - 1; i++) {
-                if (layers[i].getName().toLowerCase() == newName.toLowerCase()) {
+            for (var i = 0; i <= layersArray.length - 1; i++) {
+                if (layersArray[i].getName().toLowerCase() == newName.toLowerCase()) {
                     throw new Error('This name ' + newName + ' already exists in Layers')
                 }
             }
@@ -31,8 +37,19 @@ plane.layers = (function (plane) {
 
             return this;
         }
-        this.getName = function () {
-            return name;
+
+        this.getLocked = function () {
+            return locked;
+        }
+        this.setLocked = function (newLocked) {
+            return locked = newLocked;
+        }
+
+        this.getVisible = function () {
+            return visible;
+        }
+        this.setVisible = function (newVisible) {
+            return visible = newVisible;
         }
 
         this.getStyle = function () {
@@ -48,6 +65,10 @@ plane.layers = (function (plane) {
             return this;
         }
 
+        this.setRenderer = function (newRenderer) {
+            return renderer = newRenderer;
+        }
+
         this.shapes = {
             add: function (shape) {
                 shapes.push(shape);
@@ -57,112 +78,110 @@ plane.layers = (function (plane) {
                 return shapes;
             },
             remove: function (shape) {
-                shapes.slice(shapes.indexOf(shape));                return this;
+                shapes.slice(shapes.indexOf(shape));
+                return this;
             }
         }
+        this.renderer = function () {
+            return renderer;
+        }
 
-        this.initialize(config);
     }
 
     Layer.prototype = {
-        initialize: function (config) {
-
-            this.setName(config.name);
-
-            return this;
-        },
         toString: function () {
             return '[ Layer' +
                 ' uuid:' + this.getUuid() +
                 ', name:' + this.getName() +
                 ', active:' + this.getActive() +
                 ']';
+        },
+        toJson: function () {
+
         }
     }
 
-
     return {
         initialize: function (config) {
-            // validações em config aqui
-            if (typeof config == "function") {
-                throw new Error('Layer - Initialize - Config is not valid');
+            if ((typeof config == "function") || (config == null) || (config.viewPort == null)) {
+                throw new Error('Layer - Initialize - Config is not valid - See the documentation');
             }
 
-            var config = {
-                name: config ? config.name || 'New Layer ' + layers.length : 'New Layer ' + layers.length,
-                active: config ? config.active || true : true
-            }
-            // validações em config aqui
+            renderType = config.rendererType || 'canvas';
+            viewPort = config.viewPort;
 
+            // tipos de render implementados
+            var renderTypes = {
+                canvas: renderer.canvas,
+                svg: renderer.svg
+            };
 
-            // crio a nova Layer com um config verificado
-            var layer = new Layer(config);
+            // render Type choice
+            renderType = renderTypes[renderType];
 
-            // seleciono como ativa
-            plane.layers.active = layer;
+            console.log('layer - initialize');
 
-
-
-            // add ao index
-            layers.push(layer)
-
-            return this;
+            return true;
         },
-        create: function (config) {
-            // validações em config aqui
-            if (typeof config == "function") {
-                throw new Error('Layer - Create - Config is not valid');
+        create: function (layerName) {
+            try {
+                if ((layerName) && (typeof layerName != 'string')) {
+                    throw new Error('Layer - Create - Layer Name is not valid - See the documentation');
+                }
+
+                layerName = layerName || 'New Layer ' + layersArray.length;
+
+                var layer = new Layer();
+                layer.setName(layerName);
+
+                var render = renderType.create(viewPort);
+                layer.setRenderer(render.renderer);
+
+                // seleciono como ativa
+                this.active = layer;
+
+                // add ao Array
+                layersArray.push(layer)
+
+                console.log('layer - create');
+
+                return render.viewer;
+            } catch (error) {
+                layer = null;
+                throw error;
             }
-
-            var config = {
-                name: config ? config.name || 'New Layer ' + layers.length : 'New Layer ' + layers.length
-            }
-            // validações em config aqui
-
-
-            // crio a nova Layer com um config verificado
-            var layer = new Layer(config);
-
-
-            // seleciono como ativa
-            plane.layers.active = layer;
-
-
-            // add ao index
-            layers.push(layer)
-
-            return this;
         },
         remove: function (layerName) {
-            for (var i = 0; i <= layers.length - 1; i++) {
-                if (layers[i].getName() == layerName) {
-                    return delete layers[i];
+            for (var i = 0; i <= layersArray.length - 1; i++) {
+                if (layersArray[i].getName() == layerName) {
+                    return delete layersArray[i];
                 }
             }
             return false;
         },
         list: function (callback) {
-
-            var listLayer = [];
-
-            layers.forEach(function (layer) {
-                listLayer.push({
-                    uuid: layer.getUuid(),
-                    name: layer.getName()
+            var layersList = [];
+            for (var i = 0; i <= layersArray.length - 1; i++) {
+                layersList.push({
+                    uuid: layersArray[i].getUuid(),
+                    name: layersArray[i].getName(),
+                    active: (layersArray[i] == this.active),
+                    locked: layersArray[i].getLocked(),
+                    visible: layersArray[i].getVisible()
                 })
-            })
-            
-            return typeof callback  == 'function' ? callback.call(this, listLayer) : listLayer;
+            }
+            console.log('layer - list');
+            return typeof callback == 'function' ? callback.call(this, layersList) : layersList;
         },
         select: function (layerName) {
-            layers.forEach(function (layer) {
-                if (layer.getName() == layerName) {
-                    plane.layers.active = layer;
+            for (var i = 0; i <= layersArray.length - 1; i++) {
+                if (layersArray[i].getName().toUpperCase() == layerName.toUpperCase()) {
+                    this.active = layersArray[i];
                 }
-            })
+            }
             return this;
         },
         active: null
     };
 
-}(plane));
+}(plane.utility, plane.renderer));

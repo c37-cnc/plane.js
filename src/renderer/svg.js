@@ -13,7 +13,7 @@
         
     }
 
-    plane.render.svg = svg;
+    plane.renderer.svg = svg;
 
 
 }(plane));

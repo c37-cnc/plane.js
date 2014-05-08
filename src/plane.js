@@ -36,39 +36,27 @@
      * @return {Object} instance of Projector
      */
     plane.initialize = function (config) {
- 
-        // validações para config 
-
-        // validações para config 
+        if (typeof config == "function") {
+            throw new Error('Plane - Initialize - Config is not valid');
+        }
 
         plane.layers.initialize(config);
-        plane.render.initialize(config)
- 
+        plane.render.initialize(config);
 
-        //        console.log(plane.layers.getActive().toString());
-        //        plane.layers.create();
-        //        console.log(plane.layers.getActive().toString());
-        //        plane.layers.create();
-        //        console.log(plane.layers.getActive().toString());
-
-        console.log(plane.layers.list());
-
-        //        plane.event.initialize(config);
-        //        plane.render.initialize(config);
-
-
-
-
-        // configuration//
-        // layer
         // event
-        // render
-        // renderer
 
 
-        return plane.render.initialize(config);
+        return true;
 
     }
+
+    /**
+     * Descrição para o objeto Utility no arquivo plane.js
+     *
+     * @class Renderer
+     * @static
+     */
+    plane.renderer = {};
 
     /**
      * Descrição para o objeto Utility no arquivo plane.js

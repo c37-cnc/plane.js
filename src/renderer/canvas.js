@@ -1,33 +1,37 @@
-plane.render.canvas = (function () {
+plane.renderer.canvas = (function () {
 
     var htmlElement = null,
         elementContext = null;
 
     return {
-        create: function (config) {
+        create: function (viewPort) {
 
             htmlElement = document.createElement('canvas');
 
-            htmlElement = config.renderer;
+            //htmlElement = viewPort;
 
-            htmlElement.width = config.renderer.clientWidth;
-            htmlElement.height = config.renderer.clientHeight;
+            //            htmlElement.width = 1100;
+            //            htmlElement.height = 800;
+
+            htmlElement.width = viewPort.clientWidth;
+            htmlElement.height = viewPort.clientHeight;
 
             if (!htmlElement.getContext) {
                 throw new Error('no canvas suport');
             }
 
             elementContext = htmlElement.getContext('2d');
+            //elementContext.globalAlpha = .1;
+            
 
             // Cartesian coordinate system
             elementContext.translate(0, htmlElement.height);
             elementContext.scale(1, -1);
-
-
-
-
-
-
+            
+            
+            htmlElement.style.position = "absolute";
+            
+            viewPort.appendChild(htmlElement);
 
 
             function getMousePos(canvas, event) {
@@ -72,13 +76,16 @@ plane.render.canvas = (function () {
 
             };
 
-            htmlElement.oncontextmenu = function (event) {
-                console.log(event);
+//            htmlElement.oncontextmenu = function (event) {
+//                console.log(event);
+//
+//                return false;
+//            }
 
-                return false;
-            }
-
-            return htmlElement;
+            return {
+                viewer: htmlElement,
+                renderer: this
+            };
 
         },
         update: function (shapes) {

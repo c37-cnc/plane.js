@@ -1,5 +1,7 @@
 function drawGrid(width, height) {
 
+    plane.layers.create();
+
     for (xActual = 0; xActual < width; xActual += 50) {
         plane.shape.create({
             type: 'line',
@@ -60,5 +62,7 @@ function drawGrid(width, height) {
 
         }
     }
+
     plane.render.update();
+
 };

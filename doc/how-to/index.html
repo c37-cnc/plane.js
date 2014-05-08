@@ -56,30 +56,26 @@
         }
         /* application structure */
         /* application components */
-        canvas[id="ruller-y"] {
+        canvas[id="rullerY"] {
             position: absolute;
             height: 100%;
             width: 15px;
             background-color: rgb(204, 139, 139);
         }
-        canvas[id="ruller-x"] {
+        canvas[id="rullerX"] {
             position: absolute;
             bottom: 0px;
             height: 15px;
             width: 100%;
             background-color: rgb(204, 139, 139);
         }
-        div[id="view-port"] {
+        div[id="viewPort"] {
             position: absolute;
             top: 0px;
             left: 15px;
             right: 0px;
             bottom: 15px;
-            background-color: white;
-        }
-        div[id="view-port"] > canvas[id="view-box"] {
-            height: 100%;
-            width: 100%;
+            background-color: rgb(255, 255, 255);
         }
         /* application components */
     </style>
@@ -88,24 +84,20 @@
     <script src="editor.js"></script>
 
     <script>
-        window.onload = function() {
+        window.onload = function () {
 
             // plane - initialize
-            var renderer = document.getElementById("view-box");
+            var viewPort = document.getElementById("viewPort");
 
             plane.initialize({
                 renderType: 'canvas',
-                renderer: renderer,
-                updateType: 'automatic'
+                viewPort: viewPort
             });
             // plane - initialize
 
-
-            drawGrid(renderer.width, renderer.height);
-
+            drawGrid(viewPort.clientWidth, viewPort.clientHeight);
 
             plane.layers.create();
-
             plane.shape
                 .create({
                     type: 'polygon',
@@ -144,17 +136,16 @@
                     radius: 70,
                     sides: 5
                 });
-
             plane.render.update();
 
 
             var layersControl = document.getElementById('layersControl');
-            
-            
-            plane.layers.select('New Layer 0');
-            
 
-            plane.layers.list().forEach(function(layer) {
+            console.log(plane.layers.list());
+            plane.layers.select('New Layer 0');
+            console.log(plane.layers.list());
+            
+            plane.layers.list().forEach(function (layer) {
                 var layerItem = document.createElement('li');
                 layerItem.innerHTML = '<a href="#">' + layer.name + '</a>'
                 layersControl.appendChild(layerItem);
@@ -174,9 +165,8 @@
     </aside>
 
     <section>
-        <canvas id="ruller-x"></canvas>
-        <div id="view-port">
-            <canvas id="view-box"></canvas>
+        <canvas id="rullerX"></canvas>
+        <div id="viewPort">
             <!--
             <ul>
                 <li></li>
@@ -185,7 +175,7 @@
             </ul>
             -->
         </div>
-        <canvas id="ruller-y"></canvas>
+        <canvas id="rullerY"></canvas>
     </section>
 
     <aside id="right">

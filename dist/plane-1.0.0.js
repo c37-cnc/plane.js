@@ -1,5 +1,5 @@
 /*!
- * C37 in 27-04-2014 at 16:00:48 
+ * C37 in 07-05-2014 at 21:31:18 
  *
  * plane version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -44,39 +44,27 @@
      * @return {Object} instance of Projector
      */
     plane.initialize = function (config) {
- 
-        // validações para config 
-
-        // validações para config 
+        if (typeof config == "function") {
+            throw new Error('Plane - Initialize - Config is not valid');
+        }
 
         plane.layers.initialize(config);
-        plane.render.initialize(config)
- 
+        plane.render.initialize(config);
 
-        //        console.log(plane.layers.getActive().toString());
-        //        plane.layers.create();
-        //        console.log(plane.layers.getActive().toString());
-        //        plane.layers.create();
-        //        console.log(plane.layers.getActive().toString());
-
-        console.log(plane.layers.list());
-
-        //        plane.event.initialize(config);
-        //        plane.render.initialize(config);
-
-
-
-
-        // configuration//
-        // layer
         // event
-        // render
-        // renderer
 
 
-        return plane.render.initialize(config);
+        return true;
 
     }
+
+    /**
+     * Descrição para o objeto Utility no arquivo plane.js
+     *
+     * @class Renderer
+     * @static
+     */
+    plane.renderer = {};
 
     /**
      * Descrição para o objeto Utility no arquivo plane.js
@@ -197,31 +185,37 @@
 //}(Draw));
 
 
-plane.layers = (function (plane) {
+plane.layers = (function (utility, renderer) {
     "use strict";
 
-    var layers = [];
+    var layersArray = [],
+        renderType = null,
+        viewPort = null;
 
-    function Layer(config) {
+    function Layer() {
 
-        var uuid = plane.utility.math.uuid(9, 16),
+        var uuid = utility.math.uuid(9, 16),
             name = '',
             style = {},
             locked = false,
             visible = true,
-            shapes = [];
+            shapes = [],
+            renderer = null;
 
         this.getUuid = function () {
             return uuid;
         }
 
+        this.getName = function () {
+            return name;
+        }
         this.setName = function (newName) {
             if ((newName == null) || (newName == undefined) || (newName == '')) {
                 throw new Error('New name is not defined');
             }
 
-            for (var i = 0; i <= layers.length - 1; i++) {
-                if (layers[i].getName().toLowerCase() == newName.toLowerCase()) {
+            for (var i = 0; i <= layersArray.length - 1; i++) {
+                if (layersArray[i].getName().toLowerCase() == newName.toLowerCase()) {
                     throw new Error('This name ' + newName + ' already exists in Layers')
                 }
             }
@@ -230,8 +224,19 @@ plane.layers = (function (plane) {
 
             return this;
         }
-        this.getName = function () {
-            return name;
+
+        this.getLocked = function () {
+            return locked;
+        }
+        this.setLocked = function (newLocked) {
+            return locked = newLocked;
+        }
+
+        this.getVisible = function () {
+            return visible;
+        }
+        this.setVisible = function (newVisible) {
+            return visible = newVisible;
         }
 
         this.getStyle = function () {
@@ -247,6 +252,10 @@ plane.layers = (function (plane) {
             return this;
         }
 
+        this.setRenderer = function (newRenderer) {
+            return renderer = newRenderer;
+        }
+
         this.shapes = {
             add: function (shape) {
                 shapes.push(shape);
@@ -256,169 +265,141 @@ plane.layers = (function (plane) {
                 return shapes;
             },
             remove: function (shape) {
-                shapes.slice(shapes.indexOf(shape));                return this;
+                shapes.slice(shapes.indexOf(shape));
+                return this;
             }
         }
+        this.renderer = function () {
+            return renderer;
+        }
 
-        this.initialize(config);
     }
 
     Layer.prototype = {
-        initialize: function (config) {
-
-            this.setName(config.name);
-
-            return this;
-        },
         toString: function () {
             return '[ Layer' +
                 ' uuid:' + this.getUuid() +
                 ', name:' + this.getName() +
                 ', active:' + this.getActive() +
                 ']';
+        },
+        toJson: function () {
+
         }
     }
 
-
     return {
         initialize: function (config) {
-            // validações em config aqui
-            if (typeof config == "function") {
-                throw new Error('Layer - Initialize - Config is not valid');
+            if ((typeof config == "function") || (config == null) || (config.viewPort == null)) {
+                throw new Error('Layer - Initialize - Config is not valid - See the documentation');
             }
 
-            var config = {
-                name: config ? config.name || 'New Layer ' + layers.length : 'New Layer ' + layers.length,
-                active: config ? config.active || true : true
-            }
-            // validações em config aqui
+            renderType = config.rendererType || 'canvas';
+            viewPort = config.viewPort;
 
+            // tipos de render implementados
+            var renderTypes = {
+                canvas: renderer.canvas,
+                svg: renderer.svg
+            };
 
-            // crio a nova Layer com um config verificado
-            var layer = new Layer(config);
+            // render Type choice
+            renderType = renderTypes[renderType];
 
-            // seleciono como ativa
-            plane.layers.active = layer;
+            console.log('layer - initialize');
 
-
-
-            // add ao index
-            layers.push(layer)
-
-            return this;
+            return true;
         },
-        create: function (config) {
-            // validações em config aqui
-            if (typeof config == "function") {
-                throw new Error('Layer - Create - Config is not valid');
+        create: function (layerName) {
+            try {
+                if ((layerName) && (typeof layerName != 'string')) {
+                    throw new Error('Layer - Create - Layer Name is not valid - See the documentation');
+                }
+
+                layerName = layerName || 'New Layer ' + layersArray.length;
+
+                var layer = new Layer();
+                layer.setName(layerName);
+
+                var render = renderType.create(viewPort);
+                layer.setRenderer(render.renderer);
+
+                // seleciono como ativa
+                this.active = layer;
+
+                // add ao Array
+                layersArray.push(layer)
+
+                console.log('layer - create');
+
+                return render.viewer;
+            } catch (error) {
+                layer = null;
+                throw error;
             }
-
-            var config = {
-                name: config ? config.name || 'New Layer ' + layers.length : 'New Layer ' + layers.length
-            }
-            // validações em config aqui
-
-
-            // crio a nova Layer com um config verificado
-            var layer = new Layer(config);
-
-
-            // seleciono como ativa
-            plane.layers.active = layer;
-
-
-            // add ao index
-            layers.push(layer)
-
-            return this;
         },
         remove: function (layerName) {
-            for (var i = 0; i <= layers.length - 1; i++) {
-                if (layers[i].getName() == layerName) {
-                    return delete layers[i];
+            for (var i = 0; i <= layersArray.length - 1; i++) {
+                if (layersArray[i].getName() == layerName) {
+                    return delete layersArray[i];
                 }
             }
             return false;
         },
         list: function (callback) {
-
-            var listLayer = [];
-
-            layers.forEach(function (layer) {
-                listLayer.push({
-                    uuid: layer.getUuid(),
-                    name: layer.getName()
+            var layersList = [];
+            for (var i = 0; i <= layersArray.length - 1; i++) {
+                layersList.push({
+                    uuid: layersArray[i].getUuid(),
+                    name: layersArray[i].getName(),
+                    active: (layersArray[i] == this.active),
+                    locked: layersArray[i].getLocked(),
+                    visible: layersArray[i].getVisible()
                 })
-            })
-            
-            return typeof callback  == 'function' ? callback.call(this, listLayer) : listLayer;
+            }
+            console.log('layer - list');
+            return typeof callback == 'function' ? callback.call(this, layersList) : layersList;
         },
         select: function (layerName) {
-            layers.forEach(function (layer) {
-                if (layer.getName() == layerName) {
-                    plane.layers.active = layer;
+            for (var i = 0; i <= layersArray.length - 1; i++) {
+                if (layersArray[i].getName().toUpperCase() == layerName.toUpperCase()) {
+                    this.active = layersArray[i];
                 }
-            })
+            }
             return this;
         },
         active: null
     };
 
-}(plane));
-plane.render = (function (plane) {
+}(plane.utility, plane.renderer));
+plane.render = (function (layers) {
     "use strict";
 
-
-    var renderType = null,
-        renders = [];
-
     function performanceCalculating() {
-
         return 'canvas';
     }
 
-
     return {
         initialize: function (config) {
-            // validações em config aqui
-            if (typeof config == "function") {
-                throw new Error('Render - Initialize - Config is not valid');
-            }
 
-            var config = {
-                renderType: config ? config.renderType || performanceCalculating() : performanceCalculating(),
-                renderer: config ? config.renderer || null : null
-            }
-            // validações em config aqui
-
-            
-            // tipos de render implementados
-            var renderTypes = {
-                canvas: plane.render.canvas,
-                svg: plane.render.svg
-            };
-            // tipos de render implementados
-            
-            
-            // render Type choice
-            renderType = renderTypes[config.renderType];
-            
-            // add ao index
-            renders.push(renderType.create(config))
-
-            return this;
+            return true;
         },
         update: function () {
+            var shapes = layers.active.shapes.search(),
+                renderer = layers.active.renderer();
 
-            var shapes = plane.layers.active.shapes.search();
+            console.log(shapes);
 
             if (shapes.length > 0) {
-                renderType.update(shapes);
+                renderer.update(shapes);
             }
+        },
+        rendererType: function () {
+            return rendererType;
         }
     };
 
-}(plane));
+}(plane.layers));
 /**
  * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
  * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -428,161 +409,59 @@ plane.render = (function (plane) {
  * @class Shape
  * @static
  */
-plane.shape = (function (plane) {
+plane.shape = (function (layers) {
     "use strict";
 
     return {
         create: function (params) {
-            
-            plane.layers.active.shapes.add(params);
-
+            layers.active.shapes.add(params);
             return this;
         },
 
         search: function (selector) {
-            return plane.layers.active.shapes.search();
+            return layers.active.shapes.search();
         },
 
         remove: function (shape) {
-            return plane.layers.active.shapes.remove(shape);
+            return layers.active.shapes.remove(shape);
         }
     };
 
-}(plane));
-
-
-//(function (plane) {
-//    "use strict";
-//
-//    /**
-//     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-//     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-//     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-//     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-//     *
-//     * @namespace Geometry
-//     * @class Shape
-//     * @constructor
-//     */
-//    function shape(attrs) {
-//
-//
-//        if (arguments.length == 0) {
-//            return 'no arguments';
-//        }
-//
-//
-//        if (!(this instanceof shape)) {
-//            return new shape(attrs);
-//        }
-//
-//        for (var name in attrs) {
-//            this[name] = attrs[name];
-//        }
-//        
-//        /**
-//         * A Universally unique identifier for
-//         * a single instance of Shape
-//         *
-//         * @property uuid
-//         * @type String
-//         * @default 'uuid'
-//         */
-//        this.uuid = 'uuid';
-//
-//        /**
-//         * Template for this view's container...
-//         *
-//         * @property name
-//         * @type String
-//         * @default ''
-//         */
-//        this.name = '';
-
-//        this.uuid = 'uuid';
-//        this.name = '';
-//
-//        this.visible = true;
-//        this.data = {};
-//
-//        this.children = [];
-
-
-//
-//
-////        this.from = this.from ? this.from : null;
-////
-////        this.to = this.to ? this.to : null;
-//
-//
-//
-//        this.visible = true;
-//        this.data = {};
-//
-//        this.x = this.x || 0;
-//        this.y = this.y || 0;
-//        
-//        this.radius = this.radius || 0;
-//        
-//        this.scale = 'Math.Vector';
-//        this.angle = 'Math.Euler';
-//
-//
-//        //this.initialize();
-//
-//    }
-//
-//    shape.prototype = {
-//        initialize: function () {
-//
-//            return plane.context.shape.add(this);
-//
-//            //            return this;
-//        },
-//        moveTo: function () {
-//            return true;
-//        },
-//        delete: function () {
-//            return true;
-//        },
-//        toString: function () {
-//            return "[" + this.constructor.name + " x : " + this.x + ", y : " + this.y + ", position : " + getPosition() + "]";
-//        }
-//    }
-//
-//    plane.geometry.shape = shape;
-//
-//}(plane));
-plane.render.canvas = (function () {
+}(plane.layers));
+plane.renderer.canvas = (function () {
 
     var htmlElement = null,
         elementContext = null;
 
     return {
-        create: function (config) {
+        create: function (viewPort) {
 
             htmlElement = document.createElement('canvas');
 
-            htmlElement = config.renderer;
+            //htmlElement = viewPort;
 
-            htmlElement.width = config.renderer.clientWidth;
-            htmlElement.height = config.renderer.clientHeight;
+            //            htmlElement.width = 1100;
+            //            htmlElement.height = 800;
+
+            htmlElement.width = viewPort.clientWidth;
+            htmlElement.height = viewPort.clientHeight;
 
             if (!htmlElement.getContext) {
                 throw new Error('no canvas suport');
             }
 
             elementContext = htmlElement.getContext('2d');
+            //elementContext.globalAlpha = .1;
+            
 
             // Cartesian coordinate system
             elementContext.translate(0, htmlElement.height);
             elementContext.scale(1, -1);
-
-
-
-
-
-
+            
+            
+            htmlElement.style.position = "absolute";
+            
+            viewPort.appendChild(htmlElement);
 
 
             function getMousePos(canvas, event) {
@@ -627,13 +506,16 @@ plane.render.canvas = (function () {
 
             };
 
-            htmlElement.oncontextmenu = function (event) {
-                console.log(event);
+//            htmlElement.oncontextmenu = function (event) {
+//                console.log(event);
+//
+//                return false;
+//            }
 
-                return false;
-            }
-
-            return htmlElement;
+            return {
+                viewer: htmlElement,
+                renderer: this
+            };
 
         },
         update: function (shapes) {
@@ -737,7 +619,7 @@ plane.render.canvas = (function () {
         
     }
 
-    plane.render.svg = svg;
+    plane.renderer.svg = svg;
 
 
 }(plane));
@@ -777,13 +659,17 @@ plane.utility.events = (function (plane) {
 
         },
         
-        publish: function(){
-            
-        },
-        
-        advertise: function(){
-            
-        },
+//        notify: function(){
+//            
+//        },
+//        
+//        publish: function(){
+//            
+//        },
+//        
+//        advertise: function(){
+//            
+//        },
 
         unsubscribe: function () {
 
