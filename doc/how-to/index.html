@@ -142,8 +142,6 @@
             var layersControl = document.getElementById('layersControl');
 
             console.log(plane.layers.list());
-            plane.layers.select('New Layer 0');
-            console.log(plane.layers.list());
             
             plane.layers.list().forEach(function (layer) {
                 var layerItem = document.createElement('li');

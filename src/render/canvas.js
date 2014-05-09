@@ -77,7 +77,7 @@ plane.render.canvas = (function () {
 
             return {
                 viewer: htmlElement,
-                renderer: this
+                render: this
             };
 
         },

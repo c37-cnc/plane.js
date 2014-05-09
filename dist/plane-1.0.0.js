@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-05-2014 at 14:08:56 
+ * C37 in 08-05-2014 at 22:11:54 
  *
  * plane version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -119,7 +119,7 @@
 
         return true;
     }
-
+    
     /**
      * Descrição para o objeto Utility no arquivo plane.js
      *
@@ -202,11 +202,10 @@
 //
 //plane.utility.math
 //plane.utility.event
-plane.events = (function (window, render) {
+plane.events = (function (window, plane) {
     "use strict";
 
-    var viewPort = null,
-        duru = render;
+    var viewPort = null;
 
 
     return {
@@ -218,7 +217,7 @@ plane.events = (function (window, render) {
 
             window.addEventListener('resize', function (event) {
                 console.log(event);
-                render.update();
+                plane.render.update();
             });
 
 
@@ -230,8 +229,8 @@ plane.events = (function (window, render) {
         }
     }
 
-})(window, plane.render);
-plane.layers = (function (utility, render) {
+})(window, plane);
+plane.layers = (function (plane) {
     "use strict";
 
     var layersArray = [],
@@ -240,7 +239,7 @@ plane.layers = (function (utility, render) {
 
     function Layer() {
 
-        var uuid = utility.math.uuid(9, 16),
+        var uuid = plane.utility.math.uuid(9, 16),
             name = '',
             style = {},
             locked = false,
@@ -298,6 +297,9 @@ plane.layers = (function (utility, render) {
             return this;
         }
 
+        this.getRender = function () {
+            return render;
+        }
         this.setRender = function (newRender) {
             return render = newRender;
         }
@@ -315,10 +317,6 @@ plane.layers = (function (utility, render) {
                 return this;
             }
         }
-        this.render = function () {
-            return render;
-        }
-
     }
 
     Layer.prototype = {
@@ -345,8 +343,8 @@ plane.layers = (function (utility, render) {
 
             // tipos de render implementados
             var renderTypes = {
-                canvas: render.canvas,
-                svg: render.svg
+                canvas: plane.render.canvas,
+                svg: plane.render.svg
             };
 
             // render Type choice
@@ -417,8 +415,8 @@ plane.layers = (function (utility, render) {
         active: {}
     };
 
-})(plane.utility, plane.render);
-plane.render = (function (layers) {
+})(plane);
+plane.render = (function (plane) {
     "use strict";
 
     return {
@@ -428,18 +426,18 @@ plane.render = (function (layers) {
             return true;
         },
         update: function () {
-            var shapes = layers.active.shapes.search(),
-                render = layers.active.render();
+            var shapes = plane.layers.active.shapes.search(),
+                render = plane.layers.active.getRender();
 
             console.log(shapes);
 
             if (shapes.length > 0) {
-                renderer.update(shapes);
+                render.update(shapes);
             }
         }
     };
 
-})(plane.layers);
+})(plane);
 /**
  * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
  * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -548,7 +546,7 @@ plane.render.canvas = (function () {
 
             return {
                 viewer: htmlElement,
-                renderer: this
+                render: this
             };
 
         },

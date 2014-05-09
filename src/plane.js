@@ -111,7 +111,7 @@
 
         return true;
     }
-
+    
     /**
      * Descrição para o objeto Utility no arquivo plane.js
      *

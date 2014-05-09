@@ -1,4 +1,4 @@
-plane.render = (function (layers) {
+plane.render = (function (plane) {
     "use strict";
 
     return {
@@ -8,15 +8,15 @@ plane.render = (function (layers) {
             return true;
         },
         update: function () {
-            var shapes = layers.active.shapes.search(),
-                render = layers.active.render();
+            var shapes = plane.layers.active.shapes.search(),
+                render = plane.layers.active.getRender();
 
             console.log(shapes);
 
             if (shapes.length > 0) {
-                renderer.update(shapes);
+                render.update(shapes);
             }
         }
     };
 
-})(plane.layers);
+})(plane);

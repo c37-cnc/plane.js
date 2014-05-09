@@ -1,4 +1,4 @@
-plane.layers = (function (utility, render) {
+plane.layers = (function (plane) {
     "use strict";
 
     var layersArray = [],
@@ -7,7 +7,7 @@ plane.layers = (function (utility, render) {
 
     function Layer() {
 
-        var uuid = utility.math.uuid(9, 16),
+        var uuid = plane.utility.math.uuid(9, 16),
             name = '',
             style = {},
             locked = false,
@@ -65,6 +65,9 @@ plane.layers = (function (utility, render) {
             return this;
         }
 
+        this.getRender = function () {
+            return render;
+        }
         this.setRender = function (newRender) {
             return render = newRender;
         }
@@ -82,10 +85,6 @@ plane.layers = (function (utility, render) {
                 return this;
             }
         }
-        this.render = function () {
-            return render;
-        }
-
     }
 
     Layer.prototype = {
@@ -112,8 +111,8 @@ plane.layers = (function (utility, render) {
 
             // tipos de render implementados
             var renderTypes = {
-                canvas: render.canvas,
-                svg: render.svg
+                canvas: plane.render.canvas,
+                svg: plane.render.svg
             };
 
             // render Type choice
@@ -184,4 +183,4 @@ plane.layers = (function (utility, render) {
         active: {}
     };
 
-})(plane.utility, plane.render);
+})(plane);

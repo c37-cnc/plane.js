@@ -1,8 +1,7 @@
-plane.events = (function (window, render) {
+plane.events = (function (window, plane) {
     "use strict";
 
-    var viewPort = null,
-        duru = render;
+    var viewPort = null;
 
 
     return {
@@ -14,7 +13,7 @@ plane.events = (function (window, render) {
 
             window.addEventListener('resize', function (event) {
                 console.log(event);
-                render.update();
+                plane.render.update();
             });
 
 
@@ -26,4 +25,4 @@ plane.events = (function (window, render) {
         }
     }
 
-})(window, plane.render);
+})(window, plane);
