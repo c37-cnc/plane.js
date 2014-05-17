@@ -12,29 +12,36 @@ plane.events = (function (window, plane) {
 
             var viewPort = config.viewPort;
 
-            plane.__proto__ = new plane.utility.event();
+            //plane.__proto__ = new plane.utility.event();
 
 
             window.addEventListener('resize', function (event) {
 
+                var size = {
+                    width: viewPort.clientWidth,
+                    height: viewPort.clientHeight
+                };
 
-                var layerActive = plane.layers.active;
-
-                plane.layers.list().forEach(function (layer) {
-
-                    plane.layers.select(layer.name);
-                    
-                    plane.layers.active.viewer.width = viewPort.clientWidth;
-                    plane.layers.active.viewer.height = viewPort.clientHeight;
-                    
-                    plane.render.update();
-
-                });
-
-                plane.layers.select(layerActive.name);
+                //plane.dispatchEvent('onresize', size);
 
 
-                
+//                var layerActive = plane.layers.active;
+//
+//                plane.layers.list().forEach(function (layer) {
+//
+//                    plane.layers.select(layer.name);
+//
+//                    plane.layers.active.viewer.width = size.width;
+//                    plane.layers.active.viewer.height = size.height;
+//
+//                    plane.render.update();
+//
+//                });
+//
+//                plane.layers.select(layerActive.name);
+
+
+
 
             });
 

@@ -75,8 +75,15 @@
             left: 15px;
             right: 0px;
             bottom: 15px;
+            background-color: rgb(68, 68, 68);
+        }
+        
+/*
+        div[id="viewPort"] > canvas {
             background-color: rgb(255, 255, 255);
         }
+*/
+        
         /* application components */
     </style>
 
@@ -137,10 +144,7 @@
                 });
             plane.render.update();
 
-
             var layersControl = document.getElementById('layersControl');
-
-            console.log(plane.layers.list());
 
             plane.layers.list().forEach(function (layer) {
                 var layerItem = document.createElement('li');

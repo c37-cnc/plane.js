@@ -17,9 +17,9 @@ function drawGrid(width, height) {
 
             // como é somado + 10 (afrente) para fazer as sub-linhas
             // verifico se não ultrapassou o width
-            if (xActualSub > width) {
-                break;
-            }
+//            if (xActualSub > width) {
+//                break;
+//            }
 
             plane.shape.create({
                 type: 'line',
@@ -31,7 +31,8 @@ function drawGrid(width, height) {
         }
     }
 
-    for (yActual = 0; yActual < height; yActual += 50) {
+    // + 40 = fim linha acima
+    for (yActual = 0; yActual < height + 40; yActual += 50) {
         plane.shape.create({
             type: 'line',
             x: [0, yActual],
@@ -48,9 +49,9 @@ function drawGrid(width, height) {
 
             // como é subtraido - 10 (atrás/acima) para fazer as sub-linhas
             // verifico se não ultrapassou o height
-            if (yActualSub < 0) {
-                break;
-            }
+//            if (yActualSub < 0) {
+//                break;
+//            }
 
             plane.shape.create({
                 type: 'line',

@@ -1,5 +1,5 @@
 /*!
- * C37 in 16-05-2014 at 23:52:40 
+ * C37 in 17-05-2014 at 00:55:30 
  *
  * plane version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -20,8 +20,6 @@ window.plane = (function (window) {
     var version = '1.0.0',
         author = 'lilo@c37.co';
 
-
-
     return {
         initialize: function (config) {
             if ((config == null) || (typeof config == "function")) {
@@ -37,233 +35,6 @@ window.plane = (function (window) {
         }
     }
 }(window));
-
-
-
-
-
-//(function (window) {
-//    "use strict";
-//
-//    /**
-//     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-//     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-//     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-//     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-//     *
-//     * @module plane
-//     */
-//    var plane = {};
-//
-//    /**
-//     * @for plane
-//     * @property version
-//     * @type String
-//     * @static
-//     **/
-//    plane.version = '1.0.0';
-//
-//    /**
-//     * @for plane
-//     * @property author
-//     * @type String
-//     * @static
-//     */
-//    plane.author = 'lilo@c37.co';
-//
-//    /**
-//     * Returns this model's attributes as...
-//     *
-//     * @method initialize
-//     * @param htmlElement {HTMLElement} <canvas></canvas> or <svg></svg>
-//     * @param renderType {String} 'automatic', 'manual' or 'event'
-//     * @return {Object} instance of Projector
-//     */
-//    plane.initialize = function (config) {
-//        if ((config == null) || (typeof config == "function")) {
-//            throw new Error('Plane - Initialize - Config is not valid - See the documentation');
-//        }
-//
-//        plane.layers.initialize(config);
-//        plane.render.initialize(config);
-//        plane.events.initialize(config);
-//
-//        return true;
-//    }
-//    
-//    
-//    /**
-//     * Descrição para o objeto Utility no arquivo plane.js
-//     *
-//     * @class Utility
-//     * @static
-//     */
-//    plane.utility = {};
-//    
-//    
-//    window.plane = plane;
-//
-//})(window);
-
-
-
-
-//(function (window) {
-//    "use strict";
-//
-//    function namespace(application, module) {
-//        var parts = module.split('.'),
-//            ref = application;
-//
-//        for (var i = 0; i < parts.length; i++) {
-//
-//            ref[parts[i]] = ref[parts[i]] || {};
-//            ref = ref[parts[i]];
-//        }
-//
-//        return ref;
-//    }
-//
-//    /**
-//     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-//     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-//     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-//     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-//     *
-//     * @module plane
-//     */
-//    var plane = {};
-//
-//    /**
-//     * @for plane
-//     * @property version
-//     * @type String
-//     * @static
-//     **/
-//    plane.version = '1.0.0';
-//
-//    /**
-//     * @for plane
-//     * @property author
-//     * @type String
-//     * @static
-//     */
-//    plane.author = 'lilo@c37.co';
-//
-//    /**
-//     * Returns this model's attributes as...
-//     *
-//     * @method initialize
-//     * @param htmlElement {HTMLElement} <canvas></canvas> or <svg></svg>
-//     * @param renderType {String} 'automatic', 'manual' or 'event'
-//     * @return {Object} instance of Projector
-//     */
-//    plane.initialize = function (config) {
-//        if ((config == null) || (typeof config == "function")) {
-//            throw new Error('Plane - Initialize - Config is not valid - See the documentation');
-//        }
-//
-//        plane.layers.initialize(config);
-//        plane.render.initialize(config);
-//        plane.events.initialize(config);
-//
-//        //        plane.render.initialize(config, function () {
-//        //            plane.layers.initialize(config);
-//        //            plane.events.initialize(config);
-//        //        });
-//
-//        return true;
-//    }
-//    
-//    
-//    namespace(plane, 'layers');
-//    namespace(plane, 'render');
-//    namespace(plane, 'shape');
-//    namespace(plane, 'tools');
-//
-//    /**
-//     * Descrição para o objeto Utility no arquivo plane.js
-//     *
-//     * @class Utility
-//     * @static
-//     */
-//    namespace(plane, 'utility');
-//    
-//    
-//    window.plane = plane;
-//
-//})(window);
-
-
-
-
-//plane.initialize(config);
-//
-//plane.zoom = 2;
-//plane.center = [300, 600];
-//
-//plane.importJSON();
-//plane.importSVG();
-//plane.importDxf();
-//
-//plane.exportJSON();
-//plane.exportSVG()
-//plane.exportDxf()
-//plane.exportPng()
-//plane.exportPdf()
-//
-//plane.onChange(function () {});
-//plane.onResize(function () {});
-//
-//
-//plane.layers.initialize(config);
-//
-//plane.layers.create(params);
-//plane.layers.remove(layerName);
-//
-//plane.layers.list();
-//plane.layers.select(layerName);
-//
-//plane.layers.active = plane.layer;
-//
-//plane.layer.onActivate();
-//plane.layer.onDeactivate();
-//
-//
-//plane.render.initialize(config);
-//plane.render.update();
-//
-//
-//plane.shape.create();
-//plane.shape.search();
-//plane.shape.remove();
-//
-//
-//plane.tools.initialize(config);
-//
-//plane.tools.create(params);
-//plane.tools.remove(toolName);
-//
-//plane.tools.list();
-//plane.tools.select(toolName);
-//
-//plane.tool.active = true || false;
-//plane.tool.onActivate();
-//plane.tool.onDeactivate();
-//
-//plane.tool.onMouseDown();
-//plane.tool.onMouseUp();
-//plane.tool.onMouseDrag();
-//plane.tool.onMouseMove();
-//
-//plane.tool.onKeyDown();
-//plane.tool.onKeyUp();
-//
-//plane.tool.onMouseWheel();
-//
-//
-//plane.utility.math
-//plane.utility.event
 plane.events = (function (window, plane) {
     "use strict";
 
@@ -278,29 +49,36 @@ plane.events = (function (window, plane) {
 
             var viewPort = config.viewPort;
 
-            plane.__proto__ = new plane.utility.event();
+            //plane.__proto__ = new plane.utility.event();
 
 
             window.addEventListener('resize', function (event) {
 
+                var size = {
+                    width: viewPort.clientWidth,
+                    height: viewPort.clientHeight
+                };
 
-                var layerActive = plane.layers.active;
-
-                plane.layers.list().forEach(function (layer) {
-
-                    plane.layers.select(layer.name);
-                    
-                    plane.layers.active.viewer.width = viewPort.clientWidth;
-                    plane.layers.active.viewer.height = viewPort.clientHeight;
-                    
-                    plane.render.update();
-
-                });
-
-                plane.layers.select(layerActive.name);
+                //plane.dispatchEvent('onresize', size);
 
 
-                
+//                var layerActive = plane.layers.active;
+//
+//                plane.layers.list().forEach(function (layer) {
+//
+//                    plane.layers.select(layer.name);
+//
+//                    plane.layers.active.viewer.width = size.width;
+//                    plane.layers.active.viewer.height = size.height;
+//
+//                    plane.render.update();
+//
+//                });
+//
+//                plane.layers.select(layerActive.name);
+
+
+
 
             });
 
@@ -380,7 +158,10 @@ plane.layers = (function (plane) {
                 return shapes;
             },
             remove: function (shape) {
-                shapes.slice(shapes.indexOf(shape));
+
+                shapes = [];
+
+                //                shapes.slice(shapes.indexOf(shape));
                 return this;
             }
         }
@@ -431,13 +212,13 @@ plane.layers = (function (plane) {
         get style() {
             return this._style;
         },
-
+        
         set viewer(value) {
             this._viewer = value;
         },
         get viewer() {
             return this._viewer;
-        },
+        },        
 
         toString: function () {
             return '[ Layer' +
@@ -475,6 +256,13 @@ plane.layers = (function (plane) {
 
                 layer.name = layerName;
                 layer.viewer = viewer;
+                
+                
+                
+                if (layers.length == 0){
+                    layer.viewer.style.backgroundColor = 'rgb(255, 255, 255)';
+                }
+                
 
                 // add ao Array
                 layers.push(layer)
@@ -679,7 +467,6 @@ plane.shape = (function (layers) {
     };
 
 })(plane.layers);
-
 plane.utility = (function (plane) {
     "use strict";
 

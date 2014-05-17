@@ -18,7 +18,10 @@ plane.layers = (function (plane) {
                 return shapes;
             },
             remove: function (shape) {
-                shapes.slice(shapes.indexOf(shape));
+
+                shapes = [];
+
+                //                shapes.slice(shapes.indexOf(shape));
                 return this;
             }
         }
@@ -69,13 +72,13 @@ plane.layers = (function (plane) {
         get style() {
             return this._style;
         },
-
+        
         set viewer(value) {
             this._viewer = value;
         },
         get viewer() {
             return this._viewer;
-        },
+        },        
 
         toString: function () {
             return '[ Layer' +
@@ -113,6 +116,13 @@ plane.layers = (function (plane) {
 
                 layer.name = layerName;
                 layer.viewer = viewer;
+                
+                
+                
+                if (layers.length == 0){
+                    layer.viewer.style.backgroundColor = 'rgb(255, 255, 255)';
+                }
+                
 
                 // add ao Array
                 layers.push(layer)
