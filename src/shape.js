@@ -21,7 +21,8 @@ plane.shape = (function (layers) {
         },
 
         remove: function (shape) {
-            return layers.active.shapes.remove(shape);
+            layers.active.shapes.remove(shape);
+            return this;
         }
     };
 

@@ -90,7 +90,6 @@
             var viewPort = document.getElementById("viewPort");
 
             plane.initialize({
-                renderType: 'canvas',
                 viewPort: viewPort
             });
             // plane - initialize
@@ -142,13 +141,12 @@
             var layersControl = document.getElementById('layersControl');
 
             console.log(plane.layers.list());
-            
+
             plane.layers.list().forEach(function (layer) {
                 var layerItem = document.createElement('li');
                 layerItem.innerHTML = '<a href="#">' + layer.name + '</a>'
                 layersControl.appendChild(layerItem);
             });
-
         }
     </script>
 

@@ -26,10 +26,7 @@ module.exports = function (grunt) {
                 banner: '<%= meta.banner %>\n'
             },
             dist: {
-                src: [
-                    '<%= dirs.src %>/plane.js',
-                    '<%= dirs.src %>/*/**/*.js'
-                ],
+                src: ['<%= dirs.src %>/*.js'],
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'
             }
         },
