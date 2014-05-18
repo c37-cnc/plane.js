@@ -111,17 +111,14 @@ Plane.Utility = (function (Plane) {
                 };
             }
         },
-        Objet: {
+        Object: {
             merge: function (first, second) {
-                var len = +second.length,
-                    j = 0,
-                    i = first.length;
+                if (first == null || second == null)
+                    return first;
 
-                for (; j < len; j++) {
-                    first[i++] = second[j];
-                }
-
-                first.length = i;
+                for (var key in second)
+                    if (second.hasOwnProperty(key))
+                        first[key] = second[key];
 
                 return first;
             },

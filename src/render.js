@@ -26,7 +26,7 @@ Plane.Render = (function (Plane, document) {
             render.height = viewPort.clientHeight;
 
             render.style.position = "absolute";
-            render.style.backgroundColor = (renders.count() == 0) ? 'rgb(255, 255, 255)' : 'transparent';
+            render.style.backgroundColor = (renders.count() == 0) ? Plane.style.backgroundColor : 'transparent';
 
             // sistema cartesiano de coordenadas
             var context2D = render.getContext('2d');

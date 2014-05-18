@@ -94,7 +94,10 @@
             var viewPort = document.getElementById("viewPort");
 
             Plane.Initialize({
-                viewPort: viewPort
+                viewPort: viewPort,
+//                style: {
+//                    gridEnable: false
+//                }
             });
 
             Plane.addEventListener('onChange', function (event) {

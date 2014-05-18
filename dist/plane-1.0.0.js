@@ -1,5 +1,5 @@
 /*!
- * C37 in 18-05-2014 at 00:32:55 
+ * C37 in 18-05-2014 at 01:03:29 
  *
  * plane version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -18,11 +18,11 @@ window.Plane = (function (window) {
     "use strict";
 
     var version = '1.0.0',
-        author = 'lilo@c37.co',
-        viewPort = null;
+        author = 'lilo@c37.co';
 
+    function gridDraw(enabled, width, height, color) {
 
-    function gridDraw(width, height, color) {
+        if (!enabled) return;
 
         Plane.Layers.Create();
 
@@ -65,7 +65,6 @@ window.Plane = (function (window) {
                 strokeWidth: .6
             });
 
-
             // 10/20/30/40 = 4 linhas internas
             for (var yInternalSub = 1; yInternalSub <= 4; yInternalSub++) {
                 // small part = 50/5 = 10px espaço entre as linhas
@@ -84,12 +83,9 @@ window.Plane = (function (window) {
                     strokeColor: color,
                     strokeWidth: .3
                 });
-
             }
         }
-
         Plane.Render.Update();
-
     };
 
 
@@ -105,20 +101,21 @@ window.Plane = (function (window) {
             Plane.Layers.Initialize(config);
             Plane.Tools.Initialize(config);
 
-            viewPort = config.viewPort;
-
-            var style = Plane.Utility.Objet.merge(config.style || {}, {
+            var style = Plane.Utility.Object.merge({
                 metricSystem: 'mm',
                 backgroundColor: 'rgb(255, 255, 255)',
                 gridEnable: true,
                 gridColor: 'rgb(218, 222, 215)'
-            });
+            }, config.style || {});
 
             this.style = style;
 
-            if (this.style.gridEnable) {
-                gridDraw(viewPort.clientWidth, viewPort.clientHeight, this.style.gridColor);
-            }
+            var gridEnable = style.gridEnable,
+                gridColor = style.gridColor,
+                width = config.viewPort.clientWidth,
+                height = config.viewPort.clientHeight;
+
+            gridDraw(gridEnable, width, height, gridColor);
 
             return true;
 
@@ -391,7 +388,7 @@ Plane.Render = (function (Plane, document) {
             render.height = viewPort.clientHeight;
 
             render.style.position = "absolute";
-            render.style.backgroundColor = (renders.count() == 0) ? 'rgb(255, 255, 255)' : 'transparent';
+            render.style.backgroundColor = (renders.count() == 0) ? Plane.style.backgroundColor : 'transparent';
 
             // sistema cartesiano de coordenadas
             var context2D = render.getContext('2d');
@@ -856,17 +853,14 @@ Plane.Utility = (function (Plane) {
                 };
             }
         },
-        Objet: {
+        Object: {
             merge: function (first, second) {
-                var len = +second.length,
-                    j = 0,
-                    i = first.length;
+                if (first == null || second == null)
+                    return first;
 
-                for (; j < len; j++) {
-                    first[i++] = second[j];
-                }
-
-                first.length = i;
+                for (var key in second)
+                    if (second.hasOwnProperty(key))
+                        first[key] = second[key];
 
                 return first;
             },
