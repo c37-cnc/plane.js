@@ -86,7 +86,6 @@
     </style>
 
     <script src="../../dist/plane-1.0.0.js"></script>
-    <script src="editor.js"></script>
 
     <script>
         window.onload = function () {
@@ -101,21 +100,22 @@
             Plane.addEventListener('onChange', function (event) {
                 console.log(event);
             });
+            Plane.addEventListener('onResize', function (event) {
+                console.log(event);
+            });
+            Plane.addEventListener('onKeyDown', function (event) {
+                console.log(event);
+            });
 
             Plane.Layers.addEventListener('onDeactive', function (event) {
                 console.log(event);
             });
-
             Plane.Layers.addEventListener('onActive', function (event) {
-                console.log(event);
-            });
-
-            Plane.Render.addEventListener('onUpdate', function (event) {
                 console.log(event);
             });
             // plane - initialize
 
-            drawGrid(viewPort.clientWidth, viewPort.clientHeight);
+            //drawGrid(viewPort.clientWidth, viewPort.clientHeight);
 
             Plane.Layers.Create();
             Plane.Shape
@@ -179,18 +179,36 @@
                 console.log(event);
             });
 
-            tool001.addEventListener('onClick', function (event) {
-                //console.log(event);
+            var lineClick = null;
 
-                Plane.Shape.Create({
-                    type: 'polygon',
-                    x: event.x,
-                    y: event.y,
-                    radius: 70,
-                    sides: 5
-                });
+            tool001.addEventListener('onClick', function (event) {
+
+                if (!lineClick) {
+                    lineClick = {
+                        x: event.x,
+                        y: event.y
+                    }
+                } else {
+                    Plane.Shape.Create({
+                        type: 'line',
+                        x: [lineClick.x, lineClick.y],
+                        y: [event.x, event.y]
+                    })
+
+                    lineClick = null;
+                }
+
+                console.log(event);
+
+                //                Plane.Shape.Create({
+                //                    type: 'polygon',
+                //                    x: event.x,
+                //                    y: event.y,
+                //                    radius: 70,
+                //                    sides: 5
+                //                });
                 Plane.Render.Update();
-                
+
 
             });
 

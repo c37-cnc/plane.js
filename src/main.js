@@ -10,7 +10,80 @@ window.Plane = (function (window) {
     "use strict";
 
     var version = '1.0.0',
-        author = 'lilo@c37.co';
+        author = 'lilo@c37.co',
+        viewPort = null;
+
+
+    function gridDraw(width, height, color) {
+
+        Plane.Layers.Create();
+
+        for (var xActual = 0; xActual < width; xActual += 50) {
+            Plane.Shape.Create({
+                type: 'line',
+                x: [xActual, 0],
+                y: [xActual, height],
+                strokeColor: color,
+                strokeWidth: .6
+            });
+
+            for (var xInternalSub = 1; xInternalSub <= 4; xInternalSub++) {
+                // small part = 50/5 = 10px espaço entre as linhas
+                var xActualSub = Math.round(xActual + 10 * xInternalSub);
+
+                // como é somado + 10 (afrente) para fazer as sub-linhas
+                // verifico se não ultrapassou o width
+                //            if (xActualSub > width) {
+                //                break;
+                //            }
+
+                Plane.Shape.Create({
+                    type: 'line',
+                    x: [xActualSub, 0],
+                    y: [xActualSub, height],
+                    strokeColor: color,
+                    strokeWidth: .3
+                });
+            }
+        }
+
+        // + 40 = fim linha acima
+        for (var yActual = 0; yActual < height + 40; yActual += 50) {
+            Plane.Shape.Create({
+                type: 'line',
+                x: [0, yActual],
+                y: [width, yActual],
+                strokeColor: color,
+                strokeWidth: .6
+            });
+
+
+            // 10/20/30/40 = 4 linhas internas
+            for (var yInternalSub = 1; yInternalSub <= 4; yInternalSub++) {
+                // small part = 50/5 = 10px espaço entre as linhas
+                var yActualSub = Math.round(yActual - 10 * yInternalSub);
+
+                // como é subtraido - 10 (atrás/acima) para fazer as sub-linhas
+                // verifico se não ultrapassou o height
+                //            if (yActualSub < 0) {
+                //                break;
+                //            }
+
+                Plane.Shape.Create({
+                    type: 'line',
+                    x: [0, yActualSub],
+                    y: [width, yActualSub],
+                    strokeColor: color,
+                    strokeWidth: .3
+                });
+
+            }
+        }
+
+        Plane.Render.Update();
+
+    };
+
 
     return {
 
@@ -24,21 +97,30 @@ window.Plane = (function (window) {
             Plane.Layers.Initialize(config);
             Plane.Tools.Initialize(config);
 
+            viewPort = config.viewPort;
+
+            var style = Plane.Utility.Objet.merge(config.style || {}, {
+                metricSystem: 'mm',
+                backgroundColor: 'rgb(255, 255, 255)',
+                gridEnable: true,
+                gridColor: 'rgb(218, 222, 215)'
+            });
+
+            this.style = style;
+
+            if (this.style.gridEnable) {
+                gridDraw(viewPort.clientWidth, viewPort.clientHeight, this.style.gridColor);
+            }
+
             return true;
 
-        },  
+        },
 
         set style(value) {
             this._style = value;
         },
         get style() {
-            
-            
-//            measure - mm || cm || m
-//            color - white
-//            grid - true || false
-            
-            this._style;
+            return this._style;
         },
 
         set zoom(value) {

@@ -18,12 +18,17 @@ Plane.Events = (function (window, Plane) {
             Plane.Tools.__proto__ = new Plane.Utility.Event();
 
 
-            // capturando e traduzindo os eventos
+            //capturando e traduzindo os eventos
             window.onresize = function (event) {
-                Plane.Tools.dispatchEvent('onResize', event);
+                Plane.dispatchEvent('onResize', event);
             }
-            window.onkeypress = function (event) {
-                Plane.Tools.dispatchEvent('onKeyPress', event);
+            window.onkeydown = function (event) {
+                //future: verificar a qual a melhor forma para capturar o maior número de teclas
+                event = {
+                    type: 'onKeyDown',
+                    key: event.keyIdentifier.indexOf('+') > -1 ? String.fromCharCode(event.keyCode) : event.keyIdentifier
+                };
+                Plane.dispatchEvent('onKeyDown', event);
             };
 
             viewPort.onclick = function (event) {
