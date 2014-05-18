@@ -77,13 +77,11 @@
             bottom: 15px;
             background-color: rgb(68, 68, 68);
         }
-        
-/*
+        /*
         div[id="viewPort"] > canvas {
             background-color: rgb(255, 255, 255);
         }
 */
-        
         /* application components */
     </style>
 
@@ -96,61 +94,114 @@
             // plane - initialize
             var viewPort = document.getElementById("viewPort");
 
-            plane.initialize({
+            Plane.Initialize({
                 viewPort: viewPort
+            });
+
+            Plane.addEventListener('onChange', function (event) {
+                console.log(event);
+            });
+
+            Plane.Layers.addEventListener('onDeactive', function (event) {
+                console.log(event);
+            });
+
+            Plane.Layers.addEventListener('onActive', function (event) {
+                console.log(event);
+            });
+
+            Plane.Render.addEventListener('onUpdate', function (event) {
+                console.log(event);
             });
             // plane - initialize
 
             drawGrid(viewPort.clientWidth, viewPort.clientHeight);
 
-            plane.layers.create();
-            plane.shape
-                .create({
+            Plane.Layers.Create();
+            Plane.Shape
+                .Create({
                     type: 'polygon',
                     x: 900,
                     y: 500,
                     radius: 70,
                     sides: 5
                 })
-                .create({
+                .Create({
                     type: 'rectangle',
                     x: 150,
                     y: 150,
                     width: 100,
                     height: 100
                 })
-                .create({
+                .Create({
                     type: 'line',
                     x: [50, 50],
                     y: [1600, 50]
                 })
-                .create({
+                .Create({
                     type: 'line',
                     x: [100, 600],
                     y: [700, 700]
                 })
-                .create({
+                .Create({
                     type: 'circle',
                     x: 1200,
                     y: 300,
                     radius: 80
                 })
-                .create({
+                .Create({
                     type: 'polygon',
                     x: 600,
                     y: 500,
                     radius: 70,
                     sides: 5
                 });
-            plane.render.update();
+            Plane.Render.Update();
 
             var layersControl = document.getElementById('layersControl');
 
-            plane.layers.list().forEach(function (layer) {
+            Plane.Layers.List().forEach(function (layer) {
                 var layerItem = document.createElement('li');
                 layerItem.innerHTML = '<a href="#">' + layer.name + '</a>'
                 layersControl.appendChild(layerItem);
             });
+
+            var tool001 = Plane.Tools.Create(),
+                toolsList = Plane.Tools.List();
+
+            console.log(tool001);
+            console.log(toolsList);
+
+            tool001.addEventListener('onActive', function (event) {
+                console.log(event);
+            });
+            tool001.addEventListener('onDeactive', function (event) {
+                console.log(event);
+            });
+
+            tool001.addEventListener('onClick', function (event) {
+                //console.log(event);
+
+                Plane.Shape.Create({
+                    type: 'polygon',
+                    x: event.x,
+                    y: event.y,
+                    radius: 70,
+                    sides: 5
+                });
+                Plane.Render.Update();
+                
+
+            });
+
+            tool001.addEventListener('onMouseWheel', function (event) {
+                console.log(event);
+            });
+
+            tool001.active = true;
+            //            tool001.active = false;
+
+
         }
     </script>
 

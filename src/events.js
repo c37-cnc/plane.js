@@ -1,103 +1,69 @@
-plane.events = (function (window, plane) {
+Plane.Events = (function (window, Plane) {
     "use strict";
 
     var viewPort = null;
 
 
     return {
-        initialize: function (config, callback) {
+        Initialize: function (config, callback) {
             if ((typeof config == "function") || (config == null) || (config.viewPort == null)) {
                 throw new Error('Events - Initialize - Config is not valid - See the documentation');
             }
 
-            var viewPort = config.viewPort;
+            viewPort = config.viewPort;
 
-            //plane.__proto__ = new plane.utility.event();
+            Plane.__proto__ = new Plane.Utility.Event();
+            Plane.Render.__proto__ = new Plane.Utility.Event();
+            Plane.Layers.__proto__ = new Plane.Utility.Event();
+            Plane.Tools.__proto__ = new Plane.Utility.Event();
 
 
-            window.addEventListener('resize', function (event) {
+            // capturando e traduzindo os eventos
+            window.onresize = function (event) {
+                Plane.Tools.dispatchEvent('onResize', event);
+            }
+            window.onkeypress = function (event) {
+                Plane.Tools.dispatchEvent('onKeyPress', event);
+            };
 
-                var size = {
-                    width: viewPort.clientWidth,
-                    height: viewPort.clientHeight
+            viewPort.onclick = function (event) {
+                var position = {
+                    x: event.clientX,
+                    y: event.clientY
                 };
 
-                //plane.dispatchEvent('onresize', size);
+                position = Plane.Utility.Graphic.mousePosition(viewPort, position);
 
+                Plane.Tools.dispatchEvent('onClick', {
+                    type: 'onClick',
+                    x: position.x,
+                    y: position.y
+                });
+            };
+            viewPort.ondblclick = function (event) {
+                Plane.Tools.dispatchEvent('onDblClick', event);
+            };
 
-//                var layerActive = plane.layers.active;
-//
-//                plane.layers.list().forEach(function (layer) {
-//
-//                    plane.layers.select(layer.name);
-//
-//                    plane.layers.active.viewer.width = size.width;
-//                    plane.layers.active.viewer.height = size.height;
-//
-//                    plane.render.update();
-//
-//                });
-//
-//                plane.layers.select(layerActive.name);
+            viewPort.onmousedown = function (event) {
+                Plane.Tools.dispatchEvent('onMouseDown', event);
+            };
+            viewPort.onmouseup = function (event) {
+                Plane.Tools.dispatchEvent('onMouseUp', event);
+            };
+            viewPort.onmousemove = function (event) {
+                Plane.Tools.dispatchEvent('onMouseMove', event);
+            };
+            viewPort.onmousewheel = function (event) {
+                Plane.Tools.dispatchEvent('onMouseWheel', event);
+            };
 
+            viewPort.oncontextmenu = function (event) {
+                Plane.Tools.dispatchEvent('onContextMenu', event);
+            }
+            // capturando os eventos
 
-
-
-            });
-
-
+            return true;
         }
     }
 
-})(window, plane);
-
-
-
-
-//            function getMousePos(canvas, event) {
-//                var bb = canvas.getBoundingClientRect();
-//
-//                var x = (event.clientX - bb.left) * (canvas.width / bb.width);
-//                var y = (event.clientY - bb.top) * (canvas.height / bb.height);
-//
-//                return {
-//                    x: x,
-//                    y: y
-//                };
-//            }
-//
-//
-//            function hitPath(canvas, event) {
-//                var bb = canvas.getBoundingClientRect();
-//
-//                var x = (event.clientX - bb.left) * (canvas.width / bb.width);
-//                var y = (event.clientY - bb.top) * (canvas.height / bb.height);
-//
-//                return context2D.isPointInPath(x, y);
-//            }
-//
-//
-//
-//
-//            htmlElement.onmousewheel = function (event) {
-//                console.log(event);
-//            };
-//
-//
-//            htmlElement.onclick = function (event) {
-//
-//                var zzz = getMousePos(htmlElement, event);
-//
-//                var debug = document.getElementById('debug');
-//
-//                debug.innerHTML = 'x: ' + zzz.x + ', y:' + zzz.y + ', selected: ' + hitPath(htmlElement, event);
-//
-//                console.log(context2D.getImageData(zzz.x, zzz.y, 3, 3).data);
-//
-//            };
-//
-//            //            htmlElement.oncontextmenu = function (event) {
-//            //                console.log(event);
-//            //
-//            //                return false;
-//            //            }
+})(window, Plane);

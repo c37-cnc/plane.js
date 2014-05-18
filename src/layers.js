@@ -1,46 +1,23 @@
-plane.layers = (function (plane) {
+Plane.Layers = (function (Plane) {
     "use strict";
 
-    var layers = [];
+    var layers = null;
 
-    function Layer() {
-
-        var shapes = [];
-
-        this.uuid = plane.utility.math.uuid(9, 16);
-
-        this.shapes = {
-            add: function (shape) {
-                shapes.push(shape);
-                return this;
-            },
-            search: function (selector) {
-                return shapes;
-            },
-            remove: function (shape) {
-
-                shapes = [];
-
-                //                shapes.slice(shapes.indexOf(shape));
-                return this;
-            }
-        }
-    }
+    function Layer() {}
 
     Layer.prototype = {
 
+        set uuid(value) {
+            this._uuid = value;
+        },
+        get uuid() {
+            return this._uuid;
+        },
+
         set name(value) {
-            if ((value == null) || (value == undefined) || (value == '')) {
-                throw new Error('New name is not defined');
+            if ((value != null) && (value != undefined) && (value != '')) {
+                return this._name = value;
             }
-
-            for (var i = 0; i <= layers.length - 1; i++) {
-                if (layers[i].name.toLowerCase() == value.toLowerCase()) {
-                    throw new Error('This name ' + value + ' already exists in Layers')
-                }
-            }
-
-            this._name = value;
         },
         get name() {
             return this._name;
@@ -61,114 +38,79 @@ plane.layers = (function (plane) {
         },
 
         set style(value) {
-
-            // fillColor: 'rgb(255,0,0)',
-            // lineCap: 'round',
-            // lineWidth: 10,
-            // lineColor: 'rgb(255,0,0)',            
-
             this._style = value;
         },
         get style() {
             return this._style;
-        },
-        
-        set viewer(value) {
-            this._viewer = value;
-        },
-        get viewer() {
-            return this._viewer;
-        },        
-
-        toString: function () {
-            return '[ Layer' +
-                ' uuid:' + this.getUuid() +
-                ', name:' + this.getName() +
-                ', active:' + this.getActive() +
-                ']';
-        },
-        toJson: function () {
-
         }
+        
     }
 
     return {
-        initialize: function (config) {
+        Initialize: function (config) {
             if ((typeof config == "function") || (config == null)) {
                 throw new Error('Layer - Initialize - Config is not valid - See the documentation');
             }
 
-
-            console.log('layer - initialize');
+            layers = new Plane.Utility.Dictionary();
 
             return true;
         },
-        create: function (layerName) {
-            try {
-                if ((layerName) && (typeof layerName != 'string')) {
-                    throw new Error('Layer - Create - Layer Name is not valid - See the documentation');
-                }
-
-                layerName = layerName || 'New Layer ' + layers.length;
-
-                var layer = new Layer(),
-                    viewer = plane.render.create();
-
-                layer.name = layerName;
-                layer.viewer = viewer;
-                
-                
-                
-                if (layers.length == 0){
-                    layer.viewer.style.backgroundColor = 'rgb(255, 255, 255)';
-                }
-                
-
-                // add ao Array
-                layers.push(layer)
-
-                // seleciono como ativa
-                this.select(layerName)
-
-                console.log('layer - create');
-
-                return true;
-            } catch (error) {
-                layer = null;
-                throw error;
+        Create: function (name, style) {
+            if ((name && (typeof name != 'string')) || (style && (typeof style != 'object'))) {
+                throw new Error('Layer - Create - Layer Name is not valid - See the documentation');
             }
-        },
-        remove: function (layerName) {
-            for (var i = 0; i <= layers.length - 1; i++) {
-                if (layers[i].getName() == layerName) {
-                    return delete layers[i];
-                }
+
+            name = name || 'New Layer ' + layers.count();
+            style = style || {
+                fillColor: 'rgb(255,0,0)',
+                lineCap: 'round',
+                lineWidth: 10,
+                lineColor: 'rgb(255,0,0)',
             }
-            return false;
+
+            var layer = new Layer(),
+                uuid = Plane.Utility.Uuid(9, 16);
+
+            layer.uuid = uuid;
+            layer.name = name;
+            layer.style = style;
+
+            // add ao dictionary
+            layers.add(uuid, layer);
+
+            // seleciono como ativa
+            this.Active = uuid;
+            
+            // crio o Render respectivo da Layer
+            Plane.Render.Create(uuid);
+
+            return true;
         },
-        list: function (callback) {
-            var layersList = [];
-            for (var i = 0; i <= layers.length - 1; i++) {
-                layersList.push({
-                    uuid: layers[i].uuid,
-                    name: layers[i].name,
-                    active: (layers[i] == this.active),
-                    locked: layers[i].locked,
-                    visible: layers[i].visible
-                })
-            }
-            console.log('layer - list');
-            return typeof callback == 'function' ? callback.call(this, layersList) : layersList;
+        Remove: function (uuid) {
+            return layers.remove(uuid);
         },
-        select: function (layerName) {
-            for (var i = 0; i <= layers.length - 1; i++) {
-                if (layers[i].name.toUpperCase() == layerName.toUpperCase()) {
-                    this.active = layers[i];
-                }
-            }
-            return this;
+        List: function (callback) {
+            return typeof callback == 'function' ?
+                callback.call(this, layers.list()) :
+                layers.list();
         },
-        active: {}
+        get Active() {
+            return this._active;
+        },
+        set Active(uuid) {
+            this.dispatchEvent('onDeactive', {
+                type: 'onDeactive',
+                layer: this.Active
+            });
+
+            this._active = layers.find(uuid);
+
+            this.dispatchEvent('onActive', {
+                type: 'onActive',
+                layer: this.Active
+            });
+        }
     };
 
-})(plane);
+})(Plane);

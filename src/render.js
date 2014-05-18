@@ -1,45 +1,60 @@
-plane.render = (function (plane, document) {
+Plane.Render = (function (Plane, document) {
     "use strict";
 
-    var viewPort = null;
+    var viewPort = null,
+        renders = null;
 
     return {
-        initialize: function (config) {
+        Initialize: function (config) {
+            if ((typeof config == "function") || (config == null)) {
+                throw new Error('Render - Initialize - Config is not valid - See the documentation');
+            }
+
+            if (!document.createElement('canvas').getContext) {
+                throw new Error('No canvas support for this device');
+            }
 
             viewPort = config.viewPort;
+            renders = new Plane.Utility.Dictionary();
 
             return true;
         },
-        create: function () {
+        Create: function (uuid) {
+            var render = document.createElement('canvas');
 
-            var viewer = document.createElement('canvas');
+            render.width = viewPort.clientWidth;
+            render.height = viewPort.clientHeight;
 
-            viewer.width = viewPort.clientWidth;
-            viewer.height = viewPort.clientHeight;
+            render.style.position = "absolute";
+            render.style.backgroundColor = (renders.count() == 0) ? 'rgb(255, 255, 255)' : 'transparent';
 
-            if (!viewer.getContext) {
-                throw new Error('no canvas suport');
-            }
-
-            viewer.style.position = "absolute";
-
-            viewPort.appendChild(viewer);
-
-            return viewer;
-        },
-        update: function () {
-            
-            var shapes = plane.layers.active.shapes.search(),
-                viewer = plane.layers.active.viewer;
-            
-
-            var context2D = viewer.getContext('2d');
-
-            // Cartesian coordinate system
-            context2D.translate(0, viewer.height);
+            // sistema cartesiano de coordenadas
+            var context2D = render.getContext('2d');
+            context2D.translate(0, render.height);
             context2D.scale(1, -1);
 
-            context2D.clearRect(0, 0, viewer.width, viewer.height);
+            // add ao html documment
+            viewPort.appendChild(render);
+
+            // add ao dictionary
+            renders.add(uuid, render);
+
+            return true;
+        },
+        Update: function () {
+
+            Plane.dispatchEvent('onChange', {
+                type: 'onChange',
+                now: new Date().toISOString()
+            });
+
+            var uuid = Plane.Layers.Active.uuid,
+                shapes = Plane.Shape.Search(uuid),
+                render = renders.find(uuid),
+                context2D = render.getContext('2d');
+
+            // limpando o render
+            context2D.clearRect(0, 0, render.width, render.height);
 
             shapes.forEach(function (shape) {
 
@@ -123,4 +138,4 @@ plane.render = (function (plane, document) {
 
     };
 
-})(plane, window.document);
+})(Plane, window.document);

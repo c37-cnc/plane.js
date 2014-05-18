@@ -7,23 +7,42 @@
  * @class Shape
  * @static
  */
-plane.shape = (function (layers) {
+Plane.Shape = (function (Plane) {
     "use strict";
 
+    var shapes = [];
+
+
+
     return {
-        create: function (params) {
-            layers.active.shapes.add(params);
+        Create: function (params) {
+
+//            Plane.dispatchEvent('onChange', {
+//                type: 'onChange',
+//                now: new Date().toISOString()
+//            });
+
+            var uuid = Plane.Layers.Active.uuid;
+
+            if (!shapes[uuid]) {
+                shapes[uuid] = [];
+            }
+
+            shapes[uuid].push(params);
+
             return this;
         },
 
-        search: function (selector) {
-            return layers.active.shapes.search();
+        Search: function (selector) {
+
+            return shapes[selector];
+
         },
 
-        remove: function (shape) {
-            layers.active.shapes.remove(shape);
+        Remove: function (shape) {
+
             return this;
         }
     };
 
-})(plane.layers);
+})(Plane);

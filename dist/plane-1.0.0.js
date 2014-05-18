@@ -1,5 +1,5 @@
 /*!
- * C37 in 17-05-2014 at 00:55:30 
+ * C37 in 17-05-2014 at 21:24:50 
  *
  * plane version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -14,173 +14,172 @@
  *
  * @module plane
  */
-window.plane = (function (window) {
+window.Plane = (function (window) {
     "use strict";
 
     var version = '1.0.0',
         author = 'lilo@c37.co';
 
     return {
-        initialize: function (config) {
+
+        Initialize: function (config) {
             if ((config == null) || (typeof config == "function")) {
                 throw new Error('Plane - Initialize - Config is not valid - See the documentation');
             }
 
-            plane.render.initialize(config);
-            plane.layers.initialize(config);
-            plane.events.initialize(config);
+            Plane.Events.Initialize(config);
+            Plane.Render.Initialize(config);
+            Plane.Layers.Initialize(config);
+            Plane.Tools.Initialize(config);
 
             return true;
 
+        },  
+
+        set style(value) {
+            this._style = value;
+        },
+        get style() {
+            
+            
+//            measure - mm || cm || m
+//            color - white
+//            grid - true || false
+            
+            this._style;
+        },
+
+        set zoom(value) {
+            this._zoom = value;
+        },
+        get zoom() {
+            return this._zoom;
+        },
+
+        set center(value) {
+            this._center = value;
+        },
+        get center() {
+            return this._center;
+        },
+
+        importJSON: function () {
+
+        },
+        importSVG: function () {
+
+        },
+        importDxf: function () {
+
+        },
+
+        exportJSON: function () {
+
+        },
+        exportSVG: function () {
+
+        },
+        exportDxf: function () {
+
+        },
+        exportPng: function () {
+
+        },
+        exportPdf: function () {
+
         }
+
     }
 }(window));
-plane.events = (function (window, plane) {
+Plane.Events = (function (window, Plane) {
     "use strict";
 
     var viewPort = null;
 
 
     return {
-        initialize: function (config, callback) {
+        Initialize: function (config, callback) {
             if ((typeof config == "function") || (config == null) || (config.viewPort == null)) {
                 throw new Error('Events - Initialize - Config is not valid - See the documentation');
             }
 
-            var viewPort = config.viewPort;
+            viewPort = config.viewPort;
 
-            //plane.__proto__ = new plane.utility.event();
+            Plane.__proto__ = new Plane.Utility.Event();
+            Plane.Render.__proto__ = new Plane.Utility.Event();
+            Plane.Layers.__proto__ = new Plane.Utility.Event();
+            Plane.Tools.__proto__ = new Plane.Utility.Event();
 
 
-            window.addEventListener('resize', function (event) {
+            // capturando e traduzindo os eventos
+            window.onresize = function (event) {
+                Plane.Tools.dispatchEvent('onResize', event);
+            }
+            window.onkeypress = function (event) {
+                Plane.Tools.dispatchEvent('onKeyPress', event);
+            };
 
-                var size = {
-                    width: viewPort.clientWidth,
-                    height: viewPort.clientHeight
+            viewPort.onclick = function (event) {
+                var position = {
+                    x: event.clientX,
+                    y: event.clientY
                 };
 
-                //plane.dispatchEvent('onresize', size);
+                position = Plane.Utility.Graphic.mousePosition(viewPort, position);
 
+                Plane.Tools.dispatchEvent('onClick', {
+                    type: 'onClick',
+                    x: position.x,
+                    y: position.y
+                });
+            };
+            viewPort.ondblclick = function (event) {
+                Plane.Tools.dispatchEvent('onDblClick', event);
+            };
 
-//                var layerActive = plane.layers.active;
-//
-//                plane.layers.list().forEach(function (layer) {
-//
-//                    plane.layers.select(layer.name);
-//
-//                    plane.layers.active.viewer.width = size.width;
-//                    plane.layers.active.viewer.height = size.height;
-//
-//                    plane.render.update();
-//
-//                });
-//
-//                plane.layers.select(layerActive.name);
+            viewPort.onmousedown = function (event) {
+                Plane.Tools.dispatchEvent('onMouseDown', event);
+            };
+            viewPort.onmouseup = function (event) {
+                Plane.Tools.dispatchEvent('onMouseUp', event);
+            };
+            viewPort.onmousemove = function (event) {
+                Plane.Tools.dispatchEvent('onMouseMove', event);
+            };
+            viewPort.onmousewheel = function (event) {
+                Plane.Tools.dispatchEvent('onMouseWheel', event);
+            };
 
+            viewPort.oncontextmenu = function (event) {
+                Plane.Tools.dispatchEvent('onContextMenu', event);
+            }
+            // capturando os eventos
 
-
-
-            });
-
-
+            return true;
         }
     }
 
-})(window, plane);
-
-
-
-
-//            function getMousePos(canvas, event) {
-//                var bb = canvas.getBoundingClientRect();
-//
-//                var x = (event.clientX - bb.left) * (canvas.width / bb.width);
-//                var y = (event.clientY - bb.top) * (canvas.height / bb.height);
-//
-//                return {
-//                    x: x,
-//                    y: y
-//                };
-//            }
-//
-//
-//            function hitPath(canvas, event) {
-//                var bb = canvas.getBoundingClientRect();
-//
-//                var x = (event.clientX - bb.left) * (canvas.width / bb.width);
-//                var y = (event.clientY - bb.top) * (canvas.height / bb.height);
-//
-//                return context2D.isPointInPath(x, y);
-//            }
-//
-//
-//
-//
-//            htmlElement.onmousewheel = function (event) {
-//                console.log(event);
-//            };
-//
-//
-//            htmlElement.onclick = function (event) {
-//
-//                var zzz = getMousePos(htmlElement, event);
-//
-//                var debug = document.getElementById('debug');
-//
-//                debug.innerHTML = 'x: ' + zzz.x + ', y:' + zzz.y + ', selected: ' + hitPath(htmlElement, event);
-//
-//                console.log(context2D.getImageData(zzz.x, zzz.y, 3, 3).data);
-//
-//            };
-//
-//            //            htmlElement.oncontextmenu = function (event) {
-//            //                console.log(event);
-//            //
-//            //                return false;
-//            //            }
-plane.layers = (function (plane) {
+})(window, Plane);
+Plane.Layers = (function (Plane) {
     "use strict";
 
-    var layers = [];
+    var layers = null;
 
-    function Layer() {
-
-        var shapes = [];
-
-        this.uuid = plane.utility.math.uuid(9, 16);
-
-        this.shapes = {
-            add: function (shape) {
-                shapes.push(shape);
-                return this;
-            },
-            search: function (selector) {
-                return shapes;
-            },
-            remove: function (shape) {
-
-                shapes = [];
-
-                //                shapes.slice(shapes.indexOf(shape));
-                return this;
-            }
-        }
-    }
+    function Layer() {}
 
     Layer.prototype = {
 
+        set uuid(value) {
+            this._uuid = value;
+        },
+        get uuid() {
+            return this._uuid;
+        },
+
         set name(value) {
-            if ((value == null) || (value == undefined) || (value == '')) {
-                throw new Error('New name is not defined');
+            if ((value != null) && (value != undefined) && (value != '')) {
+                return this._name = value;
             }
-
-            for (var i = 0; i <= layers.length - 1; i++) {
-                if (layers[i].name.toLowerCase() == value.toLowerCase()) {
-                    throw new Error('This name ' + value + ' already exists in Layers')
-                }
-            }
-
-            this._name = value;
         },
         get name() {
             return this._name;
@@ -201,159 +200,139 @@ plane.layers = (function (plane) {
         },
 
         set style(value) {
-
-            // fillColor: 'rgb(255,0,0)',
-            // lineCap: 'round',
-            // lineWidth: 10,
-            // lineColor: 'rgb(255,0,0)',            
-
             this._style = value;
         },
         get style() {
             return this._style;
-        },
-        
-        set viewer(value) {
-            this._viewer = value;
-        },
-        get viewer() {
-            return this._viewer;
-        },        
-
-        toString: function () {
-            return '[ Layer' +
-                ' uuid:' + this.getUuid() +
-                ', name:' + this.getName() +
-                ', active:' + this.getActive() +
-                ']';
-        },
-        toJson: function () {
-
         }
+        
     }
 
     return {
-        initialize: function (config) {
+        Initialize: function (config) {
             if ((typeof config == "function") || (config == null)) {
                 throw new Error('Layer - Initialize - Config is not valid - See the documentation');
             }
 
-
-            console.log('layer - initialize');
+            layers = new Plane.Utility.Dictionary();
 
             return true;
         },
-        create: function (layerName) {
-            try {
-                if ((layerName) && (typeof layerName != 'string')) {
-                    throw new Error('Layer - Create - Layer Name is not valid - See the documentation');
-                }
-
-                layerName = layerName || 'New Layer ' + layers.length;
-
-                var layer = new Layer(),
-                    viewer = plane.render.create();
-
-                layer.name = layerName;
-                layer.viewer = viewer;
-                
-                
-                
-                if (layers.length == 0){
-                    layer.viewer.style.backgroundColor = 'rgb(255, 255, 255)';
-                }
-                
-
-                // add ao Array
-                layers.push(layer)
-
-                // seleciono como ativa
-                this.select(layerName)
-
-                console.log('layer - create');
-
-                return true;
-            } catch (error) {
-                layer = null;
-                throw error;
+        Create: function (name, style) {
+            if ((name && (typeof name != 'string')) || (style && (typeof style != 'object'))) {
+                throw new Error('Layer - Create - Layer Name is not valid - See the documentation');
             }
-        },
-        remove: function (layerName) {
-            for (var i = 0; i <= layers.length - 1; i++) {
-                if (layers[i].getName() == layerName) {
-                    return delete layers[i];
-                }
+
+            name = name || 'New Layer ' + layers.count();
+            style = style || {
+                fillColor: 'rgb(255,0,0)',
+                lineCap: 'round',
+                lineWidth: 10,
+                lineColor: 'rgb(255,0,0)',
             }
-            return false;
+
+            var layer = new Layer(),
+                uuid = Plane.Utility.Uuid(9, 16);
+
+            layer.uuid = uuid;
+            layer.name = name;
+            layer.style = style;
+
+            // add ao dictionary
+            layers.add(uuid, layer);
+
+            // seleciono como ativa
+            this.Active = uuid;
+            
+            // crio o Render respectivo da Layer
+            Plane.Render.Create(uuid);
+
+            return true;
         },
-        list: function (callback) {
-            var layersList = [];
-            for (var i = 0; i <= layers.length - 1; i++) {
-                layersList.push({
-                    uuid: layers[i].uuid,
-                    name: layers[i].name,
-                    active: (layers[i] == this.active),
-                    locked: layers[i].locked,
-                    visible: layers[i].visible
-                })
-            }
-            console.log('layer - list');
-            return typeof callback == 'function' ? callback.call(this, layersList) : layersList;
+        Remove: function (uuid) {
+            return layers.remove(uuid);
         },
-        select: function (layerName) {
-            for (var i = 0; i <= layers.length - 1; i++) {
-                if (layers[i].name.toUpperCase() == layerName.toUpperCase()) {
-                    this.active = layers[i];
-                }
-            }
-            return this;
+        List: function (callback) {
+            return typeof callback == 'function' ?
+                callback.call(this, layers.list()) :
+                layers.list();
         },
-        active: {}
+        get Active() {
+            return this._active;
+        },
+        set Active(uuid) {
+            this.dispatchEvent('onDeactive', {
+                type: 'onDeactive',
+                layer: this.Active
+            });
+
+            this._active = layers.find(uuid);
+
+            this.dispatchEvent('onActive', {
+                type: 'onActive',
+                layer: this.Active
+            });
+        }
     };
 
-})(plane);
-plane.render = (function (plane, document) {
+})(Plane);
+Plane.Render = (function (Plane, document) {
     "use strict";
 
-    var viewPort = null;
+    var viewPort = null,
+        renders = null;
 
     return {
-        initialize: function (config) {
+        Initialize: function (config) {
+            if ((typeof config == "function") || (config == null)) {
+                throw new Error('Render - Initialize - Config is not valid - See the documentation');
+            }
+
+            if (!document.createElement('canvas').getContext) {
+                throw new Error('No canvas support for this device');
+            }
 
             viewPort = config.viewPort;
+            renders = new Plane.Utility.Dictionary();
 
             return true;
         },
-        create: function () {
+        Create: function (uuid) {
+            var render = document.createElement('canvas');
 
-            var viewer = document.createElement('canvas');
+            render.width = viewPort.clientWidth;
+            render.height = viewPort.clientHeight;
 
-            viewer.width = viewPort.clientWidth;
-            viewer.height = viewPort.clientHeight;
+            render.style.position = "absolute";
+            render.style.backgroundColor = (renders.count() == 0) ? 'rgb(255, 255, 255)' : 'transparent';
 
-            if (!viewer.getContext) {
-                throw new Error('no canvas suport');
-            }
-
-            viewer.style.position = "absolute";
-
-            viewPort.appendChild(viewer);
-
-            return viewer;
-        },
-        update: function () {
-            
-            var shapes = plane.layers.active.shapes.search(),
-                viewer = plane.layers.active.viewer;
-            
-
-            var context2D = viewer.getContext('2d');
-
-            // Cartesian coordinate system
-            context2D.translate(0, viewer.height);
+            // sistema cartesiano de coordenadas
+            var context2D = render.getContext('2d');
+            context2D.translate(0, render.height);
             context2D.scale(1, -1);
 
-            context2D.clearRect(0, 0, viewer.width, viewer.height);
+            // add ao html documment
+            viewPort.appendChild(render);
+
+            // add ao dictionary
+            renders.add(uuid, render);
+
+            return true;
+        },
+        Update: function () {
+
+            Plane.dispatchEvent('onChange', {
+                type: 'onChange',
+                now: new Date().toISOString()
+            });
+
+            var uuid = Plane.Layers.Active.uuid,
+                shapes = Plane.Shape.Search(uuid),
+                render = renders.find(uuid),
+                context2D = render.getContext('2d');
+
+            // limpando o render
+            context2D.clearRect(0, 0, render.width, render.height);
 
             shapes.forEach(function (shape) {
 
@@ -437,7 +416,7 @@ plane.render = (function (plane, document) {
 
     };
 
-})(plane, window.document);
+})(Plane, window.document);
 /**
  * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
  * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -447,64 +426,271 @@ plane.render = (function (plane, document) {
  * @class Shape
  * @static
  */
-plane.shape = (function (layers) {
+Plane.Shape = (function (Plane) {
     "use strict";
 
+    var shapes = [];
+
+
+
     return {
-        create: function (params) {
-            layers.active.shapes.add(params);
+        Create: function (params) {
+
+//            Plane.dispatchEvent('onChange', {
+//                type: 'onChange',
+//                now: new Date().toISOString()
+//            });
+
+            var uuid = Plane.Layers.Active.uuid;
+
+            if (!shapes[uuid]) {
+                shapes[uuid] = [];
+            }
+
+            shapes[uuid].push(params);
+
             return this;
         },
 
-        search: function (selector) {
-            return layers.active.shapes.search();
+        Search: function (selector) {
+
+            return shapes[selector];
+
         },
 
-        remove: function (shape) {
-            layers.active.shapes.remove(shape);
+        Remove: function (shape) {
+
             return this;
         }
     };
 
-})(plane.layers);
-plane.utility = (function (plane) {
+})(Plane);
+Plane.Tools = (function (Plane) {
+    "use strict";
+
+    var tools = null;
+
+    function Tool() {}
+
+    Tool.prototype = {
+
+        set uuid(value) {
+            this._uuid = value;
+        },
+        get uuid() {
+            return this._uuid;
+        },
+
+        set name(value) {
+            if ((value != null) && (value != undefined) && (value != '')) {
+                return this._name = value;
+            }
+        },
+        get name() {
+            return this._name;
+        },
+
+        set active(value) {
+            if ((value == true) || (value == false)) {
+                this.dispatchEvent(value ? 'onActive' : 'onDeactive', {
+                    type: value ? 'onActive' : 'onDeactive',
+                    now: new Date().toISOString()
+
+                });
+                this._active = value;
+            }
+        },
+        get active() {
+            return this._active;
+        }
+
+    }
+
+
+    return {
+        Initialize: function (config) {
+            if ((typeof config == "function") || (config == null)) {
+                throw new Error('Tools - Initialize - Config is not valid - See the documentation');
+            }
+
+            tools = new Plane.Utility.Dictionary();
+
+            // inicializando os eventos
+            this.addEventListener('onResize', function (event) {
+                tools.list().forEach(function (tool) {
+                    if (tool.active) {
+                        tool.dispatchEvent('onResize', event);
+                    }
+                });
+            });
+            this.addEventListener('onKeyPress', function (event) {
+                tools.list().forEach(function (tool) {
+                    if (tool.active) {
+                        tool.dispatchEvent('onKeyPress', event);
+                    }
+                });
+            });
+
+            this.addEventListener('onClick', function (event) {
+                tools.list().forEach(function (tool) {
+                    if (tool.active) {
+                        tool.dispatchEvent('onClick', event);
+                    }
+                });
+            });
+            this.addEventListener('onDblClick', function (event) {
+                tools.list().forEach(function (tool) {
+                    if (tool.active) {
+                        tool.dispatchEvent('onClick', event);
+                    }
+                });
+            });
+
+            this.addEventListener('onMouseDown', function (event) {
+                tools.list().forEach(function (tool) {
+                    if (tool.active) {
+                        tool.dispatchEvent('onMouseDown', event);
+                    }
+                });
+            });
+            this.addEventListener('onMouseUp', function (event) {
+                tools.list().forEach(function (tool) {
+                    if (tool.active) {
+                        tool.dispatchEvent('onMouseUp', event);
+                    }
+                });
+            });
+            this.addEventListener('onMouseMove', function (event) {
+                tools.list().forEach(function (tool) {
+                    if (tool.active) {
+                        tool.dispatchEvent('onMouseMove', event);
+                    }
+                });
+            });
+            this.addEventListener('onMouseWheel', function (event) {
+                tools.list().forEach(function (tool) {
+                    if (tool.active) {
+                        tool.dispatchEvent('onMouseWheel', event);
+                    }
+                });
+            });
+
+            this.addEventListener('onContextMenu', function (event) {
+                tools.list().forEach(function (tool) {
+                    if (tool.active) {
+                        tool.dispatchEvent('onContextMenu', event);
+                    }
+                });
+            });
+            // inicializando os eventos
+
+
+            return true;
+        },
+        Create: function (name) {
+            if (name && (typeof name != 'string')) {
+                throw new Error('Tools - Create - Layer Name is not valid - See the documentation');
+            }
+
+            name = name || 'New Tool ' + tools.count();
+
+            var tool = new Tool(),
+                uuid = Plane.Utility.Uuid(9, 16);
+
+            tool.__proto__.__proto__ = new Plane.Utility.Event();
+            tool.uuid = uuid;
+            tool.name = name;
+            tool.active = false;
+
+            // add ao dictionary
+            tools.add(uuid, tool);
+
+            return tool;
+        },
+        Remove: function (uuid) {
+            return tools.remove(uuid);
+        },
+        List: function (callback) {
+            return typeof callback == 'function' ?
+                callback.call(this, tools.list()) :
+                tools.list();
+        }
+    }
+
+
+})(Plane);
+
+
+//
+//            function hitPath(canvas, event) {
+//                var bb = canvas.getBoundingClientRect();
+//
+//                var x = (event.clientX - bb.left) * (canvas.width / bb.width);
+//                var y = (event.clientY - bb.top) * (canvas.height / bb.height);
+//
+//                return context2D.isPointInPath(x, y);
+//            }
+//
+//
+//
+//
+//            htmlElement.onmousewheel = function (event) {
+//                console.log(event);
+//            };
+//
+//
+//            htmlElement.onclick = function (event) {
+//
+//                var zzz = getMousePos(htmlElement, event);
+//
+//                var debug = document.getElementById('debug');
+//
+//                debug.innerHTML = 'x: ' + zzz.x + ', y:' + zzz.y + ', selected: ' + hitPath(htmlElement, event);
+//
+//                console.log(context2D.getImageData(zzz.x, zzz.y, 3, 3).data);
+//
+//            };
+//
+//            //            htmlElement.oncontextmenu = function (event) {
+//            //                console.log(event);
+//            //
+//            //                return false;
+//            //            }
+Plane.Utility = (function (Plane) {
     "use strict";
 
     return {
-        math: {
-            uuid: function (length, radix) {
+        Uuid: function (length, radix) {
 
-                var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''),
-                    uuid = [],
-                    i;
-                radix = radix || chars.length;
+            var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''),
+                uuid = [],
+                i;
+            radix = radix || chars.length;
 
-                if (length) {
-                    // Compact form
-                    for (i = 0; i < length; i++) uuid[i] = chars[0 | Math.random() * radix];
-                } else {
-                    // rfc4122, version 4 form
-                    var r;
+            if (length) {
+                // Compact form
+                for (i = 0; i < length; i++) uuid[i] = chars[0 | Math.random() * radix];
+            } else {
+                // rfc4122, version 4 form
+                var r;
 
-                    // rfc4122 requires these characters
-                    uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
-                    uuid[14] = '4';
+                // rfc4122 requires these characters
+                uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
+                uuid[14] = '4';
 
-                    // Fill in random data.  At i==19 set the high bits of clock sequence as
-                    // per rfc4122, sec. 4.1.5
-                    for (i = 0; i < 36; i++) {
-                        if (!uuid[i]) {
-                            r = 0 | Math.random() * 16;
-                            uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
-                        }
+                // Fill in random data.  At i==19 set the high bits of clock sequence as
+                // per rfc4122, sec. 4.1.5
+                for (i = 0; i < 36; i++) {
+                    if (!uuid[i]) {
+                        r = 0 | Math.random() * 16;
+                        uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
                     }
                 }
-
-                return uuid.join('').toLowerCase();
             }
+
+            return uuid.join('').toLowerCase();
         },
-        event: (function () {
-            "use strict";
+        Event: (function () {
 
             function Event() {
                 this.listeners = {};
@@ -533,8 +719,56 @@ plane.utility = (function (plane) {
                     }
                 }
             };
+
             return Event;
-        })()
+
+        })(),
+        Dictionary: (function () {
+
+            function Dictionary() {
+                this.store = new Array();
+            }
+
+            Dictionary.prototype = {
+                add: function (key, value) {
+                    this.store[key] = value;
+                },
+                find: function (key) {
+                    return this.store[key];
+                },
+                remove: function (key) {
+                    delete this.store[key];
+                },
+                count: function () {
+                    return Object.keys(this.store).length;
+                },
+                list: function () {
+                    var self = this;
+                    return Object.keys(this.store).map(function (key) {
+                        return self.store[key];
+                    });
+                }
+            }
+
+            return Dictionary;
+
+        })(),
+        Graphic: {
+            mousePosition: function (element, position) {
+                var bb = element.getBoundingClientRect();
+
+                var x = (position.x - bb.left) * (element.clientWidth / bb.width);
+                var y = (position.y - bb.top) * (element.clientHeight / bb.height);
+
+                // tradução para o sistema de coordenadas cartesiano
+                y = (y - element.clientHeight) * -1;
+
+                return {
+                    x: x,
+                    y: y
+                };
+            }
+        }
     }
 
-})(plane);
+})(Plane);

@@ -8,13 +8,11 @@ plane.importSVG();
 plane.importDxf();
 
 plane.exportJSON();
-plane.exportSVG()
+plane.exportSVG() 
 plane.exportDxf()
 plane.exportPng()
 plane.exportPdf()
 
-plane.onChange(function () {});
-plane.onResize(function () {});
 
 
 plane.layers.initialize(config);
@@ -29,13 +27,14 @@ plane.layers.active = plane.layer;
 
 plane.layer.onActivate();
 plane.layer.onDeactivate();
+plane.layer.onChange();
 
 
 plane.render.initialize(config);
 plane.render.update();
 
 
-plane.shape.create();
+Plane.Shape.Create();
 plane.shape.search();
 plane.shape.remove();
 

@@ -1,9 +1,9 @@
 function drawGrid(width, height) {
 
-    plane.layers.create();
+    Plane.Layers.Create();
 
     for (xActual = 0; xActual < width; xActual += 50) {
-        plane.shape.create({
+        Plane.Shape.Create({
             type: 'line',
             x: [xActual, 0],
             y: [xActual, height],
@@ -21,7 +21,7 @@ function drawGrid(width, height) {
 //                break;
 //            }
 
-            plane.shape.create({
+            Plane.Shape.Create({
                 type: 'line',
                 x: [xActualSub, 0],
                 y: [xActualSub, height],
@@ -33,7 +33,7 @@ function drawGrid(width, height) {
 
     // + 40 = fim linha acima
     for (yActual = 0; yActual < height + 40; yActual += 50) {
-        plane.shape.create({
+        Plane.Shape.Create({
             type: 'line',
             x: [0, yActual],
             y: [width, yActual],
@@ -53,7 +53,7 @@ function drawGrid(width, height) {
 //                break;
 //            }
 
-            plane.shape.create({
+            Plane.Shape.Create({
                 type: 'line',
                 x: [0, yActualSub],
                 y: [width, yActualSub],
@@ -64,6 +64,6 @@ function drawGrid(width, height) {
         }
     }
 
-    plane.render.update();
+    Plane.Render.Update();
 
 };
