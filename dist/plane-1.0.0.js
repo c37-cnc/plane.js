@@ -1,5 +1,5 @@
 /*!
- * C37 in 18-05-2014 at 01:03:29 
+ * C37 in 18-05-2014 at 21:33:08 
  *
  * plane version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -616,6 +616,37 @@ Plane.Tools = (function (Plane) {
             });
 
             this.addEventListener('onClick', function (event) {
+
+                var uuid = Plane.Layers.Active.uuid;
+
+                Plane.Shape.Search(uuid).forEach(function (shape) {
+
+                    if (shape.type == 'line') {
+
+                        var a1 = {
+                                x: shape.x[0],
+                                y: shape.x[1]
+                            },
+                            a2 = {
+                                x: shape.y[0],
+                                y: shape.y[1]
+                            },
+                            b1 = {
+                                x: event.x,
+                                y: event.y
+                            },
+                            b2 = {
+                                x: event.x + 1,
+                                y: event.y + 1
+                            }
+
+                        Plane.Utility.Graphic.intersectionLine(a1, a2, b1, b2);
+
+                    }
+
+                });
+
+
                 tools.list().forEach(function (tool) {
                     if (tool.active) {
                         tool.dispatchEvent('onClick', event);
@@ -851,6 +882,36 @@ Plane.Utility = (function (Plane) {
                     x: x,
                     y: y
                 };
+            },
+            intersectionLine: function (a1, a2, b1, b2) {
+                var uaT = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x),
+                    ubT = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x),
+                    uB = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
+                if (uB !== 0) {
+                    var ua = uaT / uB,
+                        ub = ubT / uB;
+                    if (0 <= ua && ua <= 1 && 0 <= ub && ub <= 1) {
+                        var xxx = (a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y));
+                        
+                        console.log('Intersection');
+                        
+//                        result = new Intersection('Intersection');
+//                        result.points.push(new fabric.Point(a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y)));
+                    } else {
+                        var zzz = 'aa';
+//                        result = new Intersection();
+                    }
+                } else {
+                    if (uaT === 0 || ubT === 0) {
+                        var sss = 'Coincident';
+//                        result = new Intersection('Coincident');
+                    } else {
+                        var ttt = 'Parallel';
+//                        result = new Intersection('Parallel');
+                    }
+                }
+                return true;
+
             }
         },
         Object: {

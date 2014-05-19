@@ -109,6 +109,36 @@ Plane.Utility = (function (Plane) {
                     x: x,
                     y: y
                 };
+            },
+            intersectionLine: function (a1, a2, b1, b2) {
+                var uaT = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x),
+                    ubT = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x),
+                    uB = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
+                if (uB !== 0) {
+                    var ua = uaT / uB,
+                        ub = ubT / uB;
+                    if (0 <= ua && ua <= 1 && 0 <= ub && ub <= 1) {
+                        var xxx = (a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y));
+                        
+                        console.log('Intersection');
+                        
+//                        result = new Intersection('Intersection');
+//                        result.points.push(new fabric.Point(a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y)));
+                    } else {
+                        var zzz = 'aa';
+//                        result = new Intersection();
+                    }
+                } else {
+                    if (uaT === 0 || ubT === 0) {
+                        var sss = 'Coincident';
+//                        result = new Intersection('Coincident');
+                    } else {
+                        var ttt = 'Parallel';
+//                        result = new Intersection('Parallel');
+                    }
+                }
+                return true;
+
             }
         },
         Object: {
