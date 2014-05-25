@@ -3,47 +3,53 @@ Plane.Layers = (function (Plane) {
 
     var layers = null;
 
-    function Layer() {}
+    function Layer(attrs) {
+        for (var name in attrs) {
+            if (name in this) {
+                this[name] = attrs[name];
+            }
+        }
+    }
 
     Layer.prototype = {
 
-        set uuid(value) {
-            this._uuid = value;
-        },
         get uuid() {
             return this._uuid;
         },
+        set uuid(value) {
+            this._uuid = value;
+        },
 
+        get name() {
+            return this._name;
+        },
         set name(value) {
             if ((value != null) && (value != undefined) && (value != '')) {
                 return this._name = value;
             }
         },
-        get name() {
-            return this._name;
-        },
 
-        set locked(value) {
-            this._locked = value;
-        },
         get locked() {
             return this._locked;
         },
-
-        set visible(value) {
-            this._visible = value;
+        set locked(value) {
+            this._locked = value;
         },
+
         get visible() {
             return this._visible;
         },
-
-        set style(value) {
-            this._style = value;
+        set visible(value) {
+            this._visible = value;
         },
+
         get style() {
             return this._style;
+        },
+        set style(value) {
+            this._style = value;
         }
-        
+
     }
 
     return {
@@ -61,30 +67,28 @@ Plane.Layers = (function (Plane) {
                 throw new Error('Layer - Create - Layer Name is not valid - See the documentation');
             }
 
-            name = name || 'New Layer ' + layers.count();
-            style = style || {
-                fillColor: 'rgb(255,0,0)',
-                lineCap: 'round',
-                lineWidth: 10,
-                lineColor: 'rgb(255,0,0)',
-            }
-
-            var layer = new Layer(),
-                uuid = Plane.Utility.Uuid(9, 16);
-
-            layer.uuid = uuid;
-            layer.name = name;
-            layer.style = style;
+            var attrs = {
+                    uuid: Plane.Utility.Uuid(9, 16),
+                    name: name || 'New Layer ' + layers.count(),
+                    style: style || {
+                        fillColor: 'rgb(0,0,0)',
+                        lineCap: 'butt',
+                        lineJoin: 'miter',
+                        lineWidth: 1,
+                        lineColor: 'rgb(0, 0, 0)',
+                    }
+                },
+                layer = new Layer(attrs);
 
             // add ao dictionary
-            layers.add(uuid, layer);
+            layers.add(layer.uuid, layer);
 
             // seleciono como ativa
-            this.Active = uuid;
-            
-            // crio o Render respectivo da Layer
-            Plane.Render.Create(uuid);
+            this.Active = layer.uuid;
 
+            // crio o Render respectivo da Layer
+            Plane.Render.Create(layer.uuid);
+            
             return true;
         },
         Remove: function (uuid) {
@@ -98,13 +102,13 @@ Plane.Layers = (function (Plane) {
         get Active() {
             return this._active;
         },
-        set Active(uuid) {
+        set Active(value) {
             this.dispatchEvent('onDeactive', {
                 type: 'onDeactive',
                 layer: this.Active
             });
 
-            this._active = layers.find(uuid);
+            this._active = layers.find(value);
 
             this.dispatchEvent('onActive', {
                 type: 'onActive',

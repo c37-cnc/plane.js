@@ -1,4 +1,4 @@
-Plane.Render = (function (Plane, document) {
+Plane.Render = (function (Plane, Document, Math) {
     "use strict";
 
     var viewPort = null,
@@ -10,7 +10,7 @@ Plane.Render = (function (Plane, document) {
                 throw new Error('Render - Initialize - Config is not valid - See the documentation');
             }
 
-            if (!document.createElement('canvas').getContext) {
+            if (!Document.createElement('canvas').getContext) {
                 throw new Error('No canvas support for this device');
             }
 
@@ -20,7 +20,7 @@ Plane.Render = (function (Plane, document) {
             return true;
         },
         Create: function (uuid) {
-            var render = document.createElement('canvas');
+            var render = Document.createElement('canvas');
 
             render.width = viewPort.clientWidth;
             render.height = viewPort.clientHeight;
@@ -48,9 +48,10 @@ Plane.Render = (function (Plane, document) {
                 now: new Date().toISOString()
             });
 
-            var uuid = Plane.Layers.Active.uuid,
-                shapes = Plane.Shape.Search(uuid),
-                render = renders.find(uuid),
+            var layerUuid = Plane.Layers.Active.uuid,
+                layerStyle = Plane.Layers.Active.style,
+                shapes = Plane.Shape.Search(layerUuid),
+                render = renders.find(layerUuid),
                 context2D = render.getContext('2d');
 
             // limpando o render
@@ -62,14 +63,17 @@ Plane.Render = (function (Plane, document) {
                 context2D.save();
 
                 context2D.beginPath();
+                // style of shape or layer
+                context2D.lineWidth = (shape.style && shape.style.lineWidth) ? shape.style.lineWidth : layerStyle.lineWidth;
+                context2D.strokeStyle = (shape.style && shape.style.lineColor) ? shape.style.lineColor : layerStyle.lineColor;
+                context2D.lineCap = (shape.style && shape.style.lineCap) ? shape.style.lineCap : layerStyle.lineCap;
+                context2D.lineJoin = (shape.style && shape.style.lineJoin) ? shape.style.lineJoin : layerStyle.lineJoin;
+
+                //https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes
 
                 switch (shape.type) {
                 case 'line':
                     {
-
-                        context2D.lineWidth = shape.strokeWidth || 1;
-                        context2D.strokeStyle = shape.strokeColor || 'black';
-
                         context2D.moveTo(shape.x[0], shape.x[1]);
                         context2D.lineTo(shape.y[0], shape.y[1]);
 
@@ -77,37 +81,26 @@ Plane.Render = (function (Plane, document) {
                     }
                 case 'rectangle':
                     {
-
-                        context2D.lineWidth = shape.strokeWidth || 1;
-                        context2D.strokeStyle = shape.strokeColor || 'black';
-
                         context2D.strokeRect(shape.x, shape.y, shape.width, shape.height);
-
                         break;
                     }
                 case 'arc':
                     {
-
+                        context2D.arc(shape.x, shape.y, shape.radius, (Math.PI / 180) * shape.startAngle, (Math.PI / 180) * shape.endAngle, shape.clockWise);
                         break;
                     }
                 case 'circle':
                     {
                         context2D.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2, true);
-                        context2D.closePath();
-
                         break;
                     }
                 case 'ellipse':
                     {
-
+                        context2D.ellipse(shape.x, shape.y, shape.width, shape.height, 0, 0, Math.PI * 2)
                         break;
                     }
                 case 'polygon':
                     {
-                        if (shape.sides < 3) {
-                            throw new Error('shape.sides < 3');
-                        }
-
                         var a = ((Math.PI * 2) / shape.sides);
 
                         context2D.translate(shape.x, shape.y);
@@ -125,7 +118,6 @@ Plane.Render = (function (Plane, document) {
                     break;
                 }
 
-                context2D.fill();
                 context2D.stroke();
 
                 // restore state of all configuration
@@ -138,4 +130,4 @@ Plane.Render = (function (Plane, document) {
 
     };
 
-})(Plane, window.document);
+})(Plane, window.document, Math);

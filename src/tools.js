@@ -125,11 +125,46 @@ Plane.Tools = (function (Plane) {
                 });
             });
             this.addEventListener('onMouseMove', function (event) {
-                tools.list().forEach(function (tool) {
-                    if (tool.active) {
-                        tool.dispatchEvent('onMouseMove', event);
+
+
+                var uuid = Plane.Layers.Active.uuid;
+
+                Plane.Shape.Search(uuid).forEach(function (shape) {
+
+                    if (shape.type == 'line') {
+
+                        var a1 = {
+                                x: shape.x[0],
+                                y: shape.x[1]
+                            },
+                            a2 = {
+                                x: shape.y[0],
+                                y: shape.y[1]
+                            },
+                            b1 = {
+                                x: event.x,
+                                y: event.y
+                            },
+                            b2 = {
+                                x: event.x + 1, 
+                                y: event.y + 1
+                            }
+
+                        Plane.Utility.Graphic.intersectionLine(a1, a2, b1, b2);
+
                     }
+
                 });
+
+
+
+                //                tools.list().forEach(function (tool) {
+                //                    if (tool.active) {
+                //                        tool.dispatchEvent('onMouseMove', event);
+                //                    }
+                //                });
+
+
             });
             this.addEventListener('onMouseWheel', function (event) {
                 tools.list().forEach(function (tool) {

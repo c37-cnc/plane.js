@@ -23,8 +23,10 @@ window.Plane = (function (window) {
                 type: 'line',
                 x: [xActual, 0],
                 y: [xActual, height],
-                strokeColor: color,
-                strokeWidth: .6
+                style: {
+                    lineColor: color,
+                    lineWidth: .6
+                }
             });
 
             for (var xInternalSub = 1; xInternalSub <= 4; xInternalSub++) {
@@ -41,8 +43,10 @@ window.Plane = (function (window) {
                     type: 'line',
                     x: [xActualSub, 0],
                     y: [xActualSub, height],
-                    strokeColor: color,
-                    strokeWidth: .3
+                    style: {
+                        lineColor: color,
+                        lineWidth: .3
+                    }
                 });
             }
         }
@@ -53,8 +57,10 @@ window.Plane = (function (window) {
                 type: 'line',
                 x: [0, yActual],
                 y: [width, yActual],
-                strokeColor: color,
-                strokeWidth: .6
+                style: {
+                    lineColor: color,
+                    lineWidth: .6
+                }
             });
 
             // 10/20/30/40 = 4 linhas internas
@@ -72,8 +78,10 @@ window.Plane = (function (window) {
                     type: 'line',
                     x: [0, yActualSub],
                     y: [width, yActualSub],
-                    strokeColor: color,
-                    strokeWidth: .3
+                    style: {
+                        lineColor: color,
+                        lineWidth: .3
+                    }
                 });
             }
         }
@@ -91,6 +99,7 @@ window.Plane = (function (window) {
             Plane.Events.Initialize(config);
             Plane.Render.Initialize(config);
             Plane.Layers.Initialize(config);
+            Plane.Shape.Initialize(config);
             Plane.Tools.Initialize(config);
 
             var style = Plane.Utility.Object.merge({

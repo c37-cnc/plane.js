@@ -95,9 +95,9 @@
 
             Plane.Initialize({
                 viewPort: viewPort,
-//                style: {
-//                    gridEnable: false
-//                }
+                //                style: {
+                //                    gridEnable: false
+                //                }
             });
 
             Plane.addEventListener('onChange', function (event) {
@@ -127,24 +127,35 @@
                     x: 900,
                     y: 500,
                     radius: 70,
-                    sides: 5
+                    sides: 3
                 })
                 .Create({
                     type: 'rectangle',
                     x: 150,
                     y: 150,
-                    width: 100,
+                    width: 125,
                     height: 100
+                })
+                .Create({
+                    type: 'ellipse',
+                    x: 450,
+                    y: 300,
+                    width: 45,
+                    height: 25
                 })
                 .Create({
                     type: 'line',
                     x: [50, 50],
                     y: [1600, 50]
-                })
+                })  
                 .Create({
-                    type: 'line',
-                    x: [100, 600],
-                    y: [700, 700]
+                    type: 'arc',
+                    x: 600,
+                    y: 300,
+                    radius: 50,
+                    startAngle: 0,
+                    endAngle: 180,
+                    clockWise: false
                 })
                 .Create({
                     type: 'circle',
@@ -184,6 +195,11 @@
 
             var lineClick = null;
 
+
+            //            var zzz = new Plane.Point(200, 400);
+            //            var ccc = Plane.Point.Create(200, 400);
+
+
             tool001.addEventListener('onClick', function (event) {
 
                 if (!lineClick) {
@@ -219,8 +235,51 @@
                 console.log(event);
             });
 
+            tool001.addEventListener('onMouseMove', function (event) {
+                console.log(event);
+            });
+
             tool001.active = true;
             //            tool001.active = false;
+
+
+            document.getElementById('fileImport').addEventListener('change', function () {
+                var file = this.files[0],
+                    filename = file.name;
+
+                var lastDotPosition = filename.lastIndexOf('.'),
+                    bareFilename = filename.substr(0, lastDotPosition),
+                    fileExtension = filename.substr(lastDotPosition + 1).toLowerCase();
+
+
+                var reader = new FileReader();
+
+                reader.onload = function (event) {
+
+                    var fileData = event.target.result,
+                        svgString = '';
+
+                    switch (fileExtension) {
+                    case 'dxf':
+                        svgString = Plane.Utility.Import.fromDxf(fileData);
+                        break;
+                    case 'svg':
+                        svgString = fileData;
+                        break;
+                    default:
+                        return;
+                    }
+
+                };
+
+                reader.readAsText(file);
+
+
+
+
+
+
+            });
 
 
         }
@@ -253,6 +312,9 @@
     <aside id="right">
         <ul id="layersControl">
         </ul>
+        <div id="tools">
+            <input id="fileImport" type="file">
+        </div>
         <div id="debug" style="height:200px;border:1px solid red">
         </div>
     </aside>

@@ -56,7 +56,18 @@ Plane.Events = (function (window, Plane) {
                 Plane.Tools.dispatchEvent('onMouseUp', event);
             };
             viewPort.onmousemove = function (event) {
-                Plane.Tools.dispatchEvent('onMouseMove', event);
+                var position = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+
+                position = Plane.Utility.Graphic.mousePosition(viewPort, position);
+
+                Plane.Tools.dispatchEvent('onMouseMove', {
+                    type: 'onMouseMove',
+                    x: position.x,
+                    y: position.y
+                });
             };
             viewPort.onmousewheel = function (event) {
                 Plane.Tools.dispatchEvent('onMouseWheel', event);

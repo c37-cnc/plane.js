@@ -1,5 +1,5 @@
 /*!
- * C37 in 18-05-2014 at 21:33:08 
+ * C37 in 24-05-2014 at 23:01:29 
  *
  * plane version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -31,8 +31,10 @@ window.Plane = (function (window) {
                 type: 'line',
                 x: [xActual, 0],
                 y: [xActual, height],
-                strokeColor: color,
-                strokeWidth: .6
+                style: {
+                    lineColor: color,
+                    lineWidth: .6
+                }
             });
 
             for (var xInternalSub = 1; xInternalSub <= 4; xInternalSub++) {
@@ -49,8 +51,10 @@ window.Plane = (function (window) {
                     type: 'line',
                     x: [xActualSub, 0],
                     y: [xActualSub, height],
-                    strokeColor: color,
-                    strokeWidth: .3
+                    style: {
+                        lineColor: color,
+                        lineWidth: .3
+                    }
                 });
             }
         }
@@ -61,8 +65,10 @@ window.Plane = (function (window) {
                 type: 'line',
                 x: [0, yActual],
                 y: [width, yActual],
-                strokeColor: color,
-                strokeWidth: .6
+                style: {
+                    lineColor: color,
+                    lineWidth: .6
+                }
             });
 
             // 10/20/30/40 = 4 linhas internas
@@ -80,8 +86,10 @@ window.Plane = (function (window) {
                     type: 'line',
                     x: [0, yActualSub],
                     y: [width, yActualSub],
-                    strokeColor: color,
-                    strokeWidth: .3
+                    style: {
+                        lineColor: color,
+                        lineWidth: .3
+                    }
                 });
             }
         }
@@ -99,6 +107,7 @@ window.Plane = (function (window) {
             Plane.Events.Initialize(config);
             Plane.Render.Initialize(config);
             Plane.Layers.Initialize(config);
+            Plane.Shape.Initialize(config);
             Plane.Tools.Initialize(config);
 
             var style = Plane.Utility.Object.merge({
@@ -228,7 +237,18 @@ Plane.Events = (function (window, Plane) {
                 Plane.Tools.dispatchEvent('onMouseUp', event);
             };
             viewPort.onmousemove = function (event) {
-                Plane.Tools.dispatchEvent('onMouseMove', event);
+                var position = {
+                    x: event.clientX,
+                    y: event.clientY
+                };
+
+                position = Plane.Utility.Graphic.mousePosition(viewPort, position);
+
+                Plane.Tools.dispatchEvent('onMouseMove', {
+                    type: 'onMouseMove',
+                    x: position.x,
+                    y: position.y
+                });
             };
             viewPort.onmousewheel = function (event) {
                 Plane.Tools.dispatchEvent('onMouseWheel', event);
@@ -249,47 +269,53 @@ Plane.Layers = (function (Plane) {
 
     var layers = null;
 
-    function Layer() {}
+    function Layer(attrs) {
+        for (var name in attrs) {
+            if (name in this) {
+                this[name] = attrs[name];
+            }
+        }
+    }
 
     Layer.prototype = {
 
-        set uuid(value) {
-            this._uuid = value;
-        },
         get uuid() {
             return this._uuid;
         },
+        set uuid(value) {
+            this._uuid = value;
+        },
 
+        get name() {
+            return this._name;
+        },
         set name(value) {
             if ((value != null) && (value != undefined) && (value != '')) {
                 return this._name = value;
             }
         },
-        get name() {
-            return this._name;
-        },
 
-        set locked(value) {
-            this._locked = value;
-        },
         get locked() {
             return this._locked;
         },
-
-        set visible(value) {
-            this._visible = value;
+        set locked(value) {
+            this._locked = value;
         },
+
         get visible() {
             return this._visible;
         },
-
-        set style(value) {
-            this._style = value;
+        set visible(value) {
+            this._visible = value;
         },
+
         get style() {
             return this._style;
+        },
+        set style(value) {
+            this._style = value;
         }
-        
+
     }
 
     return {
@@ -307,30 +333,28 @@ Plane.Layers = (function (Plane) {
                 throw new Error('Layer - Create - Layer Name is not valid - See the documentation');
             }
 
-            name = name || 'New Layer ' + layers.count();
-            style = style || {
-                fillColor: 'rgb(255,0,0)',
-                lineCap: 'round',
-                lineWidth: 10,
-                lineColor: 'rgb(255,0,0)',
-            }
-
-            var layer = new Layer(),
-                uuid = Plane.Utility.Uuid(9, 16);
-
-            layer.uuid = uuid;
-            layer.name = name;
-            layer.style = style;
+            var attrs = {
+                    uuid: Plane.Utility.Uuid(9, 16),
+                    name: name || 'New Layer ' + layers.count(),
+                    style: style || {
+                        fillColor: 'rgb(0,0,0)',
+                        lineCap: 'butt',
+                        lineJoin: 'miter',
+                        lineWidth: 1,
+                        lineColor: 'rgb(0, 0, 0)',
+                    }
+                },
+                layer = new Layer(attrs);
 
             // add ao dictionary
-            layers.add(uuid, layer);
+            layers.add(layer.uuid, layer);
 
             // seleciono como ativa
-            this.Active = uuid;
-            
-            // crio o Render respectivo da Layer
-            Plane.Render.Create(uuid);
+            this.Active = layer.uuid;
 
+            // crio o Render respectivo da Layer
+            Plane.Render.Create(layer.uuid);
+            
             return true;
         },
         Remove: function (uuid) {
@@ -344,13 +368,13 @@ Plane.Layers = (function (Plane) {
         get Active() {
             return this._active;
         },
-        set Active(uuid) {
+        set Active(value) {
             this.dispatchEvent('onDeactive', {
                 type: 'onDeactive',
                 layer: this.Active
             });
 
-            this._active = layers.find(uuid);
+            this._active = layers.find(value);
 
             this.dispatchEvent('onActive', {
                 type: 'onActive',
@@ -360,7 +384,20 @@ Plane.Layers = (function (Plane) {
     };
 
 })(Plane);
-Plane.Render = (function (Plane, document) {
+Plane.Point = (function (Plane) {
+    "use strict";
+
+    return {
+        Create: function (attrs) {
+
+        }
+    }
+
+    
+    
+    
+})(Plane);
+Plane.Render = (function (Plane, Document, Math) {
     "use strict";
 
     var viewPort = null,
@@ -372,7 +409,7 @@ Plane.Render = (function (Plane, document) {
                 throw new Error('Render - Initialize - Config is not valid - See the documentation');
             }
 
-            if (!document.createElement('canvas').getContext) {
+            if (!Document.createElement('canvas').getContext) {
                 throw new Error('No canvas support for this device');
             }
 
@@ -382,7 +419,7 @@ Plane.Render = (function (Plane, document) {
             return true;
         },
         Create: function (uuid) {
-            var render = document.createElement('canvas');
+            var render = Document.createElement('canvas');
 
             render.width = viewPort.clientWidth;
             render.height = viewPort.clientHeight;
@@ -410,9 +447,10 @@ Plane.Render = (function (Plane, document) {
                 now: new Date().toISOString()
             });
 
-            var uuid = Plane.Layers.Active.uuid,
-                shapes = Plane.Shape.Search(uuid),
-                render = renders.find(uuid),
+            var layerUuid = Plane.Layers.Active.uuid,
+                layerStyle = Plane.Layers.Active.style,
+                shapes = Plane.Shape.Search(layerUuid),
+                render = renders.find(layerUuid),
                 context2D = render.getContext('2d');
 
             // limpando o render
@@ -424,14 +462,17 @@ Plane.Render = (function (Plane, document) {
                 context2D.save();
 
                 context2D.beginPath();
+                // style of shape or layer
+                context2D.lineWidth = (shape.style && shape.style.lineWidth) ? shape.style.lineWidth : layerStyle.lineWidth;
+                context2D.strokeStyle = (shape.style && shape.style.lineColor) ? shape.style.lineColor : layerStyle.lineColor;
+                context2D.lineCap = (shape.style && shape.style.lineCap) ? shape.style.lineCap : layerStyle.lineCap;
+                context2D.lineJoin = (shape.style && shape.style.lineJoin) ? shape.style.lineJoin : layerStyle.lineJoin;
+
+                //https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes
 
                 switch (shape.type) {
                 case 'line':
                     {
-
-                        context2D.lineWidth = shape.strokeWidth || 1;
-                        context2D.strokeStyle = shape.strokeColor || 'black';
-
                         context2D.moveTo(shape.x[0], shape.x[1]);
                         context2D.lineTo(shape.y[0], shape.y[1]);
 
@@ -439,37 +480,26 @@ Plane.Render = (function (Plane, document) {
                     }
                 case 'rectangle':
                     {
-
-                        context2D.lineWidth = shape.strokeWidth || 1;
-                        context2D.strokeStyle = shape.strokeColor || 'black';
-
                         context2D.strokeRect(shape.x, shape.y, shape.width, shape.height);
-
                         break;
                     }
                 case 'arc':
                     {
-
+                        context2D.arc(shape.x, shape.y, shape.radius, (Math.PI / 180) * shape.startAngle, (Math.PI / 180) * shape.endAngle, shape.clockWise);
                         break;
                     }
                 case 'circle':
                     {
                         context2D.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2, true);
-                        context2D.closePath();
-
                         break;
                     }
                 case 'ellipse':
                     {
-
+                        context2D.ellipse(shape.x, shape.y, shape.width, shape.height, 0, 0, Math.PI * 2)
                         break;
                     }
                 case 'polygon':
                     {
-                        if (shape.sides < 3) {
-                            throw new Error('shape.sides < 3');
-                        }
-
                         var a = ((Math.PI * 2) / shape.sides);
 
                         context2D.translate(shape.x, shape.y);
@@ -487,7 +517,6 @@ Plane.Render = (function (Plane, document) {
                     break;
                 }
 
-                context2D.fill();
                 context2D.stroke();
 
                 // restore state of all configuration
@@ -500,7 +529,7 @@ Plane.Render = (function (Plane, document) {
 
     };
 
-})(Plane, window.document);
+})(Plane, window.document, Math);
 /**
  * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
  * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -510,35 +539,230 @@ Plane.Render = (function (Plane, document) {
  * @class Shape
  * @static
  */
-Plane.Shape = (function (Plane) {
+Plane.Shape = (function (Plane, Math) {
     "use strict";
 
-    var shapes = [];
+    var shapes = null;
+
+    function Shape(attrs) {
+        for (var name in attrs) {
+            if (name in this) {
+                this[name] = attrs[name];
+            }
+        }
+    }
+
+    Shape.prototype = {
+
+        get uuid() {
+            return this._uuid;
+        },
+        set uuid(value) {
+            this._uuid = value;
+        },
+
+        get name() {
+            return this._name;
+        },
+        set name(value) {
+            this._name = value;
+        },
+
+        get type() {
+            return this._type;
+        },
+        set type(value) {
+            this._type = value;
+        },
+
+        get locked() {
+            return this._locked;
+        },
+        set locked(value) {
+            this._locked = value;
+        },
+
+        get visible() {
+            return this._visible;
+        },
+        set visible(value) {
+            this._visible = value;
+        },
+
+        get x() {
+            return this._x;
+        },
+        set x(value) {
+            this._x = value;
+        },
+
+        get y() {
+            return this._y;
+        },
+        set y(value) {
+            this._y = value;
+        },
+
+        get angle() {
+            return this._angle;
+        },
+        set angle(value) {
+            this._angle = value;
+        },
+
+        get scaleX() {
+            return this._scaleX;
+        },
+        set scaleX(value) {
+            this._scaleX = value;
+        },
+
+        get scaleY() {
+            return this._scaleY;
+        },
+        set scaleY(value) {
+            this._scaleY = value;
+        },
+
+        get selectable() {
+            return this._selectable;
+        },
+        set selectable(value) {
+            this._selectable = value;
+        },
+
+        get style() {
+            return this._style;
+        },
+        set style(value) {
+            this._style = value;
+        },
+
+        get radius() {
+            return this._radius;
+        },
+        set radius(value) {
+            if ((this.type != 'polygon') && (this.type != 'arc') && (this.type != 'circle')) {
+                throw new Error('Shape - Create - Radius not correct for the ' + this.type + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
+            }
+            this._radius = value;
+        },
+
+        get sides() {
+            return this._sides;
+        },
+        set sides(value) {
+            if ((this.type != 'polygon') && (this.type != 'arc')) {
+                throw new Error('Shape - Create - Sides not correct for the ' + this.type + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
+            }
+            if (value < 3) {
+                throw new Error('Shape - Create - Incorrect number of sides \nhttp://requirejs.org/docs/errors.html#' + 'id');
+            }
+            this._sides = value;
+        },
+
+        get height() {
+            return this._height;
+        },
+        set height(value) {
+            if ((this.type != 'rectangle') && (this.type != 'ellipse')) {
+                throw new Error('Shape - Create - Height not correct for the ' + this.type + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
+            }
+            this._height = value;
+        },
+
+        get width() {
+            return this._width;
+        },
+        set width(value) {
+            if ((this.type != 'rectangle') && (this.type != 'ellipse')) {
+                throw new Error('Shape - Create - Width not correct for the ' + this.type + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
+            }
+            this._width = value;
+        },
+
+        get startAngle() {
+            return this._startAngle;
+        },
+        set startAngle(value) {
+            if (this.type != 'arc') {
+                throw new Error('Shape - Create - Start Angle not correct for the ' + this.type + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
+            }
+            this._startAngle = value;
+        },
+
+        get endAngle() {
+            return this._endAngle;
+        },
+        set endAngle(value) {
+            if (this.type != 'arc') {
+                throw new Error('Shape - Create - End Angle not correct for the ' + this.type + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
+            }
+            this._endAngle = value;
+        },
+
+        get clockWise() {
+            return this._clockWise;
+        },
+        set clockWise(value) {
+            if (this.type != 'arc') {
+                throw new Error('Shape - Create - Clockwise not correct for the ' + this.type + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
+            }
+            this._clockWise = value;
+        }
 
 
+    }
 
     return {
-        Create: function (params) {
-
-//            Plane.dispatchEvent('onChange', {
-//                type: 'onChange',
-//                now: new Date().toISOString()
-//            });
-
-            var uuid = Plane.Layers.Active.uuid;
-
-            if (!shapes[uuid]) {
-                shapes[uuid] = [];
+        Initialize: function (config) {
+            if ((typeof config == "function") || (config == null)) {
+                throw new Error('Shape - Initialize - Config is not valid' + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
             }
 
-            shapes[uuid].push(params);
+            shapes = new Plane.Utility.Dictionary();
+
+            return true;
+        },
+        Create: function (attrs) {
+            if ((typeof attrs == "function") || (attrs == null)) {
+                throw new Error('Shape - Create - Attrs is not valid' + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
+            }
+            if (['polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse'].indexOf(attrs.type.toLowerCase()) == -1) {
+                throw new Error('Shape - Create - Type is not valid' + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
+            }
+            if ((attrs.x == undefined) || (attrs.y == undefined)) {
+                throw new Error('Shape - Create - X and Y is not valid' + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
+            }
+
+
+            var shape = null,
+                uuid = Plane.Utility.Uuid(9, 16);
+
+            attrs = Plane.Utility.Object.merge({
+                uuid: uuid,
+                name: 'Shape ' + uuid,
+                type: attrs.type.toLowerCase(),
+                selectable: true,
+                locked: false,
+                visible: true,
+            }, attrs);
+
+            shape = new Shape(attrs);
+
+
+            var layerUuid = Plane.Layers.Active.uuid;
+            if (!shapes.find(layerUuid)) {
+                shapes.add(layerUuid, []);
+            }
+            shapes.find(layerUuid).push(shape);
 
             return this;
         },
 
         Search: function (selector) {
 
-            return shapes[selector];
+            return shapes.find(selector);
 
         },
 
@@ -548,7 +772,7 @@ Plane.Shape = (function (Plane) {
         }
     };
 
-})(Plane);
+})(Plane, Math);
 Plane.Tools = (function (Plane) {
     "use strict";
 
@@ -676,11 +900,46 @@ Plane.Tools = (function (Plane) {
                 });
             });
             this.addEventListener('onMouseMove', function (event) {
-                tools.list().forEach(function (tool) {
-                    if (tool.active) {
-                        tool.dispatchEvent('onMouseMove', event);
+
+
+                var uuid = Plane.Layers.Active.uuid;
+
+                Plane.Shape.Search(uuid).forEach(function (shape) {
+
+                    if (shape.type == 'line') {
+
+                        var a1 = {
+                                x: shape.x[0],
+                                y: shape.x[1]
+                            },
+                            a2 = {
+                                x: shape.y[0],
+                                y: shape.y[1]
+                            },
+                            b1 = {
+                                x: event.x,
+                                y: event.y
+                            },
+                            b2 = {
+                                x: event.x + 1, 
+                                y: event.y + 1
+                            }
+
+                        Plane.Utility.Graphic.intersectionLine(a1, a2, b1, b2);
+
                     }
+
                 });
+
+
+
+                //                tools.list().forEach(function (tool) {
+                //                    if (tool.active) {
+                //                        tool.dispatchEvent('onMouseMove', event);
+                //                    }
+                //                });
+
+
             });
             this.addEventListener('onMouseWheel', function (event) {
                 tools.list().forEach(function (tool) {
@@ -883,34 +1142,53 @@ Plane.Utility = (function (Plane) {
                     y: y
                 };
             },
-            intersectionLine: function (a1, a2, b1, b2) {
-                var uaT = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x),
-                    ubT = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x),
-                    uB = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
-                if (uB !== 0) {
-                    var ua = uaT / uB,
-                        ub = ubT / uB;
-                    if (0 <= ua && ua <= 1 && 0 <= ub && ub <= 1) {
-                        var xxx = (a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y));
-                        
-                        console.log('Intersection');
-                        
-//                        result = new Intersection('Intersection');
-//                        result.points.push(new fabric.Point(a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y)));
-                    } else {
-                        var zzz = 'aa';
-//                        result = new Intersection();
-                    }
-                } else {
-                    if (uaT === 0 || ubT === 0) {
-                        var sss = 'Coincident';
-//                        result = new Intersection('Coincident');
-                    } else {
-                        var ttt = 'Parallel';
-//                        result = new Intersection('Parallel');
-                    }
+            intersectionLine: function (A, B, C, D) {
+
+                function ccw(A, B, C) {
+                    return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x);
                 }
-                return true;
+
+                var xxx = ccw(A, C, D) != ccw(B, C, D) && ccw(A, B, C) != ccw(A, B, D);
+
+                if (xxx) {
+                    console.log('Intersection');
+                }
+
+                //                def ccw(A, B, C): return (C.y - A.y) * (B.x - A.x) > (B.y - A.y) * (C.x - A.x)
+                //
+                //                def intersect(A, B, C, D): return ccw(A, C, D) != ccw(B, C, D) and ccw(A, B, C) != ccw(A, B, D)
+
+                return xxx;
+
+                //            intersectionLine: function (a1, a2, b1, b2) {
+
+                //                var uaT = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x),
+                //                    ubT = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x),
+                //                    uB = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
+                //                if (uB !== 0) {
+                //                    var ua = uaT / uB,
+                //                        ub = ubT / uB;
+                //                    if (0 <= ua && ua <= 1 && 0 <= ub && ub <= 1) {
+                //                        var xxx = (a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y));
+                //                        
+                //                        console.log('Intersection');
+                //                        
+                ////                        result = new Intersection('Intersection');
+                ////                        result.points.push(new fabric.Point(a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y)));
+                //                    } else {
+                //                        var zzz = 'aa';
+                ////                        result = new Intersection();
+                //                    }
+                //                } else {
+                //                    if (uaT === 0 || ubT === 0) {
+                //                        var sss = 'Coincident';
+                ////                        result = new Intersection('Coincident');
+                //                    } else {
+                //                        var ttt = 'Parallel';
+                ////                        result = new Intersection('Parallel');
+                //                    }
+                //                }
+                //                return true;
 
             }
         },
@@ -925,6 +1203,152 @@ Plane.Utility = (function (Plane) {
 
                 return first;
             },
+        },
+        String: (function () {
+
+            if (!String.prototype.format) {
+                String.prototype.format = function () {
+                    var args = arguments;
+                    return this.replace(/{(\d+)}/g, function (match, number) {
+                        return typeof args[number] != 'undefined' ? args[number] : match;
+                    });
+                };
+            }
+
+        })(),
+        Import: {
+            fromDxf: function (dxfString) {
+                "use strict";
+
+                function dxfObjectToSvgSnippet(dxfObject) {
+                    function getLineSvg(x1, y1, x2, y2) {
+                        return '<path d="M{0},{1} {2},{3}"/>\n'.format(x1, y1, x2, y2);
+                    }
+
+                    function deg2rad(deg) {
+                        return deg * (Math.PI / 180);
+                    }
+
+                    switch (dxfObject.type) {
+                    case 'LINE':
+                        return getLineSvg(dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1);
+                    case 'CIRCLE':
+                        return '<circle cx="{0}" cy="{1}" r="{2}"/>\n'.format(dxfObject.x, dxfObject.y, dxfObject.r);
+                    case 'ARC':
+                        var x1 = dxfObject.x + dxfObject.r * Math.cos(deg2rad(dxfObject.a0));
+                        var y1 = dxfObject.y + dxfObject.r * Math.sin(deg2rad(dxfObject.a0));
+                        var x2 = dxfObject.x + dxfObject.r * Math.cos(deg2rad(dxfObject.a1));
+                        var y2 = dxfObject.y + dxfObject.r * Math.sin(deg2rad(dxfObject.a1));
+
+                        if (dxfObject.a1 < dxfObject.a0) {
+                            dxfObject.a1 += 360;
+                        }
+                        var largeArcFlag = dxfObject.a1 - dxfObject.a0 > 180 ? 1 : 0;
+
+                        return '<path d="M{0},{1} A{2},{3} 0 {4},1 {5},{6}"/>\n'.
+                        format(x1, y1, dxfObject.r, dxfObject.r, largeArcFlag, x2, y2);
+                    case 'LWPOLYLINE':
+                        var svgSnippet = '';
+                        var vertices = dxfObject.vertices;
+                        for (var i = 0; i < vertices.length - 1; i++) {
+                            var vertice1 = vertices[i];
+                            var vertice2 = vertices[i + 1];
+                            svgSnippet += getLineSvg(vertice1.x, vertice1.y, vertice2.x, vertice2.y);
+                        }
+                        return svgSnippet;
+                    }
+                }
+
+                var groupCodes = {
+                    0: 'entityType',
+                    2: 'blockName',
+                    10: 'x',
+                    11: 'x1',
+                    20: 'y',
+                    21: 'y1',
+                    40: 'r',
+                    50: 'a0',
+                    51: 'a1'
+                };
+
+                var supportedEntities = ['LINE', 'CIRCLE', 'ARC', 'LWPOLYLINE'];
+
+                var counter = 0;
+                var code = null;
+                var isEntitiesSectionActive = false;
+                var object = {};
+                var svg = '';
+
+                // Normalize platform-specific newlines.
+                dxfString = dxfString.replace(/\r\n/g, '\n');
+                dxfString = dxfString.replace(/\r/g, '\n');
+
+                dxfString.split('\n').forEach(function (line) {
+                    line = line.trim();
+
+                    if (counter++ % 2 === 0) {
+                        code = parseInt(line);
+                    } else {
+                        var value = line;
+                        var groupCode = groupCodes[code];
+                        if (groupCode === 'blockName' && value === 'ENTITIES') {
+                            isEntitiesSectionActive = true;
+                        } else if (isEntitiesSectionActive) {
+                            if (groupCode === 'entityType') { // New entity starts.
+                                if (object.type) {
+                                    svg += dxfObjectToSvgSnippet(object);
+                                }
+
+
+                                //                                object = $.inArray(value, supportedEntities) > -1 ? {
+                                object = supportedEntities.indexOf(value) > -1 ? {
+                                    type: value
+                                } : {};
+
+                                if (value === 'ENDSEC') {
+                                    isEntitiesSectionActive = false;
+                                }
+                            } else if (object.type && typeof groupCode !== 'undefined') { // Known entity property recognized.
+                                object[groupCode] = parseFloat(value);
+
+                                if (object.type == 'LWPOLYLINE' && groupCode === 'y') {
+                                    if (!object.vertices) {
+                                        object.vertices = [];
+                                    }
+                                    object.vertices.push({
+                                        x: object.x,
+                                        y: object.y
+                                    });
+                                }
+                            }
+                        }
+                    }
+                });
+
+                if (svg === '') {
+                    return null;
+                }
+
+                var strokeWidth = 0.2;
+                var pixelToMillimeterConversionRatio = 3.543299873306695;
+                var svgId = "svg" + Math.round(Math.random() * Math.pow(10, 17));
+                svg = '<svg {0} version="1.1" xmlns="http://www.w3.org/2000/svg">\n' +
+                    '<g transform="scale({0},-{0})" '.format(pixelToMillimeterConversionRatio) +
+                    ' style="stroke:black; stroke-width:' + strokeWidth + '; ' +
+                    'stroke-linecap:round; stroke-linejoin:round; fill:none">\n' +
+                    svg +
+                    '</g>\n' +
+                    '</svg>\n';
+
+                // The SVG has to be added to the DOM to be able to retrieve its bounding box.
+//                $(svg.format('id="' + svgId + '"')).appendTo('body');
+//                var boundingBox = $('svg')[0].getBBox();
+//                var viewBoxValue = '{0} {1} {2} {3}'.format(boundingBox.x - strokeWidth / 2, boundingBox.y - strokeWidth / 2,
+//                    boundingBox.width + strokeWidth, boundingBox.height + strokeWidth);
+//                $('#' + svgId).remove();
+
+                return svg.format('viewBox="' + viewBoxValue + '"');
+            }
         }
     }
 
