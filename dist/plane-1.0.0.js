@@ -1,5 +1,5 @@
 /*!
- * C37 in 24-05-2014 at 23:01:29 
+ * C37 in 25-05-2014 at 23:58:18 
  *
  * plane version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -24,7 +24,9 @@ window.Plane = (function (window) {
 
         if (!enabled) return;
 
-        Plane.Layers.Create();
+        Plane.Layers.Create({
+            system: true
+        });
 
         for (var xActual = 0; xActual < width; xActual += 50) {
             Plane.Shape.Create({
@@ -107,7 +109,6 @@ window.Plane = (function (window) {
             Plane.Events.Initialize(config);
             Plane.Render.Initialize(config);
             Plane.Layers.Initialize(config);
-            Plane.Shape.Initialize(config);
             Plane.Tools.Initialize(config);
 
             var style = Plane.Utility.Object.merge({
@@ -130,41 +131,115 @@ window.Plane = (function (window) {
 
         },
 
-        set style(value) {
-            this._style = value;
-        },
         get style() {
             return this._style;
         },
+        set style(value) {
+            this._style = value;
+        },
 
+        get zoom() {
+            return this._zoom || 1;
+        },
         set zoom(value) {
+
+            // Plane.zoom = Math.pow(1.03, 1);  - more
+            // Plane.zoom = Math.pow(1.03, -1); - less
+            
+            var layerActiveUuid = Plane.Layers.Active.uuid;
+
+            Plane.Layers.List('system > true').forEach(function (layer) {
+                Plane.Layers.Active = layer.uuid;
+
+                Plane.Render.Update({
+                    zoom: value
+                });
+            });
+            
+            Plane.Layers.Active = layerActiveUuid;
+
             this._zoom = value;
         },
-        get zoom() {
-            return this._zoom;
-        },
 
+        get center() {
+            return this._center || {
+                x: 0,
+                y: 0
+            };
+        },
         set center(value) {
+
+            Plane.Render.Update({
+                center: value
+            });
+
             this._center = value;
         },
-        get center() {
-            return this._center;
+
+        importJson: function (stringJson) {
+
+            var objectJson = JSON.parse(stringJson);
+
+            for (var prop in objectJson) {
+                var layer = objectJson[prop],
+                    shapes = layer.shapes;
+
+                Plane.Layers.Create(layer);
+
+                shapes.forEach(function (shape) {
+                    Plane.Shape.Create(shape);
+                });
+
+                Plane.Render.Update();
+            }
+
+            return true;
+        },
+        importSvg: function (stringSvg) {
+
+        },
+        importDxf: function (stringDxf) {
+            try {
+                var stringJson = Plane.Utility.Import.fromDxf(stringDxf);
+                var objectDxf = JSON.parse(stringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
+
+                if (stringJson) {
+                    Plane.Layers.Create();
+
+                    for (var prop in objectDxf) {
+                        Plane.Shape.Create(objectDxf[prop]);
+                    }
+                    Plane.Render.Update();
+                }
+            } catch (e) {
+                var ppp = e;
+            }
         },
 
-        importJSON: function () {
+        exportJson: function () {
+
+            var stringJson = '[';
+
+            Plane.Layers.List().forEach(function (layer) {
+
+                stringJson += stringJson.substring(stringJson.length - 1, stringJson.length) == '[' ? '' : ',';
+                stringJson += layer.toJson();
+
+                stringJson = stringJson.substring(0, stringJson.length - 1);
+                stringJson += ', \"shapes\": ['
+
+                Plane.Shape.Search('layer > uuid > '.concat(layer.uuid)).forEach(function (shape) {
+                    stringJson += stringJson.substring(stringJson.length - 1, stringJson.length) == '[' ? '' : ',';
+                    stringJson += shape.toJson();
+                });
+
+                stringJson += ']}';
+            });
+
+            return stringJson += ']';
 
         },
-        importSVG: function () {
-
-        },
-        importDxf: function () {
-
-        },
-
-        exportJSON: function () {
-
-        },
-        exportSVG: function () {
+        exportSvg: function () {
 
         },
         exportDxf: function () {
@@ -314,6 +389,17 @@ Plane.Layers = (function (Plane) {
         },
         set style(value) {
             this._style = value;
+        },
+
+        get system() {
+            return this._system;
+        },
+        set system(value) {
+            this._system = value;
+        },
+
+        toJson: function () {
+            return JSON.stringify(this).replace(/_/g, '');
         }
 
     }
@@ -328,23 +414,28 @@ Plane.Layers = (function (Plane) {
 
             return true;
         },
-        Create: function (name, style) {
-            if ((name && (typeof name != 'string')) || (style && (typeof style != 'object'))) {
-                throw new Error('Layer - Create - Layer Name is not valid - See the documentation');
+        Create: function (attrs) {
+            if (typeof attrs == "function") {
+                throw new Error('Layer - Create - Attrs is not valid' + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
             }
 
-            var attrs = {
-                    uuid: Plane.Utility.Uuid(9, 16),
-                    name: name || 'New Layer ' + layers.count(),
-                    style: style || {
-                        fillColor: 'rgb(0,0,0)',
-                        lineCap: 'butt',
-                        lineJoin: 'miter',
-                        lineWidth: 1,
-                        lineColor: 'rgb(0, 0, 0)',
-                    }
+            attrs = Plane.Utility.Object.merge({
+                uuid: Plane.Utility.Uuid(9, 16),
+                name: (attrs && attrs.name) ? attrs.name : 'New Layer ' + layers.count(),
+                style: (attrs && attrs.style) ? attrs.style : {
+                    fillColor: 'rgb(0,0,0)',
+                    lineCap: 'butt',
+                    lineJoin: 'miter',
+                    lineWidth: 1,
+                    lineColor: 'rgb(0, 0, 0)',
                 },
-                layer = new Layer(attrs);
+                selectable: true,
+                locked: false,
+                visible: true,
+                system: false
+            }, attrs);
+
+            var layer = new Layer(attrs);
 
             // add ao dictionary
             layers.add(layer.uuid, layer);
@@ -354,16 +445,23 @@ Plane.Layers = (function (Plane) {
 
             // crio o Render respectivo da Layer
             Plane.Render.Create(layer.uuid);
-            
+            // inicializo o Container de shapes respectivo da Layer
+            Plane.Shape.Initialize({
+                uuid: layer.uuid
+            });
+
             return true;
         },
         Remove: function (uuid) {
             return layers.remove(uuid);
         },
-        List: function (callback) {
-            return typeof callback == 'function' ?
-                callback.call(this, layers.list()) :
-                layers.list();
+        List: function (selector) {
+
+            var layerList = layers.list().filter(function (layer) {
+                return selector ? layer : !layer.system;
+            });
+
+            return layerList;
         },
         get Active() {
             return this._active;
@@ -440,7 +538,7 @@ Plane.Render = (function (Plane, Document, Math) {
 
             return true;
         },
-        Update: function () {
+        Update: function (params) {
 
             Plane.dispatchEvent('onChange', {
                 type: 'onChange',
@@ -449,12 +547,20 @@ Plane.Render = (function (Plane, Document, Math) {
 
             var layerUuid = Plane.Layers.Active.uuid,
                 layerStyle = Plane.Layers.Active.style,
-                shapes = Plane.Shape.Search(layerUuid),
+                shapes = Plane.Shape.Search('layer > uuid > '.concat(layerUuid)),
                 render = renders.find(layerUuid),
                 context2D = render.getContext('2d');
 
+
             // limpando o render
             context2D.clearRect(0, 0, render.width, render.height);
+
+            if (params && params.center) {
+                context2D.translate(params.center.x, params.center.y);
+            }
+            if (params && params.zoom) {
+                context2D.scale(params.zoom, params.zoom);
+            }
 
             shapes.forEach(function (shape) {
 
@@ -462,11 +568,13 @@ Plane.Render = (function (Plane, Document, Math) {
                 context2D.save();
 
                 context2D.beginPath();
+
                 // style of shape or layer
                 context2D.lineWidth = (shape.style && shape.style.lineWidth) ? shape.style.lineWidth : layerStyle.lineWidth;
                 context2D.strokeStyle = (shape.style && shape.style.lineColor) ? shape.style.lineColor : layerStyle.lineColor;
                 context2D.lineCap = (shape.style && shape.style.lineCap) ? shape.style.lineCap : layerStyle.lineCap;
                 context2D.lineJoin = (shape.style && shape.style.lineJoin) ? shape.style.lineJoin : layerStyle.lineJoin;
+
 
                 //https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes
 
@@ -474,28 +582,41 @@ Plane.Render = (function (Plane, Document, Math) {
                 case 'line':
                     {
                         context2D.moveTo(shape.x[0], shape.x[1]);
-                        context2D.lineTo(shape.y[0], shape.y[1]);
+                        context2D.rotate((Math.PI / 180) * shape.angle);
 
+                        context2D.lineTo(shape.y[0], shape.y[1]);
                         break;
                     }
                 case 'rectangle':
                     {
-                        context2D.strokeRect(shape.x, shape.y, shape.width, shape.height);
+                        context2D.translate(shape.x, shape.y);
+                        context2D.rotate((Math.PI / 180) * shape.angle);
+
+                        context2D.strokeRect(0, 0, shape.width, shape.height);
                         break;
                     }
                 case 'arc':
                     {
-                        context2D.arc(shape.x, shape.y, shape.radius, (Math.PI / 180) * shape.startAngle, (Math.PI / 180) * shape.endAngle, shape.clockWise);
+                        context2D.translate(shape.x, shape.y);
+                        context2D.rotate((Math.PI / 180) * shape.angle);
+
+                        context2D.arc(0, 0, shape.radius, (Math.PI / 180) * shape.startAngle, (Math.PI / 180) * shape.endAngle, shape.clockWise);
                         break;
                     }
                 case 'circle':
                     {
-                        context2D.arc(shape.x, shape.y, shape.radius, 0, Math.PI * 2, true);
+                        context2D.translate(shape.x, shape.y);
+                        context2D.rotate((Math.PI / 180) * shape.angle);
+
+                        context2D.arc(0, 0, shape.radius, 0, Math.PI * 2, true);
                         break;
                     }
                 case 'ellipse':
                     {
-                        context2D.ellipse(shape.x, shape.y, shape.width, shape.height, 0, 0, Math.PI * 2)
+                        context2D.translate(shape.x, shape.y);
+                        context2D.rotate((Math.PI / 180) * shape.angle);
+
+                        context2D.ellipse(0, 0, shape.width, shape.height, 0, 0, Math.PI * 2)
                         break;
                     }
                 case 'polygon':
@@ -503,6 +624,8 @@ Plane.Render = (function (Plane, Document, Math) {
                         var a = ((Math.PI * 2) / shape.sides);
 
                         context2D.translate(shape.x, shape.y);
+                        context2D.rotate((Math.PI / 180) * shape.angle);
+
                         context2D.moveTo(shape.radius, 0);
 
                         for (var i = 1; i < shape.sides; i++) {
@@ -542,7 +665,7 @@ Plane.Render = (function (Plane, Document, Math) {
 Plane.Shape = (function (Plane, Math) {
     "use strict";
 
-    var shapes = null;
+    var shapes = {};
 
     function Shape(attrs) {
         for (var name in attrs) {
@@ -709,9 +832,11 @@ Plane.Shape = (function (Plane, Math) {
                 throw new Error('Shape - Create - Clockwise not correct for the ' + this.type + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
             }
             this._clockWise = value;
+        },
+
+        toJson: function () {
+            return JSON.stringify(this).replace(/_/g, '');
         }
-
-
     }
 
     return {
@@ -720,7 +845,8 @@ Plane.Shape = (function (Plane, Math) {
                 throw new Error('Shape - Initialize - Config is not valid' + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
             }
 
-            shapes = new Plane.Utility.Dictionary();
+            var layerUuid = config.uuid;
+            shapes[layerUuid] = new Plane.Utility.Dictionary();
 
             return true;
         },
@@ -746,24 +872,41 @@ Plane.Shape = (function (Plane, Math) {
                 selectable: true,
                 locked: false,
                 visible: true,
+                angle: 0,
+                scaleX: 0,
+                scaleY: 0
             }, attrs);
 
             shape = new Shape(attrs);
 
-
             var layerUuid = Plane.Layers.Active.uuid;
-            if (!shapes.find(layerUuid)) {
-                shapes.add(layerUuid, []);
-            }
-            shapes.find(layerUuid).push(shape);
+            shapes[layerUuid].add(shape.uuid, shape);
 
             return this;
         },
 
         Search: function (selector) {
 
-            return shapes.find(selector);
+            if (selector == undefined){
+                return [];
+            }
+            if ((Plane.Layers.Active.system) && !selector.contains('layer') && !selector.contains('uuid')){
+                return [];
+            }
 
+            var layerUuid = Plane.Layers.Active.uuid;
+
+            if (!selector) {
+                return shapes[layerUuid].list();
+            }
+
+            if (selector.contains('shape') && selector.contains('uuid')) {
+                return shapes[layerUuid].find(selector.substring(selector.length - 9, selector.length));
+            }
+
+            if (selector.contains('layer') && selector.contains('uuid')) {
+                return shapes[selector.substring(selector.length - 9, selector.length)].list();
+            }
         },
 
         Remove: function (shape) {
@@ -841,9 +984,7 @@ Plane.Tools = (function (Plane) {
 
             this.addEventListener('onClick', function (event) {
 
-                var uuid = Plane.Layers.Active.uuid;
-
-                Plane.Shape.Search(uuid).forEach(function (shape) {
+                Plane.Shape.Search().forEach(function (shape) {
 
                     if (shape.type == 'line') {
 
@@ -901,10 +1042,7 @@ Plane.Tools = (function (Plane) {
             });
             this.addEventListener('onMouseMove', function (event) {
 
-
-                var uuid = Plane.Layers.Active.uuid;
-
-                Plane.Shape.Search(uuid).forEach(function (shape) {
+                Plane.Shape.Search().forEach(function (shape) {
 
                     if (shape.type == 'line') {
 
@@ -1215,10 +1353,39 @@ Plane.Utility = (function (Plane) {
                 };
             }
 
+            if (!String.prototype.contains) {
+                String.prototype.contains = function () {
+                    return String.prototype.indexOf.apply(this, arguments) !== -1;
+                };
+            }
+
         })(),
         Import: {
-            fromDxf: function (dxfString) {
+            fromDxf: function (stringDxf) {
                 "use strict";
+
+                function aaaa(dxfObject) {
+
+                    switch (dxfObject.type) {
+                    case 'LINE':
+                        {
+                            var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] }';
+                            return line.format(dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1);
+                        }
+                    case 'CIRCLE':
+                        {
+                            var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} }';
+                            return circle.format(dxfObject.x, dxfObject.y, dxfObject.r);
+                        }
+                    case 'ARC':
+                        {
+                            var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} }';
+                            return arc.format(dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false);
+                        }
+                    }
+
+                }
+
 
                 function dxfObjectToSvgSnippet(dxfObject) {
                     function getLineSvg(x1, y1, x2, y2) {
@@ -1245,8 +1412,7 @@ Plane.Utility = (function (Plane) {
                         }
                         var largeArcFlag = dxfObject.a1 - dxfObject.a0 > 180 ? 1 : 0;
 
-                        return '<path d="M{0},{1} A{2},{3} 0 {4},1 {5},{6}"/>\n'.
-                        format(x1, y1, dxfObject.r, dxfObject.r, largeArcFlag, x2, y2);
+                        return '<path d="M{0},{1} A{2},{3} 0 {4},1 {5},{6}"/>\n'.format(x1, y1, dxfObject.r, dxfObject.r, largeArcFlag, x2, y2);
                     case 'LWPOLYLINE':
                         var svgSnippet = '';
                         var vertices = dxfObject.vertices;
@@ -1277,13 +1443,14 @@ Plane.Utility = (function (Plane) {
                 var code = null;
                 var isEntitiesSectionActive = false;
                 var object = {};
-                var svg = '';
+                var svg = '',
+                    json = '[';
 
                 // Normalize platform-specific newlines.
-                dxfString = dxfString.replace(/\r\n/g, '\n');
-                dxfString = dxfString.replace(/\r/g, '\n');
+                stringDxf = stringDxf.replace(/\r\n/g, '\n');
+                stringDxf = stringDxf.replace(/\r/g, '\n');
 
-                dxfString.split('\n').forEach(function (line) {
+                stringDxf.split('\n').forEach(function (line) {
                     line = line.trim();
 
                     if (counter++ % 2 === 0) {
@@ -1296,11 +1463,10 @@ Plane.Utility = (function (Plane) {
                         } else if (isEntitiesSectionActive) {
                             if (groupCode === 'entityType') { // New entity starts.
                                 if (object.type) {
-                                    svg += dxfObjectToSvgSnippet(object);
+                                    json += json.substring(json.length - 1, json.length) == '[' ? '' : ',';
+                                    json += aaaa(object);
                                 }
 
-
-                                //                                object = $.inArray(value, supportedEntities) > -1 ? {
                                 object = supportedEntities.indexOf(value) > -1 ? {
                                     type: value
                                 } : {};
@@ -1325,29 +1491,8 @@ Plane.Utility = (function (Plane) {
                     }
                 });
 
-                if (svg === '') {
-                    return null;
-                }
+                return json += ']';
 
-                var strokeWidth = 0.2;
-                var pixelToMillimeterConversionRatio = 3.543299873306695;
-                var svgId = "svg" + Math.round(Math.random() * Math.pow(10, 17));
-                svg = '<svg {0} version="1.1" xmlns="http://www.w3.org/2000/svg">\n' +
-                    '<g transform="scale({0},-{0})" '.format(pixelToMillimeterConversionRatio) +
-                    ' style="stroke:black; stroke-width:' + strokeWidth + '; ' +
-                    'stroke-linecap:round; stroke-linejoin:round; fill:none">\n' +
-                    svg +
-                    '</g>\n' +
-                    '</svg>\n';
-
-                // The SVG has to be added to the DOM to be able to retrieve its bounding box.
-//                $(svg.format('id="' + svgId + '"')).appendTo('body');
-//                var boundingBox = $('svg')[0].getBBox();
-//                var viewBoxValue = '{0} {1} {2} {3}'.format(boundingBox.x - strokeWidth / 2, boundingBox.y - strokeWidth / 2,
-//                    boundingBox.width + strokeWidth, boundingBox.height + strokeWidth);
-//                $('#' + svgId).remove();
-
-                return svg.format('viewBox="' + viewBoxValue + '"');
             }
         }
     }

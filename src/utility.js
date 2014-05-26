@@ -183,10 +183,39 @@ Plane.Utility = (function (Plane) {
                 };
             }
 
+            if (!String.prototype.contains) {
+                String.prototype.contains = function () {
+                    return String.prototype.indexOf.apply(this, arguments) !== -1;
+                };
+            }
+
         })(),
         Import: {
-            fromDxf: function (dxfString) {
+            fromDxf: function (stringDxf) {
                 "use strict";
+
+                function aaaa(dxfObject) {
+
+                    switch (dxfObject.type) {
+                    case 'LINE':
+                        {
+                            var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] }';
+                            return line.format(dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1);
+                        }
+                    case 'CIRCLE':
+                        {
+                            var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} }';
+                            return circle.format(dxfObject.x, dxfObject.y, dxfObject.r);
+                        }
+                    case 'ARC':
+                        {
+                            var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} }';
+                            return arc.format(dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false);
+                        }
+                    }
+
+                }
+
 
                 function dxfObjectToSvgSnippet(dxfObject) {
                     function getLineSvg(x1, y1, x2, y2) {
@@ -213,8 +242,7 @@ Plane.Utility = (function (Plane) {
                         }
                         var largeArcFlag = dxfObject.a1 - dxfObject.a0 > 180 ? 1 : 0;
 
-                        return '<path d="M{0},{1} A{2},{3} 0 {4},1 {5},{6}"/>\n'.
-                        format(x1, y1, dxfObject.r, dxfObject.r, largeArcFlag, x2, y2);
+                        return '<path d="M{0},{1} A{2},{3} 0 {4},1 {5},{6}"/>\n'.format(x1, y1, dxfObject.r, dxfObject.r, largeArcFlag, x2, y2);
                     case 'LWPOLYLINE':
                         var svgSnippet = '';
                         var vertices = dxfObject.vertices;
@@ -245,13 +273,14 @@ Plane.Utility = (function (Plane) {
                 var code = null;
                 var isEntitiesSectionActive = false;
                 var object = {};
-                var svg = '';
+                var svg = '',
+                    json = '[';
 
                 // Normalize platform-specific newlines.
-                dxfString = dxfString.replace(/\r\n/g, '\n');
-                dxfString = dxfString.replace(/\r/g, '\n');
+                stringDxf = stringDxf.replace(/\r\n/g, '\n');
+                stringDxf = stringDxf.replace(/\r/g, '\n');
 
-                dxfString.split('\n').forEach(function (line) {
+                stringDxf.split('\n').forEach(function (line) {
                     line = line.trim();
 
                     if (counter++ % 2 === 0) {
@@ -264,11 +293,10 @@ Plane.Utility = (function (Plane) {
                         } else if (isEntitiesSectionActive) {
                             if (groupCode === 'entityType') { // New entity starts.
                                 if (object.type) {
-                                    svg += dxfObjectToSvgSnippet(object);
+                                    json += json.substring(json.length - 1, json.length) == '[' ? '' : ',';
+                                    json += aaaa(object);
                                 }
 
-
-                                //                                object = $.inArray(value, supportedEntities) > -1 ? {
                                 object = supportedEntities.indexOf(value) > -1 ? {
                                     type: value
                                 } : {};
@@ -293,29 +321,8 @@ Plane.Utility = (function (Plane) {
                     }
                 });
 
-                if (svg === '') {
-                    return null;
-                }
+                return json += ']';
 
-                var strokeWidth = 0.2;
-                var pixelToMillimeterConversionRatio = 3.543299873306695;
-                var svgId = "svg" + Math.round(Math.random() * Math.pow(10, 17));
-                svg = '<svg {0} version="1.1" xmlns="http://www.w3.org/2000/svg">\n' +
-                    '<g transform="scale({0},-{0})" '.format(pixelToMillimeterConversionRatio) +
-                    ' style="stroke:black; stroke-width:' + strokeWidth + '; ' +
-                    'stroke-linecap:round; stroke-linejoin:round; fill:none">\n' +
-                    svg +
-                    '</g>\n' +
-                    '</svg>\n';
-
-                // The SVG has to be added to the DOM to be able to retrieve its bounding box.
-//                $(svg.format('id="' + svgId + '"')).appendTo('body');
-//                var boundingBox = $('svg')[0].getBBox();
-//                var viewBoxValue = '{0} {1} {2} {3}'.format(boundingBox.x - strokeWidth / 2, boundingBox.y - strokeWidth / 2,
-//                    boundingBox.width + strokeWidth, boundingBox.height + strokeWidth);
-//                $('#' + svgId).remove();
-
-                return svg.format('viewBox="' + viewBoxValue + '"');
             }
         }
     }

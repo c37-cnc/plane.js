@@ -16,7 +16,9 @@ window.Plane = (function (window) {
 
         if (!enabled) return;
 
-        Plane.Layers.Create();
+        Plane.Layers.Create({
+            system: true
+        });
 
         for (var xActual = 0; xActual < width; xActual += 50) {
             Plane.Shape.Create({
@@ -99,7 +101,6 @@ window.Plane = (function (window) {
             Plane.Events.Initialize(config);
             Plane.Render.Initialize(config);
             Plane.Layers.Initialize(config);
-            Plane.Shape.Initialize(config);
             Plane.Tools.Initialize(config);
 
             var style = Plane.Utility.Object.merge({
@@ -122,41 +123,115 @@ window.Plane = (function (window) {
 
         },
 
-        set style(value) {
-            this._style = value;
-        },
         get style() {
             return this._style;
         },
+        set style(value) {
+            this._style = value;
+        },
 
+        get zoom() {
+            return this._zoom || 1;
+        },
         set zoom(value) {
+
+            // Plane.zoom = Math.pow(1.03, 1);  - more
+            // Plane.zoom = Math.pow(1.03, -1); - less
+            
+            var layerActiveUuid = Plane.Layers.Active.uuid;
+
+            Plane.Layers.List('system > true').forEach(function (layer) {
+                Plane.Layers.Active = layer.uuid;
+
+                Plane.Render.Update({
+                    zoom: value
+                });
+            });
+            
+            Plane.Layers.Active = layerActiveUuid;
+
             this._zoom = value;
         },
-        get zoom() {
-            return this._zoom;
-        },
 
+        get center() {
+            return this._center || {
+                x: 0,
+                y: 0
+            };
+        },
         set center(value) {
+
+            Plane.Render.Update({
+                center: value
+            });
+
             this._center = value;
         },
-        get center() {
-            return this._center;
+
+        importJson: function (stringJson) {
+
+            var objectJson = JSON.parse(stringJson);
+
+            for (var prop in objectJson) {
+                var layer = objectJson[prop],
+                    shapes = layer.shapes;
+
+                Plane.Layers.Create(layer);
+
+                shapes.forEach(function (shape) {
+                    Plane.Shape.Create(shape);
+                });
+
+                Plane.Render.Update();
+            }
+
+            return true;
+        },
+        importSvg: function (stringSvg) {
+
+        },
+        importDxf: function (stringDxf) {
+            try {
+                var stringJson = Plane.Utility.Import.fromDxf(stringDxf);
+                var objectDxf = JSON.parse(stringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
+
+                if (stringJson) {
+                    Plane.Layers.Create();
+
+                    for (var prop in objectDxf) {
+                        Plane.Shape.Create(objectDxf[prop]);
+                    }
+                    Plane.Render.Update();
+                }
+            } catch (e) {
+                var ppp = e;
+            }
         },
 
-        importJSON: function () {
+        exportJson: function () {
+
+            var stringJson = '[';
+
+            Plane.Layers.List().forEach(function (layer) {
+
+                stringJson += stringJson.substring(stringJson.length - 1, stringJson.length) == '[' ? '' : ',';
+                stringJson += layer.toJson();
+
+                stringJson = stringJson.substring(0, stringJson.length - 1);
+                stringJson += ', \"shapes\": ['
+
+                Plane.Shape.Search('layer > uuid > '.concat(layer.uuid)).forEach(function (shape) {
+                    stringJson += stringJson.substring(stringJson.length - 1, stringJson.length) == '[' ? '' : ',';
+                    stringJson += shape.toJson();
+                });
+
+                stringJson += ']}';
+            });
+
+            return stringJson += ']';
 
         },
-        importSVG: function () {
-
-        },
-        importDxf: function () {
-
-        },
-
-        exportJSON: function () {
-
-        },
-        exportSVG: function () {
+        exportSvg: function () {
 
         },
         exportDxf: function () {

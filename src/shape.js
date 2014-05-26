@@ -10,7 +10,7 @@
 Plane.Shape = (function (Plane, Math) {
     "use strict";
 
-    var shapes = null;
+    var shapes = {};
 
     function Shape(attrs) {
         for (var name in attrs) {
@@ -177,9 +177,11 @@ Plane.Shape = (function (Plane, Math) {
                 throw new Error('Shape - Create - Clockwise not correct for the ' + this.type + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
             }
             this._clockWise = value;
+        },
+
+        toJson: function () {
+            return JSON.stringify(this).replace(/_/g, '');
         }
-
-
     }
 
     return {
@@ -188,7 +190,8 @@ Plane.Shape = (function (Plane, Math) {
                 throw new Error('Shape - Initialize - Config is not valid' + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
             }
 
-            shapes = new Plane.Utility.Dictionary();
+            var layerUuid = config.uuid;
+            shapes[layerUuid] = new Plane.Utility.Dictionary();
 
             return true;
         },
@@ -214,24 +217,41 @@ Plane.Shape = (function (Plane, Math) {
                 selectable: true,
                 locked: false,
                 visible: true,
+                angle: 0,
+                scaleX: 0,
+                scaleY: 0
             }, attrs);
 
             shape = new Shape(attrs);
 
-
             var layerUuid = Plane.Layers.Active.uuid;
-            if (!shapes.find(layerUuid)) {
-                shapes.add(layerUuid, []);
-            }
-            shapes.find(layerUuid).push(shape);
+            shapes[layerUuid].add(shape.uuid, shape);
 
             return this;
         },
 
         Search: function (selector) {
 
-            return shapes.find(selector);
+            if (selector == undefined){
+                return [];
+            }
+            if ((Plane.Layers.Active.system) && !selector.contains('layer') && !selector.contains('uuid')){
+                return [];
+            }
 
+            var layerUuid = Plane.Layers.Active.uuid;
+
+            if (!selector) {
+                return shapes[layerUuid].list();
+            }
+
+            if (selector.contains('shape') && selector.contains('uuid')) {
+                return shapes[layerUuid].find(selector.substring(selector.length - 9, selector.length));
+            }
+
+            if (selector.contains('layer') && selector.contains('uuid')) {
+                return shapes[selector.substring(selector.length - 9, selector.length)].list();
+            }
         },
 
         Remove: function (shape) {

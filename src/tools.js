@@ -66,9 +66,7 @@ Plane.Tools = (function (Plane) {
 
             this.addEventListener('onClick', function (event) {
 
-                var uuid = Plane.Layers.Active.uuid;
-
-                Plane.Shape.Search(uuid).forEach(function (shape) {
+                Plane.Shape.Search().forEach(function (shape) {
 
                     if (shape.type == 'line') {
 
@@ -126,10 +124,7 @@ Plane.Tools = (function (Plane) {
             });
             this.addEventListener('onMouseMove', function (event) {
 
-
-                var uuid = Plane.Layers.Active.uuid;
-
-                Plane.Shape.Search(uuid).forEach(function (shape) {
+                Plane.Shape.Search().forEach(function (shape) {
 
                     if (shape.type == 'line') {
 

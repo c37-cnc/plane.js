@@ -95,9 +95,10 @@
 
             Plane.Initialize({
                 viewPort: viewPort,
-                //                style: {
-                //                    gridEnable: false
-                //                }
+                //                                style: {
+                //                                    gridEnable: true,
+                //                                    gridColor: 'red'
+                //                                }
             });
 
             Plane.addEventListener('onChange', function (event) {
@@ -118,67 +119,119 @@
             });
             // plane - initialize
 
-            //drawGrid(viewPort.clientWidth, viewPort.clientHeight);
 
-            Plane.Layers.Create();
-            Plane.Shape
-                .Create({
-                    type: 'polygon',
-                    x: 900,
-                    y: 500,
-                    radius: 70,
-                    sides: 3
-                })
-                .Create({
-                    type: 'rectangle',
-                    x: 150,
-                    y: 150,
-                    width: 125,
-                    height: 100
-                })
-                .Create({
-                    type: 'ellipse',
-                    x: 450,
-                    y: 300,
-                    width: 45,
-                    height: 25
-                })
-                .Create({
-                    type: 'line',
-                    x: [50, 50],
-                    y: [1600, 50]
-                })  
-                .Create({
-                    type: 'arc',
-                    x: 600,
-                    y: 300,
-                    radius: 50,
-                    startAngle: 0,
-                    endAngle: 180,
-                    clockWise: false
-                })
-                .Create({
-                    type: 'circle',
-                    x: 1200,
-                    y: 300,
-                    radius: 80
-                })
-                .Create({
-                    type: 'polygon',
-                    x: 600,
-                    y: 500,
-                    radius: 70,
-                    sides: 5
-                });
-            Plane.Render.Update();
+            //            Plane.Layers.Create();
+            //            Plane.Shape
+            //                .Create({
+            //                    type: 'polygon',
+            //                    x: 900,
+            //                    y: 500,
+            //                    radius: 70,
+            //                    sides: 3
+            //                })
+            //                .Create({
+            //                    type: 'rectangle',
+            //                    x: 150,
+            //                    y: 150,
+            //                    width: 125,
+            //                    height: 100
+            //                })
+            //                .Create({
+            //                    type: 'ellipse',
+            //                    x: 450,
+            //                    y: 300,
+            //                    width: 45,
+            //                    height: 25
+            //                })
+            //                .Create({
+            //                    type: 'line',
+            //                    x: [50, 50],
+            //                    y: [1600, 50]
+            //                })
+            //                .Create({
+            //                    type: 'arc',
+            //                    x: 600,
+            //                    y: 300,
+            //                    radius: 50,
+            //                    startAngle: 0,
+            //                    endAngle: 180,
+            //                    clockWise: false
+            //                })
+            //                .Create({
+            //                    type: 'circle',
+            //                    x: 1200,
+            //                    y: 300,
+            //                    radius: 80
+            //                })
+            //                .Create({
+            //                    type: 'polygon',
+            //                    x: 600,
+            //                    y: 500,
+            //                    radius: 70,
+            //                    sides: 5
+            //                });
+            //            Plane.Render.Update();
 
             var layersControl = document.getElementById('layersControl');
-
             Plane.Layers.List().forEach(function (layer) {
                 var layerItem = document.createElement('li');
                 layerItem.innerHTML = '<a href="#">' + layer.name + '</a>'
                 layersControl.appendChild(layerItem);
             });
+
+            var shapesList = document.getElementById('shapesList');
+            Plane.Shape.Search().forEach(function (shape) {
+                var shapeItem = document.createElement('li');
+                shapeItem.innerHTML = shape.type + ' - ' + shape.uuid;
+                shapesList.appendChild(shapeItem);
+            })
+
+            document.getElementById('shapeMoveButton').addEventListener('click', function (event) {
+
+                var shapeMoveInput = document.getElementById('shapeMoveInput');
+                shape = Plane.Shape.Search('shape > uuid'.concat(shapeMoveInput.value));
+
+                //                shape.x = shape.x + 100;
+                shape.angle = shape.angle + 10;
+
+                Plane.Render.Update();
+
+                //console.log(shape);
+
+            });
+
+
+            document.getElementById('exportJsonButton').addEventListener('click', function (event) {
+
+                console.log(Plane.exportJson());
+
+            });
+
+            document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
+
+                Plane.zoom = Math.pow(1.03, 1);
+
+            });
+
+            document.getElementById('zoomLessButton').addEventListener('click', function (event) {
+                Plane.zoom = Math.pow(1.03, -1);
+            });
+
+            document.getElementById('centerButton').addEventListener('click', function (event) {
+
+                var centerInputX = document.getElementById('centerInputX'),
+                    centerInputY = document.getElementById('centerInputY'),
+                    center = {
+                        x: centerInputX.value,
+                        y: centerInputY.value
+                    };
+
+                Plane.center = center;
+            });
+
+
+
+
 
             var tool001 = Plane.Tools.Create(),
                 toolsList = Plane.Tools.List();
@@ -218,16 +271,7 @@
                 }
 
                 console.log(event);
-
-                //                Plane.Shape.Create({
-                //                    type: 'polygon',
-                //                    x: event.x,
-                //                    y: event.y,
-                //                    radius: 70,
-                //                    sides: 5
-                //                });
                 Plane.Render.Update();
-
 
             });
 
@@ -261,10 +305,10 @@
 
                     switch (fileExtension) {
                     case 'dxf':
-                        svgString = Plane.Utility.Import.fromDxf(fileData);
+                        Plane.importDxf(fileData);
                         break;
-                    case 'svg':
-                        svgString = fileData;
+                    case 'json':
+                        Plane.importJson(fileData);
                         break;
                     default:
                         return;
@@ -312,11 +356,19 @@
     <aside id="right">
         <ul id="layersControl">
         </ul>
-        <div id="tools">
-            <input id="fileImport" type="file">
+        <div id="toolsPanel">
+            <input id="fileImport" type="file"></input>
         </div>
-        <div id="debug" style="height:200px;border:1px solid red">
-        </div>
+        <ul id="shapesList">
+        </ul>
+        <input id="shapeMoveInput" type="text">
+        <button id="shapeMoveButton">Shape Move</button>
+        <button id="exportJsonButton">Export Jason</button>
+        <button id="zoomMoreButton">Zoom +++</button>
+        <button id="zoomLessButton">Zoom ---</button>
+        <input id="centerInputX" type="text" style="width:50px" value="10">
+        <input id="centerInputY" type="text" style="width:50px" value="10">
+        <button id="centerButton">Center</button>
     </aside>
 
     <footer>

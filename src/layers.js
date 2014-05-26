@@ -48,6 +48,17 @@ Plane.Layers = (function (Plane) {
         },
         set style(value) {
             this._style = value;
+        },
+
+        get system() {
+            return this._system;
+        },
+        set system(value) {
+            this._system = value;
+        },
+
+        toJson: function () {
+            return JSON.stringify(this).replace(/_/g, '');
         }
 
     }
@@ -62,23 +73,28 @@ Plane.Layers = (function (Plane) {
 
             return true;
         },
-        Create: function (name, style) {
-            if ((name && (typeof name != 'string')) || (style && (typeof style != 'object'))) {
-                throw new Error('Layer - Create - Layer Name is not valid - See the documentation');
+        Create: function (attrs) {
+            if (typeof attrs == "function") {
+                throw new Error('Layer - Create - Attrs is not valid' + '\nhttp://requirejs.org/docs/errors.html#' + 'id');
             }
 
-            var attrs = {
-                    uuid: Plane.Utility.Uuid(9, 16),
-                    name: name || 'New Layer ' + layers.count(),
-                    style: style || {
-                        fillColor: 'rgb(0,0,0)',
-                        lineCap: 'butt',
-                        lineJoin: 'miter',
-                        lineWidth: 1,
-                        lineColor: 'rgb(0, 0, 0)',
-                    }
+            attrs = Plane.Utility.Object.merge({
+                uuid: Plane.Utility.Uuid(9, 16),
+                name: (attrs && attrs.name) ? attrs.name : 'New Layer ' + layers.count(),
+                style: (attrs && attrs.style) ? attrs.style : {
+                    fillColor: 'rgb(0,0,0)',
+                    lineCap: 'butt',
+                    lineJoin: 'miter',
+                    lineWidth: 1,
+                    lineColor: 'rgb(0, 0, 0)',
                 },
-                layer = new Layer(attrs);
+                selectable: true,
+                locked: false,
+                visible: true,
+                system: false
+            }, attrs);
+
+            var layer = new Layer(attrs);
 
             // add ao dictionary
             layers.add(layer.uuid, layer);
@@ -88,16 +104,23 @@ Plane.Layers = (function (Plane) {
 
             // crio o Render respectivo da Layer
             Plane.Render.Create(layer.uuid);
-            
+            // inicializo o Container de shapes respectivo da Layer
+            Plane.Shape.Initialize({
+                uuid: layer.uuid
+            });
+
             return true;
         },
         Remove: function (uuid) {
             return layers.remove(uuid);
         },
-        List: function (callback) {
-            return typeof callback == 'function' ?
-                callback.call(this, layers.list()) :
-                layers.list();
+        List: function (selector) {
+
+            var layerList = layers.list().filter(function (layer) {
+                return selector ? layer : !layer.system;
+            });
+
+            return layerList;
         },
         get Active() {
             return this._active;
