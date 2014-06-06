@@ -1,5 +1,5 @@
 /*!
- * C37 in 25-05-2014 at 23:58:18 
+ * C37 in 29-05-2014 at 15:58:52 
  *
  * plane version: 1.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -18,7 +18,8 @@ window.Plane = (function (window) {
     "use strict";
 
     var version = '1.0.0',
-        author = 'lilo@c37.co';
+        author = 'lilo@c37.co',
+        viewPort = null;
 
     function gridDraw(enabled, width, height, color) {
 
@@ -119,11 +120,12 @@ window.Plane = (function (window) {
             }, config.style || {});
 
             this.style = style;
+            viewPort = config.viewPort;
 
             var gridEnable = style.gridEnable,
                 gridColor = style.gridColor,
-                width = config.viewPort.clientWidth,
-                height = config.viewPort.clientHeight;
+                width = viewPort.clientWidth,
+                height = viewPort.clientHeight;
 
             gridDraw(gridEnable, width, height, gridColor);
 
@@ -145,17 +147,19 @@ window.Plane = (function (window) {
 
             // Plane.zoom = Math.pow(1.03, 1);  - more
             // Plane.zoom = Math.pow(1.03, -1); - less
-            
+
             var layerActiveUuid = Plane.Layers.Active.uuid;
 
             Plane.Layers.List('system > true').forEach(function (layer) {
                 Plane.Layers.Active = layer.uuid;
 
-                Plane.Render.Update({
-                    zoom: value
+                Plane.Shape.Search('layer > uuid > '.concat(layer.uuid)).forEach(function (shape) {
+                    shape.scale = [value, value];
                 });
+
+                Plane.Render.Update();
             });
-            
+
             Plane.Layers.Active = layerActiveUuid;
 
             this._zoom = value;
@@ -169,9 +173,27 @@ window.Plane = (function (window) {
         },
         set center(value) {
 
-            Plane.Render.Update({
-                center: value
+            var layerActiveUuid = Plane.Layers.Active.uuid;
+
+            Plane.Layers.List('system > true').forEach(function (layer) {
+                Plane.Layers.Active = layer.uuid;
+
+                Plane.Shape.Search('layer > uuid > '.concat(layer.uuid)).forEach(function (shape) {
+                    if (shape.type == 'line') {
+                        shape.x[0] += parseInt(value.x);
+                        shape.x[1] += parseInt(value.x);
+                        shape.y[0] += parseInt(value.y);
+                        shape.y[1] += parseInt(value.y);
+                    } else {
+                        shape.x += parseInt(value.x);
+                        shape.y += parseInt(value.y);
+                    }
+                });
+
+                Plane.Render.Update();
             });
+
+            Plane.Layers.Active = layerActiveUuid;
 
             this._center = value;
         },
@@ -426,7 +448,7 @@ Plane.Layers = (function (Plane) {
                     fillColor: 'rgb(0,0,0)',
                     lineCap: 'butt',
                     lineJoin: 'miter',
-                    lineWidth: 1,
+                    lineWidth: .7,
                     lineColor: 'rgb(0, 0, 0)',
                 },
                 selectable: true,
@@ -495,7 +517,7 @@ Plane.Point = (function (Plane) {
     
     
 })(Plane);
-Plane.Render = (function (Plane, Document, Math) {
+Plane.Render = (function (plane, document, math) {
     "use strict";
 
     var viewPort = null,
@@ -507,23 +529,23 @@ Plane.Render = (function (Plane, Document, Math) {
                 throw new Error('Render - Initialize - Config is not valid - See the documentation');
             }
 
-            if (!Document.createElement('canvas').getContext) {
+            if (!document.createElement('canvas').getContext) {
                 throw new Error('No canvas support for this device');
             }
 
             viewPort = config.viewPort;
-            renders = new Plane.Utility.Dictionary();
+            renders = new plane.Utility.Dictionary();
 
             return true;
         },
         Create: function (uuid) {
-            var render = Document.createElement('canvas');
+            var render = document.createElement('canvas');
 
             render.width = viewPort.clientWidth;
             render.height = viewPort.clientHeight;
 
             render.style.position = "absolute";
-            render.style.backgroundColor = (renders.count() == 0) ? Plane.style.backgroundColor : 'transparent';
+            render.style.backgroundColor = (renders.count() == 0) ? plane.style.backgroundColor : 'transparent';
 
             // sistema cartesiano de coordenadas
             var context2D = render.getContext('2d');
@@ -538,30 +560,25 @@ Plane.Render = (function (Plane, Document, Math) {
 
             return true;
         },
-        Update: function (params) {
+        Update: function () {
 
-            Plane.dispatchEvent('onChange', {
+            plane.dispatchEvent('onChange', {
                 type: 'onChange',
                 now: new Date().toISOString()
             });
 
-            var layerUuid = Plane.Layers.Active.uuid,
-                layerStyle = Plane.Layers.Active.style,
-                shapes = Plane.Shape.Search('layer > uuid > '.concat(layerUuid)),
+            var layerUuid = plane.Layers.Active.uuid,
+                layerStyle = plane.Layers.Active.style,
+                shapes = plane.Shape.Search('layer > uuid > '.concat(layerUuid)),
                 render = renders.find(layerUuid),
                 context2D = render.getContext('2d');
 
-
             // limpando o render
             context2D.clearRect(0, 0, render.width, render.height);
+            
+            context2D.translate(plane.center.x, plane.center.y);
 
-            if (params && params.center) {
-                context2D.translate(params.center.x, params.center.y);
-            }
-            if (params && params.zoom) {
-                context2D.scale(params.zoom, params.zoom);
-            }
-
+            // render para cada shape
             shapes.forEach(function (shape) {
 
                 // save state of all configuration
@@ -582,7 +599,7 @@ Plane.Render = (function (Plane, Document, Math) {
                 case 'line':
                     {
                         context2D.moveTo(shape.x[0], shape.x[1]);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
                         context2D.lineTo(shape.y[0], shape.y[1]);
                         break;
@@ -590,7 +607,7 @@ Plane.Render = (function (Plane, Document, Math) {
                 case 'rectangle':
                     {
                         context2D.translate(shape.x, shape.y);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
                         context2D.strokeRect(0, 0, shape.width, shape.height);
                         break;
@@ -598,38 +615,38 @@ Plane.Render = (function (Plane, Document, Math) {
                 case 'arc':
                     {
                         context2D.translate(shape.x, shape.y);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
-                        context2D.arc(0, 0, shape.radius, (Math.PI / 180) * shape.startAngle, (Math.PI / 180) * shape.endAngle, shape.clockWise);
+                        context2D.arc(0, 0, shape.radius, (math.PI / 180) * shape.startAngle, (math.PI / 180) * shape.endAngle, shape.clockWise);
                         break;
                     }
                 case 'circle':
                     {
                         context2D.translate(shape.x, shape.y);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
-                        context2D.arc(0, 0, shape.radius, 0, Math.PI * 2, true);
+                        context2D.arc(0, 0, shape.radius, 0, math.PI * 2, true);
                         break;
                     }
                 case 'ellipse':
                     {
                         context2D.translate(shape.x, shape.y);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
-                        context2D.ellipse(0, 0, shape.width, shape.height, 0, 0, Math.PI * 2)
+                        context2D.ellipse(0, 0, shape.width, shape.height, 0, 0, math.PI * 2)
                         break;
                     }
                 case 'polygon':
                     {
-                        var a = ((Math.PI * 2) / shape.sides);
+                        var a = ((math.PI * 2) / shape.sides);
 
                         context2D.translate(shape.x, shape.y);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
                         context2D.moveTo(shape.radius, 0);
 
                         for (var i = 1; i < shape.sides; i++) {
-                            context2D.lineTo(shape.radius * Math.cos(a * i), shape.radius * Math.sin(a * i));
+                            context2D.lineTo(shape.radius * math.cos(a * i), shape.radius * math.sin(a * i));
                         }
 
                         context2D.closePath();
@@ -733,18 +750,33 @@ Plane.Shape = (function (Plane, Math) {
             this._angle = value;
         },
 
-        get scaleX() {
-            return this._scaleX;
+        get scale() {
+            return this._scale || [1, 1];
         },
-        set scaleX(value) {
-            this._scaleX = value;
-        },
+        set scale(value) {
 
-        get scaleY() {
-            return this._scaleY;
-        },
-        set scaleY(value) {
-            this._scaleY = value;
+            if (this.type == 'line') {
+                this.x[0] *= value[0];
+                this.x[1] *= value[0];
+
+                this.y[0] *= value[1];
+                this.y[1] *= value[1];
+            } else if (this.type == 'circle') {
+                this.radius *= value[0];
+                this.x *= value[0];
+                this.y *= value[1];
+            } else if (this.type == 'arc') {
+//                this.startAngle *= value[0];
+//                this.endAngle *= value[0];
+                this.radius *= value[0];
+                this.x *= value[0];
+                this.y *= value[1];
+            } else {
+                this.x *= value[0];
+                this.y *= value[1];
+            }
+
+            this._scale = value;
         },
 
         get selectable() {
@@ -887,10 +919,10 @@ Plane.Shape = (function (Plane, Math) {
 
         Search: function (selector) {
 
-            if (selector == undefined){
+            if (selector == undefined) {
                 return [];
             }
-            if ((Plane.Layers.Active.system) && !selector.contains('layer') && !selector.contains('uuid')){
+            if (!selector.contains('layer') && !selector.contains('uuid')) {
                 return [];
             }
 
@@ -916,7 +948,7 @@ Plane.Shape = (function (Plane, Math) {
     };
 
 })(Plane, Math);
-Plane.Tools = (function (Plane) {
+Plane.Tools = (function (plane) {
     "use strict";
 
     var tools = null;
@@ -964,7 +996,7 @@ Plane.Tools = (function (Plane) {
                 throw new Error('Tools - Initialize - Config is not valid - See the documentation');
             }
 
-            tools = new Plane.Utility.Dictionary();
+            tools = new plane.Utility.Dictionary();
 
             // inicializando os eventos
             this.addEventListener('onResize', function (event) {
@@ -984,7 +1016,9 @@ Plane.Tools = (function (Plane) {
 
             this.addEventListener('onClick', function (event) {
 
-                Plane.Shape.Search().forEach(function (shape) {
+                var layerUuid = plane.Layers.Active.uuid;
+
+                plane.Shape.Search('layer > uuid > '.concat(layerUuid)).forEach(function (shape) {
 
                     if (shape.type == 'line') {
 
@@ -1005,7 +1039,7 @@ Plane.Tools = (function (Plane) {
                                 y: event.y + 1
                             }
 
-                        Plane.Utility.Graphic.intersectionLine(a1, a2, b1, b2);
+                        plane.Utility.Graphic.intersectionLine(a1, a2, b1, b2);
 
                     }
 
@@ -1042,7 +1076,9 @@ Plane.Tools = (function (Plane) {
             });
             this.addEventListener('onMouseMove', function (event) {
 
-                Plane.Shape.Search().forEach(function (shape) {
+                var layerUuid = plane.Layers.Active.uuid;
+
+                plane.Shape.Search('layer > uuid > '.concat(layerUuid)).forEach(function (shape) {
 
                     if (shape.type == 'line') {
 
@@ -1052,18 +1088,18 @@ Plane.Tools = (function (Plane) {
                             },
                             a2 = {
                                 x: shape.y[0],
-                                y: shape.y[1]
+                                y: shape.y[1] 
                             },
                             b1 = {
                                 x: event.x,
                                 y: event.y
                             },
                             b2 = {
-                                x: event.x + 1, 
+                                x: event.x + 1,
                                 y: event.y + 1
                             }
 
-                        Plane.Utility.Graphic.intersectionLine(a1, a2, b1, b2);
+                        plane.Utility.Graphic.intersectionLine(a1, a2, b1, b2);
 
                     }
 
@@ -1107,9 +1143,9 @@ Plane.Tools = (function (Plane) {
             name = name || 'New Tool ' + tools.count();
 
             var tool = new Tool(),
-                uuid = Plane.Utility.Uuid(9, 16);
+                uuid = plane.Utility.Uuid(9, 16);
 
-            tool.__proto__.__proto__ = new Plane.Utility.Event();
+            tool.__proto__.__proto__ = new plane.Utility.Event();
             tool.uuid = uuid;
             tool.name = name;
             tool.active = false;
@@ -1168,7 +1204,7 @@ Plane.Tools = (function (Plane) {
 //            //
 //            //                return false;
 //            //            }
-Plane.Utility = (function (Plane) {
+Plane.Utility = (function (plane) {
     "use strict";
 
     return {

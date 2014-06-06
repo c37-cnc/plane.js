@@ -10,7 +10,8 @@ window.Plane = (function (window) {
     "use strict";
 
     var version = '1.0.0',
-        author = 'lilo@c37.co';
+        author = 'lilo@c37.co',
+        viewPort = null;
 
     function gridDraw(enabled, width, height, color) {
 
@@ -111,11 +112,12 @@ window.Plane = (function (window) {
             }, config.style || {});
 
             this.style = style;
+            viewPort = config.viewPort;
 
             var gridEnable = style.gridEnable,
                 gridColor = style.gridColor,
-                width = config.viewPort.clientWidth,
-                height = config.viewPort.clientHeight;
+                width = viewPort.clientWidth,
+                height = viewPort.clientHeight;
 
             gridDraw(gridEnable, width, height, gridColor);
 
@@ -137,17 +139,19 @@ window.Plane = (function (window) {
 
             // Plane.zoom = Math.pow(1.03, 1);  - more
             // Plane.zoom = Math.pow(1.03, -1); - less
-            
+
             var layerActiveUuid = Plane.Layers.Active.uuid;
 
             Plane.Layers.List('system > true').forEach(function (layer) {
                 Plane.Layers.Active = layer.uuid;
 
-                Plane.Render.Update({
-                    zoom: value
+                Plane.Shape.Search('layer > uuid > '.concat(layer.uuid)).forEach(function (shape) {
+                    shape.scale = [value, value];
                 });
+
+                Plane.Render.Update();
             });
-            
+
             Plane.Layers.Active = layerActiveUuid;
 
             this._zoom = value;
@@ -161,9 +165,27 @@ window.Plane = (function (window) {
         },
         set center(value) {
 
-            Plane.Render.Update({
-                center: value
+            var layerActiveUuid = Plane.Layers.Active.uuid;
+
+            Plane.Layers.List('system > true').forEach(function (layer) {
+                Plane.Layers.Active = layer.uuid;
+
+                Plane.Shape.Search('layer > uuid > '.concat(layer.uuid)).forEach(function (shape) {
+                    if (shape.type == 'line') {
+                        shape.x[0] += parseInt(value.x);
+                        shape.x[1] += parseInt(value.x);
+                        shape.y[0] += parseInt(value.y);
+                        shape.y[1] += parseInt(value.y);
+                    } else {
+                        shape.x += parseInt(value.x);
+                        shape.y += parseInt(value.y);
+                    }
+                });
+
+                Plane.Render.Update();
             });
+
+            Plane.Layers.Active = layerActiveUuid;
 
             this._center = value;
         },

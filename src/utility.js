@@ -1,4 +1,4 @@
-Plane.Utility = (function (Plane) {
+Plane.Utility = (function (plane) {
     "use strict";
 
     return {

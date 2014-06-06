@@ -1,4 +1,4 @@
-Plane.Render = (function (Plane, Document, Math) {
+Plane.Render = (function (plane, document, math) {
     "use strict";
 
     var viewPort = null,
@@ -10,23 +10,23 @@ Plane.Render = (function (Plane, Document, Math) {
                 throw new Error('Render - Initialize - Config is not valid - See the documentation');
             }
 
-            if (!Document.createElement('canvas').getContext) {
+            if (!document.createElement('canvas').getContext) {
                 throw new Error('No canvas support for this device');
             }
 
             viewPort = config.viewPort;
-            renders = new Plane.Utility.Dictionary();
+            renders = new plane.Utility.Dictionary();
 
             return true;
         },
         Create: function (uuid) {
-            var render = Document.createElement('canvas');
+            var render = document.createElement('canvas');
 
             render.width = viewPort.clientWidth;
             render.height = viewPort.clientHeight;
 
             render.style.position = "absolute";
-            render.style.backgroundColor = (renders.count() == 0) ? Plane.style.backgroundColor : 'transparent';
+            render.style.backgroundColor = (renders.count() == 0) ? plane.style.backgroundColor : 'transparent';
 
             // sistema cartesiano de coordenadas
             var context2D = render.getContext('2d');
@@ -41,30 +41,25 @@ Plane.Render = (function (Plane, Document, Math) {
 
             return true;
         },
-        Update: function (params) {
+        Update: function () {
 
-            Plane.dispatchEvent('onChange', {
+            plane.dispatchEvent('onChange', {
                 type: 'onChange',
                 now: new Date().toISOString()
             });
 
-            var layerUuid = Plane.Layers.Active.uuid,
-                layerStyle = Plane.Layers.Active.style,
-                shapes = Plane.Shape.Search('layer > uuid > '.concat(layerUuid)),
+            var layerUuid = plane.Layers.Active.uuid,
+                layerStyle = plane.Layers.Active.style,
+                shapes = plane.Shape.Search('layer > uuid > '.concat(layerUuid)),
                 render = renders.find(layerUuid),
                 context2D = render.getContext('2d');
 
-
             // limpando o render
             context2D.clearRect(0, 0, render.width, render.height);
+            
+            context2D.translate(plane.center.x, plane.center.y);
 
-            if (params && params.center) {
-                context2D.translate(params.center.x, params.center.y);
-            }
-            if (params && params.zoom) {
-                context2D.scale(params.zoom, params.zoom);
-            }
-
+            // render para cada shape
             shapes.forEach(function (shape) {
 
                 // save state of all configuration
@@ -85,7 +80,7 @@ Plane.Render = (function (Plane, Document, Math) {
                 case 'line':
                     {
                         context2D.moveTo(shape.x[0], shape.x[1]);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
                         context2D.lineTo(shape.y[0], shape.y[1]);
                         break;
@@ -93,7 +88,7 @@ Plane.Render = (function (Plane, Document, Math) {
                 case 'rectangle':
                     {
                         context2D.translate(shape.x, shape.y);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
                         context2D.strokeRect(0, 0, shape.width, shape.height);
                         break;
@@ -101,38 +96,38 @@ Plane.Render = (function (Plane, Document, Math) {
                 case 'arc':
                     {
                         context2D.translate(shape.x, shape.y);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
-                        context2D.arc(0, 0, shape.radius, (Math.PI / 180) * shape.startAngle, (Math.PI / 180) * shape.endAngle, shape.clockWise);
+                        context2D.arc(0, 0, shape.radius, (math.PI / 180) * shape.startAngle, (math.PI / 180) * shape.endAngle, shape.clockWise);
                         break;
                     }
                 case 'circle':
                     {
                         context2D.translate(shape.x, shape.y);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
-                        context2D.arc(0, 0, shape.radius, 0, Math.PI * 2, true);
+                        context2D.arc(0, 0, shape.radius, 0, math.PI * 2, true);
                         break;
                     }
                 case 'ellipse':
                     {
                         context2D.translate(shape.x, shape.y);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
-                        context2D.ellipse(0, 0, shape.width, shape.height, 0, 0, Math.PI * 2)
+                        context2D.ellipse(0, 0, shape.width, shape.height, 0, 0, math.PI * 2)
                         break;
                     }
                 case 'polygon':
                     {
-                        var a = ((Math.PI * 2) / shape.sides);
+                        var a = ((math.PI * 2) / shape.sides);
 
                         context2D.translate(shape.x, shape.y);
-                        context2D.rotate((Math.PI / 180) * shape.angle);
+                        context2D.rotate((math.PI / 180) * shape.angle);
 
                         context2D.moveTo(shape.radius, 0);
 
                         for (var i = 1; i < shape.sides; i++) {
-                            context2D.lineTo(shape.radius * Math.cos(a * i), shape.radius * Math.sin(a * i));
+                            context2D.lineTo(shape.radius * math.cos(a * i), shape.radius * math.sin(a * i));
                         }
 
                         context2D.closePath();

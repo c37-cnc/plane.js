@@ -85,7 +85,7 @@ Plane.Layers = (function (Plane) {
                     fillColor: 'rgb(0,0,0)',
                     lineCap: 'butt',
                     lineJoin: 'miter',
-                    lineWidth: 1,
+                    lineWidth: .7,
                     lineColor: 'rgb(0, 0, 0)',
                 },
                 selectable: true,

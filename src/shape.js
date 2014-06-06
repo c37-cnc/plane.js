@@ -78,18 +78,33 @@ Plane.Shape = (function (Plane, Math) {
             this._angle = value;
         },
 
-        get scaleX() {
-            return this._scaleX;
+        get scale() {
+            return this._scale || [1, 1];
         },
-        set scaleX(value) {
-            this._scaleX = value;
-        },
+        set scale(value) {
 
-        get scaleY() {
-            return this._scaleY;
-        },
-        set scaleY(value) {
-            this._scaleY = value;
+            if (this.type == 'line') {
+                this.x[0] *= value[0];
+                this.x[1] *= value[0];
+
+                this.y[0] *= value[1];
+                this.y[1] *= value[1];
+            } else if (this.type == 'circle') {
+                this.radius *= value[0];
+                this.x *= value[0];
+                this.y *= value[1];
+            } else if (this.type == 'arc') {
+//                this.startAngle *= value[0];
+//                this.endAngle *= value[0];
+                this.radius *= value[0];
+                this.x *= value[0];
+                this.y *= value[1];
+            } else {
+                this.x *= value[0];
+                this.y *= value[1];
+            }
+
+            this._scale = value;
         },
 
         get selectable() {
@@ -232,10 +247,10 @@ Plane.Shape = (function (Plane, Math) {
 
         Search: function (selector) {
 
-            if (selector == undefined){
+            if (selector == undefined) {
                 return [];
             }
-            if ((Plane.Layers.Active.system) && !selector.contains('layer') && !selector.contains('uuid')){
+            if (!selector.contains('layer') && !selector.contains('uuid')) {
                 return [];
             }
 

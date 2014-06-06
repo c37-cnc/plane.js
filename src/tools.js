@@ -1,4 +1,4 @@
-Plane.Tools = (function (Plane) {
+Plane.Tools = (function (plane) {
     "use strict";
 
     var tools = null;
@@ -46,7 +46,7 @@ Plane.Tools = (function (Plane) {
                 throw new Error('Tools - Initialize - Config is not valid - See the documentation');
             }
 
-            tools = new Plane.Utility.Dictionary();
+            tools = new plane.Utility.Dictionary();
 
             // inicializando os eventos
             this.addEventListener('onResize', function (event) {
@@ -66,7 +66,9 @@ Plane.Tools = (function (Plane) {
 
             this.addEventListener('onClick', function (event) {
 
-                Plane.Shape.Search().forEach(function (shape) {
+                var layerUuid = plane.Layers.Active.uuid;
+
+                plane.Shape.Search('layer > uuid > '.concat(layerUuid)).forEach(function (shape) {
 
                     if (shape.type == 'line') {
 
@@ -87,7 +89,7 @@ Plane.Tools = (function (Plane) {
                                 y: event.y + 1
                             }
 
-                        Plane.Utility.Graphic.intersectionLine(a1, a2, b1, b2);
+                        plane.Utility.Graphic.intersectionLine(a1, a2, b1, b2);
 
                     }
 
@@ -124,7 +126,9 @@ Plane.Tools = (function (Plane) {
             });
             this.addEventListener('onMouseMove', function (event) {
 
-                Plane.Shape.Search().forEach(function (shape) {
+                var layerUuid = plane.Layers.Active.uuid;
+
+                plane.Shape.Search('layer > uuid > '.concat(layerUuid)).forEach(function (shape) {
 
                     if (shape.type == 'line') {
 
@@ -134,18 +138,18 @@ Plane.Tools = (function (Plane) {
                             },
                             a2 = {
                                 x: shape.y[0],
-                                y: shape.y[1]
+                                y: shape.y[1] 
                             },
                             b1 = {
                                 x: event.x,
                                 y: event.y
                             },
                             b2 = {
-                                x: event.x + 1, 
+                                x: event.x + 1,
                                 y: event.y + 1
                             }
 
-                        Plane.Utility.Graphic.intersectionLine(a1, a2, b1, b2);
+                        plane.Utility.Graphic.intersectionLine(a1, a2, b1, b2);
 
                     }
 
@@ -189,9 +193,9 @@ Plane.Tools = (function (Plane) {
             name = name || 'New Tool ' + tools.count();
 
             var tool = new Tool(),
-                uuid = Plane.Utility.Uuid(9, 16);
+                uuid = plane.Utility.Uuid(9, 16);
 
-            tool.__proto__.__proto__ = new Plane.Utility.Event();
+            tool.__proto__.__proto__ = new plane.Utility.Event();
             tool.uuid = uuid;
             tool.name = name;
             tool.active = false;
@@ -213,40 +217,3 @@ Plane.Tools = (function (Plane) {
 
 
 })(Plane);
-
-
-//
-//            function hitPath(canvas, event) {
-//                var bb = canvas.getBoundingClientRect();
-//
-//                var x = (event.clientX - bb.left) * (canvas.width / bb.width);
-//                var y = (event.clientY - bb.top) * (canvas.height / bb.height);
-//
-//                return context2D.isPointInPath(x, y);
-//            }
-//
-//
-//
-//
-//            htmlElement.onmousewheel = function (event) {
-//                console.log(event);
-//            };
-//
-//
-//            htmlElement.onclick = function (event) {
-//
-//                var zzz = getMousePos(htmlElement, event);
-//
-//                var debug = document.getElementById('debug');
-//
-//                debug.innerHTML = 'x: ' + zzz.x + ', y:' + zzz.y + ', selected: ' + hitPath(htmlElement, event);
-//
-//                console.log(context2D.getImageData(zzz.x, zzz.y, 3, 3).data);
-//
-//            };
-//
-//            //            htmlElement.oncontextmenu = function (event) {
-//            //                console.log(event);
-//            //
-//            //                return false;
-//            //            }
