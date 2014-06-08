@@ -100,6 +100,23 @@
 
             var tool001 = Plane.Tool.Create();
 
+            Plane.Layer.Create();
+            Plane.Shape.Create({
+                type: 'polygon',
+                x: 150,
+                y: 150,
+                radius: 70,
+                sides: 5
+            });
+            Plane.Shape.Create({
+                type: 'rectangle',
+                x: 300,
+                y: 10,
+                width: 125,
+                height: 100
+            });
+
+            Plane.Render.Update();
 
         }
     </script>

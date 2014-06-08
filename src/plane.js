@@ -1,4 +1,4 @@
-window.Plane = (function (window, document) {
+window.Plane = (function (window, document, math) {
     "use strict";
 
     var version = '1.0.0',
@@ -20,11 +20,7 @@ window.Plane = (function (window, document) {
         if (!enabled) return;
 
         Plane.Layer.Create({
-            system: true,
-            style: {
-                lineColor: color,
-                lineWidth: .5
-            }
+            system: true
         });
 
         for (var xActual = 0; xActual < width; xActual += 50) {
@@ -208,6 +204,69 @@ window.Plane = (function (window, document) {
                     return Dictionary;
                 })()
             },
+            graphic: {
+                mousePosition: function (element, position) {
+                    var bb = element.getBoundingClientRect();
+
+                    var x = (position.x - bb.left) * (element.clientWidth / bb.width);
+                    var y = (position.y - bb.top) * (element.clientHeight / bb.height);
+
+                    // tradução para o sistema de coordenadas cartesiano
+                    y = (y - element.clientHeight) * -1;
+
+                    return {
+                        x: x,
+                        y: y
+                    };
+                },
+                intersection: {
+                    circleLine: function (c, r, a1, a2) {
+                        var result;
+                        var a = (a2.x - a1.x) * (a2.x - a1.x) +
+                            (a2.y - a1.y) * (a2.y - a1.y);
+                        var b = 2 * ((a2.x - a1.x) * (a1.x - c.x) +
+                            (a2.y - a1.y) * (a1.y - c.y));
+                        var cc = c.x * c.x + c.y * c.y + a1.x * a1.x + a1.y * a1.y -
+                            2 * (c.x * a1.x + c.y * a1.y) - r * r;
+                        var deter = b * b - 4 * a * cc;
+
+                        if (deter < 0) {
+                            result = false;
+                        } else if (deter == 0) {
+                            result = false;
+                        } else {
+                            var e = Math.sqrt(deter);
+                            var u1 = (-b + e) / (2 * a);
+                            var u2 = (-b - e) / (2 * a);
+
+                            if ((u1 < 0 || u1 > 1) && (u2 < 0 || u2 > 1)) {
+                                if ((u1 < 0 && u2 < 0) || (u1 > 1 && u2 > 1)) {
+                                    result = false;
+                                } else {
+                                    result = false;
+                                }
+                            } else {
+                                result = true;
+                            }
+                        }
+                        return result;
+                    },
+                    circleRectangle: function (c, r, p, h, w) {
+
+                        var rightBottom = Point.Create(p.x + w, p.y),
+                            rightTop = Point.Create(p.x + w, p.y + h),
+                            leftTop = Point.Create(p.x, p.y + h),
+                            leftBottom = Point.Create(p.x, p.y);
+
+                        var inter1 = this.circleLine(c, r, rightBottom, rightTop);
+                        var inter2 = this.circleLine(c, r, rightTop, leftTop);
+                        var inter3 = this.circleLine(c, r, leftTop, leftBottom);
+                        var inter4 = this.circleLine(c, r, leftBottom, rightBottom);
+
+                        return inter1 || inter2 || inter3 || inter4;
+                    }
+                }
+            },
             string: {
                 format: function () {
                     return this.replace(/{(\d+)}/g, function (match, number) {
@@ -308,11 +367,45 @@ window.Plane = (function (window, document) {
             move: function (point) {
                 return true;
             },
-            contains: function (point) {
-                return true;
-            },
-            typeOf: function () {
-                return this.type;
+            contains: function (pointActual) {
+
+                var pointOrigin,
+                    pointDestination,
+                    pointIntersection = 0;
+
+                switch (this.type) {
+                case 'line' || 'polygon':
+                    {
+                        for (var i = 0; i < this.points.length; i++) {
+
+                            if (i + 1 == this.points.length) {
+                                pointOrigin = this.points[i];
+                                pointDestination = this.points[0];
+                            } else {
+                                pointOrigin = this.points[i];
+                                pointDestination = this.points[i + 1];
+                            }
+
+                            if (utility.graphic.intersection.circleLine(pointActual, 2, pointOrigin, pointDestination))
+                                return true;
+                        }
+                    }
+                case 'rectangle':
+                    {
+                        if (utility.graphic.intersection.circleRectangle(pointActual, 2, this.point, this.height, this.width))
+                            return true;
+                    }
+                case 'arc':
+                    {}
+                case 'circle':
+                    {}
+                case 'ellipse':
+                    {}
+                default:
+                    break;
+                }
+
+                return false;
             },
             toJson: function () {
                 return JSON.stringify(this);
@@ -350,46 +443,52 @@ window.Plane = (function (window, document) {
         function Line(attrs) {
             this.type = 'line';
             this.points = attrs.points;
+            this.style = attrs.style;
             Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
         }
         Line.prototype = Shape.prototype;
 
         function Polygon(attrs) {
-            this.points = null;
-            this.sides = 0;
-
-            Shape.apply(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
+            this.type = 'polygon';
+            this.points = attrs.points;
+            this.sides = attrs.sides;
+            Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
         }
-        Polygon.prototype = new Shape();
+        Polygon.prototype = Shape.prototype;
 
         function Rectangle(attrs) {
+            this.type = 'rectangle';
             this.point = attrs.point;
             this.height = attrs.height;
             this.width = attrs.width;
-
-            Shape.call(this, attrs);
+            Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
         }
         Rectangle.prototype = new Shape();
 
         return {
-            Create: function (uuid, type, x, y, radius, startAngle, endAngle, clockWise, height, width) {
+            Create: function (uuid, type, x, y, style, radius, startAngle, endAngle, clockWise, sides, height, width) {
 
                 var attrs = {
                     uuid: uuid,
                     name: 'Shape '.concat(uuid),
+                    style: style,
                     locked: false,
                     visible: true,
                     selected: false
-                }
+                };
 
                 switch (type) {
                 case 'line':
-                    attrs['points'] = [Point.Create(x[0], x[1]), Point.Create(y[0], y[1])];
-                    return new Line(attrs);
+                    {
+                        attrs.points = [Point.Create(x[0], x[1]), Point.Create(y[0], y[1])];
+                        return new Line(attrs);
+                    }
                 case 'rectangle':
                     {
-
-                        break;
+                        attrs.point = Point.Create(x, y);
+                        attrs.height = height;
+                        attrs.width = width;
+                        return new Rectangle(attrs);
                     }
                 case 'arc':
                     {
@@ -408,8 +507,18 @@ window.Plane = (function (window, document) {
                     }
                 case 'polygon':
                     {
+                        attrs.points = [];
+                        attrs.sides = sides;
 
-                        break;
+                        for (var i = 0; i < sides; i++) {
+
+                            var pointX = (radius * math.cos(((math.PI * 2) / sides) * i) + x),
+                                pointY = (radius * math.sin(((math.PI * 2) / sides) * i) + y);
+
+                            attrs['points'].push(Point.Create(pointX, pointY));
+                        }
+
+                        return new Polygon(attrs);
                     }
                 default:
                     break;
@@ -430,6 +539,19 @@ window.Plane = (function (window, document) {
         function Tool(attrs) {
             this.uuid = attrs.uuid;
             this.name = attrs.name;
+
+            this.__defineGetter__('active', function () {
+                return this._active || false;
+            });
+            this.__defineSetter__('active', function (value) {
+                this.notify(value ? 'onActive' : 'onDeactive', {
+                    type: value ? 'onActive' : 'onDeactive',
+                    now: new Date().toISOString()
+
+                });
+                this._active = value;
+            });
+
             utility.object.event.call(this);
         }
         Tool.prototype = utility.object.event.prototype;
@@ -442,11 +564,6 @@ window.Plane = (function (window, document) {
                         name: name
                     },
                     tool = new Tool(attrs);
-                
-                // events
-                tool.listen()
-                
-                
 
                 return tool;
             }
@@ -496,8 +613,6 @@ window.Plane = (function (window, document) {
                 context2D.save();
 
                 // style of layer
-                context2D.lineWidth = layerStyle.lineWidth;
-                context2D.strokeStyle = layerStyle.lineColor;
                 context2D.lineCap = layerStyle.lineCap;
                 context2D.lineJoin = layerStyle.lineJoin;
 
@@ -506,7 +621,11 @@ window.Plane = (function (window, document) {
 
                     context2D.beginPath();
 
-                    switch (shape.typeOf()) {
+                    // possivel personalização
+                    context2D.lineWidth = (shape.style && shape.style.lineWidth) ? shape.style.lineWidth : layerStyle.lineWidth;
+                    context2D.strokeStyle = (shape.style && shape.style.lineColor) ? shape.style.lineColor : layerStyle.lineColor;
+
+                    switch (shape.type) {
                     case 'line':
                         {
                             context2D.moveTo(shape.points[0].x, shape.points[0].y);
@@ -515,9 +634,7 @@ window.Plane = (function (window, document) {
                         }
                     case 'rectangle':
                         {
-                            context2D.translate(shape.x, shape.y);
-                            context2D.rotate((math.PI / 180) * shape.angle);
-
+                            context2D.translate(shape.point.x, shape.point.y);
                             context2D.strokeRect(0, 0, shape.width, shape.height);
                             break;
                         }
@@ -547,19 +664,13 @@ window.Plane = (function (window, document) {
                         }
                     case 'polygon':
                         {
-                            var a = ((math.PI * 2) / shape.sides);
+                            context2D.moveTo(shape.points[0].x, shape.points[0].y);
 
-                            context2D.translate(shape.x, shape.y);
-                            context2D.rotate((math.PI / 180) * shape.angle);
-
-                            context2D.moveTo(shape.radius, 0);
-
-                            for (var i = 1; i < shape.sides; i++) {
-                                context2D.lineTo(shape.radius * math.cos(a * i), shape.radius * math.sin(a * i));
-                            }
+                            shape.points.forEach(function (point) {
+                                context2D.lineTo(point.x, point.y);
+                            });
 
                             context2D.closePath();
-
                             break;
                         }
                     default:
@@ -650,10 +761,11 @@ window.Plane = (function (window, document) {
                 uuid: utility.math.uuid(9, 16)
             }, attrs);
 
-            var shape = Shape.Create(attrs.uuid, attrs.type, attrs.x, attrs.y, attrs.radius, attrs.starAngle, attrs.endAngle, attrs.clockWise, attrs.height, attrs.width);
+            var shape = Shape.Create(attrs.uuid, attrs.type, attrs.x, attrs.y, attrs.style, attrs.radius, attrs.starAngle,
+                attrs.endAngle, attrs.clockWise, attrs.sides, attrs.height, attrs.width);
 
             shapeStore[layerFacade.Active.uuid].add(shape.uuid, shape);
-            
+
             return true;
         },
         Delete: null
@@ -684,6 +796,48 @@ window.Plane = (function (window, document) {
         },
         Delete: null
     });
+    // register events
+    toolFacade.listen('onMouseMove', function (event) {
+        //    toolFacade.listen('onClick', function (event) {
+        var position = {
+            x: event.clientX,
+            y: event.clientY
+        };
+
+        position = utility.graphic.mousePosition(viewPort, position);
+
+        console.log(position);
+
+        var layerUuid = layerFacade.Active.uuid,
+            layerShapes = shapeStore[layerUuid].list();
+
+
+        layerShapes.forEach(function (shape) {
+
+            if (shape.contains(Point.Create(position.x, position.y))) {
+
+                console.log(shape);
+
+            }
+
+
+        });
+
+
+
+
+
+
+        //        toolFacade.notify('onMouseMove', {
+        //            type: 'onMouseMove',
+        //            x: position.x,
+        //            y: position.y
+        //        });
+
+        //        console.log(event);
+        //console.log(position);
+    });
+    // register events
 
     var renderFacade = utility.object.extend(utility.object.event, {
         Update: function () {
@@ -731,11 +885,19 @@ window.Plane = (function (window, document) {
             groupStore = {};
             // objetos para dados
 
+            // start em eventos
+            viewPort.onmousemove = function (event) {
+                toolFacade.notify('onMouseMove', event);
+            };
+            viewPort.onclick = function (event) {
+                toolFacade.notify('onClick', event);
+            }
+            // start em eventos
+
             gridDraw(settings.gridEnable, viewPort.clientWidth, viewPort.clientHeight, settings.gridColor);
 
             return true;
         },
-        zoom: null,
         Layer: layerFacade,
         Shape: shapeFacade,
         Group: groupFacade,
@@ -766,7 +928,18 @@ window.Plane = (function (window, document) {
             this._center = value;
         }
     })
+    Object.defineProperty(planeFacade, 'zoom', {
+        get: function () {
+            return this._zoom || {
+                x: 0,
+                y: 0
+            };
+        },
+        set: function (value) {
+            this._zoom = value;
+        }
+    })
 
     return planeFacade;
 
-})(window, window.document);
+})(window, window.document, Math);
