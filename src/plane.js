@@ -221,23 +221,20 @@ window.Plane = (function (window, document, math) {
                 },
                 intersection: {
                     circleLine: function (c, r, a1, a2) {
-                        var result;
-                        var a = (a2.x - a1.x) * (a2.x - a1.x) +
-                            (a2.y - a1.y) * (a2.y - a1.y);
-                        var b = 2 * ((a2.x - a1.x) * (a1.x - c.x) +
-                            (a2.y - a1.y) * (a1.y - c.y));
-                        var cc = c.x * c.x + c.y * c.y + a1.x * a1.x + a1.y * a1.y -
-                            2 * (c.x * a1.x + c.y * a1.y) - r * r;
-                        var deter = b * b - 4 * a * cc;
+                        var result,
+                            a = (a2.x - a1.x) * (a2.x - a1.x) + (a2.y - a1.y) * (a2.y - a1.y),
+                            b = 2 * ((a2.x - a1.x) * (a1.x - c.x) + (a2.y - a1.y) * (a1.y - c.y)),
+                            cc = c.x * c.x + c.y * c.y + a1.x * a1.x + a1.y * a1.y - 2 * (c.x * a1.x + c.y * a1.y) - r * r,
+                            deter = b * b - 4 * a * cc;
 
                         if (deter < 0) {
                             result = false;
                         } else if (deter == 0) {
                             result = false;
                         } else {
-                            var e = Math.sqrt(deter);
-                            var u1 = (-b + e) / (2 * a);
-                            var u2 = (-b - e) / (2 * a);
+                            var e = Math.sqrt(deter),
+                                u1 = (-b + e) / (2 * a),
+                                u2 = (-b - e) / (2 * a);
 
                             if ((u1 < 0 || u1 > 1) && (u2 < 0 || u2 > 1)) {
                                 if ((u1 < 0 && u2 < 0) || (u1 > 1 && u2 > 1)) {
@@ -264,6 +261,114 @@ window.Plane = (function (window, document, math) {
                         var inter4 = this.circleLine(c, r, leftBottom, rightBottom);
 
                         return inter1 || inter2 || inter3 || inter4;
+                    },
+                    circleCircle: function (c1, r1, c2, r2) {
+                        var result;
+
+                        //debugger;
+
+                        // Determine minimum and maximum radii where circles can intersect
+                        var r_max = r1 + r2;
+                        var r_min = math.abs(r1 - r2);
+
+                        // Determine actual distance between circle circles
+                        var c_dist = c1.distanceFrom(c2);
+
+                        if (c_dist > r_max) {
+                            result = false;
+                        } else if (c_dist < r_min) {
+                            result = false;
+                        } else {
+                            result = {
+                                points: []
+                            };
+
+                            //                            debugger;
+
+                            var a = (r1 * r1 - r2 * r2 + c_dist * c_dist) / (2 * c_dist);
+                            var h = math.sqrt(r1 * r1 - a * a);
+                            var p = c1.lerp(c2, a / c_dist);
+                            var b = h / c_dist;
+
+                            result.points.push(Point.Create(p.x - b * (c2.y - c1.y), p.y + b * (c2.x - c1.x)));
+                            result.points.push(Point.Create(p.x + b * (c2.y - c1.y), p.y - b * (c2.x - c1.x)));
+
+                        }
+
+                        return result;
+                    },
+                    circleArc: function (c, r1, ca, r2, sa, ea, ck) {
+
+                        var xxx = this.circleCircle(c, r1, ca, r2);
+
+                        if (xxx.points) {
+
+                            for (var i = 0; i <= xxx.points.length; i++) {
+
+                                var distance = xxx.points[i].distanceFrom(ca);
+                                var radius = r2;
+
+                                if (radius - 4 <= distance && distance <= radius + 4) {
+
+                                    //                                    debugger;
+
+                                    var twoPi = (math.PI + math.PI);
+
+                                    // First, sort the angles
+                                    var startPtAngle = ca.angleTo(Point.Create(ca.x + r2, ca.y)); // Angle(arcCenterX, arcCenterY, startPointX, startPointY);
+                                    if (startPtAngle < 0) startPtAngle += twoPi;
+
+                                    var radiusPtAngle = ca.angleTo(Point.Create(ca.x, ca.y + r2)); // Angle(arcCenterX, arcCenterY, radiusPointX, radiusPointY);
+                                    if (radiusPtAngle < 0) radiusPtAngle += twoPi;
+
+                                    var endPtAngle = ca.angleTo(Point.Create(ca.x - r2, ca.y)); // Angle(arcCenterX, arcCenterY, endPointX, endPointY);
+                                    if (endPtAngle < 0) endPtAngle += twoPi;
+
+                                    var pointAngle = ca.angleTo(xxx.points[i]); // Angle(arcCenterX, arcCenterY, pointX, pointY);
+                                    if (pointAngle < 0) pointAngle += twoPi;
+
+                                    if (startPtAngle <= radiusPtAngle && radiusPtAngle <= endPtAngle) {
+                                        if (startPtAngle <= pointAngle && pointAngle <= endPtAngle)
+                                            return true;
+                                        else return false;
+                                    } else if (endPtAngle <= radiusPtAngle && radiusPtAngle <= startPtAngle) {
+                                        if (endPtAngle <= pointAngle && pointAngle <= startPtAngle)
+                                            return true;
+                                        else return false;
+                                    } else if (startPtAngle <= radiusPtAngle && endPtAngle <= radiusPtAngle) {
+                                        if (startPtAngle < endPtAngle) {
+                                            if (startPtAngle < pointAngle && pointAngle < endPtAngle)
+                                                return false;
+                                            else return true;
+                                        } else if (endPtAngle < startPtAngle) {
+                                            if (endPtAngle < pointAngle && pointAngle < startPtAngle)
+                                                return false;
+                                            else return true;
+                                        }
+                                    } else if (radiusPtAngle <= startPtAngle && radiusPtAngle <= endPtAngle) {
+                                        if (startPtAngle < endPtAngle) {
+                                            if (startPtAngle < pointAngle && pointAngle < endPtAngle)
+                                                return false;
+                                            else return true;
+                                        } else if (endPtAngle < startPtAngle) {
+                                            if (endPtAngle < pointAngle && pointAngle < startPtAngle)
+                                                return false;
+                                            else return true;
+                                        }
+                                    }
+                                }
+                                return false;
+                            };
+
+
+
+
+
+                        }
+                        return false;
+                    },
+                    circleEllipse: function (c, r, p, h, w) {
+                        return false;
                     }
                 }
             },
@@ -338,6 +443,21 @@ window.Plane = (function (window, document, math) {
             this.x = x;
             this.y = y;
         };
+        Point.prototype.distanceFrom = function (point) {
+            var dx = this.x - point.x;
+            var dy = this.y - point.y;
+
+            return math.sqrt(dx * dx + dy * dy);
+        };
+        Point.prototype.angleTo = function (point) {
+            return math.atan2(point.y - this.y, point.x - this.x);
+        };
+        Point.prototype.lerp = function (that, t) {
+            return new Point(
+                this.x + (that.x - this.x) * t,
+                this.y + (that.y - this.y) * t
+            );
+        };
 
         return {
             Create: function (x, y) {
@@ -373,8 +493,49 @@ window.Plane = (function (window, document, math) {
                     pointDestination,
                     pointIntersection = 0;
 
+
                 switch (this.type) {
-                case 'line' || 'polygon':
+                case 'line':
+                    {
+
+                        //debugger;
+                        pointOrigin = this.points[0];
+                        pointDestination = this.points[1];
+
+                        if (utility.graphic.intersection.circleLine(pointActual, 2, pointOrigin, pointDestination))
+                            return true;
+
+                        break;
+                    }
+                case 'rectangle':
+                    {
+                        if (utility.graphic.intersection.circleRectangle(pointActual, 2, this.point, this.height, this.width))
+                            return true;
+
+                        break;
+                    }
+                case 'arc':
+                    {
+                        if (utility.graphic.intersection.circleArc(pointActual, 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise))
+                            return true;
+
+                        break;
+                    }
+                case 'circle':
+                    {
+                        if (utility.graphic.intersection.circleCircle(pointActual, 2, this.point, this.radius))
+                            return true;
+
+                        break;
+                    }
+                case 'ellipse':
+                    {
+                        if (utility.graphic.intersection.circleEllipse(pointActual, 2, this.point, this.height, this.width))
+                            return true;
+
+                        break;
+                    }
+                case 'polygon':
                     {
                         for (var i = 0; i < this.points.length; i++) {
 
@@ -389,18 +550,8 @@ window.Plane = (function (window, document, math) {
                             if (utility.graphic.intersection.circleLine(pointActual, 2, pointOrigin, pointDestination))
                                 return true;
                         }
+                        break;
                     }
-                case 'rectangle':
-                    {
-                        if (utility.graphic.intersection.circleRectangle(pointActual, 2, this.point, this.height, this.width))
-                            return true;
-                    }
-                case 'arc':
-                    {}
-                case 'circle':
-                    {}
-                case 'ellipse':
-                    {}
                 default:
                     break;
                 }
@@ -413,32 +564,32 @@ window.Plane = (function (window, document, math) {
         };
 
         function Arc(attrs) {
-            this.point = null;
-            this.radius = 0;
-            this.startAngle = 0;
-            this.endAngle = 0;
-            this.clockWise = 0;
-
-            Shape.call(this, attrs);
+            this.type = 'arc';
+            this.point = attrs.point;
+            this.radius = attrs.radius;
+            this.startAngle = attrs.startAngle;
+            this.endAngle = attrs.endAngle;
+            this.clockWise = attrs.clockWise;
+            Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
         };
-        Arc.prototype = new Shape();
+        Arc.prototype = Shape.prototype;
 
         function Circle(attrs) {
-            this.point = null;
-            this.radius = 0;
-
-            Shape.call(this, attrs);
+            this.type = 'circle';
+            this.point = attrs.point;
+            this.radius = attrs.radius;
+            Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
         }
-        Circle.prototype = new Shape();
+        Circle.prototype = Shape.prototype;
 
         function Ellipse(attrs) {
-            this.point = null;
-            this.height = 0;
-            this.width = 0;
-
-            Shape.call(this, attrs);
+            this.type = 'ellipse';
+            this.point = attrs.point;
+            this.height = attrs.height;
+            this.width = attrs.width;
+            Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
         }
-        Ellipse.prototype = new Shape();
+        Ellipse.prototype = Shape.prototype;
 
         function Line(attrs) {
             this.type = 'line';
@@ -492,18 +643,25 @@ window.Plane = (function (window, document, math) {
                     }
                 case 'arc':
                     {
-
-                        break;
+                        attrs.point = Point.Create(x, y);
+                        attrs.radius = radius;
+                        attrs.startAngle = startAngle;
+                        attrs.endAngle = endAngle;
+                        attrs.clockWise = clockWise;
+                        return new Arc(attrs);
                     }
                 case 'circle':
                     {
-
-                        break;
+                        attrs.point = Point.Create(x, y);
+                        attrs.radius = radius;
+                        return new Circle(attrs);
                     }
                 case 'ellipse':
                     {
-
-                        break;
+                        attrs.point = Point.Create(x, y);
+                        attrs.height = height;
+                        attrs.width = width;
+                        return new Ellipse(attrs);
                     }
                 case 'polygon':
                     {
@@ -607,17 +765,15 @@ window.Plane = (function (window, document, math) {
                 // alinhando com o centro
                 context2D.translate(planeFacade.center.x, planeFacade.center.y);
 
-                //                debugger;
-
-                // save state of all configuration
-                context2D.save();
-
                 // style of layer
                 context2D.lineCap = layerStyle.lineCap;
                 context2D.lineJoin = layerStyle.lineJoin;
 
                 // render para cada shape
                 layerShapes.forEach(function (shape) {
+
+                    // save state of all configuration
+                    context2D.save();
 
                     context2D.beginPath();
 
@@ -640,25 +796,19 @@ window.Plane = (function (window, document, math) {
                         }
                     case 'arc':
                         {
-                            context2D.translate(shape.x, shape.y);
-                            context2D.rotate((math.PI / 180) * shape.angle);
-
+                            context2D.translate(shape.point.x, shape.point.y);
                             context2D.arc(0, 0, shape.radius, (math.PI / 180) * shape.startAngle, (math.PI / 180) * shape.endAngle, shape.clockWise);
                             break;
                         }
                     case 'circle':
                         {
-                            context2D.translate(shape.x, shape.y);
-                            context2D.rotate((math.PI / 180) * shape.angle);
-
+                            context2D.translate(shape.point.x, shape.point.y);
                             context2D.arc(0, 0, shape.radius, 0, math.PI * 2, true);
                             break;
                         }
                     case 'ellipse':
                         {
-                            context2D.translate(shape.x, shape.y);
-                            context2D.rotate((math.PI / 180) * shape.angle);
-
+                            context2D.translate(shape.point.x, shape.point.y);
                             context2D.ellipse(0, 0, shape.width, shape.height, 0, 0, math.PI * 2)
                             break;
                         }
@@ -678,9 +828,11 @@ window.Plane = (function (window, document, math) {
                     }
 
                     context2D.stroke();
+
+                    // restore state of all configuration
+                    context2D.restore();
+
                 });
-                // restore state of all configuration
-                context2D.restore();
             }
         }
 
@@ -761,7 +913,7 @@ window.Plane = (function (window, document, math) {
                 uuid: utility.math.uuid(9, 16)
             }, attrs);
 
-            var shape = Shape.Create(attrs.uuid, attrs.type, attrs.x, attrs.y, attrs.style, attrs.radius, attrs.starAngle,
+            var shape = Shape.Create(attrs.uuid, attrs.type, attrs.x, attrs.y, attrs.style, attrs.radius, attrs.startAngle,
                 attrs.endAngle, attrs.clockWise, attrs.sides, attrs.height, attrs.width);
 
             shapeStore[layerFacade.Active.uuid].add(shape.uuid, shape);
@@ -822,10 +974,6 @@ window.Plane = (function (window, document, math) {
 
 
         });
-
-
-
-
 
 
         //        toolFacade.notify('onMouseMove', {
