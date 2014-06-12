@@ -127,7 +127,43 @@
                 radius: 50,
                 startAngle: 0,
                 endAngle: 180,
+                clockWise: true
+            });
+            Plane.Shape.Create({
+                type: 'arc',
+                x: 500,
+                y: 250,
+                radius: 50,
+                startAngle: 90,
+                endAngle: 180,
                 clockWise: false
+            });
+            Plane.Shape.Create({
+                type: 'arc',
+                x: 700,
+                y: 250,
+                radius: 50,
+                startAngle: 90,
+                endAngle: 270,
+                clockWise: false
+            });
+            Plane.Shape.Create({
+                type: 'arc',
+                x: 1000,
+                y: 250,
+                radius: 50,
+                startAngle: 90,
+                endAngle: 270,
+                clockWise: true
+            });
+            Plane.Shape.Create({
+                type: 'arc',
+                x: 50,
+                y: 50,
+                radius: 30,
+                startAngle: 90,
+                endAngle: 180,
+                clockWise: true
             });
             Plane.Shape.Create({
                 type: 'circle',
@@ -139,13 +175,47 @@
                 type: 'ellipse',
                 x: 1000,
                 y: 100,
-                width: 45,
-                height: 25
+                radiusY: 25,
+                radiusX: 45
             });
 
             Plane.Render.Update();
 
-        }
+
+            document.getElementById('fileImport').addEventListener('change', function () {
+                var file = this.files[0],
+                    filename = file.name;
+
+                var lastDotPosition = filename.lastIndexOf('.'),
+                    bareFilename = filename.substr(0, lastDotPosition),
+                    fileExtension = filename.substr(lastDotPosition + 1).toLowerCase();
+
+
+                var reader = new FileReader();
+
+                reader.onload = function (event) {
+
+                    var fileData = event.target.result,
+                        svgString = '';
+
+                    switch (fileExtension) {
+                    case 'dxf':
+                        Plane.Import.fromDxf(fileData);
+                        break;
+                    case 'json':
+                        Plane.importJson(fileData);
+                        break;
+                    default:
+                        return;
+                    }
+
+                };
+
+                reader.readAsText(file);
+            });
+
+
+        };
     </script>
 
 </head>
@@ -167,6 +237,7 @@
         <ul id="layersControl">
         </ul>
         <div id="toolsPanel">
+            <input id="fileImport" type="file"></input>
         </div>
         <ul id="shapesList">
         </ul>
