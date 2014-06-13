@@ -711,18 +711,11 @@ window.Plane = (function (window, document, math) {
                             }
                         case 'ELLIPSE':
                             {
-                                debugger;
+                                var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} }',
+                                    radiusX = math.abs(dxfObject.x1),
+                                    radiusY = radiusX * dxfObject.r;
 
-                                var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} }';
-
-                                var aStart = dxfObject.aStart * 180 / math.PI;
-                                var aEnd = dxfObject.aEnd * 180 / math.PI;
-                                var radius = (math.sqrt((dxfObject.x * dxfObject.x) + (dxfObject.y * dxfObject.y)) / 10) / 2;
-                                var angle = math.atan2(dxfObject.y, dxfObject.x);
-                                var xxx = (radius * dxfObject.r) / 2;
-
-                                return ellipse.format(dxfObject.x, dxfObject.y, xxx, radius);
-
+                                return ellipse.format(dxfObject.x, dxfObject.y, radiusY, radiusX);
                             }
                         }
 
@@ -738,9 +731,6 @@ window.Plane = (function (window, document, math) {
                         40: 'r',
                         50: 'a0',
                         51: 'a1',
-                        41: 'aStart',
-                        42: 'aEnd',
-
                     };
 
                     var supportedEntities = ['LINE', 'CIRCLE', 'ARC', 'ELLIPSE'];
