@@ -1,6 +1,6 @@
 {
     "name": "plane",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "description": "JavaScript Engine for Building 2D Element with HTML5 Canvas",
     "keywords": ["javascript", "canvas", "geometry", "space", "euclidean", "draw", "vector", "cad", "2d", "svg", "dxf"],
     "homepage": "http://sp.c37.co/",
@@ -17,7 +17,6 @@
         "email": "ser@c37.co"
     }],
     "main": "./src/plane.js",
-    "bin": "./dist/plane-1.0.0.js",
     "directories": {
         "dist": "./dist",
         "doc": "./doc",
@@ -27,19 +26,5 @@
     "repository": {
         "type": "git",
         "url": "https://github.com/c37/plane.git"
-    },
-    "dependencies": {
-        "grunt": "~0.4.1"
-    },
-    "devDependencies": {
-        "grunt-contrib-watch": "*",
-        "grunt-contrib-concat": "*",
-        "grunt-contrib-uglify": "*",
-        "grunt-contrib-yuidoc": "*",
-        "grunt-contrib-qunit": "*"
-    },
-    "scripts": {
-        "preinstall": "npm install -g grunt-cli",
-        "install": "grunt"
     }
 }
