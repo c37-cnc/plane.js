@@ -2,7 +2,7 @@ Plane.Render = (function (plane, document, math) {
     "use strict";
 
     var viewPort = null,
-        renders = null;
+        renders = null; 
 
     return {
         Initialize: function (config) {
