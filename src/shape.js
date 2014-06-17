@@ -17,7 +17,7 @@ Plane.Shape = (function (Plane, Math) {
             if (name in this) {
                 this[name] = attrs[name];
             }
-        }
+        } 
     }
 
     Shape.prototype = {
