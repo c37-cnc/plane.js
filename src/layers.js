@@ -8,7 +8,7 @@ Plane.Layers = (function (Plane) {
             if (name in this) {
                 this[name] = attrs[name];
             }
-        }
+        } 
     }
 
     Layer.prototype = {
