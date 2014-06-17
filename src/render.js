@@ -1,5 +1,5 @@
 Plane.Render = (function (plane, document, math) {
-    "use strict";
+    "use strict"; 
 
     var viewPort = null,
         renders = null; 
