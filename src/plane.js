@@ -6,10 +6,10 @@ var f002 = function () {
     return false;
 }
 
-//export {
-//    f001, f002
-//};
+var f003 = function(){
+    return true;
+}
 
 export {
-    f001
+    f001, f002, f003
 }

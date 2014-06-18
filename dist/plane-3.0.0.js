@@ -1,3 +1,12 @@
+/*!
+ * C37 in 18-06-2014 at 13:10:30 
+ *
+ * plane version: 3.0.0
+ * licensed by Creative Commons Attribution-ShareAlike 3.0
+ *
+ * Copyright - C37 http://c37.co - 2014
+ */
+
 (function(window) {
 var define, require;
 
@@ -40,14 +49,6 @@ var define, require;
         return seen[name] = exports || value;
     };
 })();
-/*!
- * C37 in 17-06-2014 at 22:58:00 
- *
- * plane version: 3.0.0
- * licensed by Creative Commons Attribution-ShareAlike 3.0
- *
- * Copyright - C37 http://c37.co - 2014
- */
 define("geometric/bézier", 
   [],
   function() {
@@ -84,11 +85,13 @@ define("plane",
         return false;
     }
 
-    //export {
-    //    f001, f002
-    //};
+    var f003 = function(){
+        return true;
+    }
 
     __exports__.f001 = f001;
+    __exports__.f002 = f002;
+    __exports__.f003 = f003;
   });
 define("shapes/arc", 
   [],
