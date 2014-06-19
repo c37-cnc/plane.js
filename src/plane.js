@@ -1,5 +1,8 @@
+import { b001 } from "geometric/bézier";
+
 var f001 = function () {
     alert('sasas');
+    b001();
 }
 
 var f002 = function () {

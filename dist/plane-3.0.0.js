@@ -1,5 +1,5 @@
 /*!
- * C37 in 18-06-2014 at 13:10:30 
+ * C37 in 19-06-2014 at 19:00:56 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -50,10 +50,13 @@ var define, require;
     };
 })();
 define("geometric/bézier", 
-  [],
-  function() {
+  ["exports"],
+  function(__exports__) {
     "use strict";
-
+    function b001() {
+        alert('bézier');
+    }
+    __exports__.b001 = b001;
   });
 define("geometric/intersection", 
   [],
@@ -74,11 +77,14 @@ define("geometric/polynomial",
 
   });
 define("plane", 
-  ["exports"],
-  function(__exports__) {
+  ["geometric/bézier","exports"],
+  function(__dependency1__, __exports__) {
     "use strict";
+    var b001 = __dependency1__.b001;
+
     var f001 = function () {
         alert('sasas');
+        b001();
     }
 
     var f002 = function () {
