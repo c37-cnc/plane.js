@@ -31,13 +31,11 @@
     "dependencies": {},
     "devDependencies": {
         "grunt": "~0.4.1",
-        "grunt-contrib-clean": "*",
         "grunt-contrib-watch": "*",
         "grunt-contrib-qunit": "*",
         "grunt-contrib-concat": "*",
         "grunt-contrib-uglify": "*",
-        "grunt-contrib-yuidoc": "*",
-        "grunt-es6-module-transpiler": "*"
+        "grunt-contrib-yuidoc": "*"
     },
     "scripts": {
         "preinstall": "npm install -g grunt-cli",

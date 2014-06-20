@@ -1,5 +1,5 @@
 /*!
- * C37 in 19-06-2014 at 19:00:56 
+ * C37 in 20-06-2014 at 16:26:45 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -10,6 +10,7 @@
 (function(window) {
 var define, require;
 
+//http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
 (function () {
     var registry = {},
         seen = {};
@@ -38,7 +39,9 @@ var define, require;
             exports;
 
         for (var i = 0, l = deps.length; i < l; i++) {
-            if (deps[i] === 'exports') {
+            if (deps[i] === 'require') {
+                reified.push(require);
+            } else if (deps[i] === 'exports') {
                 reified.push(exports = {});
             } else {
                 reified.push(require(deps[i]));
@@ -49,151 +52,79 @@ var define, require;
         return seen[name] = exports || value;
     };
 })();
-define("geometric/bézier", 
-  ["exports"],
-  function(__exports__) {
-    "use strict";
-    function b001() {
-        alert('bézier');
-    }
-    __exports__.b001 = b001;
-  });
-define("geometric/intersection", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("geometric/point", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("geometric/polynomial", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("plane", 
-  ["geometric/bézier","exports"],
-  function(__dependency1__, __exports__) {
-    "use strict";
-    var b001 = __dependency1__.b001;
+define("geometric/bézier", ['require', 'exports'], function (require, exports) {
 
     var f001 = function () {
-        alert('sasas');
-        b001();
+        alert('f001 - b');
     }
 
-    var f002 = function () {
-        return false;
+
+
+    exports.f001 = f001;
+});
+
+
+
+define("plane", ['require', 'exports'], function (require, exports) {
+
+    var bézier = require('geometric/bézier');
+    
+    
+    var f001 = function(){
+        alert('f001 - 1');
+        bézier.f001();
+    }
+    
+    
+    
+    
+
+    exports.f001 = f001;
+});
+
+
+
+
+
+
+
+
+
+
+
+
+
+define("utility/math", ['require', 'exports'], function (require, exports) {
+
+    function uuid(length, radix) {
+        // http://www.ietf.org/rfc/rfc4122.txt
+        var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''),
+            uuid = [],
+            i;
+        radix = radix || chars.length;
+
+        if (length) {
+            for (i = 0; i < length; i++) uuid[i] = chars[0 | Math.random() * radix];
+        } else {
+            var r;
+
+            uuid[8] = uuid[13] = uuid[18] = uuid[23] = '-';
+            uuid[14] = '4';
+
+            for (i = 0; i < 36; i++) {
+                if (!uuid[i]) {
+                    r = 0 | Math.random() * 16;
+                    uuid[i] = chars[(i == 19) ? (r & 0x3) | 0x8 : r];
+                }
+            }
+        }
+
+        return uuid.join('').toLowerCase();
     }
 
-    var f003 = function(){
-        return true;
-    }
+    exports.uuid = uuid;
+});
 
-    __exports__.f001 = f001;
-    __exports__.f002 = f002;
-    __exports__.f003 = f003;
-  });
-define("shapes/arc", 
-  [],
-  function() {
-    "use strict";
 
-  });
-define("shapes/base", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("shapes/circle", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("shapes/ellipse", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("shapes/line", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("shapes/polygon", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("shapes/rectangle", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("structure/layer", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("structure/render", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("structure/tools", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("utility/export", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("utility/graphic", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("utility/import", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("utility/math", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("utility/polyfill", 
-  [],
-  function() {
-    "use strict";
-
-  });
-define("utility/types", 
-  [],
-  function() {
-    "use strict";
-
-  });
 window.Plane = require("plane");
 })(window);

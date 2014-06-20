@@ -1,5 +1,6 @@
 var define, require;
 
+//http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
 (function () {
     var registry = {},
         seen = {};
@@ -28,7 +29,9 @@ var define, require;
             exports;
 
         for (var i = 0, l = deps.length; i < l; i++) {
-            if (deps[i] === 'exports') {
+            if (deps[i] === 'require') {
+                reified.push(require);
+            } else if (deps[i] === 'exports') {
                 reified.push(exports = {});
             } else {
                 reified.push(require(deps[i]));

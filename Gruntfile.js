@@ -2,12 +2,10 @@ module.exports = function (grunt) {
 
     // Load the plugins that provides tasks
     grunt.loadNpmTasks('grunt-contrib-watch');
-    grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
     grunt.loadNpmTasks('grunt-contrib-yuidoc');
-    grunt.loadNpmTasks("grunt-es6-module-transpiler");
 
     // Project configuration
     grunt.initConfig({
@@ -30,11 +28,8 @@ module.exports = function (grunt) {
         },
         concat: {
             files: {
-//                options: {
-//                    banner: '<%= meta.banner %>\n'
-//                },
-                src: "amd/**/*.amd.js",
-                dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.amd.js'
+                src: ['<%= dirs.src %>/**/*.js', '!<%= dirs.src %>/utility/module.js'],
+                dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'
             }
         },
         uglify: {
@@ -50,9 +45,6 @@ module.exports = function (grunt) {
         qunit: {
             all: ['<%= dirs.test %>/unit/*.html']
         },
-        clean: {
-            amd: ['amd', '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.amd.js']
-        },
         yuidoc: {
             compile: {
                 name: '<%= pkg.name %>',
@@ -66,29 +58,17 @@ module.exports = function (grunt) {
                 }
             }
         },
-        transpile: {
-            amd: {
-                type: 'amd',
-                files: [{
-                    expand: true,
-                    cwd: 'src/',
-                    src: ['**/*.js', '!utility/module.js'],
-                    dest: 'amd/',
-                    ext: '.amd.js'
-                }]
-            },
-        },
         watch: {
             scripts: {
                 files: [
                     '<%= dirs.src %>/**'
                 ],
-                tasks: ['module', 'concat', 'browser', 'minify', 'clear']
+                tasks: ['concat', 'browser', 'minify']
             }
         },
         browser: {
             dist: {
-                src: ['<%= dirs.src %>/utility/module.js', '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.amd.js'],
+                src: ['<%= dirs.src %>/utility/module.js', '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'],
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js',
                 options: {
                     barename: "plane",
@@ -126,11 +106,9 @@ module.exports = function (grunt) {
     });
 
     grunt.registerTask('minify', ['uglify']);
-    grunt.registerTask('module', ['transpile']);
-    grunt.registerTask('clear', ['clean']);
     grunt.registerTask('doc', ['yuidoc']);
     grunt.registerTask('test', ['qunit']);
 
-    grunt.registerTask('dist', ['module', 'concat', 'browser', 'minify', 'clear']);
+    grunt.registerTask('dist', ['concat', 'browser', 'minify']);
     grunt.registerTask('default', ['dist', 'test']);
 };
