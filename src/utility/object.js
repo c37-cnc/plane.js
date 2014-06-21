@@ -5,7 +5,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * If o and p have a property by the same name, o's property is overwritten
      * This function does not handle getters and setters or copy attributes
      */
-    function extend(o, p) {
+    function Extend(o, p) {
         for (prop in p) { // For all props in p.
             o[prop] = p[prop]; // Add the property to o.
         }
@@ -17,7 +17,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * If o and p have a property by the same name, o's property is left alone
      * This function does not handle getters and setters or copy attributes
      */
-    function merge(o, p) {
+    function Merge(o, p) {
         for (prop in p) { // For all props in p
             if (o.hasOwnProperty[prop]) continue; // Except those already in o
             o[prop] = p[prop]; // Add the property to o
@@ -29,7 +29,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * Remove properties from o if there is not a property with the same name in p
      * Return o
      */
-    function restrict(o, p) {
+    function Restrict(o, p) {
         for (prop in o) { // For all props in o
             if (!(prop in p)) delete o[prop]; // Delete if not in p
         }
@@ -40,7 +40,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * For each property of p, delete the property with the same name from o
      * Return o
      */
-    function subtract(o, p) {
+    function Subtract(o, p) {
         for (prop in p) { // For all props in p
             delete o[prop]; // Delete from o (deleting a nonexistent prop is harmless)
         }
@@ -51,7 +51,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * Return a new object that holds the properties of both o and p.
      * If o and p have properties by the same name, the values from o are used
      */
-    function union(o, p) {
+    function Union(o, p) {
         return extend(extend({}, o), p);
     }
 
@@ -60,14 +60,14 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * in p. This is something like the intersection of o and p, but the values of
      * the properties in p are discarded
      */
-    function intersection(o, p) {
+    function Intersection(o, p) {
         return restrict(extend({}, o), p);
     }
 
     /*
      * Return an array that holds the names of the enumerable own properties of o
      */
-    function keys(o) {
+    function Keys(o) {
         if (typeof o !== "object") throw TypeError(); // Object argument required
         var result = []; // The array we will return
         for (var prop in o) { // For all enumerable properties
@@ -78,11 +78,42 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
     }
 
 
-    exports.extend = extend;
-    exports.merge = merge;
-    exports.restrict = restrict;
-    exports.subtract = subtract;
-    exports.union = union;
-    exports.intersection = intersection;
-    exports.keys = keys;
+
+    function Event() {
+        this.listeners = {};
+    }
+
+    Event.prototype.listen = function (event, handler) {
+        if (this.listeners[event] === undefined) {
+            this.listeners[event] = [];
+        }
+        this.listeners[event].push(handler);
+    };
+
+    Event.prototype.notify = function (event, data) {
+        if (this.listeners[event] !== undefined) {
+            for (var callback in this.listeners[event]) {
+                this.listeners[event][callback].call(this, data);
+            }
+        }
+    };
+
+    Event.prototype.unlisten = function (event, handler) {
+        if (this.listeners[event] !== undefined) {
+            var index = this.listeners[event].indexOf(handler);
+            if (index !== -1) {
+                this.listeners[event].splice(index, 1);
+            }
+        }
+    };
+
+
+    exports.Extend = Extend;
+    exports.Merge = Merge;
+    exports.Restrict = Restrict;
+    exports.Subtract = Subtract;
+    exports.Union = Union;
+    exports.Intersection = Intersection;
+    exports.Keys = Keys;
+    exports.Event = Event;
 });

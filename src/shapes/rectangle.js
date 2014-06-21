@@ -14,7 +14,7 @@ define("shapes/rectangle", ['require', 'exports'], function (require, exports) {
             base.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
         }
         Rectangle.prototype = Shape.prototype;
-
+        
         return Rectangle;
         
     })(Shape);
