@@ -1,7 +1,6 @@
 var define, require;
 
-//http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
-(function () {
+(function () { //http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
     var registry = {},
         seen = {};
 

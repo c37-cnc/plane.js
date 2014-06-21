@@ -90,7 +90,8 @@ module.exports = function (grunt) {
 
         this.files.forEach(function (f) {
             output.push('<%= meta.banner %>\n');
-            output.push('(function(window) {');
+            output.push('(function (window) {');
+            output.push('"use strict";');
             output.push.apply(output, f.src.map(grunt.file.read));
             output.push(grunt.template.process(
                 'window.<%= namespace %> = require("<%= barename %>");', {

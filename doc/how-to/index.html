@@ -84,22 +84,37 @@
 
     <script>
         window.onload = function () {
-            
-            
-            Plane.f001();
-            
 
-//            // plane - initialize
-//            var viewPort = document.getElementById("viewPort");
-//
-//            Plane.Initialize({
-//                viewPort: viewPort,
-//                //                                style: {
-//                //                                    gridEnable: true,
-//                //                                    gridColor: 'red'
-//                //                                }
-//            });
-//            // plane - initialize
+
+            var arc = new Plane.Arc({
+                type: 'arc',
+                x: 800,
+                y: 150,
+                radius: 50,
+                startAngle: 0,
+                endAngle: 180,
+                name: 'Andréa',
+                clockWise: true
+            });
+
+            console.log(arc);
+            console.log(arc.contains());
+            console.log(arc.hasOwnProperty('type'));
+            console.log(arc.hasOwnProperty('uuid'));
+            console.log(arc);
+
+
+            //            // plane - initialize
+            //            var viewPort = document.getElementById("viewPort");
+            //
+            //            Plane.Initialize({
+            //                viewPort: viewPort,
+            //                //                                style: {
+            //                //                                    gridEnable: true,
+            //                //                                    gridColor: 'red'
+            //                //                                }
+            //            });
+            //            // plane - initialize
 
 
             //            var tool001 = Plane.Tool.Create();
