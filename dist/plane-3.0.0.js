@@ -1,5 +1,5 @@
 /*!
- * C37 in 21-06-2014 at 12:23:59 
+ * C37 in 21-06-2014 at 20:37:25 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -52,6 +52,12 @@ var define, require;
         return seen[name] = exports || value;
     };
 })();
+define("geometric/group", ['require', 'exports'], function (require, exports) {
+
+
+
+
+});
 define("geometric/intersection", ['require', 'exports'], function (require, exports) {
 
     var Polynomial = require('geometric/polynomial').Polynomial,
@@ -272,6 +278,54 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
     exports.CircleEllipse = CircleEllipse;
 });
 define("geometric/point", ['require', 'exports'], function (require, exports) {
+
+    var math = Math;
+
+
+    function Point(x, y) {
+        this.x = x;
+        this.y = y;
+    };
+
+    Point.prototype = {
+        Operations: {
+            Sum: function (point) {
+                return new Point(this.x + point.x, this.y + point.y);
+            },
+            Subtract: function (point) {
+                return new Point(this.x - point.x, this.y - point.y);
+            }
+        },
+        Measures: {
+            DistanceTo: function (point) {
+                var dx = this.x - point.x;
+                var dy = this.y - point.y;
+
+                return math.sqrt(dx * dx + dy * dy);
+            },
+            MidTo: function (point) {
+                return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
+            },
+            AngleTo: function (point) {
+                return math.atan2(point.y - this.y, point.x - this.x);
+            }
+        },
+        Functions: {
+            InterpolationLinear: function (point, value) {
+                return new Point(
+                    this.x + (point.x - this.x) * value,
+                    this.y + (point.y - this.y) * value
+                );
+            }
+        }
+    };
+
+    function Create(x, y) {
+        return new Point(x, y);
+    };
+
+
+    exports.Create = Create;
 
 });
 define("geometric/polynomial", ['require', 'exports'], function (require, exports) {
@@ -528,30 +582,143 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         }
     };
 
-    exports.Shape = Shape;
+
+    function Create(uuid, type, x, y, style, radius, startAngle, endAngle, clockWise, sides, height, width, radiusY, radiusX) {
+
+        var attrs = {
+            uuid: uuid,
+            name: 'Shape '.concat(uuid),
+            style: style,
+            locked: false,
+            visible: true,
+            selected: false
+        };
+
+        switch (type) {
+        case 'line':
+            {
+                attrs.points = [Point.Create(x[0], x[1]), Point.Create(y[0], y[1])];
+                return new Line(attrs);
+            }
+        case 'rectangle':
+            {
+                attrs.point = Point.Create(x, y);
+                attrs.height = height;
+                attrs.width = width;
+                return new Rectangle(attrs);
+            }
+        case 'arc':
+            {
+                attrs.point = Point.Create(x, y);
+                attrs.radius = radius;
+                attrs.startAngle = startAngle;
+                attrs.endAngle = endAngle;
+                attrs.clockWise = clockWise;
+                return new Arc(attrs);
+            }
+        case 'circle':
+            {
+                attrs.point = Point.Create(x, y);
+                attrs.radius = radius;
+                return new Circle(attrs);
+            }
+        case 'ellipse':
+            {
+                attrs.point = Point.Create(x, y);
+                attrs.radiusY = radiusY;
+                attrs.radiusX = radiusX;
+                return new Ellipse(attrs);
+            }
+        case 'polygon':
+            {
+                attrs.points = [];
+                attrs.sides = sides;
+
+                for (var i = 0; i < sides; i++) {
+
+                    var pointX = (radius * math.cos(((math.PI * 2) / sides) * i) + x),
+                        pointY = (radius * math.sin(((math.PI * 2) / sides) * i) + y);
+
+                    attrs['points'].push(Point.Create(pointX, pointY));
+                }
+
+                return new Polygon(attrs);
+            }
+        default:
+            break;
+        }
+
+    }
+
+
+    exports.Create = Create;
+
 });
 define("plane", ['require', 'exports'], function (require, exports) {
 
     var version = '3.0.0',
         authors = ['lilo@c37.co', 'ser@c37.co'];
 
-    var layerStore = null,
-        renderStore = null,
-        toolStore = null;
+    var Object = require('utility/object'),
+        Types = require('utility/types');
 
-    var shapeStore = null,
-        groupStore = null;
-
-    var viewPort = null,
-        settings = null;
+    var Tools = require('structure/tools');
 
 
+    var LayerStore = new Types.Data.Dictionary();
+
+    var RenderStore = {},
+        ShapeStore = {},
+        GroupStore = {};
+
+    var ViewPort = null,
+        Settings = null;
+
+
+    function Initialize(config) {
+        // verificações para as configurações
+        if (config == null) {
+            throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (typeof config == "function") {
+            throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (config.viewPort == null) {
+            throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        // verificações para as configurações
+
+        ViewPort = config.viewPort;
+
+
+        Settings = Object.Merge({
+            metricSystem: 'mm',
+            backgroundColor: 'rgb(255, 255, 255)',
+            gridEnable: true,
+            gridColor: 'rgb(218, 222, 215)'
+        }, config.settings || {});
+
+        
+        // start em eventos
+        ViewPort.onmousemove = function (event) {
+            Tools.notify('onMouseMove', event);
+        };
+        ViewPort.onclick = function (event) {
+            Tools.notify('onClick', event);
+        }
+        // start em eventos
+
+        //gridDraw(settings.gridEnable, viewPort.clientWidth, viewPort.clientHeight, settings.gridColor);
+
+        return true;
+    }
 
 
 
 
 
-    exports.Arc = Arc;
+
+    exports.Initialize = Initialize;
 });
 define("shapes/arc", ['require', 'exports'], function (require, exports) {
 
@@ -705,8 +872,158 @@ define("shapes/rectangle", ['require', 'exports'], function (require, exports) {
 });
 define("structure/layer", ['require', 'exports'], function (require, exports) {
 
+    var object = require('utility/object');
+
+    function Layer(attrs) {
+
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.locked = attrs.locked;
+        this.visible = attrs.visible;
+        this.system = attrs.system;
+        this.style = attrs.style;
+
+    }
+    Layer.prototype = new object.Event();
+
+    Layer.prototype.toJson = function () {
+        return JSON.stringify(this).replace(/_/g, '');
+    }
+
+
+    function Create(uuid, name, style, system) {
+
+        var attrs = {
+            uuid: uuid,
+            name: name,
+            style: style,
+            locked: false,
+            visible: true,
+            system: system
+        };
+
+        return new Layer(attrs);
+    };
+    
+    
+    exports.Create = Create;
+
+
+
+
 });
 define("structure/render", ['require', 'exports'], function (require, exports) {
+
+
+    function Create(uuid, width, height, backgroundColor) {
+
+        var render = document.createElement('canvas');
+
+        render.width = width;
+        render.height = height;
+
+        render.style.position = "absolute";
+        render.style.backgroundColor = backgroundColor || 'transparent';
+
+        // sistema cartesiano de coordenadas
+        var context2D = render.getContext('2d');
+        context2D.translate(0, render.height);
+        context2D.scale(1, -1);
+
+        return render;
+    };
+
+    function Update() {
+
+        var layerUuid = layerFacade.Active.uuid,
+            layerStyle = layerFacade.Active.style,
+            layerShapes = shapeStore[layerUuid].list(),
+            layerRender = renderStore[layerUuid],
+            context2D = layerRender.getContext('2d');
+
+        //https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial
+
+        // limpando o render
+        context2D.clearRect(0, 0, layerRender.width, layerRender.height);
+        // alinhando com o centro
+        context2D.translate(planeFacade.center.x, planeFacade.center.y);
+
+        // style of layer
+        context2D.lineCap = layerStyle.lineCap;
+        context2D.lineJoin = layerStyle.lineJoin;
+
+        // render para cada shape
+        layerShapes.forEach(function (shape) {
+
+            // save state of all configuration
+            context2D.save();
+
+            context2D.beginPath();
+
+            // possivel personalização
+            context2D.lineWidth = (shape.style && shape.style.lineWidth) ? shape.style.lineWidth : layerStyle.lineWidth;
+            context2D.strokeStyle = (shape.style && shape.style.lineColor) ? shape.style.lineColor : layerStyle.lineColor;
+
+            switch (shape.type) {
+            case 'line':
+                {
+                    context2D.moveTo(shape.points[0].x, shape.points[0].y);
+                    context2D.lineTo(shape.points[1].x, shape.points[1].y);
+                    break;
+                }
+            case 'rectangle':
+                {
+                    context2D.translate(shape.point.x, shape.point.y);
+                    context2D.strokeRect(0, 0, shape.width, shape.height);
+                    break;
+                }
+            case 'arc':
+                {
+                    context2D.translate(shape.point.x, shape.point.y);
+                    context2D.arc(0, 0, shape.radius, (math.PI / 180) * shape.startAngle, (math.PI / 180) * shape.endAngle, shape.clockWise);
+                    break;
+                }
+            case 'circle':
+                {
+                    context2D.translate(shape.point.x, shape.point.y);
+                    context2D.arc(0, 0, shape.radius, 0, math.PI * 2, true);
+                    break;
+                }
+            case 'ellipse':
+                {
+                    context2D.translate(shape.point.x, shape.point.y);
+                    context2D.ellipse(0, 0, shape.radiusX, shape.radiusY, 0, 0, math.PI * 2)
+                    break;
+                }
+            case 'polygon':
+                {
+                    context2D.moveTo(shape.points[0].x, shape.points[0].y);
+
+                    shape.points.forEach(function (point) {
+                        context2D.lineTo(point.x, point.y);
+                    });
+
+                    context2D.closePath();
+                    break;
+                }
+            default:
+                break;
+            }
+
+            context2D.stroke();
+
+            // restore state of all configuration
+            context2D.restore();
+
+        });
+    }
+
+
+    exports.Create = Create;
+    exports.Update = Update;
+
+
+
 
 });
 define("structure/shape", ['require', 'exports'], function (require, exports) {
@@ -714,6 +1031,54 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 });
 
 define("structure/tools", ['require', 'exports'], function (require, exports) {
+
+    var Object = require('utility/object'),
+        Types = require('utility/types');
+
+    var ToolStore = new Types.Data.Dictionary();
+
+
+    function Tool(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+
+        this.__defineGetter__('active', function () {
+            return this._active || false;
+        });
+        this.__defineSetter__('active', function (value) {
+            this.notify(value ? 'onActive' : 'onDeactive', {
+                type: value ? 'onActive' : 'onDeactive',
+                now: new Date().toISOString()
+
+            });
+            this._active = value;
+        });
+
+        utility.object.event.call(this);
+    }
+    Tool.prototype = Object.Event.prototype;
+
+
+
+    function Create(attrs) {
+        if (typeof attrs == "function") {
+            throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        attrs = Object.Merge({
+            uuid: utility.math.uuid(9, 16),
+            name: 'Tool '.concat(toolStore.count())
+        }, attrs);
+
+        var tool = new Tool(attrs);
+
+        ToolStore.add(attrs.uuid, tool);
+
+        return true;
+    }
+
+
+    exports.Create = Create;
 
 });
 define("utility/export", ['require', 'exports'], function (require, exports) {
