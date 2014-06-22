@@ -1,6 +1,6 @@
 define("utility/math", ['require', 'exports'], function (require, exports) {
 
-    function uuid(length, radix) {
+    function Uuid(length, radix) {
         // http://www.ietf.org/rfc/rfc4122.txt
         var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''),
             uuid = [],
@@ -26,5 +26,5 @@ define("utility/math", ['require', 'exports'], function (require, exports) {
         return uuid.join('').toLowerCase();
     }
 
-    exports.uuid = uuid;
+    exports.Uuid = Uuid;
 });

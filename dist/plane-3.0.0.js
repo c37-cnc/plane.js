@@ -1,5 +1,5 @@
 /*!
- * C37 in 21-06-2014 at 20:37:25 
+ * C37 in 22-06-2014 at 07:53:53 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -662,7 +662,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var Object = require('utility/object'),
         Types = require('utility/types');
 
-    var Tools = require('structure/tools');
+    var Tools = require('structure/tools').ToolsProxy;
 
 
     var LayerStore = new Types.Data.Dictionary();
@@ -675,50 +675,57 @@ define("plane", ['require', 'exports'], function (require, exports) {
         Settings = null;
 
 
-    function Initialize(config) {
-        // verificações para as configurações
-        if (config == null) {
-            throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+    var PlaneProxy = ObjectUtil.Extend(new ObjectUtil.Event(), {
+
+        Initialize: function (config) {
+            // verificações para as configurações
+            if (config == null) {
+                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
+            if (typeof config == "function") {
+                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
+            if (config.viewPort == null) {
+                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
+            // verificações para as configurações
+
+            ViewPort = config.viewPort;
+
+
+            Settings = Object.Merge({
+                metricSystem: 'mm',
+                backgroundColor: 'rgb(255, 255, 255)',
+                gridEnable: true,
+                gridColor: 'rgb(218, 222, 215)'
+            }, config.settings || {});
+
+
+            // start em eventos
+            ViewPort.onmousemove = function (event) {
+                Tools.notify('onMouseMove', event);
+            };
+            ViewPort.onclick = function (event) {
+                Tools.notify('onClick', event);
+            }
+            // start em eventos
+
+            //gridDraw(settings.gridEnable, viewPort.clientWidth, viewPort.clientHeight, settings.gridColor);
+
+            return true;
         }
-        if (typeof config == "function") {
-            throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-        if (config.viewPort == null) {
-            throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-        // verificações para as configurações
 
-        ViewPort = config.viewPort;
-
-
-        Settings = Object.Merge({
-            metricSystem: 'mm',
-            backgroundColor: 'rgb(255, 255, 255)',
-            gridEnable: true,
-            gridColor: 'rgb(218, 222, 215)'
-        }, config.settings || {});
-
-        
-        // start em eventos
-        ViewPort.onmousemove = function (event) {
-            Tools.notify('onMouseMove', event);
-        };
-        ViewPort.onclick = function (event) {
-            Tools.notify('onClick', event);
-        }
-        // start em eventos
-
-        //gridDraw(settings.gridEnable, viewPort.clientWidth, viewPort.clientHeight, settings.gridColor);
-
-        return true;
-    }
+    });
 
 
 
 
 
 
-    exports.Initialize = Initialize;
+
+
+
+    exports.PlaneProxy = PlaneProxy;
 });
 define("shapes/arc", ['require', 'exports'], function (require, exports) {
 
@@ -1032,11 +1039,24 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
 define("structure/tools", ['require', 'exports'], function (require, exports) {
 
-    var Object = require('utility/object'),
-        Types = require('utility/types');
+    var ObjectUtil = require('utility/object'),
+        TypesUtil = require('utility/types'),
+        MathUtil = require('utility/math');
 
-    var ToolStore = new Types.Data.Dictionary();
+    var ToolStore = new TypesUtil.Data.Dictionary();
 
+    //    var Tools = Object.Extend(new Object.Event(), {
+    //
+    //        this.uuid: null,
+    //        this.name: '',
+    //        get active() {
+    //            return this._active;
+    //        },
+    //        set active(value) {
+    //            this._active = value;
+    //        }
+    //
+    //    });
 
     function Tool(attrs) {
         this.uuid = attrs.uuid;
@@ -1056,29 +1076,29 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
 
         utility.object.event.call(this);
     }
-    Tool.prototype = Object.Event.prototype;
+    Tool.prototype = ObjectUtil.Event.prototype;
 
 
+    var ToolsProxy = ObjectUtil.Extend(new ObjectUtil.Event(), {
+        Create: function (attrs) {
+            if (typeof attrs == "function") {
+                throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
 
-    function Create(attrs) {
-        if (typeof attrs == "function") {
-            throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            attrs = Object.Merge({
+                uuid: MathUtil.Uuid(9, 16),
+                name: 'Tool '.concat(ToolStore.count())
+            }, attrs);
+
+            var tool = Tool.Create(attrs.uuid, attrs.name);
+
+            toolStore.add(attrs.uuid, tool);
+
+            return true;
         }
+    });
 
-        attrs = Object.Merge({
-            uuid: utility.math.uuid(9, 16),
-            name: 'Tool '.concat(toolStore.count())
-        }, attrs);
-
-        var tool = new Tool(attrs);
-
-        ToolStore.add(attrs.uuid, tool);
-
-        return true;
-    }
-
-
-    exports.Create = Create;
+    exports.ToolsProxy = ToolsProxy;
 
 });
 define("utility/export", ['require', 'exports'], function (require, exports) {
@@ -1246,7 +1266,7 @@ define("utility/import", ['require', 'exports'], function (require, exports) {
 });
 define("utility/math", ['require', 'exports'], function (require, exports) {
 
-    function uuid(length, radix) {
+    function Uuid(length, radix) {
         // http://www.ietf.org/rfc/rfc4122.txt
         var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''),
             uuid = [],
@@ -1272,7 +1292,7 @@ define("utility/math", ['require', 'exports'], function (require, exports) {
         return uuid.join('').toLowerCase();
     }
 
-    exports.uuid = uuid;
+    exports.Uuid = Uuid;
 });
 define("utility/object", ['require', 'exports'], function (require, exports) {
 
@@ -1282,7 +1302,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * This function does not handle getters and setters or copy attributes
      */
     function Extend(o, p) {
-        for (prop in p) { // For all props in p.
+        for (var prop in p) { // For all props in p.
             o[prop] = p[prop]; // Add the property to o.
         }
         return o;
@@ -1294,7 +1314,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * This function does not handle getters and setters or copy attributes
      */
     function Merge(o, p) {
-        for (prop in p) { // For all props in p
+        for (var prop in p) { // For all props in p
             if (o.hasOwnProperty[prop]) continue; // Except those already in o
             o[prop] = p[prop]; // Add the property to o
         }
@@ -1306,7 +1326,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * Return o
      */
     function Restrict(o, p) {
-        for (prop in o) { // For all props in o
+        for (var prop in o) { // For all props in o
             if (!(prop in p)) delete o[prop]; // Delete if not in p
         }
         return o;
@@ -1317,7 +1337,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * Return o
      */
     function Subtract(o, p) {
-        for (prop in p) { // For all props in p
+        for (var prop in p) { // For all props in p
             delete o[prop]; // Delete from o (deleting a nonexistent prop is harmless)
         }
         return o;

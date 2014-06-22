@@ -6,7 +6,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * This function does not handle getters and setters or copy attributes
      */
     function Extend(o, p) {
-        for (prop in p) { // For all props in p.
+        for (var prop in p) { // For all props in p.
             o[prop] = p[prop]; // Add the property to o.
         }
         return o;
@@ -18,7 +18,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * This function does not handle getters and setters or copy attributes
      */
     function Merge(o, p) {
-        for (prop in p) { // For all props in p
+        for (var prop in p) { // For all props in p
             if (o.hasOwnProperty[prop]) continue; // Except those already in o
             o[prop] = p[prop]; // Add the property to o
         }
@@ -30,7 +30,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * Return o
      */
     function Restrict(o, p) {
-        for (prop in o) { // For all props in o
+        for (var prop in o) { // For all props in o
             if (!(prop in p)) delete o[prop]; // Delete if not in p
         }
         return o;
@@ -41,7 +41,7 @@ define("utility/object", ['require', 'exports'], function (require, exports) {
      * Return o
      */
     function Subtract(o, p) {
-        for (prop in p) { // For all props in p
+        for (var prop in p) { // For all props in p
             delete o[prop]; // Delete from o (deleting a nonexistent prop is harmless)
         }
         return o;

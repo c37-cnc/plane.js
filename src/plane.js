@@ -6,7 +6,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var Object = require('utility/object'),
         Types = require('utility/types');
 
-    var Tools = require('structure/tools');
+    var Tools = require('structure/tools').ToolsProxy;
 
 
     var LayerStore = new Types.Data.Dictionary();
@@ -19,48 +19,55 @@ define("plane", ['require', 'exports'], function (require, exports) {
         Settings = null;
 
 
-    function Initialize(config) {
-        // verificações para as configurações
-        if (config == null) {
-            throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+    var PlaneProxy = ObjectUtil.Extend(new ObjectUtil.Event(), {
+
+        Initialize: function (config) {
+            // verificações para as configurações
+            if (config == null) {
+                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
+            if (typeof config == "function") {
+                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
+            if (config.viewPort == null) {
+                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
+            // verificações para as configurações
+
+            ViewPort = config.viewPort;
+
+
+            Settings = Object.Merge({
+                metricSystem: 'mm',
+                backgroundColor: 'rgb(255, 255, 255)',
+                gridEnable: true,
+                gridColor: 'rgb(218, 222, 215)'
+            }, config.settings || {});
+
+
+            // start em eventos
+            ViewPort.onmousemove = function (event) {
+                Tools.notify('onMouseMove', event);
+            };
+            ViewPort.onclick = function (event) {
+                Tools.notify('onClick', event);
+            }
+            // start em eventos
+
+            //gridDraw(settings.gridEnable, viewPort.clientWidth, viewPort.clientHeight, settings.gridColor);
+
+            return true;
         }
-        if (typeof config == "function") {
-            throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-        if (config.viewPort == null) {
-            throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-        // verificações para as configurações
 
-        ViewPort = config.viewPort;
-
-
-        Settings = Object.Merge({
-            metricSystem: 'mm',
-            backgroundColor: 'rgb(255, 255, 255)',
-            gridEnable: true,
-            gridColor: 'rgb(218, 222, 215)'
-        }, config.settings || {});
-
-        
-        // start em eventos
-        ViewPort.onmousemove = function (event) {
-            Tools.notify('onMouseMove', event);
-        };
-        ViewPort.onclick = function (event) {
-            Tools.notify('onClick', event);
-        }
-        // start em eventos
-
-        //gridDraw(settings.gridEnable, viewPort.clientWidth, viewPort.clientHeight, settings.gridColor);
-
-        return true;
-    }
+    });
 
 
 
 
 
 
-    exports.Initialize = Initialize;
+
+
+
+    exports.PlaneProxy = PlaneProxy;
 });

@@ -1,10 +1,23 @@
 define("structure/tools", ['require', 'exports'], function (require, exports) {
 
-    var Object = require('utility/object'),
-        Types = require('utility/types');
+    var ObjectUtil = require('utility/object'),
+        TypesUtil = require('utility/types'),
+        MathUtil = require('utility/math');
 
-    var ToolStore = new Types.Data.Dictionary();
+    var ToolStore = new TypesUtil.Data.Dictionary();
 
+    //    var Tools = Object.Extend(new Object.Event(), {
+    //
+    //        this.uuid: null,
+    //        this.name: '',
+    //        get active() {
+    //            return this._active;
+    //        },
+    //        set active(value) {
+    //            this._active = value;
+    //        }
+    //
+    //    });
 
     function Tool(attrs) {
         this.uuid = attrs.uuid;
@@ -24,28 +37,28 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
 
         utility.object.event.call(this);
     }
-    Tool.prototype = Object.Event.prototype;
+    Tool.prototype = ObjectUtil.Event.prototype;
 
 
+    var ToolsProxy = ObjectUtil.Extend(new ObjectUtil.Event(), {
+        Create: function (attrs) {
+            if (typeof attrs == "function") {
+                throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
 
-    function Create(attrs) {
-        if (typeof attrs == "function") {
-            throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            attrs = Object.Merge({
+                uuid: MathUtil.Uuid(9, 16),
+                name: 'Tool '.concat(ToolStore.count())
+            }, attrs);
+
+            var tool = Tool.Create(attrs.uuid, attrs.name);
+
+            toolStore.add(attrs.uuid, tool);
+
+            return true;
         }
+    });
 
-        attrs = Object.Merge({
-            uuid: utility.math.uuid(9, 16),
-            name: 'Tool '.concat(toolStore.count())
-        }, attrs);
-
-        var tool = new Tool(attrs);
-
-        ToolStore.add(attrs.uuid, tool);
-
-        return true;
-    }
-
-
-    exports.Create = Create;
+    exports.ToolsProxy = ToolsProxy;
 
 });
