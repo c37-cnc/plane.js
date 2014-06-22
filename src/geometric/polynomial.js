@@ -219,7 +219,6 @@ define("geometric/polynomial", ['require', 'exports'], function (require, export
         return result;
     };
 
-
     exports.Polynomial = Polynomial;
 
 });

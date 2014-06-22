@@ -1,5 +1,9 @@
 define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
+
+    var Point = require('geometric/point');
+
+
     function Shape(uuid, name, locked, visible, selected) {
 
         this.uuid = uuid;
@@ -22,10 +26,126 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         contains: function (point) {
             return false;
         },
+        render: function (context2D) {
+
+            switch (this.type) {
+            case 'arc':
+                {
+                    context2D.translate(this.point.x, this.point.y);
+                    context2D.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+
+                    return true;
+                }
+            case 'circle':
+                {
+                    context2D.translate(this.point.x, this.point.y);
+                    context2D.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+
+                    return true;
+                }
+            case 'ellipse':
+                {
+                    context2D.translate(this.point.x, this.point.y);
+                    context2D.ellipse(0, 0, this.radiusX, this.radiusY, 0, 0, Math.PI * 2)
+
+                    return true;
+                }
+            case 'line':
+                {
+                    // possivel personalização
+                    context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
+                    context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
+
+                    context2D.moveTo(this.points[0].x, this.points[0].y);
+                    context2D.lineTo(this.points[1].x, this.points[1].y);
+
+                    return true;
+                }
+            case 'polygon':
+                {
+                    context2D.moveTo(this.points[0].x, this.points[0].y);
+
+                    this.points.forEach(function (point) {
+                        context2D.lineTo(point.x, point.y);
+                    });
+                    context2D.closePath();
+
+                    return true;
+                }
+            case 'rectangle':
+                {
+                    context2D.translate(this.point.x, this.point.y);
+                    context2D.strokeRect(0, 0, this.width, this.height);
+
+                    return true;
+                }
+            }
+
+        },
         toJson: function () {
             return JSON.stringify(this);
         }
     };
+
+
+    function Arc(attrs) {
+        this.type = 'arc';
+        this.point = attrs.point;
+        this.radius = attrs.radius;
+        this.startAngle = attrs.startAngle;
+        this.endAngle = attrs.endAngle;
+        this.clockWise = attrs.clockWise;
+
+        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
+    };
+    Arc.prototype = Shape.prototype;
+
+    function Circle(attrs) {
+        this.type = 'circle';
+        this.point = attrs.point;
+        this.radius = attrs.radius;
+
+        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
+    }
+    Circle.prototype = Shape.prototype;
+
+    function Ellipse(attrs) {
+        this.type = 'ellipse';
+        this.point = attrs.point;
+        this.radiusY = attrs.radiusY;
+        this.radiusX = attrs.radiusX;
+
+        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
+    }
+    Ellipse.prototype = Shape.prototype;
+
+    function Line(attrs) {
+        this.type = 'line';
+        this.points = attrs.points;
+        this.style = attrs.style;
+
+        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
+    }
+    Line.prototype = Shape.prototype;
+
+    function Polygon(attrs) {
+        this.type = 'polygon';
+        this.points = attrs.points;
+        this.sides = attrs.sides;
+
+        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
+    }
+    Polygon.prototype = Shape.prototype;
+
+    function Rectangle(attrs) {
+        this.type = 'rectangle';
+        this.point = attrs.point;
+        this.height = attrs.height;
+        this.width = attrs.width;
+
+        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
+    }
+    Rectangle.prototype = Shape.prototype;
 
 
     function Create(uuid, type, x, y, style, radius, startAngle, endAngle, clockWise, sides, height, width, radiusY, radiusX) {
@@ -81,8 +201,8 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                 for (var i = 0; i < sides; i++) {
 
-                    var pointX = (radius * math.cos(((math.PI * 2) / sides) * i) + x),
-                        pointY = (radius * math.sin(((math.PI * 2) / sides) * i) + y);
+                    var pointX = (radius * Math.cos(((Math.PI * 2) / sides) * i) + x),
+                        pointY = (radius * Math.sin(((Math.PI * 2) / sides) * i) + y);
 
                     attrs['points'].push(Point.Create(pointX, pointY));
                 }
@@ -95,7 +215,5 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
     }
 
-
     exports.Create = Create;
-
 });

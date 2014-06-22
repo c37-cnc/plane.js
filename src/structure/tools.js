@@ -1,10 +1,8 @@
 define("structure/tools", ['require', 'exports'], function (require, exports) {
 
-    var ObjectUtil = require('utility/object'),
-        TypesUtil = require('utility/types'),
-        MathUtil = require('utility/math');
+    var Types = require('utility/types');
 
-    var ToolStore = new TypesUtil.Data.Dictionary();
+    var ToolStore = new Types.Data.Dictionary();
 
     //    var Tools = Object.Extend(new Object.Event(), {
     //
@@ -37,17 +35,17 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
 
         utility.object.event.call(this);
     }
-    Tool.prototype = ObjectUtil.Event.prototype;
+    Tool.prototype = Types.Object.Event.prototype;
 
 
-    var ToolsProxy = ObjectUtil.Extend(new ObjectUtil.Event(), {
+    var ToolsProxy = Types.Object.Extend(new Types.Object.Event(), {
         Create: function (attrs) {
             if (typeof attrs == "function") {
                 throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
 
-            attrs = Object.Merge({
-                uuid: MathUtil.Uuid(9, 16),
+            attrs = Types.Object.Merge({
+                uuid: Types.Math.Uuid(9, 16),
                 name: 'Tool '.concat(ToolStore.count())
             }, attrs);
 

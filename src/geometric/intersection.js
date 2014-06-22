@@ -1,7 +1,7 @@
 define("geometric/intersection", ['require', 'exports'], function (require, exports) {
 
-    var Polynomial = require('geometric/polynomial').Polynomial,
-        math = Math;
+
+    var Polynomial = require('geometric/polynomial').Polynomial;
 
 
     function Bezout(e1, e2) {
@@ -41,7 +41,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         } else if (deter == 0) {
             result = false;
         } else {
-            var e = math.sqrt(deter),
+            var e = Math.sqrt(deter),
                 u1 = (-b + e) / (2 * a),
                 u2 = (-b - e) / (2 * a);
 
@@ -78,7 +78,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
         // Determine minimum and maximum radii where circles can intersect
         var r_max = r1 + r2;
-        var r_min = math.abs(r1 - r2);
+        var r_min = Math.abs(r1 - r2);
 
         // Determine actual distance between circle circles
         var c_dist = c1.distanceTo(c2);
@@ -93,7 +93,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
             };
 
             var a = (r1 * r1 - r2 * r2 + c_dist * c_dist) / (2 * c_dist);
-            var h = math.sqrt(r1 * r1 - a * a);
+            var h = Math.sqrt(r1 * r1 - a * a);
             var p = c1.interpolationLinear(c2, a / c_dist);
             var b = h / c_dist;
 
@@ -111,15 +111,15 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
         if (intersection.points) {
 
-            var radianStart = as / 360 * 2 * math.PI,
-                radianEnd = ae / 360 * 2 * math.PI,
+            var radianStart = as / 360 * 2 * Math.PI,
+                radianEnd = ae / 360 * 2 * Math.PI,
                 radianMid = radianStart > radianEnd ? (radianStart - radianEnd) / 2 : (radianEnd - radianStart) / 2;
 
-            var pointStart = Point.Create(ca.x + math.cos(radianStart) * r2, ca.y + math.sin(radianStart) * r2),
-                pointEnd = Point.Create(ca.x + math.cos(radianEnd) * r2, ca.y + math.sin(radianEnd) * r2),
-                pointMid = Point.Create(ca.x + math.cos(radianMid) * r2, ck ? ca.y - math.sin(radianMid) * r2 : ca.y + math.sin(radianMid) * r2);
+            var pointStart = Point.Create(ca.x + Math.cos(radianStart) * r2, ca.y + Math.sin(radianStart) * r2),
+                pointEnd = Point.Create(ca.x + Math.cos(radianEnd) * r2, ca.y + Math.sin(radianEnd) * r2),
+                pointMid = Point.Create(ca.x + Math.cos(radianMid) * r2, ck ? ca.y - Math.sin(radianMid) * r2 : ca.y + Math.sin(radianMid) * r2);
 
-            var twoPi = (math.PI + math.PI);
+            var twoPi = (Math.PI + Math.PI);
 
             for (var i = 0; i <= intersection.points.length - 1; i++) {
 
@@ -198,11 +198,11 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
                 var test =
                     (a[0] * xRoots[x] + a[1] * yRoots[y] + a[3]) * xRoots[x] +
                     (a[2] * yRoots[y] + a[4]) * yRoots[y] + a[5];
-                if (math.abs(test) < norm0) {
+                if (Math.abs(test) < norm0) {
                     test =
                         (b[0] * xRoots[x] + b[1] * yRoots[y] + b[3]) * xRoots[x] +
                         (b[2] * yRoots[y] + b[4]) * yRoots[y] + b[5];
-                    if (math.abs(test) < norm1) {
+                    if (Math.abs(test) < norm1) {
                         return true;
                     }
                 }

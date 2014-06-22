@@ -88,6 +88,39 @@
             // plane - initialize
             var viewPort = document.getElementById("viewPort");
 
+
+            //            Plane.Execute('initialize', {
+            //                viewPort: viewPort
+            //            })
+            //            Plane.Execute('shape.create', {
+            //                type: 'polygon',
+            //                x: 150,
+            //                y: 150,
+            //                radius: 70,
+            //                sides: 5
+            //            })
+            //            Plane.Execute('layer.active', function (event) {
+            //                console.log(event);
+            //            });
+            //            Plane.Execute('layer.deactive', function (event) {
+            //                console.log(event);
+            //            });
+            //            Plane.Execute('render.update');
+            //
+            //
+            //            var Zoom = Plane.Execute('tool.create', {});
+            //
+            //            Zoom.Execute('active', function (event) {
+            //                console.log(event);
+            //            });
+            //            Zoom.Execute('click', function (event) {
+            //                console.log(event);
+            //            });
+
+
+
+
+
             Plane.Initialize({
                 viewPort: viewPort,
                 //                                style: {
@@ -100,21 +133,51 @@
 
             //            var tool001 = Plane.Tool.Create();
             //
-            //            Plane.Layer.Create();
-            //            Plane.Shape.Create({
-            //                type: 'polygon',
-            //                x: 150,
-            //                y: 150,
-            //                radius: 70,
-            //                sides: 5
-            //            });
-            //            Plane.Shape.Create({
-            //                type: 'rectangle',
-            //                x: 300,
-            //                y: 10,
-            //                width: 125,
-            //                height: 100
-            //            });
+            Plane.Layer.Create();
+            Plane.Shape.Create({
+                type: 'polygon',
+                x: 150,
+                y: 150,
+                radius: 70,
+                sides: 5
+            });
+
+            Plane.Shape.Create({
+                type: 'rectangle',
+                x: 300,
+                y: 10,
+                width: 125,
+                height: 100
+            });
+
+            Plane.Shape.Create({
+                type: 'line',
+                x: [350, 350],
+                y: [600, 50]
+            });
+
+            Plane.Shape.Create({
+                type: 'arc',
+                x: 800,
+                y: 150,
+                radius: 50,
+                startAngle: 0,
+                endAngle: 180,
+                clockWise: true
+            });
+
+            Plane.Shape.Create({
+                type: 'ellipse',
+                x: 1000,
+                y: 100,
+                radiusY: 25,
+                radiusX: 45
+            });
+
+
+            Plane.Update();
+
+
             //            Plane.Shape.Create({
             //                type: 'line',
             //                x: [350, 350],

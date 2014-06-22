@@ -1,8 +1,5 @@
 define("geometric/point", ['require', 'exports'], function (require, exports) {
 
-    var math = Math;
-
-
     function Point(x, y) {
         this.x = x;
         this.y = y;
@@ -22,13 +19,13 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
                 var dx = this.x - point.x;
                 var dy = this.y - point.y;
 
-                return math.sqrt(dx * dx + dy * dy);
+                return Math.sqrt(dx * dx + dy * dy);
             },
             MidTo: function (point) {
                 return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
             },
             AngleTo: function (point) {
-                return math.atan2(point.y - this.y, point.x - this.x);
+                return Math.atan2(point.y - this.y, point.x - this.x);
             }
         },
         Functions: {
@@ -44,7 +41,6 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
     function Create(x, y) {
         return new Point(x, y);
     };
-
 
     exports.Create = Create;
 
