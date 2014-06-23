@@ -122,11 +122,11 @@
             });
             
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
-                Plane.Zoom = Math.pow(1.03, 1);
+                Plane.Zoom /= .9;
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
-                Plane.Zoom = Math.pow(1.03, -1);
+                Plane.Zoom *= .9;
             });            
 
         };

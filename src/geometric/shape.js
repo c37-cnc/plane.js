@@ -18,13 +18,65 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             return true;
         },
         get Scale() {
-            return this._scale || [1, 1];
+            return this._scale || 1;
         },
         set Scale(value) {
-            this.points.forEach(function (point) {
-                point.x *= value[0];
-                point.y *= value[1];
-            });
+            
+            switch (this.type) {
+            case 'arc':
+                {
+                    this.point.x *= value;
+                    this.point.y *= value;
+                    this.radius *= value;
+                    
+                    break;
+                }
+            case 'circle':
+                {
+                    this.point.x *= value;
+                    this.point.y *= value;
+                    this.radius *= value;
+                    
+                    break;
+                }
+            case 'ellipse':
+                {
+                    this.point.x *= value;
+                    this.point.y *= value;
+                    this.radiusX *= value;
+                    this.radiusY *= value;
+                    
+                    break;
+                }
+            case 'line':
+                {
+                    this.points.forEach(function (point) {
+                        point.x *= value;
+                        point.y *= value;
+                    });
+                    
+                    break;
+                }
+            case 'polygon':
+                {
+                    this.points.forEach(function (point) {
+                        point.x *= value;
+                        point.y *= value;
+                    });
+                    
+                    break;
+                }
+            case 'rectangle':
+                {
+                    this.point.x *= value;
+                    this.point.y *= value;
+                    this.height *= value;
+                    this.width *= value;
+                    
+                    break;
+                }
+            }
+
             this._scale = value;
         },
         move: function (point) {
