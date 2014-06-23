@@ -1,6 +1,27 @@
 define("utility/import", ['require', 'exports'], function (require, exports) {
 
+//    var Types = require('utility/types');
+    
     function FromDxf(stringDxf) {
+        
+        
+        if (!String.prototype.format) {
+            String.prototype.format = function () {
+                var args = arguments;
+                return this.replace(/{(\d+)}/g, function (match, number) {
+                    return typeof args[number] != 'undefined' ? args[number] : match;
+                });
+            };
+        }
+
+        if (!String.prototype.contains) {
+            String.prototype.contains = function () {
+                return String.prototype.indexOf.apply(this, arguments) !== -1;
+            };
+        }        
+        
+        
+        
 
         function aaaa(dxfObject) {
 
@@ -23,7 +44,7 @@ define("utility/import", ['require', 'exports'], function (require, exports) {
             case 'ELLIPSE':
                 {
                     var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} }',
-                        radiusX = math.abs(dxfObject.x1),
+                        radiusX = Math.abs(dxfObject.x1),
                         radiusY = radiusX * dxfObject.r;
 
                     return ellipse.format(dxfObject.x, dxfObject.y, radiusY, radiusX);

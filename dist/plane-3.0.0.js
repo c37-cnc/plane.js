@@ -1,5 +1,5 @@
 /*!
- * C37 in 22-06-2014 at 19:48:26 
+ * C37 in 22-06-2014 at 20:32:08 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -52,10 +52,10 @@ var define, require;
         return seen[name] = exports || value;
     };
 })();
-define("geometric/bézier", ['require', 'exports'], function (require, exports) {
-
-
-});
+//define("geometric/bézier", ['require', 'exports'], function (require, exports) {
+//
+//
+//});
 define("geometric/group", ['require', 'exports'], function (require, exports) {
 
 
@@ -776,16 +776,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var version = '3.0.0',
         authors = ['lilo@c37.co', 'ser@c37.co'];
 
-    var Types = require('utility/types');
+    var Types = require('utility/types'),
+        Import = require('utility/import');
 
-    var LayerStore = new Types.Data.Dictionary();
+    var LayerStore = new Types.Data.Dictionary(),
+        ToolsStore = new Types.Data.Dictionary();
 
-    var Tools = require('structure/tools').ToolsProxy,
-        Layer = require('structure/layer'),
-        Shape = require('geometric/shape');
-
-    var ShapeStore = {},
-        GroupStore = {};
+    var Layer = require('structure/layer'),
+        Shape = require('geometric/shape'),
+        Tools = require('structure/tools');
 
     var LayerActive = null,
         ViewPort = null,
@@ -794,20 +793,20 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     var PlaneFacade = Types.Object.Extend(new Types.Object.Event(), {
 
-        Initialize: function (config) {
+        Initialize: function (Config) {
             // verificações para as configurações
-            if (config == null) {
+            if (Config == null) {
                 throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
-            if (typeof config == "function") {
+            if (typeof Config == "function") {
                 throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
-            if (config.viewPort == null) {
+            if (Config.ViewPort == null) {
                 throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
-            // verificações para as configurações
+            // verificações para as Configurações
 
-            ViewPort = config.viewPort;
+            ViewPort = Config.ViewPort;
 
 
             Settings = Types.Object.Merge({
@@ -815,27 +814,27 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 backgroundColor: 'rgb(255, 255, 255)',
                 gridEnable: true,
                 gridColor: 'rgb(218, 222, 215)'
-            }, config.settings || {});
+            }, Config.settings || {});
 
 
             // start em eventos
             ViewPort.onmousemove = function (event) {
-                Tools.notify('onMouseMove', event);
+                Tools.Event.notify('onMouseMove', event);
             };
             ViewPort.onclick = function (event) {
-                Tools.notify('onClick', event);
+                Tools.Event.notify('onClick', event);
             }
             // start em eventos
 
-            //gridDraw(settings.gridEnable, viewPort.clientWidth, viewPort.clientHeight, settings.gridColor);
+            //gridDraw(settings.gridEnable, ViewPort.clientWidth, ViewPort.clientHeight, settings.gridColor);
 
             return true;
         },
         Update: function () {
 
-            var LayerStyle = LayerActive.style,
-                LayerShapes = LayerActive.shapes.list(),
-                LayerRender = LayerActive.render,
+            var LayerStyle = LayerActive.Style,
+                LayerShapes = LayerActive.Shapes.List(),
+                LayerRender = LayerActive.Render,
                 Context2D = LayerRender.getContext('2d');
 
 
@@ -847,17 +846,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
             // style of layer
             Context2D.lineCap = LayerStyle.lineCap;
             Context2D.lineJoin = LayerStyle.lineJoin;
-            
+
             // render para cada shape
             LayerShapes.forEach(function (shape) {
-                // save state of all configuration
+                // save state of all Configuration
                 Context2D.save();
                 Context2D.beginPath();
 
                 shape.render(Context2D);
 
                 Context2D.stroke();
-                // restore state of all configuration
+                // restore state of all Configuration
                 Context2D.restore();
             });
 
@@ -867,13 +866,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
             Create: function (attrs) {
 
                 attrs = Types.Object.Union(attrs, {
-                    viewPort: ViewPort,
-                    count: LayerStore.count(),
+                    ViewPort: ViewPort,
+                    count: LayerStore.Count(),
                     backgroundColor: Settings.backgroundColor
                 });
 
                 var layer = Layer.Create(attrs);
-                LayerStore.add(layer.uuid, layer);
+                LayerStore.Add(layer.uuid, layer);
                 LayerActive = layer;
 
             },
@@ -916,12 +915,37 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 var shape = Shape.Create(attrs.uuid, attrs.type, attrs.x, attrs.y, attrs.style, attrs.radius, attrs.startAngle,
                     attrs.endAngle, attrs.clockWise, attrs.sides, attrs.height, attrs.width, attrs.radiusY, attrs.radiusX);
 
-                LayerActive.shapes.add(shape.uuid, shape);
+                LayerActive.Shapes.Add(shape.uuid, shape);
 
                 return true;
             }
 
+        },
+
+        Import: {
+            FromJson: null,
+            FromSvg: null,
+            FromDxf: function (StringDxf) {
+                try {
+                    var StringJson = Import.FromDxf(StringDxf);
+                    var ObjectDxf = JSON.parse(StringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
+
+                    if (StringJson) {
+                        PlaneFacade.Layer.Create();
+                        for (var prop in ObjectDxf) {
+                            PlaneFacade.Shape.Create(ObjectDxf[prop]);
+                        }
+                        PlaneFacade.Update();
+                    }
+                    
+                } catch (error) {
+                    alert(error);
+                }
+            },
+            FromDwg: null
         }
+
+
 
     });
 
@@ -939,83 +963,77 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
 
-    function Layer(attrs) {
+    function Layer(Attrs) {
 
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.locked = attrs.locked;
-        this.visible = attrs.visible;
-        this.system = attrs.system;
-        this.style = attrs.style;
-        this.render = attrs.render;
-        this.shapes = attrs.shapes;
+        this.Uuid = Attrs.Uuid;
+        this.Name = Attrs.Name;
+        this.Locked = Attrs.Locked;
+        this.Visible = Attrs.Visible;
+        this.System = Attrs.System;
+        this.Style = Attrs.Style;
+        this.Render = Attrs.Render;
+        this.Shapes = Attrs.Shapes;
 
         Types.Object.Event.call(this);
 
     }
     Layer.prototype = Types.Object.Event.prototype;
 
-    Layer.prototype.toJson = function () {
+    Layer.prototype.ToJson = function () {
         return JSON.stringify(this).replace(/_/g, '');
     }
 
 
-    function Create(attrs) {
-        if (typeof attrs == "function") {
+    function Create(Attrs) {
+        if (typeof Attrs == "function") {
             throw new Error('Layer - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        var uuid = Types.Math.Uuid(9, 16);
+        var Uuid = Types.Math.Uuid(9, 16);
 
-        // montando o render da Layer
-        var render = document.createElement('canvas');
+        // montando o Render da Layer
+        var Render = document.createElement('canvas');
 
-        render.width = attrs.viewPort.clientWidth;
-        render.height = attrs.viewPort.clientHeight;
+        Render.width = Attrs.ViewPort.clientWidth;
+        Render.height = Attrs.ViewPort.clientHeight;
 
-        render.style.position = "absolute";
-        render.style.backgroundColor = attrs.count == 0 ? attrs.backgroundColor : 'transparent';
+        Render.style.position = "absolute";
+        Render.style.backgroundColor = Attrs.count == 0 ? Attrs.backgroundColor : 'transparent';
 
         // sistema cartesiano de coordenadas
-        var context2D = render.getContext('2d');
-        context2D.translate(0, render.height);
-        context2D.scale(1, -1);
+        var Context2D = Render.getContext('2d');
+        Context2D.translate(0, Render.height);
+        Context2D.scale(1, -1);
 
         // parametros para a nova Layer
-        attrs = Types.Object.Merge({
-            uuid: uuid,
-            name: 'New Layer ' + attrs.count,
-            style: {
+        Attrs = Types.Object.Merge({
+            Uuid: Uuid,
+            Name: 'New Layer ' + Attrs.count,
+            Style: {
                 fillColor: 'rgb(0,0,0)',
                 lineCap: 'butt',
                 lineJoin: 'miter',
                 lineWidth: .7,
                 lineColor: 'rgb(0, 0, 0)',
             },
-            locked: false,
-            visible: true,
-            system: false,
-            shapes: new Types.Data.Dictionary(),
-            render: render
-        }, attrs);
+            Locked: false,
+            Visible: true,
+            System: false,
+            Shapes: new Types.Data.Dictionary(),
+            Render: Render
+        }, Attrs);
         // parametros para a nova Layer
 
         // nova Layer
-        var layer = new Layer(attrs);
+        var layer = new Layer(Attrs);
 
-        // add em viewPort
-        attrs.viewPort.appendChild(layer.render);
+        // add em ViewPort
+        Attrs.ViewPort.appendChild(layer.Render);
 
         return layer;
     }
 
     exports.Create = Create;
-
-});
-define("structure/system", ['require', 'exports'], function (require, exports) {
-
-    
-    
 
 });
 define("structure/tools", ['require', 'exports'], function (require, exports) {
@@ -1077,7 +1095,9 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
         }
     });
 
-    exports.ToolsProxy = ToolsProxy;
+//    exports.ToolsProxy = ToolsProxy;
+    
+    exports.Event = new Types.Object.Event();
 
 });
 define("utility/export", ['require', 'exports'], function (require, exports) {
@@ -1112,7 +1132,28 @@ define("utility/export", ['require', 'exports'], function (require, exports) {
 });
 define("utility/import", ['require', 'exports'], function (require, exports) {
 
+//    var Types = require('utility/types');
+    
     function FromDxf(stringDxf) {
+        
+        
+        if (!String.prototype.format) {
+            String.prototype.format = function () {
+                var args = arguments;
+                return this.replace(/{(\d+)}/g, function (match, number) {
+                    return typeof args[number] != 'undefined' ? args[number] : match;
+                });
+            };
+        }
+
+        if (!String.prototype.contains) {
+            String.prototype.contains = function () {
+                return String.prototype.indexOf.apply(this, arguments) !== -1;
+            };
+        }        
+        
+        
+        
 
         function aaaa(dxfObject) {
 
@@ -1135,7 +1176,7 @@ define("utility/import", ['require', 'exports'], function (require, exports) {
             case 'ELLIPSE':
                 {
                     var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} }',
-                        radiusX = math.abs(dxfObject.x1),
+                        radiusX = Math.abs(dxfObject.x1),
                         radiusY = radiusX * dxfObject.r;
 
                     return ellipse.format(dxfObject.x, dxfObject.y, radiusY, radiusX);
@@ -1253,19 +1294,19 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         }
     }
 
-    var String = {
-
-        Format: function () {
-            var args = arguments;
-            return this.replace(/{(\d+)}/g, function (match, number) {
-                return typeof args[number] != 'undefined' ? args[number] : match;
-            });
-        },
-        Contains: function () {
-            return String.prototype.indexOf.apply(this, arguments) !== -1;
-        }
-
-    }
+    //    var String = {
+    //
+    //        Format: function () {
+    //            var args = arguments;
+    //            return this.replace(/{(\d+)}/g, function (match, number) {
+    //                return typeof args[number] != 'undefined' ? args[number] : match;
+    //            });
+    //        },
+    //        Contains: function () {
+    //            return String.prototype.indexOf.apply(this, arguments) !== -1;
+    //        }
+    //
+    //    }
 
     var Graphic = {
 
@@ -1295,19 +1336,19 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             }
 
             Dictionary.prototype = {
-                add: function (key, value) {
+                Add: function (key, value) {
                     this.store[key] = value;
                 },
-                find: function (key) {
+                Find: function (key) {
                     return this.store[key];
                 },
-                remove: function (key) {
+                Remove: function (key) {
                     delete this.store[key];
                 },
-                count: function () {
+                Count: function () {
                     return Object.keys(this.store).length;
                 },
-                list: function () {
+                List: function () {
                     var self = this;
                     return Object.keys(this.store).map(function (key) {
                         return self.store[key];
@@ -1427,7 +1468,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     }
 
     exports.Math = Maths;
-    exports.String = String;
+    //    exports.String = String;
     exports.Graphic = Graphic;
     exports.Data = Data;
     exports.Object = Objects;

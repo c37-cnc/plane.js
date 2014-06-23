@@ -2,72 +2,72 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
 
-    function Layer(attrs) {
+    function Layer(Attrs) {
 
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.locked = attrs.locked;
-        this.visible = attrs.visible;
-        this.system = attrs.system;
-        this.style = attrs.style;
-        this.render = attrs.render;
-        this.shapes = attrs.shapes;
+        this.Uuid = Attrs.Uuid;
+        this.Name = Attrs.Name;
+        this.Locked = Attrs.Locked;
+        this.Visible = Attrs.Visible;
+        this.System = Attrs.System;
+        this.Style = Attrs.Style;
+        this.Render = Attrs.Render;
+        this.Shapes = Attrs.Shapes;
 
         Types.Object.Event.call(this);
 
     }
     Layer.prototype = Types.Object.Event.prototype;
 
-    Layer.prototype.toJson = function () {
+    Layer.prototype.ToJson = function () {
         return JSON.stringify(this).replace(/_/g, '');
     }
 
 
-    function Create(attrs) {
-        if (typeof attrs == "function") {
+    function Create(Attrs) {
+        if (typeof Attrs == "function") {
             throw new Error('Layer - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        var uuid = Types.Math.Uuid(9, 16);
+        var Uuid = Types.Math.Uuid(9, 16);
 
-        // montando o render da Layer
-        var render = document.createElement('canvas');
+        // montando o Render da Layer
+        var Render = document.createElement('canvas');
 
-        render.width = attrs.viewPort.clientWidth;
-        render.height = attrs.viewPort.clientHeight;
+        Render.width = Attrs.ViewPort.clientWidth;
+        Render.height = Attrs.ViewPort.clientHeight;
 
-        render.style.position = "absolute";
-        render.style.backgroundColor = attrs.count == 0 ? attrs.backgroundColor : 'transparent';
+        Render.style.position = "absolute";
+        Render.style.backgroundColor = Attrs.count == 0 ? Attrs.backgroundColor : 'transparent';
 
         // sistema cartesiano de coordenadas
-        var context2D = render.getContext('2d');
-        context2D.translate(0, render.height);
-        context2D.scale(1, -1);
+        var Context2D = Render.getContext('2d');
+        Context2D.translate(0, Render.height);
+        Context2D.scale(1, -1);
 
         // parametros para a nova Layer
-        attrs = Types.Object.Merge({
-            uuid: uuid,
-            name: 'New Layer ' + attrs.count,
-            style: {
+        Attrs = Types.Object.Merge({
+            Uuid: Uuid,
+            Name: 'New Layer ' + Attrs.count,
+            Style: {
                 fillColor: 'rgb(0,0,0)',
                 lineCap: 'butt',
                 lineJoin: 'miter',
                 lineWidth: .7,
                 lineColor: 'rgb(0, 0, 0)',
             },
-            locked: false,
-            visible: true,
-            system: false,
-            shapes: new Types.Data.Dictionary(),
-            render: render
-        }, attrs);
+            Locked: false,
+            Visible: true,
+            System: false,
+            Shapes: new Types.Data.Dictionary(),
+            Render: Render
+        }, Attrs);
         // parametros para a nova Layer
 
         // nova Layer
-        var layer = new Layer(attrs);
+        var layer = new Layer(Attrs);
 
-        // add em viewPort
-        attrs.viewPort.appendChild(layer.render);
+        // add em ViewPort
+        Attrs.ViewPort.appendChild(layer.Render);
 
         return layer;
     }

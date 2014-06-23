@@ -28,19 +28,19 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         }
     }
 
-    var String = {
-
-        Format: function () {
-            var args = arguments;
-            return this.replace(/{(\d+)}/g, function (match, number) {
-                return typeof args[number] != 'undefined' ? args[number] : match;
-            });
-        },
-        Contains: function () {
-            return String.prototype.indexOf.apply(this, arguments) !== -1;
-        }
-
-    }
+    //    var String = {
+    //
+    //        Format: function () {
+    //            var args = arguments;
+    //            return this.replace(/{(\d+)}/g, function (match, number) {
+    //                return typeof args[number] != 'undefined' ? args[number] : match;
+    //            });
+    //        },
+    //        Contains: function () {
+    //            return String.prototype.indexOf.apply(this, arguments) !== -1;
+    //        }
+    //
+    //    }
 
     var Graphic = {
 
@@ -70,19 +70,19 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             }
 
             Dictionary.prototype = {
-                add: function (key, value) {
+                Add: function (key, value) {
                     this.store[key] = value;
                 },
-                find: function (key) {
+                Find: function (key) {
                     return this.store[key];
                 },
-                remove: function (key) {
+                Remove: function (key) {
                     delete this.store[key];
                 },
-                count: function () {
+                Count: function () {
                     return Object.keys(this.store).length;
                 },
-                list: function () {
+                List: function () {
                     var self = this;
                     return Object.keys(this.store).map(function (key) {
                         return self.store[key];
@@ -202,7 +202,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     }
 
     exports.Math = Maths;
-    exports.String = String;
+    //    exports.String = String;
     exports.Graphic = Graphic;
     exports.Data = Data;
     exports.Object = Objects;

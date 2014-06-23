@@ -57,6 +57,8 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
         }
     });
 
-    exports.ToolsProxy = ToolsProxy;
+//    exports.ToolsProxy = ToolsProxy;
+    
+    exports.Event = new Types.Object.Event();
 
 });
