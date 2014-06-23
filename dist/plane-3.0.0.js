@@ -1,5 +1,5 @@
 /*!
- * C37 in 22-06-2014 at 20:32:08 
+ * C37 in 23-06-2014 at 16:48:54 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -52,10 +52,10 @@ var define, require;
         return seen[name] = exports || value;
     };
 })();
-//define("geometric/bézier", ['require', 'exports'], function (require, exports) {
-//
-//
-//});
+define("geometric/bézier", ['require', 'exports'], function (require, exports) {
+
+
+});
 define("geometric/group", ['require', 'exports'], function (require, exports) {
 
 
@@ -571,8 +571,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         rotate: function (value) {
             return true;
         },
-        scale: function (value) {
-            return this;
+        get Scale() {
+            return this._scale || [1, 1];
+        },
+        set Scale(value) {
+            this.points.forEach(function (point) {
+                point.x *= value[0];
+                point.y *= value[1];
+            });
+            this._scale = value;
         },
         move: function (point) {
             return true;
@@ -791,7 +798,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         Settings = null;
 
 
-    var PlaneFacade = Types.Object.Extend(new Types.Object.Event(), {
+    var Plane = Types.Object.Extend(new Types.Object.Event(), {
 
         Initialize: function (Config) {
             // verificações para as configurações
@@ -814,7 +821,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 backgroundColor: 'rgb(255, 255, 255)',
                 gridEnable: true,
                 gridColor: 'rgb(218, 222, 215)'
-            }, Config.settings || {});
+            }, Config.Settings || {});
 
 
             // start em eventos
@@ -826,7 +833,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             }
             // start em eventos
 
-            //gridDraw(settings.gridEnable, ViewPort.clientWidth, ViewPort.clientHeight, settings.gridColor);
+            GridDraw(Settings.gridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.gridColor, 1);
 
             return true;
         },
@@ -841,7 +848,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             // limpando o render
             Context2D.clearRect(0, 0, ViewPort.clientWidth, ViewPort.clientHeight);
             // alinhando com o centro
-            //Context2D.translate(planeFacade.center.x, planeFacade.center.y);
+            //Context2D.translate(Plane.center.x, Plane.center.y);
 
             // style of layer
             Context2D.lineCap = LayerStyle.lineCap;
@@ -876,6 +883,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 LayerActive = layer;
 
             },
+            List: function (Selector) {
+
+                var LayerList = LayerStore.List().filter(function (Layer) {
+                    return Selector ? Layer : !Layer.System;
+                });
+
+                return LayerList;
+            },
             Delete: function () {},
             get Active() {
                 return LayerActive || {};
@@ -886,7 +901,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     layer: LayerActive
                 });
 
-                LayerActive = LayerStore.find(value);
+                LayerActive = LayerStore.Find(value);
 
                 this.notify('onActive', {
                     type: 'onActive',
@@ -931,33 +946,136 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     var ObjectDxf = JSON.parse(StringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
 
                     if (StringJson) {
-                        PlaneFacade.Layer.Create();
+                        Plane.Layer.Create();
                         for (var prop in ObjectDxf) {
-                            PlaneFacade.Shape.Create(ObjectDxf[prop]);
+                            Plane.Shape.Create(ObjectDxf[prop]);
                         }
-                        PlaneFacade.Update();
+                        Plane.Update();
                     }
-                    
+
                 } catch (error) {
                     alert(error);
                 }
             },
             FromDwg: null
+        },
+        get Zoom() {
+            return this._zoom || 1;
+        },
+        set Zoom(value) {
+            
+            // Plane.zoom = Math.pow(1.03, 1);  - more
+            // Plane.zoom = Math.pow(1.03, -1); - less            
+
+            GridDraw(Settings.gridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.gridColor, value);
+            
+            var LayerActive = Plane.Layer.Active;
+
+            Plane.Layer.List().forEach(function (Layer) {
+
+                Plane.Layer.Active = Layer.uuid;
+
+                Plane.Layer.Active.Shapes.List().forEach(function (Shape) {
+                    Shape.Scale = [value, value];
+                });
+
+                Plane.Update();
+            });
+
+            Plane.Layer.Active = LayerActive.Uuid;
+
+            this._zoom = value;
         }
-
-
 
     });
 
 
+    function GridZoom(Enabled, Height, Width, Zoom) {
+
+        if (!Enabled) return;
+
+        var LayerActive = Plane.Layer.Active;
+
+        Plane.Layer.List(';-)').forEach(function (Layer) {
+
+            if (Layer.System) {
+
+                Plane.Layer.Active = Layer.uuid;
+
+                Plane.Layer.Active.Shapes.List().forEach(function (Shape) {
+                    if (Zoom > 1) {
+                        Shape.points.forEach(function (point) {
+                            point.x = point.x > Width ? Width : point.x;
+                            point.y = point.y > Height ? Height : point.y;
+                        });
+                    }
+                    if (Zoom < 1) {
+                        Shape.points.forEach(function (point) {
+                            
+                            var xx = (point.x * 1.03);
+                            var yy = (point.y * 1.03);
+                            
+                            //debugger
+                            
+//                            if (xx == Width)
+//                                debugger;
+
+                            point.x = xx == Width ? Width : point.x;
+                            point.y = yy == Height ? Height : point.y;
+                        });
+                    }
+                });
+
+                Plane.Update();
+            }
+
+        });
+
+        Plane.Layer.Active = LayerActive.Uuid;
+
+        return true;
+    }
+
+
+    function GridDraw(Enabled, Height, Width, Color, Zoom, Center) {
+
+        if (!Enabled) return;
+
+        Plane.Layer.Create({
+            System: true
+        });
+        
+        for (var x = 0; x <= Width; x += 10) {
+            Plane.Shape.Create({
+                type: 'line',
+                x: [x, 0],
+                y: [x, Height],
+                style: {
+                    lineColor: Color,
+                    lineWidth: x % 50 == 0 ? .6 : .3
+                }
+            });
+        }
+
+        for (var y = 0; y <= Height; y += 10) {
+            Plane.Shape.Create({
+                type: 'line',
+                x: [0, y],
+                y: [Width, y],
+                style: {
+                    lineColor: Color,
+                    lineWidth: y % 50 == 0 ? .6 : .3
+                }
+            });
+        }
+        Plane.Update();
+    };
 
 
 
 
 
-
-
-    exports.PlaneFacade = PlaneFacade;
+    exports.PlaneApi = Plane;
 });
 define("structure/layer", ['require', 'exports'], function (require, exports) {
 
@@ -1294,19 +1412,19 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         }
     }
 
-    //    var String = {
-    //
-    //        Format: function () {
-    //            var args = arguments;
-    //            return this.replace(/{(\d+)}/g, function (match, number) {
-    //                return typeof args[number] != 'undefined' ? args[number] : match;
-    //            });
-    //        },
-    //        Contains: function () {
-    //            return String.prototype.indexOf.apply(this, arguments) !== -1;
-    //        }
-    //
-    //    }
+    var String = {
+
+        Format: function () {
+            var args = arguments;
+            return this.replace(/{(\d+)}/g, function (match, number) {
+                return typeof args[number] != 'undefined' ? args[number] : match;
+            });
+        },
+        Contains: function () {
+            return String.prototype.indexOf.apply(this, arguments) !== -1;
+        }
+
+    }
 
     var Graphic = {
 
@@ -1369,7 +1487,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          */
         Extend: function (o, p) {
             for (var prop in p) { // For all props in p.
-                o[prop] = p[prop]; // Add the property to o.
+                Object.defineProperty(o, prop, Object.getOwnPropertyDescriptor(p, prop)); // Add the property to o.
             }
             return o;
         },
@@ -1468,10 +1586,10 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     }
 
     exports.Math = Maths;
-    //    exports.String = String;
+    exports.String = String;
     exports.Graphic = Graphic;
     exports.Data = Data;
     exports.Object = Objects;
 });
-window.Plane = require("plane").PlaneFacade;
+window.Plane = require("plane").PlaneApi;
 })(window);

@@ -17,8 +17,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         rotate: function (value) {
             return true;
         },
-        scale: function (value) {
-            return this;
+        get Scale() {
+            return this._scale || [1, 1];
+        },
+        set Scale(value) {
+            this.points.forEach(function (point) {
+                point.x *= value[0];
+                point.y *= value[1];
+            });
+            this._scale = value;
         },
         move: function (point) {
             return true;

@@ -28,19 +28,19 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         }
     }
 
-    //    var String = {
-    //
-    //        Format: function () {
-    //            var args = arguments;
-    //            return this.replace(/{(\d+)}/g, function (match, number) {
-    //                return typeof args[number] != 'undefined' ? args[number] : match;
-    //            });
-    //        },
-    //        Contains: function () {
-    //            return String.prototype.indexOf.apply(this, arguments) !== -1;
-    //        }
-    //
-    //    }
+    var String = {
+
+        Format: function () {
+            var args = arguments;
+            return this.replace(/{(\d+)}/g, function (match, number) {
+                return typeof args[number] != 'undefined' ? args[number] : match;
+            });
+        },
+        Contains: function () {
+            return String.prototype.indexOf.apply(this, arguments) !== -1;
+        }
+
+    }
 
     var Graphic = {
 
@@ -103,7 +103,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          */
         Extend: function (o, p) {
             for (var prop in p) { // For all props in p.
-                o[prop] = p[prop]; // Add the property to o.
+                Object.defineProperty(o, prop, Object.getOwnPropertyDescriptor(p, prop)); // Add the property to o.
             }
             return o;
         },
@@ -202,7 +202,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     }
 
     exports.Math = Maths;
-    //    exports.String = String;
+    exports.String = String;
     exports.Graphic = Graphic;
     exports.Data = Data;
     exports.Object = Objects;

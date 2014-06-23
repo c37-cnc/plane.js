@@ -88,162 +88,10 @@
             // plane - initialize
             var ViewPort = document.getElementById("viewPort");
 
-
-            //            Plane.Execute('initialize', {
-            //                viewPort: viewPort
-            //            })
-            //            Plane.Execute('shape.create', {
-            //                type: 'polygon',
-            //                x: 150,
-            //                y: 150,
-            //                radius: 70,
-            //                sides: 5
-            //            })
-            //            Plane.Execute('layer.active', function (event) {
-            //                console.log(event);
-            //            });
-            //            Plane.Execute('layer.deactive', function (event) {
-            //                console.log(event);
-            //            });
-            //            Plane.Execute('render.update');
-            //
-            //
-            //            var Zoom = Plane.Execute('tool.create', {});
-            //
-            //            Zoom.Execute('active', function (event) {
-            //                console.log(event);
-            //            });
-            //            Zoom.Execute('click', function (event) {
-            //                console.log(event);
-            //            });
-
-
-
-
-
             Plane.Initialize({
                 ViewPort: ViewPort,
-                //                                style: {
-                //                                    gridEnable: true,
-                //                                    gridColor: 'red'
-                //                                }
             });
             // plane - initialize
-
-
-            //            var tool001 = Plane.Tool.Create();
-            //
-//            Plane.Layer.Create();
-//            Plane.Shape.Create({
-//                type: 'polygon',
-//                x: 150,
-//                y: 150,
-//                radius: 70,
-//                sides: 5
-//            });
-//
-//            Plane.Shape.Create({
-//                type: 'rectangle',
-//                x: 300,
-//                y: 10,
-//                width: 125,
-//                height: 100
-//            });
-//
-//            Plane.Shape.Create({
-//                type: 'line',
-//                x: [350, 350],
-//                y: [600, 50]
-//            });
-//
-//            Plane.Shape.Create({
-//                type: 'arc',
-//                x: 800,
-//                y: 150,
-//                radius: 50,
-//                startAngle: 0,
-//                endAngle: 180,
-//                clockWise: true
-//            });
-//
-//            Plane.Shape.Create({
-//                type: 'ellipse',
-//                x: 1000,
-//                y: 100,
-//                radiusY: 25,
-//                radiusX: 45
-//            });
-//
-//
-//            Plane.Update();
-
-
-            //            Plane.Shape.Create({
-            //                type: 'line',
-            //                x: [350, 350],
-            //                y: [600, 50]
-            //            });
-            //            Plane.Shape.Create({
-            //                type: 'arc',
-            //                x: 800,
-            //                y: 150,
-            //                radius: 50,
-            //                startAngle: 0,
-            //                endAngle: 180,
-            //                clockWise: true
-            //            });
-            //            Plane.Shape.Create({
-            //                type: 'arc',
-            //                x: 500,
-            //                y: 250,
-            //                radius: 50,
-            //                startAngle: 90,
-            //                endAngle: 180,
-            //                clockWise: false
-            //            });
-            //            Plane.Shape.Create({
-            //                type: 'arc',
-            //                x: 700,
-            //                y: 250,
-            //                radius: 50,
-            //                startAngle: 90,
-            //                endAngle: 270,
-            //                clockWise: false
-            //            });
-            //            Plane.Shape.Create({
-            //                type: 'arc',
-            //                x: 1000,
-            //                y: 250,
-            //                radius: 50,
-            //                startAngle: 90,
-            //                endAngle: 270,
-            //                clockWise: true
-            //            });
-            //            Plane.Shape.Create({
-            //                type: 'arc',
-            //                x: 50,
-            //                y: 50,
-            //                radius: 30,
-            //                startAngle: 90,
-            //                endAngle: 180,
-            //                clockWise: true
-            //            });
-            //            Plane.Shape.Create({
-            //                type: 'circle',
-            //                x: 1200,
-            //                y: 100,
-            //                radius: 50
-            //            });
-            //            Plane.Shape.Create({
-            //                type: 'ellipse',
-            //                x: 1000,
-            //                y: 100,
-            //                radiusY: 25,
-            //                radiusX: 45
-            //            });
-            //
-            //            Plane.Render.Update();
-
 
             document.getElementById('fileImport').addEventListener('change', function () {
                 var file = this.files[0],
@@ -253,13 +101,10 @@
                     bareFilename = filename.substr(0, lastDotPosition),
                     fileExtension = filename.substr(lastDotPosition + 1).toLowerCase();
 
-
                 var reader = new FileReader();
-
                 reader.onload = function (event) {
 
-                    var fileData = event.target.result,
-                        svgString = '';
+                    var fileData = event.target.result;
 
                     switch (fileExtension) {
                     case 'dxf':
@@ -273,10 +118,16 @@
                     }
 
                 };
-
                 reader.readAsText(file);
             });
+            
+            document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
+                Plane.Zoom = Math.pow(1.03, 1);
+            });
 
+            document.getElementById('zoomLessButton').addEventListener('click', function (event) {
+                Plane.Zoom = Math.pow(1.03, -1);
+            });            
 
         };
     </script>
@@ -301,6 +152,8 @@
         </ul>
         <div id="toolsPanel">
             <input id="fileImport" type="file"></input>
+            <button id="zoomMoreButton">Zoom +++</button>
+            <button id="zoomLessButton">Zoom ---</button>
         </div>
         <ul id="shapesList">
         </ul>
