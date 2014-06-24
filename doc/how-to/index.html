@@ -120,14 +120,24 @@
                 };
                 reader.readAsText(file);
             });
-            
+
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
                 Plane.Zoom /= .9;
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
                 Plane.Zoom *= .9;
-            });            
+            });
+
+            document.getElementById('scrollButton').addEventListener('click', function (event) {
+                var scrollInputX = document.getElementById('scrollInputX'),
+                    scrollInputY = document.getElementById('scrollInputY'),
+                    scroll = {
+                        X: scrollInputX.value,
+                        Y: scrollInputY.value
+                    };
+                Plane.Scroll = scroll;
+            });
 
         };
     </script>
@@ -154,6 +164,12 @@
             <input id="fileImport" type="file"></input>
             <button id="zoomMoreButton">Zoom +++</button>
             <button id="zoomLessButton">Zoom ---</button>
+            <br>
+            <label>X</label>
+            <input id="scrollInputX" type="text" style="width:60px" value="100">
+            <label>Y</label>
+            <input id="scrollInputY" type="text" style="width:60px" value="0">
+            <button id="scrollButton">Scroll</button>
         </div>
         <ul id="shapesList">
         </ul>
