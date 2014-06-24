@@ -1,7 +1,7 @@
 define("geometric/intersection", ['require', 'exports'], function (require, exports) {
 
-
-    var Polynomial = require('geometric/polynomial').Polynomial;
+    var Polynomial = require('geometric/polynomial').Polynomial,
+        Point = require('geometric/point');
 
 
     function Bezout(e1, e2) {
@@ -81,7 +81,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var r_min = Math.abs(r1 - r2);
 
         // Determine actual distance between circle circles
-        var c_dist = c1.distanceTo(c2);
+        var c_dist = c1.DistanceTo(c2);
 
         if (c_dist > r_max) {
             result = false;
@@ -94,7 +94,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
             var a = (r1 * r1 - r2 * r2 + c_dist * c_dist) / (2 * c_dist);
             var h = Math.sqrt(r1 * r1 - a * a);
-            var p = c1.interpolationLinear(c2, a / c_dist);
+            var p = c1.InterpolationLinear(c2, a / c_dist);
             var b = h / c_dist;
 
             result.points.push(Point.Create(p.x - b * (c2.y - c1.y), p.y + b * (c2.x - c1.x)));
@@ -107,7 +107,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
     function CircleArc(c, r1, ca, r2, as, ae, ck) {
 
-        var intersection = this.circleCircle(c, r1, ca, r2);
+        var intersection = CircleCircle(c, r1, ca, r2);
 
         if (intersection.points) {
 
@@ -123,15 +123,15 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
             for (var i = 0; i <= intersection.points.length - 1; i++) {
 
-                var pointDistance = intersection.points[i].distanceTo(ca),
+                var pointDistance = intersection.points[i].DistanceTo(ca),
                     radius = r2;
 
                 if (radius - 4 <= pointDistance && pointDistance <= radius + 4) {
 
-                    var pointStartAngle = ca.angleTo(pointStart),
-                        pointMidAngle = ca.angleTo(pointMid),
-                        pointEndAngle = ca.angleTo(pointEnd),
-                        pointMouseAngle = ca.angleTo(intersection.points[i]);
+                    var pointStartAngle = ca.AngleTo(pointStart),
+                        pointMidAngle = ca.AngleTo(pointMid),
+                        pointEndAngle = ca.AngleTo(pointEnd),
+                        pointMouseAngle = ca.AngleTo(intersection.points[i]);
 
                     if (pointStartAngle <= pointMidAngle && pointMidAngle <= pointEndAngle) {
                         if (ck) {
@@ -187,7 +187,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var norm1 = (b[0] * b[0] + 2 * b[1] * b[1] + b[2] * b[2]) * epsilon;
 
         for (var y = 0; y < yRoots.length; y++) {
-            var xPoly = new utility.geometry.polynomial(
+            var xPoly = new Polynomial(
                 a[0],
                 a[3] + yRoots[y] * a[1],
                 a[5] + yRoots[y] * (a[4] + yRoots[y] * a[2])

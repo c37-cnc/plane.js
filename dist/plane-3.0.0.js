@@ -1,5 +1,5 @@
 /*!
- * C37 in 24-06-2014 at 08:13:44 
+ * C37 in 24-06-2014 at 09:44:57 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -64,8 +64,8 @@ define("geometric/group", ['require', 'exports'], function (require, exports) {
 });
 define("geometric/intersection", ['require', 'exports'], function (require, exports) {
 
-
-    var Polynomial = require('geometric/polynomial').Polynomial;
+    var Polynomial = require('geometric/polynomial').Polynomial,
+        Point = require('geometric/point');
 
 
     function Bezout(e1, e2) {
@@ -145,7 +145,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var r_min = Math.abs(r1 - r2);
 
         // Determine actual distance between circle circles
-        var c_dist = c1.distanceTo(c2);
+        var c_dist = c1.DistanceTo(c2);
 
         if (c_dist > r_max) {
             result = false;
@@ -158,7 +158,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
             var a = (r1 * r1 - r2 * r2 + c_dist * c_dist) / (2 * c_dist);
             var h = Math.sqrt(r1 * r1 - a * a);
-            var p = c1.interpolationLinear(c2, a / c_dist);
+            var p = c1.InterpolationLinear(c2, a / c_dist);
             var b = h / c_dist;
 
             result.points.push(Point.Create(p.x - b * (c2.y - c1.y), p.y + b * (c2.x - c1.x)));
@@ -171,7 +171,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
     function CircleArc(c, r1, ca, r2, as, ae, ck) {
 
-        var intersection = this.circleCircle(c, r1, ca, r2);
+        var intersection = CircleCircle(c, r1, ca, r2);
 
         if (intersection.points) {
 
@@ -187,15 +187,15 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
             for (var i = 0; i <= intersection.points.length - 1; i++) {
 
-                var pointDistance = intersection.points[i].distanceTo(ca),
+                var pointDistance = intersection.points[i].DistanceTo(ca),
                     radius = r2;
 
                 if (radius - 4 <= pointDistance && pointDistance <= radius + 4) {
 
-                    var pointStartAngle = ca.angleTo(pointStart),
-                        pointMidAngle = ca.angleTo(pointMid),
-                        pointEndAngle = ca.angleTo(pointEnd),
-                        pointMouseAngle = ca.angleTo(intersection.points[i]);
+                    var pointStartAngle = ca.AngleTo(pointStart),
+                        pointMidAngle = ca.AngleTo(pointMid),
+                        pointEndAngle = ca.AngleTo(pointEnd),
+                        pointMouseAngle = ca.AngleTo(intersection.points[i]);
 
                     if (pointStartAngle <= pointMidAngle && pointMidAngle <= pointEndAngle) {
                         if (ck) {
@@ -251,7 +251,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var norm1 = (b[0] * b[0] + 2 * b[1] * b[1] + b[2] * b[2]) * epsilon;
 
         for (var y = 0; y < yRoots.length; y++) {
-            var xPoly = new utility.geometry.polynomial(
+            var xPoly = new Polynomial(
                 a[0],
                 a[3] + yRoots[y] * a[1],
                 a[5] + yRoots[y] * (a[4] + yRoots[y] * a[2])
@@ -292,35 +292,26 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
         Sum: function (point) {
             return new Point(this.x + point.x, this.y + point.y);
         },
-        Operations: {
-            Sum: function (point) {
-                return new Point(this.x + point.x, this.y + point.y);
-            },
-            Subtract: function (point) {
-                return new Point(this.x - point.x, this.y - point.y);
-            }
+        Subtract: function (point) {
+            return new Point(this.x - point.x, this.y - point.y);
         },
-        Measures: {
-            DistanceTo: function (point) {
-                var dx = this.x - point.x;
-                var dy = this.y - point.y;
+        DistanceTo: function (point) {
+            var dx = this.x - point.x;
+            var dy = this.y - point.y;
 
-                return Math.sqrt(dx * dx + dy * dy);
-            },
-            MidTo: function (point) {
-                return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
-            },
-            AngleTo: function (point) {
-                return Math.atan2(point.y - this.y, point.x - this.x);
-            }
+            return Math.sqrt(dx * dx + dy * dy);
         },
-        Functions: {
-            InterpolationLinear: function (point, value) {
-                return new Point(
-                    this.x + (point.x - this.x) * value,
-                    this.y + (point.y - this.y) * value
-                );
-            }
+        MidTo: function (point) {
+            return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
+        },
+        AngleTo: function (point) {
+            return Math.atan2(point.y - this.y, point.x - this.x);
+        },
+        InterpolationLinear: function (point, value) {
+            return new Point(
+                this.x + (point.x - this.x) * value,
+                this.y + (point.y - this.y) * value
+            );
         }
     };
 
@@ -557,9 +548,8 @@ define("geometric/polynomial", ['require', 'exports'], function (require, export
 });
 define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
-
-    var Point = require('geometric/point');
-
+    var Point = require('geometric/point'),
+        Intersection = require('geometric/intersection');
 
     function Shape(uuid, name, locked, visible, selected) {
 
@@ -567,7 +557,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.name = name;
         this.locked = locked;
         this.visible = visible;
-        this.selected = selected;
+        this.status = selected;
 
     };
     Shape.prototype = {
@@ -652,7 +642,73 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             }
             return true;
         },
-        contains: function (point) {
+        Contains: function (pointActual) {
+
+            var pointOrigin,
+                pointDestination,
+                pointIntersection = 0;
+
+            switch (this.type) {
+            case 'line':
+                {
+
+                    //debugger;
+                    pointOrigin = this.points[0];
+                    pointDestination = this.points[1];
+
+                    if (Intersection.CircleLine(pointActual, 2, pointOrigin, pointDestination))
+                        return true;
+
+                    break;
+                }
+            case 'rectangle':
+                {
+                    if (Intersection.CircleRectangle(pointActual, 2, this.point, this.height, this.width))
+                        return true;
+
+                    break;
+                }
+            case 'arc':
+                {
+                    pointActual = Point.Create(pointActual.x, pointActual.y);
+
+                    if (Intersection.CircleArc(pointActual, 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise))
+                        return true;
+
+                    break;
+                }
+            case 'circle':
+                {
+                    pointActual = Point.Create(pointActual.x, pointActual.y);
+
+                    if (Intersection.CircleCircle(pointActual, 2, this.point, this.radius))
+                        return true;
+
+                    break;
+                }
+            case 'ellipse':
+                return (Intersection.CircleEllipse(pointActual, 2, 2, this.point, this.radiusY, this.radiusX))
+            case 'polygon':
+                {
+                    for (var i = 0; i < this.points.length; i++) {
+
+                        if (i + 1 == this.points.length) {
+                            pointOrigin = this.points[i];
+                            pointDestination = this.points[0];
+                        } else {
+                            pointOrigin = this.points[i];
+                            pointDestination = this.points[i + 1];
+                        }
+
+                        if (Intersection.CircleLine(pointActual, 2, pointOrigin, pointDestination))
+                            return true;
+                    }
+                    break;
+                }
+            default:
+                break;
+            }
+
             return false;
         },
         render: function (context2D) {
@@ -681,9 +737,14 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'line':
                 {
-                    // possivel personalização
-                    context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
-                    context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
+                    if (this.status == 'Over') {
+                        
+                        context2D.strokeStyle = 'red';
+                    } else {
+                        // possivel personalização
+                        context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
+                        context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
+                    }
 
                     context2D.moveTo(this.points[0].x, this.points[0].y);
                     context2D.lineTo(this.points[1].x, this.points[1].y);
@@ -893,8 +954,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
 
             // start em eventos
-            ViewPort.onmousemove = function (event) {
-                Tools.Event.notify('onMouseMove', event);
+            ViewPort.onmousemove = function (Event) {
+                Tools.Event.notify('onMouseMove', {
+                    Event: event,
+                    ViewPort: ViewPort,
+                    Shapes: LayerActive.Shapes.List(),
+                    Plane: Plane
+                });
             };
             ViewPort.onclick = function (event) {
                 Tools.Event.notify('onClick', event);
@@ -1056,7 +1122,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             };
         },
         set Scroll(value) {
-            
+
             var LayerActive = Plane.Layer.Active;
             var MoveFactor = {
                 X: value.X + this.Scroll.X,
@@ -1077,7 +1143,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             });
 
             Plane.Layer.Active = LayerActive.Uuid;
-            
+
             this._scroll = MoveFactor;
         }
     });
@@ -1312,28 +1378,57 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
     Tool.prototype = Types.Object.Event.prototype;
 
 
-    var ToolsProxy = Types.Object.Extend(new Types.Object.Event(), {
-        Create: function (attrs) {
-            if (typeof attrs == "function") {
-                throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+    function Create(attrs) {
+        if (typeof attrs == "function") {
+            throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        attrs = Types.Object.Merge({
+            uuid: Types.Math.Uuid(9, 16),
+            name: 'Tool '.concat(ToolStore.count())
+        }, attrs);
+
+        var tool = Tool.Create(attrs.uuid, attrs.name);
+
+        toolStore.add(attrs.uuid, tool);
+
+        return true;
+    }
+
+    var EventProxy = new Types.Object.Event();
+
+    EventProxy.listen('onMouseMove', function (Message) {
+
+        var Position = {
+            x: Message.Event.clientX,
+            y: Message.Event.clientY
+        };
+
+        Position = Types.Graphic.MousePosition(Message.ViewPort, Position);
+
+        Message.Shapes.forEach(function (Shape) {
+
+            if (Shape.Contains(Position)){
+                
+                Shape.status = 'Over';
+                
+                Message.Plane.Update();
+                console.log(Position);
+                console.log(Shape);
+            } else {
+                Shape.status = 'Out'
             }
 
-            attrs = Types.Object.Merge({
-                uuid: Types.Math.Uuid(9, 16),
-                name: 'Tool '.concat(ToolStore.count())
-            }, attrs);
+        });
 
-            var tool = Tool.Create(attrs.uuid, attrs.name);
 
-            toolStore.add(attrs.uuid, tool);
 
-            return true;
-        }
+
     });
 
-//    exports.ToolsProxy = ToolsProxy;
-    
-    exports.Event = new Types.Object.Event();
+
+    exports.Event = EventProxy;
+    exports.Create = Create;
 
 });
 define("utility/export", ['require', 'exports'], function (require, exports) {

@@ -38,27 +38,56 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
     Tool.prototype = Types.Object.Event.prototype;
 
 
-    var ToolsProxy = Types.Object.Extend(new Types.Object.Event(), {
-        Create: function (attrs) {
-            if (typeof attrs == "function") {
-                throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+    function Create(attrs) {
+        if (typeof attrs == "function") {
+            throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        attrs = Types.Object.Merge({
+            uuid: Types.Math.Uuid(9, 16),
+            name: 'Tool '.concat(ToolStore.count())
+        }, attrs);
+
+        var tool = Tool.Create(attrs.uuid, attrs.name);
+
+        toolStore.add(attrs.uuid, tool);
+
+        return true;
+    }
+
+    var EventProxy = new Types.Object.Event();
+
+    EventProxy.listen('onMouseMove', function (Message) {
+
+        var Position = {
+            x: Message.Event.clientX,
+            y: Message.Event.clientY
+        };
+
+        Position = Types.Graphic.MousePosition(Message.ViewPort, Position);
+
+        Message.Shapes.forEach(function (Shape) {
+
+            if (Shape.Contains(Position)){
+                
+                Shape.status = 'Over';
+                
+                Message.Plane.Update();
+                console.log(Position);
+                console.log(Shape);
+            } else {
+                Shape.status = 'Out'
             }
 
-            attrs = Types.Object.Merge({
-                uuid: Types.Math.Uuid(9, 16),
-                name: 'Tool '.concat(ToolStore.count())
-            }, attrs);
+        });
 
-            var tool = Tool.Create(attrs.uuid, attrs.name);
 
-            toolStore.add(attrs.uuid, tool);
 
-            return true;
-        }
+
     });
 
-//    exports.ToolsProxy = ToolsProxy;
-    
-    exports.Event = new Types.Object.Event();
+
+    exports.Event = EventProxy;
+    exports.Create = Create;
 
 });

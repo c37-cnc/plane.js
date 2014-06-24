@@ -1,8 +1,7 @@
 define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
-
-    var Point = require('geometric/point');
-
+    var Point = require('geometric/point'),
+        Intersection = require('geometric/intersection');
 
     function Shape(uuid, name, locked, visible, selected) {
 
@@ -10,7 +9,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.name = name;
         this.locked = locked;
         this.visible = visible;
-        this.selected = selected;
+        this.status = selected;
 
     };
     Shape.prototype = {
@@ -95,7 +94,73 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             }
             return true;
         },
-        contains: function (point) {
+        Contains: function (pointActual) {
+
+            var pointOrigin,
+                pointDestination,
+                pointIntersection = 0;
+
+            switch (this.type) {
+            case 'line':
+                {
+
+                    //debugger;
+                    pointOrigin = this.points[0];
+                    pointDestination = this.points[1];
+
+                    if (Intersection.CircleLine(pointActual, 2, pointOrigin, pointDestination))
+                        return true;
+
+                    break;
+                }
+            case 'rectangle':
+                {
+                    if (Intersection.CircleRectangle(pointActual, 2, this.point, this.height, this.width))
+                        return true;
+
+                    break;
+                }
+            case 'arc':
+                {
+                    pointActual = Point.Create(pointActual.x, pointActual.y);
+
+                    if (Intersection.CircleArc(pointActual, 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise))
+                        return true;
+
+                    break;
+                }
+            case 'circle':
+                {
+                    pointActual = Point.Create(pointActual.x, pointActual.y);
+
+                    if (Intersection.CircleCircle(pointActual, 2, this.point, this.radius))
+                        return true;
+
+                    break;
+                }
+            case 'ellipse':
+                return (Intersection.CircleEllipse(pointActual, 2, 2, this.point, this.radiusY, this.radiusX))
+            case 'polygon':
+                {
+                    for (var i = 0; i < this.points.length; i++) {
+
+                        if (i + 1 == this.points.length) {
+                            pointOrigin = this.points[i];
+                            pointDestination = this.points[0];
+                        } else {
+                            pointOrigin = this.points[i];
+                            pointDestination = this.points[i + 1];
+                        }
+
+                        if (Intersection.CircleLine(pointActual, 2, pointOrigin, pointDestination))
+                            return true;
+                    }
+                    break;
+                }
+            default:
+                break;
+            }
+
             return false;
         },
         render: function (context2D) {
@@ -124,9 +189,14 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'line':
                 {
-                    // possivel personalização
-                    context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
-                    context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
+                    if (this.status == 'Over') {
+                        
+                        context2D.strokeStyle = 'red';
+                    } else {
+                        // possivel personalização
+                        context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
+                        context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
+                    }
 
                     context2D.moveTo(this.points[0].x, this.points[0].y);
                     context2D.lineTo(this.points[1].x, this.points[1].y);

@@ -45,8 +45,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
 
             // start em eventos
-            ViewPort.onmousemove = function (event) {
-                Tools.Event.notify('onMouseMove', event);
+            ViewPort.onmousemove = function (Event) {
+                Tools.Event.notify('onMouseMove', {
+                    Event: event,
+                    ViewPort: ViewPort,
+                    Shapes: LayerActive.Shapes.List(),
+                    Plane: Plane
+                });
             };
             ViewPort.onclick = function (event) {
                 Tools.Event.notify('onClick', event);
@@ -208,7 +213,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             };
         },
         set Scroll(value) {
-            
+
             var LayerActive = Plane.Layer.Active;
             var MoveFactor = {
                 X: value.X + this.Scroll.X,
@@ -229,7 +234,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             });
 
             Plane.Layer.Active = LayerActive.Uuid;
-            
+
             this._scroll = MoveFactor;
         }
     });

@@ -9,35 +9,26 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
         Sum: function (point) {
             return new Point(this.x + point.x, this.y + point.y);
         },
-        Operations: {
-            Sum: function (point) {
-                return new Point(this.x + point.x, this.y + point.y);
-            },
-            Subtract: function (point) {
-                return new Point(this.x - point.x, this.y - point.y);
-            }
+        Subtract: function (point) {
+            return new Point(this.x - point.x, this.y - point.y);
         },
-        Measures: {
-            DistanceTo: function (point) {
-                var dx = this.x - point.x;
-                var dy = this.y - point.y;
+        DistanceTo: function (point) {
+            var dx = this.x - point.x;
+            var dy = this.y - point.y;
 
-                return Math.sqrt(dx * dx + dy * dy);
-            },
-            MidTo: function (point) {
-                return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
-            },
-            AngleTo: function (point) {
-                return Math.atan2(point.y - this.y, point.x - this.x);
-            }
+            return Math.sqrt(dx * dx + dy * dy);
         },
-        Functions: {
-            InterpolationLinear: function (point, value) {
-                return new Point(
-                    this.x + (point.x - this.x) * value,
-                    this.y + (point.y - this.y) * value
-                );
-            }
+        MidTo: function (point) {
+            return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
+        },
+        AngleTo: function (point) {
+            return Math.atan2(point.y - this.y, point.x - this.x);
+        },
+        InterpolationLinear: function (point, value) {
+            return new Point(
+                this.x + (point.x - this.x) * value,
+                this.y + (point.y - this.y) * value
+            );
         }
     };
 
