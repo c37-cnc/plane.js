@@ -133,8 +133,8 @@
                 var scrollInputX = document.getElementById('scrollInputX'),
                     scrollInputY = document.getElementById('scrollInputY'),
                     scroll = {
-                        X: scrollInputX.value,
-                        Y: scrollInputY.value
+                        X: parseInt(scrollInputX.value),
+                        Y: parseInt(scrollInputY.value)
                     };
                 Plane.Scroll = scroll;
             });

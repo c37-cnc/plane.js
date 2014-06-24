@@ -21,14 +21,14 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             return this._scale || 1;
         },
         set Scale(value) {
-            
+
             switch (this.type) {
             case 'arc':
                 {
                     this.point.x *= value;
                     this.point.y *= value;
                     this.radius *= value;
-                    
+
                     break;
                 }
             case 'circle':
@@ -36,7 +36,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     this.point.x *= value;
                     this.point.y *= value;
                     this.radius *= value;
-                    
+
                     break;
                 }
             case 'ellipse':
@@ -45,7 +45,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     this.point.y *= value;
                     this.radiusX *= value;
                     this.radiusY *= value;
-                    
+
                     break;
                 }
             case 'line':
@@ -54,7 +54,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                         point.x *= value;
                         point.y *= value;
                     });
-                    
+
                     break;
                 }
             case 'polygon':
@@ -63,7 +63,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                         point.x *= value;
                         point.y *= value;
                     });
-                    
+
                     break;
                 }
             case 'rectangle':
@@ -72,14 +72,27 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     this.point.y *= value;
                     this.height *= value;
                     this.width *= value;
-                    
+
                     break;
                 }
             }
 
             this._scale = value;
         },
-        move: function (point) {
+        MoveTo: function (value) {
+
+            value = {
+                x: value.X,
+                y: value.Y
+            };
+
+            if (this.point) {
+                this.point = this.point.Sum(value);
+            } else {
+                for (var i = 0; i <= this.points.length - 1; i++) {
+                    this.points[i] = this.points[i].Sum(value);
+                }
+            }
             return true;
         },
         contains: function (point) {

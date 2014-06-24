@@ -128,7 +128,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         }),
         Shape: {
-
             Create: function (attrs) {
                 if ((typeof attrs == "function") || (attrs == null)) {
                     throw new Error('Shape - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -151,7 +150,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                 return true;
             }
-
         },
         Import: {
             FromJson: null,
@@ -210,26 +208,29 @@ define("plane", ['require', 'exports'], function (require, exports) {
             };
         },
         set Scroll(value) {
+            
+            var LayerActive = Plane.Layer.Active;
+            var MoveFactor = {
+                X: value.X + this.Scroll.X,
+                Y: value.Y + this.Scroll.Y
+            };
 
-            GridDraw(Settings.gridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.gridColor, this.Zoom, value);
-
-            var LayerActive = Plane.Layer.Active,
-                ZoomFactor = value / Plane.Zoom;
+            GridDraw(Settings.gridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.gridColor, this.Zoom, MoveFactor);
 
             Plane.Layer.List().forEach(function (Layer) {
 
                 Plane.Layer.Active = Layer.Uuid;
 
                 Plane.Layer.Active.Shapes.List().forEach(function (Shape) {
-                    Shape.Scale = ZoomFactor;
+                    Shape.MoveTo(value);
                 });
 
                 Plane.Update();
             });
 
             Plane.Layer.Active = LayerActive.Uuid;
-
-            this._scroll = value;
+            
+            this._scroll = MoveFactor;
         }
     });
 
@@ -242,7 +243,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return Layer.System;
         });
 
-        var LayerActive = Plane.Layer.Active;
+        var LayerActive = Plane.Layer.Active,
+            LineBold = 0;
 
         if (LayerSystem.length == 1) {
             LayerSystem[0].Shapes = new Types.Data.Dictionary();
@@ -254,73 +256,41 @@ define("plane", ['require', 'exports'], function (require, exports) {
             });
         }
 
-        //        debugger;
-
         Width = Zoom > 1 ? Width * Zoom : Width / Zoom;
         Height = Zoom > 1 ? Height * Zoom : Height / Zoom;
 
-        var LineBold = 0;
+        if (Scroll.X > 0) {
 
-        //        if (parseInt(Scroll.X) > 0) {
-        //
-        //            for (var x = parseInt(Scroll.X); x >= 0; x -= (10 * Zoom)) {
-        //
-        //                var LineFactor = Math.round(x * Zoom);
-        //
-        //                Plane.Shape.Create({
-        //                    type: 'line',
-        //                    x: [LineFactor, 0],
-        //                    y: [LineFactor, Height],
-        //                    style: {
-        //                        lineColor: 'red',
-        //                        lineWidth: LineBold % 5 == 0 ? .8 : .3
-        //                    }
-        //                });
-        //
-        //                LineBold++;
-        //            }
-        //        }
-        //
-        //        LineBold = 0;
-        //
-        //        if (parseInt(Scroll.X) < 0) {
-        //
-        //            debugger;
-        //            
-        //            var ddd = parseInt(Scroll.X);
-        //            
-        //            for (var x = parseInt(Scroll.X); x <= 0; x += (10 * Zoom)) {
-        //
-        //                var LineFactor = Math.round(x * Zoom);
-        //
-        //                Plane.Shape.Create({
-        //                    type: 'line',
-        //                    x: [LineFactor, 0],
-        //                    y: [LineFactor, Height],
-        //                    style: {
-        //                        lineColor: 'red',
-        //                        lineWidth: LineBold % 5 == 0 ? .8 : .3
-        //                    }
-        //                });
-        //
-        //                LineBold++;
-        //            }
-        //
-        //        }
-        //
-        //        LineBold = 0;
+            for (var x = Scroll.X; x >= 0; x -= (10 * Zoom)) {
 
-        for (var x = 0; x <= Width; x += (10 * Zoom)) {
+                var LineFactor = Math.round(x * Zoom);
+
+                Plane.Shape.Create({
+                    type: 'line',
+                    x: [LineFactor, 0],
+                    y: [LineFactor, Height],
+                    style: {
+                        lineColor: 'red',
+                        lineWidth: LineBold % 5 == 0 ? .8 : .3
+                    }
+                });
+
+                LineBold++;
+            }
+        }
+
+        LineBold = 0;
+
+        for (var x = Scroll.X; x <= Width; x += (10 * Zoom)) {
 
             var LineFactor = Math.round(x * Zoom);
-            //            var LineFactor = Math.round((x + parseInt(Scroll.X)) * Zoom);
 
             Plane.Shape.Create({
                 type: 'line',
                 x: [LineFactor, 0],
                 y: [LineFactor, Height],
                 style: {
-                    lineColor: Math.round(parseInt(Scroll.X) * Zoom) == LineFactor ? 'red' : Color,
+                    lineColor: Color,
                     lineWidth: LineBold % 5 == 0 ? .8 : .3
                 }
             });
@@ -330,35 +300,49 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         LineBold = 0;
 
-        for (var y = 0; y <= Height; y += (10 * Zoom)) {
+        if (Scroll.Y > 0) {
+            for (var y = Scroll.Y; y >= 0; y -= (10 * Zoom)) {
+
+                var LineFactor = Math.round(y * Zoom);
+
+                Plane.Shape.Create({
+                    type: 'line',
+                    x: [0, LineFactor],
+                    y: [Width, LineFactor],
+                    style: {
+                        lineColor: 'red',
+                        lineWidth: LineBold % 5 == 0 ? .8 : .3
+                    }
+                });
+
+                LineBold++;
+            }
+        }
+
+        LineBold = 0;
+
+        for (var y = Scroll.Y; y <= Height; y += (10 * Zoom)) {
 
             var LineFactor = Math.round(y * Zoom);
-            //            var LineFactor = Math.round((y + parseInt(Scroll.Y)) * Zoom);
 
             Plane.Shape.Create({
                 type: 'line',
                 x: [0, LineFactor],
                 y: [Width, LineFactor],
                 style: {
-                    lineColor: Math.round(parseInt(Scroll.Y) * Zoom) == LineFactor ? 'red' : Color,
+                    lineColor: Color,
                     lineWidth: LineBold % 5 == 0 ? .8 : .3
                 }
             });
-
             LineBold++;
         }
-        Plane.Update();
 
-        var LayerActive = Plane.Layer.Active;
+        Plane.Update();
 
         if (LayerSystem.length == 1) {
             Plane.Layer.Active = LayerActive.Uuid;
         }
-
     };
-
-
-
 
 
     exports.PlaneApi = Plane;

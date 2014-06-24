@@ -6,6 +6,9 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
     };
 
     Point.prototype = {
+        Sum: function (point) {
+            return new Point(this.x + point.x, this.y + point.y);
+        },
         Operations: {
             Sum: function (point) {
                 return new Point(this.x + point.x, this.y + point.y);
