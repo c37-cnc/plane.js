@@ -66,21 +66,21 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
 
         Position = Types.Graphic.MousePosition(Message.ViewPort, Position);
 
-        Message.Shapes.forEach(function (Shape) {
+        Message.Shapes.forEach(function (Shape, Index) {
 
-            if (Shape.Contains(Position)){
-                
+            Shape.status = 'Out';
+
+            if (Shape.Contains(Position)) {
+
                 Shape.status = 'Over';
-                
-                Message.Plane.Update();
+
                 console.log(Position);
                 console.log(Shape);
-            } else {
-                Shape.status = 'Out'
             }
 
         });
 
+        Message.Plane.Update();
 
 
 

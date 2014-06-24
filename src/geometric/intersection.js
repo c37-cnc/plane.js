@@ -134,11 +134,13 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
                         pointMouseAngle = ca.AngleTo(intersection.points[i]);
 
                     if (pointStartAngle <= pointMidAngle && pointMidAngle <= pointEndAngle) {
-                        if (ck) {
-                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? true : false;
-                        } else {
-                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? false : true;
-                        }
+                        //                        if (ck) {
+                        //                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? true : false;
+                        //                        } else {
+                        //                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? false : true;
+                        //                        }
+                        return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? true : false;
+
                     } else if (pointEndAngle <= pointMidAngle && pointMidAngle <= pointStartAngle) {
                         if (ck) {
                             return (pointEndAngle <= pointMouseAngle && pointMouseAngle <= pointStartAngle) ? true : false;

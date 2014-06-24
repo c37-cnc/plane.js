@@ -1,5 +1,5 @@
 /*!
- * C37 in 24-06-2014 at 09:44:57 
+ * C37 in 24-06-2014 at 13:06:33 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -198,11 +198,13 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
                         pointMouseAngle = ca.AngleTo(intersection.points[i]);
 
                     if (pointStartAngle <= pointMidAngle && pointMidAngle <= pointEndAngle) {
-                        if (ck) {
-                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? true : false;
-                        } else {
-                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? false : true;
-                        }
+                        //                        if (ck) {
+                        //                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? true : false;
+                        //                        } else {
+                        //                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? false : true;
+                        //                        }
+                        return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? true : false;
+
                     } else if (pointEndAngle <= pointMidAngle && pointMidAngle <= pointStartAngle) {
                         if (ck) {
                             return (pointEndAngle <= pointMouseAngle && pointMouseAngle <= pointStartAngle) ? true : false;
@@ -713,6 +715,11 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         },
         render: function (context2D) {
 
+            if (this.status == 'Over') {
+                context2D.strokeStyle = 'rgb(61, 142, 193)';
+            }
+
+
             switch (this.type) {
             case 'arc':
                 {
@@ -737,11 +744,8 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'line':
                 {
-                    if (this.status == 'Over') {
-                        
-                        context2D.strokeStyle = 'red';
-                    } else {
-                        // possivel personalização
+                    // possivel personalização
+                    if (this.status != 'Over') {
                         context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
                         context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
                     }
@@ -1406,21 +1410,21 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
 
         Position = Types.Graphic.MousePosition(Message.ViewPort, Position);
 
-        Message.Shapes.forEach(function (Shape) {
+        Message.Shapes.forEach(function (Shape, Index) {
 
-            if (Shape.Contains(Position)){
-                
+            Shape.status = 'Out';
+
+            if (Shape.Contains(Position)) {
+
                 Shape.status = 'Over';
-                
-                Message.Plane.Update();
+
                 console.log(Position);
                 console.log(Shape);
-            } else {
-                Shape.status = 'Out'
             }
 
         });
 
+        Message.Plane.Update();
 
 
 

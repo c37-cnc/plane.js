@@ -165,6 +165,11 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         },
         render: function (context2D) {
 
+            if (this.status == 'Over') {
+                context2D.strokeStyle = 'rgb(61, 142, 193)';
+            }
+
+
             switch (this.type) {
             case 'arc':
                 {
@@ -189,11 +194,8 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'line':
                 {
-                    if (this.status == 'Over') {
-                        
-                        context2D.strokeStyle = 'red';
-                    } else {
-                        // possivel personalização
+                    // possivel personalização
+                    if (this.status != 'Over') {
                         context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
                         context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
                     }
