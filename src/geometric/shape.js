@@ -169,6 +169,17 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 context2D.strokeStyle = 'rgb(61, 142, 193)';
             }
 
+            if (this.status == 'Selected') {
+                context2D.strokeStyle = 'rgb(68, 121, 154)';
+                if (this.point) {
+                    context2D.strokeRect(this.point.x - 3, this.point.y - 3, 6, 6);
+                }
+                if (this.points) {
+                    this.points.forEach(function (point) {
+                        context2D.strokeRect(point.x - 3, point.y - 3, 6, 6);
+                    });
+                }
+            }
 
             switch (this.type) {
             case 'arc':

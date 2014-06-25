@@ -58,32 +58,21 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
     var EventProxy = new Types.Object.Event();
 
     EventProxy.listen('onMouseMove', function (Message) {
-
-        var Position = {
-            x: Message.Event.clientX,
-            y: Message.Event.clientY
-        };
-
-        Position = Types.Graphic.MousePosition(Message.ViewPort, Position);
-
-        Message.Shapes.forEach(function (Shape, Index) {
-
-            Shape.status = 'Out';
-
-            if (Shape.Contains(Position)) {
-
-                Shape.status = 'Over';
-
-                console.log(Position);
-                console.log(Shape);
+        Message.Shapes.forEach(function (Shape) {
+            if (Shape.status != 'Selected') {
+                Shape.status = Shape.Contains(Message.Position) ? 'Over' : 'Out';
             }
-
         });
+        Message.Update();
+    });
 
-        Message.Plane.Update();
-
-
-
+    EventProxy.listen('onClick', function (Message) {
+        Message.Shapes.forEach(function (Shape) {
+            if (Shape.Contains(Message.Position)) {
+                Shape.status = Shape.status != 'Selected' ? 'Selected' : 'Over' ;
+            }
+        });
+        Message.Update();
     });
 
 

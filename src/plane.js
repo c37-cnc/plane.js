@@ -14,6 +14,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         Tools = require('structure/tools');
 
     var LayerActive = null,
+        LayerGrid = null,
         ViewPort = null,
         Settings = null;
 
@@ -46,15 +47,32 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             // start em eventos
             ViewPort.onmousemove = function (Event) {
-                Tools.Event.notify('onMouseMove', {
-                    Event: event,
-                    ViewPort: ViewPort,
-                    Shapes: LayerActive.Shapes.List(),
-                    Plane: Plane
-                });
+                if (LayerActive) {
+                    Tools.Event.notify('onMouseMove', {
+                        Type: 'onMouseMove',
+                        Position: Types.Graphic.MousePosition(ViewPort, {
+                            x: Event.clientX,
+                            y: Event.clientY
+                        }),
+                        Shapes: LayerActive.Shapes.List(),
+                        Scroll: Plane.Scroll,
+                        Update: Plane.Update
+                    });
+                }
             };
-            ViewPort.onclick = function (event) {
-                Tools.Event.notify('onClick', event);
+            ViewPort.onclick = function (Event) {
+                if (LayerActive) {
+                    Tools.Event.notify('onClick', {
+                        Type: 'onClick',
+                        Position: Types.Graphic.MousePosition(ViewPort, {
+                            x: Event.clientX,
+                            y: Event.clientY
+                        }),
+                        Shapes: LayerActive.Shapes.List(),
+                        Scroll: Plane.Scroll,
+                        Update: Plane.Update
+                    });
+                }
             }
             // start em eventos
 
@@ -62,11 +80,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             return true;
         },
-        Update: function () {
+        Update: function (LayerSystem) {
 
-            var LayerStyle = LayerActive.Style,
-                LayerShapes = LayerActive.Shapes.List(),
-                LayerRender = LayerActive.Render,
+            var LayerStyle = LayerSystem ? LayerSystem.Style : LayerActive.Style,
+                LayerShapes = LayerSystem ? LayerSystem.Shapes.List() : LayerActive.Shapes.List(),
+                LayerRender = LayerSystem ? LayerSystem.Render : LayerActive.Render,
                 Context2D = LayerRender.getContext('2d');
 
             // limpando o render
@@ -92,44 +110,39 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return true;
         },
         Clear: function () {
+            
+            Plane.Scroll = {
+                X: 0,
+                Y: 0
+            };
+            Plane.Zoom = 1;
+            
+            Plane.Layer.Delete();
 
-
-
+            GridDraw(Settings.gridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.gridColor, this.Zoom, this.Scroll);
             return true;
         },
         Layer: Types.Object.Extend(new Types.Object.Event(), {
             Create: function (attrs) {
 
                 attrs = Types.Object.Union(attrs, {
-                    ViewPort: ViewPort,
-                    count: LayerStore.Count(),
-                    backgroundColor: Settings.backgroundColor
+                    ViewPort: ViewPort
                 });
 
                 var layer = Layer.Create(attrs);
+
                 LayerStore.Add(layer.Uuid, layer);
-                LayerActive = layer;
+                this.Active = layer.Uuid;
 
             },
             List: function (Selector) {
-
-                var LayerList = LayerStore.List().filter(function (Layer) {
-                    return Selector ? Layer : !Layer.System;
-                });
-
-                return LayerList;
+                return LayerStore.List();
             },
-            Delete: function () {
-
-
-//                LayerStore.List();
-//
-//
-//                LayerStore.Delete(LayerActive.Uuid);
-
-
-
-
+            Delete: function (value) {
+                LayerStore.List().forEach(function (Layer) {
+                    var element = document.getElementById(Layer.Render.id);
+                    return element && element.parentNode && element.parentNode.removeChild(element);
+                });
             },
             get Active() {
                 return LayerActive || {};
@@ -178,6 +191,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             FromSvg: null,
             FromDxf: function (StringDxf) {
                 try {
+                    Plane.Clear();
+
                     var StringJson = Import.FromDxf(StringDxf);
                     var ObjectDxf = JSON.parse(StringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
 
@@ -263,43 +278,38 @@ define("plane", ['require', 'exports'], function (require, exports) {
     function GridDraw(Enabled, Height, Width, Color, Zoom, Scroll) {
 
         if (!Enabled) return;
-        
-        var LayerSystem = LayerStore.List().filter(function (Layer) {
-            return Layer.System;
-        });
 
-        var LayerActive = Plane.Layer.Active,
-            LineBold = 0;
-
-        if (LayerSystem.length == 1) {
-            LayerSystem[0].Shapes = new Types.Data.Dictionary();
-            Plane.Layer.Active = LayerSystem[0].Uuid;
+        if (!LayerGrid) {
+            var attrs = { // atributos para a layer do grid (sistema) 
+                ViewPort: ViewPort,
+                Name: 'System - Grid',
+                Style: {
+                    lineCap: 'butt',
+                    lineJoin: 'miter',
+                    BackgroundColor: Settings.backgroundColor
+                }
+            };
+            LayerGrid = Layer.Create(attrs);
         } else {
-            Plane.Layer.Create({
-                System: true,
-                Name: 'Plane - Grid'
-            });
+            LayerGrid.Shapes = new Types.Data.Dictionary();
         }
 
-        Width = Zoom > 1 ? Width * Zoom : Width / Zoom;
-        Height = Zoom > 1 ? Height * Zoom : Height / Zoom;
+        var LineBold = 0;
+
+        // calculos para o Zoom
+        Width = Zoom > 1 ? Math.round(Width * Zoom) : Math.round(Width / Zoom);
+        Height = Zoom > 1 ? Math.round(Height * Zoom) : Math.round(Height / Zoom);
 
         if (Scroll.X > 0) {
-
             for (var x = (Scroll.X * Zoom); x >= 0; x -= (10 * Zoom)) {
 
-                var LineFactor = Math.round(x);
-
-                Plane.Shape.Create({
-                    type: 'line',
-                    x: [LineFactor, 0],
-                    y: [LineFactor, Height],
-                    style: {
+                var LineFactor = Math.round(x),
+                    ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [LineFactor, 0], [LineFactor, Height], {
                         lineColor: Color,
                         lineWidth: LineBold % 5 == 0 ? .8 : .3
-                    }
-                });
+                    });
 
+                LayerGrid.Shapes.Add(ShapeGrid.uuid, ShapeGrid);
                 LineBold++;
             }
         }
@@ -308,18 +318,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         for (var x = (Scroll.X * Zoom); x <= Width; x += (10 * Zoom)) {
 
-            var LineFactor = Math.round(x);
-
-            Plane.Shape.Create({
-                type: 'line',
-                x: [LineFactor, 0],
-                y: [LineFactor, Height],
-                style: {
+            var LineFactor = Math.round(x),
+                ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [LineFactor, 0], [LineFactor, Height], {
                     lineColor: Color,
                     lineWidth: LineBold % 5 == 0 ? .8 : .3
-                }
-            });
+                });
 
+            LayerGrid.Shapes.Add(ShapeGrid.uuid, ShapeGrid);
             LineBold++;
         }
 
@@ -328,18 +333,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (Scroll.Y > 0) {
             for (var y = (Scroll.Y * Zoom); y >= 0; y -= (10 * Zoom)) {
 
-                var LineFactor = Math.round(y);
-
-                Plane.Shape.Create({
-                    type: 'line',
-                    x: [0, LineFactor],
-                    y: [Width, LineFactor],
-                    style: {
+                var LineFactor = Math.round(y),
+                    ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [0, LineFactor], [Width, LineFactor], {
                         lineColor: Color,
                         lineWidth: LineBold % 5 == 0 ? .8 : .3
-                    }
-                });
+                    });
 
+                LayerGrid.Shapes.Add(ShapeGrid.uuid, ShapeGrid);
                 LineBold++;
             }
         }
@@ -348,25 +348,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         for (var y = (Scroll.Y * Zoom); y <= Height; y += (10 * Zoom)) {
 
-            var LineFactor = Math.round(y);
-
-            Plane.Shape.Create({
-                type: 'line',
-                x: [0, LineFactor],
-                y: [Width, LineFactor],
-                style: {
+            var LineFactor = Math.round(y),
+                ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [0, LineFactor], [Width, LineFactor], {
                     lineColor: Color,
                     lineWidth: LineBold % 5 == 0 ? .8 : .3
-                }
-            });
+                });
+
+            LayerGrid.Shapes.Add(ShapeGrid.uuid, ShapeGrid);
             LineBold++;
         }
 
-        Plane.Update();
-
-        if (LayerSystem.length == 1) {
-            Plane.Layer.Active = LayerActive.Uuid;
-        }
+        Plane.Update(LayerGrid);
     };
 
 

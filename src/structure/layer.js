@@ -8,7 +8,6 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         this.Name = Attrs.Name;
         this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
-        this.System = Attrs.System;
         this.Style = Attrs.Style;
         this.Render = Attrs.Render;
         this.Shapes = Attrs.Shapes;
@@ -33,11 +32,12 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // montando o Render da Layer
         var Render = document.createElement('canvas');
 
+        Render.id = Types.Math.Uuid(9, 16);
         Render.width = Attrs.ViewPort.clientWidth;
         Render.height = Attrs.ViewPort.clientHeight;
 
         Render.style.position = "absolute";
-        Render.style.backgroundColor = Attrs.count == 0 ? Attrs.backgroundColor : 'transparent';
+        Render.style.backgroundColor = (Attrs.Style && Attrs.Style.BackgroundColor) ? Attrs.Style.BackgroundColor : 'transparent';
 
         // sistema cartesiano de coordenadas
         var Context2D = Render.getContext('2d');
@@ -47,7 +47,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // parametros para a nova Layer
         Attrs = Types.Object.Merge({
             Uuid: Uuid,
-            Name: 'New Layer ' + Attrs.count,
+            Name: 'New Layer '.concat(Uuid),
             Style: {
                 fillColor: 'rgb(0,0,0)',
                 lineCap: 'butt',
@@ -57,7 +57,6 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             },
             Locked: false,
             Visible: true,
-            System: false,
             Shapes: new Types.Data.Dictionary(),
             Render: Render
         }, Attrs);
@@ -71,7 +70,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
         return layer;
     }
-
+    
     exports.Create = Create;
 
 });
