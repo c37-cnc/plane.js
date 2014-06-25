@@ -76,7 +76,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 Find: function (key) {
                     return this.store[key];
                 },
-                Remove: function (key) {
+                Delete: function (key) {
                     delete this.store[key];
                 },
                 Count: function () {

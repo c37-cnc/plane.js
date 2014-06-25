@@ -1,5 +1,5 @@
 /*!
- * C37 in 24-06-2014 at 22:05:49 
+ * C37 in 25-06-2014 at 13:24:48 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -297,6 +297,9 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
         },
         Subtract: function (point) {
             return new Point(this.x - point.x, this.y - point.y);
+        },
+        Multiply: function (value) {
+            return new Point(this.x * value, this.y * value);
         },
         DistanceTo: function (point) {
             var dx = this.x - point.x;
@@ -1005,6 +1008,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             return true;
         },
+        Clear: function () {
+
+
+
+            return true;
+        },
         Layer: Types.Object.Extend(new Types.Object.Event(), {
             Create: function (attrs) {
 
@@ -1027,7 +1036,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                 return LayerList;
             },
-            Delete: function () {},
+            Delete: function () {
+
+
+//                LayerStore.List();
+//
+//
+//                LayerStore.Delete(LayerActive.Uuid);
+
+
+
+
+            },
             get Active() {
                 return LayerActive || {};
             },
@@ -1133,12 +1153,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 X: value.X + this.Scroll.X,
                 Y: value.Y + this.Scroll.Y
             };
-            
-//            debugger;
-            
-            value.X *= this.Zoom;
-            value.Y *= this.Zoom;
-            
+
+            value.X = Math.round(value.X * this.Zoom);
+            value.Y = Math.round(value.Y * this.Zoom);
+
             GridDraw(Settings.gridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.gridColor, this.Zoom, MoveFactor);
 
             Plane.Layer.List().forEach(function (Layer) {
@@ -1162,7 +1180,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     function GridDraw(Enabled, Height, Width, Color, Zoom, Scroll) {
 
         if (!Enabled) return;
-
+        
         var LayerSystem = LayerStore.List().filter(function (Layer) {
             return Layer.System;
         });
@@ -1187,14 +1205,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             for (var x = (Scroll.X * Zoom); x >= 0; x -= (10 * Zoom)) {
 
-                var LineFactor = Math.round(x * Zoom);
+                var LineFactor = Math.round(x);
 
                 Plane.Shape.Create({
                     type: 'line',
                     x: [LineFactor, 0],
                     y: [LineFactor, Height],
                     style: {
-                        lineColor: 'red',
+                        lineColor: Color,
                         lineWidth: LineBold % 5 == 0 ? .8 : .3
                     }
                 });
@@ -1207,7 +1225,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         for (var x = (Scroll.X * Zoom); x <= Width; x += (10 * Zoom)) {
 
-            var LineFactor = Math.round(x * Zoom);
+            var LineFactor = Math.round(x);
 
             Plane.Shape.Create({
                 type: 'line',
@@ -1227,14 +1245,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (Scroll.Y > 0) {
             for (var y = (Scroll.Y * Zoom); y >= 0; y -= (10 * Zoom)) {
 
-                var LineFactor = Math.round(y * Zoom);
+                var LineFactor = Math.round(y);
 
                 Plane.Shape.Create({
                     type: 'line',
                     x: [0, LineFactor],
                     y: [Width, LineFactor],
                     style: {
-                        lineColor: 'red',
+                        lineColor: Color,
                         lineWidth: LineBold % 5 == 0 ? .8 : .3
                     }
                 });
@@ -1247,7 +1265,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         for (var y = (Scroll.Y * Zoom); y <= Height; y += (10 * Zoom)) {
 
-            var LineFactor = Math.round(y * Zoom);
+            var LineFactor = Math.round(y);
 
             Plane.Shape.Create({
                 type: 'line',
@@ -1683,7 +1701,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 Find: function (key) {
                     return this.store[key];
                 },
-                Remove: function (key) {
+                Delete: function (key) {
                     delete this.store[key];
                 },
                 Count: function () {

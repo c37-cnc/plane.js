@@ -12,6 +12,9 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
         Subtract: function (point) {
             return new Point(this.x - point.x, this.y - point.y);
         },
+        Multiply: function (value) {
+            return new Point(this.x * value, this.y * value);
+        },
         DistanceTo: function (point) {
             var dx = this.x - point.x;
             var dy = this.y - point.y;
