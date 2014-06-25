@@ -219,7 +219,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 X: value.X + this.Scroll.X,
                 Y: value.Y + this.Scroll.Y
             };
-
+            
+//            debugger;
+            
+            value.X *= this.Zoom;
+            value.Y *= this.Zoom;
+            
             GridDraw(Settings.gridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.gridColor, this.Zoom, MoveFactor);
 
             Plane.Layer.List().forEach(function (Layer) {
@@ -266,7 +271,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         if (Scroll.X > 0) {
 
-            for (var x = Scroll.X; x >= 0; x -= (10 * Zoom)) {
+            for (var x = (Scroll.X * Zoom); x >= 0; x -= (10 * Zoom)) {
 
                 var LineFactor = Math.round(x * Zoom);
 
@@ -286,7 +291,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         LineBold = 0;
 
-        for (var x = Scroll.X; x <= Width; x += (10 * Zoom)) {
+        for (var x = (Scroll.X * Zoom); x <= Width; x += (10 * Zoom)) {
 
             var LineFactor = Math.round(x * Zoom);
 
@@ -306,7 +311,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         LineBold = 0;
 
         if (Scroll.Y > 0) {
-            for (var y = Scroll.Y; y >= 0; y -= (10 * Zoom)) {
+            for (var y = (Scroll.Y * Zoom); y >= 0; y -= (10 * Zoom)) {
 
                 var LineFactor = Math.round(y * Zoom);
 
@@ -326,7 +331,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         LineBold = 0;
 
-        for (var y = Scroll.Y; y <= Height; y += (10 * Zoom)) {
+        for (var y = (Scroll.Y * Zoom); y <= Height; y += (10 * Zoom)) {
 
             var LineFactor = Math.round(y * Zoom);
 

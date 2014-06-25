@@ -65,10 +65,10 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
             leftTop = Point.Create(p.x, p.y + h),
             leftBottom = Point.Create(p.x, p.y);
 
-        var inter1 = this.circleLine(c, r, rightBottom, rightTop);
-        var inter2 = this.circleLine(c, r, rightTop, leftTop);
-        var inter3 = this.circleLine(c, r, leftTop, leftBottom);
-        var inter4 = this.circleLine(c, r, leftBottom, rightBottom);
+        var inter1 = CircleLine(c, r, rightBottom, rightTop);
+        var inter2 = CircleLine(c, r, rightTop, leftTop);
+        var inter3 = CircleLine(c, r, leftTop, leftBottom);
+        var inter4 = CircleLine(c, r, leftBottom, rightBottom);
 
         return inter1 || inter2 || inter3 || inter4;
     };
@@ -134,6 +134,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
                         pointMouseAngle = ca.AngleTo(intersection.points[i]);
 
                     if (pointStartAngle <= pointMidAngle && pointMidAngle <= pointEndAngle) {
+                        // 2014.06.24 - 14:33 - lilo - em observação
                         //                        if (ck) {
                         //                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? true : false;
                         //                        } else {

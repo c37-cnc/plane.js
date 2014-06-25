@@ -1,5 +1,5 @@
 /*!
- * C37 in 24-06-2014 at 13:06:33 
+ * C37 in 24-06-2014 at 22:05:49 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -129,10 +129,10 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
             leftTop = Point.Create(p.x, p.y + h),
             leftBottom = Point.Create(p.x, p.y);
 
-        var inter1 = this.circleLine(c, r, rightBottom, rightTop);
-        var inter2 = this.circleLine(c, r, rightTop, leftTop);
-        var inter3 = this.circleLine(c, r, leftTop, leftBottom);
-        var inter4 = this.circleLine(c, r, leftBottom, rightBottom);
+        var inter1 = CircleLine(c, r, rightBottom, rightTop);
+        var inter2 = CircleLine(c, r, rightTop, leftTop);
+        var inter3 = CircleLine(c, r, leftTop, leftBottom);
+        var inter4 = CircleLine(c, r, leftBottom, rightBottom);
 
         return inter1 || inter2 || inter3 || inter4;
     };
@@ -198,6 +198,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
                         pointMouseAngle = ca.AngleTo(intersection.points[i]);
 
                     if (pointStartAngle <= pointMidAngle && pointMidAngle <= pointEndAngle) {
+                        // 2014.06.24 - 14:33 - lilo - em observação
                         //                        if (ck) {
                         //                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? true : false;
                         //                        } else {
@@ -1132,7 +1133,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 X: value.X + this.Scroll.X,
                 Y: value.Y + this.Scroll.Y
             };
-
+            
+//            debugger;
+            
+            value.X *= this.Zoom;
+            value.Y *= this.Zoom;
+            
             GridDraw(Settings.gridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.gridColor, this.Zoom, MoveFactor);
 
             Plane.Layer.List().forEach(function (Layer) {
@@ -1179,7 +1185,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         if (Scroll.X > 0) {
 
-            for (var x = Scroll.X; x >= 0; x -= (10 * Zoom)) {
+            for (var x = (Scroll.X * Zoom); x >= 0; x -= (10 * Zoom)) {
 
                 var LineFactor = Math.round(x * Zoom);
 
@@ -1199,7 +1205,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         LineBold = 0;
 
-        for (var x = Scroll.X; x <= Width; x += (10 * Zoom)) {
+        for (var x = (Scroll.X * Zoom); x <= Width; x += (10 * Zoom)) {
 
             var LineFactor = Math.round(x * Zoom);
 
@@ -1219,7 +1225,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         LineBold = 0;
 
         if (Scroll.Y > 0) {
-            for (var y = Scroll.Y; y >= 0; y -= (10 * Zoom)) {
+            for (var y = (Scroll.Y * Zoom); y >= 0; y -= (10 * Zoom)) {
 
                 var LineFactor = Math.round(y * Zoom);
 
@@ -1239,7 +1245,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         LineBold = 0;
 
-        for (var y = Scroll.Y; y <= Height; y += (10 * Zoom)) {
+        for (var y = (Scroll.Y * Zoom); y <= Height; y += (10 * Zoom)) {
 
             var LineFactor = Math.round(y * Zoom);
 
