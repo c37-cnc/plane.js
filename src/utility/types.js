@@ -182,14 +182,14 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 this.listeners = {};
             }
 
-            Event.prototype.listen = function (event, handler) {
+            Event.prototype.Listen = function (event, handler) {
                 if (this.listeners[event] === undefined) {
                     this.listeners[event] = [];
                 }
                 this.listeners[event].push(handler);
             };
 
-            Event.prototype.notify = function (event, data) {
+            Event.prototype.Notify = function (event, data) {
                 if (this.listeners[event] !== undefined) {
                     for (var callback in this.listeners[event]) {
                         this.listeners[event][callback].call(this, data);
@@ -197,7 +197,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 }
             };
 
-            Event.prototype.unlisten = function (event, handler) {
+            Event.prototype.Unlisten = function (event, handler) {
                 if (this.listeners[event] !== undefined) {
                     var index = this.listeners[event].indexOf(handler);
                     if (index !== -1) {

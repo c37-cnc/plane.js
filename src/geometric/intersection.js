@@ -31,9 +31,9 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
     function CircleLine(c, r, a1, a2) {
         var result,
-            a = (a2.x - a1.x) * (a2.x - a1.x) + (a2.y - a1.y) * (a2.y - a1.y),
-            b = 2 * ((a2.x - a1.x) * (a1.x - c.x) + (a2.y - a1.y) * (a1.y - c.y)),
-            cc = c.x * c.x + c.y * c.y + a1.x * a1.x + a1.y * a1.y - 2 * (c.x * a1.x + c.y * a1.y) - r * r,
+            a = (a2.X - a1.X) * (a2.X - a1.X) + (a2.Y - a1.Y) * (a2.Y - a1.Y),
+            b = 2 * ((a2.X - a1.X) * (a1.X - c.X) + (a2.Y - a1.Y) * (a1.Y - c.Y)),
+            cc = c.X * c.X + c.Y * c.Y + a1.X * a1.X + a1.Y * a1.Y - 2 * (c.X * a1.X + c.Y * a1.Y) - r * r,
             deter = b * b - 4 * a * cc;
 
         if (deter < 0) {
@@ -60,10 +60,10 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
     function CircleRectangle(c, r, p, h, w) {
 
-        var rightBottom = Point.Create(p.x + w, p.y),
-            rightTop = Point.Create(p.x + w, p.y + h),
-            leftTop = Point.Create(p.x, p.y + h),
-            leftBottom = Point.Create(p.x, p.y);
+        var rightBottom = Point.Create(p.X + w, p.Y),
+            rightTop = Point.Create(p.X + w, p.Y + h),
+            leftTop = Point.Create(p.X, p.Y + h),
+            leftBottom = Point.Create(p.X, p.Y);
 
         var inter1 = CircleLine(c, r, rightBottom, rightTop);
         var inter2 = CircleLine(c, r, rightTop, leftTop);
@@ -97,8 +97,8 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
             var p = c1.InterpolationLinear(c2, a / c_dist);
             var b = h / c_dist;
 
-            result.points.push(Point.Create(p.x - b * (c2.y - c1.y), p.y + b * (c2.x - c1.x)));
-            result.points.push(Point.Create(p.x + b * (c2.y - c1.y), p.y - b * (c2.x - c1.x)));
+            result.points.push(Point.Create(p.X - b * (c2.Y - c1.Y), p.Y + b * (c2.X - c1.X)));
+            result.points.push(Point.Create(p.X + b * (c2.Y - c1.Y), p.Y - b * (c2.X - c1.X)));
 
         }
 
@@ -115,9 +115,9 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
                 radianEnd = ae / 360 * 2 * Math.PI,
                 radianMid = radianStart > radianEnd ? (radianStart - radianEnd) / 2 : (radianEnd - radianStart) / 2;
 
-            var pointStart = Point.Create(ca.x + Math.cos(radianStart) * r2, ca.y + Math.sin(radianStart) * r2),
-                pointEnd = Point.Create(ca.x + Math.cos(radianEnd) * r2, ca.y + Math.sin(radianEnd) * r2),
-                pointMid = Point.Create(ca.x + Math.cos(radianMid) * r2, ck ? ca.y - Math.sin(radianMid) * r2 : ca.y + Math.sin(radianMid) * r2);
+            var pointStart = Point.Create(ca.X + Math.cos(radianStart) * r2, ca.Y + Math.sin(radianStart) * r2),
+                pointEnd = Point.Create(ca.X + Math.cos(radianEnd) * r2, ca.Y + Math.sin(radianEnd) * r2),
+                pointMid = Point.Create(ca.X + Math.cos(radianMid) * r2, ck ? ca.Y - Math.sin(radianMid) * r2 : ca.Y + Math.sin(radianMid) * r2);
 
             var twoPi = (Math.PI + Math.PI);
 
@@ -180,8 +180,8 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
     function CircleEllipse(c1, ry1, rx1, c2, ry2, rx2) {
 
-        var a = [ry1 * ry1, 0, rx1 * rx1, -2 * ry1 * ry1 * c1.x, -2 * rx1 * rx1 * c1.y, ry1 * ry1 * c1.x * c1.x + rx1 * rx1 * c1.y * c1.y - rx1 * rx1 * ry1 * ry1];
-        var b = [ry2 * ry2, 0, rx2 * rx2, -2 * ry2 * ry2 * c2.x, -2 * rx2 * rx2 * c2.y, ry2 * ry2 * c2.x * c2.x + rx2 * rx2 * c2.y * c2.y - rx2 * rx2 * ry2 * ry2];
+        var a = [ry1 * ry1, 0, rx1 * rx1, -2 * ry1 * ry1 * c1.X, -2 * rx1 * rx1 * c1.Y, ry1 * ry1 * c1.X * c1.X + rx1 * rx1 * c1.Y * c1.Y - rx1 * rx1 * ry1 * ry1];
+        var b = [ry2 * ry2, 0, rx2 * rx2, -2 * ry2 * ry2 * c2.X, -2 * rx2 * rx2 * c2.Y, ry2 * ry2 * c2.X * c2.X + rx2 * rx2 * c2.Y * c2.Y - rx2 * rx2 * ry2 * ry2];
 
         var yPoly = Bezout(a, b);
         var yRoots = yPoly.getRoots();
@@ -189,22 +189,22 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var norm0 = (a[0] * a[0] + 2 * a[1] * a[1] + a[2] * a[2]) * epsilon;
         var norm1 = (b[0] * b[0] + 2 * b[1] * b[1] + b[2] * b[2]) * epsilon;
 
-        for (var y = 0; y < yRoots.length; y++) {
+        for (var Y = 0; Y < yRoots.length; Y++) {
             var xPoly = new Polynomial(
                 a[0],
-                a[3] + yRoots[y] * a[1],
-                a[5] + yRoots[y] * (a[4] + yRoots[y] * a[2])
+                a[3] + yRoots[Y] * a[1],
+                a[5] + yRoots[Y] * (a[4] + yRoots[Y] * a[2])
             );
             var xRoots = xPoly.getRoots();
 
-            for (var x = 0; x < xRoots.length; x++) {
+            for (var X = 0; X < xRoots.length; X++) {
                 var test =
-                    (a[0] * xRoots[x] + a[1] * yRoots[y] + a[3]) * xRoots[x] +
-                    (a[2] * yRoots[y] + a[4]) * yRoots[y] + a[5];
+                    (a[0] * xRoots[X] + a[1] * yRoots[Y] + a[3]) * xRoots[X] +
+                    (a[2] * yRoots[Y] + a[4]) * yRoots[Y] + a[5];
                 if (Math.abs(test) < norm0) {
                     test =
-                        (b[0] * xRoots[x] + b[1] * yRoots[y] + b[3]) * xRoots[x] +
-                        (b[2] * yRoots[y] + b[4]) * yRoots[y] + b[5];
+                        (b[0] * xRoots[X] + b[1] * yRoots[Y] + b[3]) * xRoots[X] +
+                        (b[2] * yRoots[Y] + b[4]) * yRoots[Y] + b[5];
                     if (Math.abs(test) < norm1) {
                         return true;
                     }

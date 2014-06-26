@@ -57,7 +57,7 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
 
     var EventProxy = new Types.Object.Event();
 
-    EventProxy.listen('onMouseMove', function (Message) {
+    EventProxy.Listen('onMouseMove', function (Message) {
         Message.Shapes.forEach(function (Shape) {
             if (Shape.status != 'Selected') {
                 Shape.status = Shape.Contains(Message.Position) ? 'Over' : 'Out';
@@ -66,7 +66,7 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
         Message.Update();
     });
 
-    EventProxy.listen('onClick', function (Message) {
+    EventProxy.Listen('onClick', function (Message) {
         Message.Shapes.forEach(function (Shape) {
             if (Shape.Contains(Message.Position)) {
                 Shape.status = Shape.status != 'Selected' ? 'Selected' : 'Over' ;

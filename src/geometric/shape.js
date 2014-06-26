@@ -7,146 +7,143 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     function Shape() {};
 
     Shape.prototype = {
-        Rotate: function (value) {
+        Rotate: function (Value) {
             return true;
         },
         get Scale() {
             return this._scale || 1;
         },
-        set Scale(value) {
+        set Scale(Value) {
 
-            switch (this.type) {
-            case 'arc':
+            switch (this.Type) {
+            case 'Arc':
                 {
-                    this.point.x *= value;
-                    this.point.y *= value;
-                    this.radius *= value;
-
-                    break;
-                }
-            case 'circle':
-                {
-                    this.point.x *= value;
-                    this.point.y *= value;
-                    this.radius *= value;
+                    this.Point.X *= Value;
+                    this.Point.Y *= Value;
+                    this.Radius *= Value;
 
                     break;
                 }
-            case 'ellipse':
+            case 'Circle':
                 {
-                    this.point.x *= value;
-                    this.point.y *= value;
-                    this.radiusX *= value;
-                    this.radiusY *= value;
+                    this.Point.X *= Value;
+                    this.Point.Y *= Value;
+                    this.Radius *= Value;
 
                     break;
                 }
-            case 'line':
+            case 'Ellipse':
                 {
-                    this.points.forEach(function (point) {
-                        point.x *= value;
-                        point.y *= value;
+                    this.Point.X *= Value;
+                    this.Point.Y *= Value;
+                    this.RadiusX *= Value;
+                    this.RadiusY *= Value;
+
+                    break;
+                }
+            case 'Line':
+                {
+                    this.Points.forEach(function (Point) {
+                        Point.X *= Value;
+                        Point.Y *= Value;
                     });
 
                     break;
                 }
-            case 'polygon':
+            case 'Polygon':
                 {
-                    this.points.forEach(function (point) {
-                        point.x *= value;
-                        point.y *= value;
+                    this.Points.forEach(function (Point) {
+                        Point.X *= Value;
+                        Point.Y *= Value;
                     });
 
                     break;
                 }
-            case 'rectangle':
+            case 'Rectangle':
                 {
-                    this.point.x *= value;
-                    this.point.y *= value;
-                    this.height *= value;
-                    this.width *= value;
+                    this.Point.X *= Value;
+                    this.Point.Y *= Value;
+                    this.Height *= Value;
+                    this.Width *= Value;
 
                     break;
                 }
             }
 
-            this._scale = value;
+            this._scale = Value;
         },
-        MoveTo: function (value) {
+        MoveTo: function (Value) {
 
-            value = {
-                x: value.X,
-                y: value.Y
+            Value = {
+                X: Value.X,
+                Y: Value.Y
             };
 
-            if (this.point) {
-                this.point = this.point.Sum(value);
+            if (this.Point) {
+                this.Point = this.Point.Sum(Value);
             } else {
-                for (var i = 0; i <= this.points.length - 1; i++) {
-                    this.points[i] = this.points[i].Sum(value);
+                for (var i = 0; i <= this.Points.length - 1; i++) {
+                    this.Points[i] = this.Points[i].Sum(Value);
                 }
             }
             return true;
         },
-        Contains: function (pointActual) {
+        Contains: function (PointMouse) {
 
-            var pointOrigin,
-                pointDestination,
-                pointIntersection = 0;
-
-            switch (this.type) {
-            case 'line':
+            switch (this.Type) {
+            case 'Line':
                 {
+                    var PointA = this.Points[0],
+                        PointB = this.Points[1]
 
-                    //debugger;
-                    pointOrigin = this.points[0];
-                    pointDestination = this.points[1];
-
-                    if (Intersection.CircleLine(pointActual, 2, pointOrigin, pointDestination))
+                    if (Intersection.CircleLine(PointMouse, 2, PointA, PointB))
                         return true;
 
                     break;
                 }
-            case 'rectangle':
+            case 'Rectangle':
                 {
-                    if (Intersection.CircleRectangle(pointActual, 2, this.point, this.height, this.width))
+                    if (Intersection.CircleRectangle(PointMouse, 2, this.Point, this.Height, this.Width))
                         return true;
 
                     break;
                 }
-            case 'arc':
+            case 'Arc':
                 {
-                    pointActual = Point.Create(pointActual.x, pointActual.y);
+                    PointMouse = Point.Create(PointMouse.X, PointMouse.Y);
 
-                    if (Intersection.CircleArc(pointActual, 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise))
+                    if (Intersection.CircleArc(PointMouse, 2, this.Point, this.Radius, this.StartAngle, this.EndAngle, this.ClockWise))
                         return true;
 
                     break;
                 }
-            case 'circle':
+            case 'Circle':
                 {
-                    pointActual = Point.Create(pointActual.x, pointActual.y);
+                    PointMouse = Point.Create(PointMouse.X, PointMouse.Y);
 
-                    if (Intersection.CircleCircle(pointActual, 2, this.point, this.radius))
+                    if (Intersection.CircleCircle(PointMouse, 2, this.Point, this.Radius))
                         return true;
 
                     break;
                 }
-            case 'ellipse':
-                return (Intersection.CircleEllipse(pointActual, 2, 2, this.point, this.radiusY, this.radiusX))
-            case 'polygon':
+            case 'Ellipse':
+                return (Intersection.CircleEllipse(PointMouse, 2, 2, this.Point, this.RadiusY, this.RadiusX))
+            case 'Polygon':
                 {
-                    for (var i = 0; i < this.points.length; i++) {
+                    var PointA = null,
+                        PointB = null;
+                    
+                    for (var i = 0; i < this.Points.length; i++) {
 
-                        if (i + 1 == this.points.length) {
-                            pointOrigin = this.points[i];
-                            pointDestination = this.points[0];
+                        if (i + 1 == this.Points.length) {
+                            PointA = this.Points[i];
+                            PointB = this.Points[0];
                         } else {
-                            pointOrigin = this.points[i];
-                            pointDestination = this.points[i + 1];
+                            PointA = this.Points[i];
+                            PointB = this.Points[i + 1];
                         }
 
-                        if (Intersection.CircleLine(pointActual, 2, pointOrigin, pointDestination))
+                        if (Intersection.CircleLine(PointMouse, 2, pointOrigin, pointDestination))
                             return true;
                     }
                     break;
@@ -157,77 +154,75 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
             return false;
         },
-        render: function (context2D, Zoom) {
+        Render: function (Context2D, Zoom) {
 
-            if (this.status == 'Over') {
-                context2D.strokeStyle = 'rgb(61, 142, 193)';
+            if (this.Status == 'Over') {
+                Context2D.strokeStyle = 'rgb(61, 142, 193)';
             }
 
-            if (this.status == 'Selected') {
+            if (this.Status == 'Selected') {
 
-                var RectFactor = Math.round(2 * Zoom);
-
-                context2D.strokeStyle = 'rgb(68, 121, 154)';
-                if (this.point) {
-                    context2D.strokeRect(this.point.x - (RectFactor / 2), this.point.y - (RectFactor / 2), RectFactor, RectFactor);
+                Context2D.strokeStyle = 'rgb(68, 121, 154)';
+                if (this.Point) {
+                    Context2D.strokeRect(this.Point.X - (Math.round(2 * Zoom) / 2), this.Point.Y - (Math.round(2 * Zoom) / 2), Math.round(2 * Zoom), Math.round(2 * Zoom));
                 }
-                if (this.points) {
-                    this.points.forEach(function (point) {
-                        context2D.strokeRect(point.x - (RectFactor / 2), point.y - (RectFactor / 2), RectFactor, RectFactor);
+                if (this.Points) {
+                    this.Points.forEach(function (Point) {
+                        Context2D.strokeRect(Point.X - (Math.round(2 * Zoom) / 2), Point.Y - (Math.round(2 * Zoom) / 2), Math.round(2 * Zoom), Math.round(2 * Zoom));
                     });
                 }
             }
 
-            switch (this.type) {
-            case 'arc':
+            switch (this.Type) {
+            case 'Arc':
                 {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                    Context2D.translate(this.Point.X, this.Point.Y);
+                    Context2D.Arc(0, 0, this.Radius, (Math.PI / 180) * this.StartAngle, (Math.PI / 180) * this.EndAngle, this.ClockWise);
 
                     return true;
                 }
-            case 'circle':
+            case 'Circle':
                 {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+                    Context2D.translate(this.Point.X, this.Point.Y);
+                    Context2D.Arc(0, 0, this.Radius, 0, Math.PI * 2, true);
 
                     return true;
                 }
-            case 'ellipse':
+            case 'Ellipse':
                 {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.ellipse(0, 0, this.radiusX, this.radiusY, 0, 0, Math.PI * 2)
+                    Context2D.translate(this.Point.X, this.Point.Y);
+                    Context2D.Ellipse(0, 0, this.RadiusX, this.RadiusY, 0, 0, Math.PI * 2)
 
                     return true;
                 }
-            case 'line':
+            case 'Line':
                 {
                     // possivel personalização
-                    if (this.status != 'Over') {
-                        context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
-                        context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
+                    if (this.Status && (this.Status != 'Over')) {
+                        Context2D.lineWidth = (this.Style && this.Style.LineWidth) ? this.Style.LineWidth : Context2D.LineWidth;
+                        Context2D.strokeStyle = (this.Style && this.Style.LineColor) ? this.Style.LineColor : Context2D.strokeStyle;
                     }
 
-                    context2D.moveTo(this.points[0].x, this.points[0].y);
-                    context2D.lineTo(this.points[1].x, this.points[1].y);
+                    Context2D.moveTo(this.Points[0].X, this.Points[0].Y);
+                    Context2D.lineTo(this.Points[1].X, this.Points[1].Y);
 
                     return true;
                 }
-            case 'polygon':
+            case 'Polygon':
                 {
-                    context2D.moveTo(this.points[0].x, this.points[0].y);
+                    Context2D.moveTo(this.Points[0].X, this.Points[0].Y);
 
-                    this.points.forEach(function (point) {
-                        context2D.lineTo(point.x, point.y);
+                    this.Points.forEach(function (Point) {
+                        Context2D.LineTo(Point.X, Point.Y);
                     });
-                    context2D.closePath();
+                    Context2D.closePath();
 
                     return true;
                 }
-            case 'rectangle':
+            case 'Rectangle':
                 {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.strokeRect(0, 0, this.width, this.height);
+                    Context2D.translate(this.Point.X, this.Point.Y);
+                    Context2D.strokeRect(0, 0, this.Width, this.Height);
 
                     return true;
                 }
@@ -236,76 +231,76 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         },
         ToObject: function () {
 
-            switch (this.type) {
-            case 'arc':
+            switch (this.Type) {
+            case 'Arc':
                 return {
-                    uuid: this.uuid,
-                    type: this.type,
-                    name: this.name,
-                    locked: this.locked,
-                    visible: this.visible,
-                    x: Types.Math.ParseFloat(this.point.x, 5),
-                    y: Types.Math.ParseFloat(this.point.y, 5),
-                    radius: Types.Math.ParseFloat(this.radius, 5),
-                    startAngle: Types.Math.ParseFloat(this.startAngle, 5),
-                    endAngle: Types.Math.ParseFloat(this.endAngle, 5),
-                    clockWise: this.clockWise
+                    Uuid: this.Uuid,
+                    Type: this.Type,
+                    Name: this.Name,
+                    Locked: this.Locked,
+                    Visible: this.Visible,
+                    X: Types.Math.ParseFloat(this.Point.X, 5),
+                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
+                    Radius: Types.Math.ParseFloat(this.Radius, 5),
+                    StartAngle: Types.Math.ParseFloat(this.StartAngle, 5),
+                    EndAngle: Types.Math.ParseFloat(this.EndAngle, 5),
+                    ClockWise: this.ClockWise
                 };
-            case 'circle':
+            case 'Circle':
                 return {
-                    uuid: this.uuid,
-                    type: this.type,
-                    name: this.name,
-                    locked: this.locked,
-                    visible: this.visible,
-                    x: Types.Math.ParseFloat(this.point.x, 5),
-                    y: Types.Math.ParseFloat(this.point.y, 5),
-                    radius: Types.Math.ParseFloat(this.radius, 5)
+                    Uuid: this.Uuid,
+                    Type: this.Type,
+                    Name: this.Name,
+                    Locked: this.Locked,
+                    Visible: this.Visible,
+                    X: Types.Math.ParseFloat(this.Point.X, 5),
+                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
+                    Radius: Types.Math.ParseFloat(this.Radius, 5)
                 };
-            case 'ellipse':
+            case 'Ellipse':
                 return {
-                    uuid: this.uuid,
-                    type: this.type,
-                    name: this.name,
-                    locked: this.locked,
-                    visible: this.visible,
-                    x: Types.Math.ParseFloat(this.point.x, 5),
-                    y: Types.Math.ParseFloat(this.point.y, 5),
-                    radiusX: Types.Math.ParseFloat(this.radiusX, 5),
-                    radiusY: Types.Math.ParseFloat(this.radiusY, 5)
+                    Uuid: this.Uuid,
+                    Type: this.Type,
+                    Name: this.Name,
+                    Locked: this.Locked,
+                    Visible: this.Visible,
+                    X: Types.Math.ParseFloat(this.Point.X, 5),
+                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
+                    RadiusX: Types.Math.ParseFloat(this.RadiusX, 5),
+                    RadiusY: Types.Math.ParseFloat(this.RadiusY, 5)
                 };
-            case 'line':
+            case 'Line':
                 return {
-                    uuid: this.uuid,
-                    type: this.type,
-                    name: this.name,
-                    locked: this.locked,
-                    visible: this.visible,
-                    x: [Types.Math.ParseFloat(this.points[0].x, 5), Types.Math.ParseFloat(this.points[0].y, 5)],
-                    y: [Types.Math.ParseFloat(this.points[1].x, 5), Types.Math.ParseFloat(this.points[1].y, 5)]
+                    Uuid: this.Uuid,
+                    Type: this.Type,
+                    Name: this.Name,
+                    Locked: this.Locked,
+                    Visible: this.Visible,
+                    X: [Types.Math.ParseFloat(this.Points[0].X, 5), Types.Math.ParseFloat(this.Points[0].Y, 5)],
+                    Y: [Types.Math.ParseFloat(this.Points[1].X, 5), Types.Math.ParseFloat(this.Points[1].Y, 5)]
                 };
-            case 'polygon':
+            case 'Polygon':
                 return {
-                    uuid: this.uuid,
-                    type: this.type,
-                    name: this.name,
-                    locked: this.locked,
-                    visible: this.visible,
-                    x: Types.Math.ParseFloat(this.point.x, 5),
-                    y: Types.Math.ParseFloat(this.point.y, 5),
-                    sides: this.sides
+                    Uuid: this.Uuid,
+                    Type: this.Type,
+                    Name: this.Name,
+                    Locked: this.Locked,
+                    Visible: this.Visible,
+                    X: Types.Math.ParseFloat(this.Point.X, 5),
+                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
+                    Sides: this.Sides
                 };
-            case 'rectangle':
+            case 'Rectangle':
                 return {
-                    uuid: this.uuid,
-                    type: this.type,
-                    name: this.name,
-                    locked: this.locked,
-                    visible: this.visible,
-                    x: Types.Math.ParseFloat(this.point.x, 5),
-                    y: Types.Math.ParseFloat(this.point.y, 5),
-                    height: Types.Math.ParseFloat(this.height, 5),
-                    width: Types.Math.ParseFloat(this.width, 5)
+                    Uuid: this.Uuid,
+                    Type: this.Type,
+                    Name: this.Name,
+                    Locked: this.Locked,
+                    Visible: this.Visible,
+                    X: Types.Math.ParseFloat(this.Point.X, 5),
+                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
+                    Height: Types.Math.ParseFloat(this.Height, 5),
+                    Width: Types.Math.ParseFloat(this.Width, 5)
                 };
             }
 
@@ -313,146 +308,146 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     };
 
 
-    var Arc = Types.Function.Inherits(function Arc(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.locked = attrs.locked;
-        this.visible = attrs.visible;
-        this.status = attrs.status;
+    var Arc = Types.Function.Inherits(function Arc(Attrs) {
+        this.Uuid = Attrs.Uuid;
+        this.Name = Attrs.Name;
+        this.Locked = Attrs.Locked;
+        this.Visible = Attrs.Visible;
+        this.Status = Attrs.Status;
 
-        this.type = 'arc';
-        this.point = attrs.point;
-        this.radius = attrs.radius;
-        this.startAngle = attrs.startAngle;
-        this.endAngle = attrs.endAngle;
-        this.clockWise = attrs.clockWise;
+        this.Type = 'Arc';
+        this.Point = Attrs.Point;
+        this.Radius = Attrs.Radius;
+        this.StartAngle = Attrs.StartAngle;
+        this.EndAngle = Attrs.EndAngle;
+        this.ClockWise = Attrs.ClockWise;
     }, Shape);
 
-    var Circle = Types.Function.Inherits(function Circle(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.locked = attrs.locked;
-        this.visible = attrs.visible;
-        this.status = attrs.status;
+    var Circle = Types.Function.Inherits(function Circle(Attrs) {
+        this.Uuid = Attrs.Uuid;
+        this.Name = Attrs.Name;
+        this.Locked = Attrs.Locked;
+        this.Visible = Attrs.Visible;
+        this.Status = Attrs.Status;
 
-        this.type = 'circle';
-        this.point = attrs.point;
-        this.radius = attrs.radius;
+        this.Type = 'Circle';
+        this.Point = Attrs.Point;
+        this.Radius = Attrs.Radius;
     }, Shape);
 
-    var Ellipse = Types.Function.Inherits(function Ellipse(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.locked = attrs.locked;
-        this.visible = attrs.visible;
-        this.status = attrs.status;
+    var Ellipse = Types.Function.Inherits(function Ellipse(Attrs) {
+        this.Uuid = Attrs.Uuid;
+        this.Name = Attrs.Name;
+        this.Locked = Attrs.Locked;
+        this.Visible = Attrs.Visible;
+        this.Status = Attrs.Status;
 
-        this.type = 'ellipse';
-        this.point = attrs.point;
-        this.radiusY = attrs.radiusY;
-        this.radiusX = attrs.radiusX;
+        this.Type = 'Ellipse';
+        this.Point = Attrs.Point;
+        this.RadiusY = Attrs.RadiusY;
+        this.RadiusX = Attrs.RadiusX;
     }, Shape);
 
-    var Line = Types.Function.Inherits(function Line(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.locked = attrs.locked;
-        this.visible = attrs.visible;
-        this.status = attrs.status;
+    var Line = Types.Function.Inherits(function Line(Attrs) {
+        this.Uuid = Attrs.Uuid;
+        this.Name = Attrs.Name;
+        this.Locked = Attrs.Locked;
+        this.Visible = Attrs.Visible;
+        this.Status = Attrs.Status;
 
-        this.type = 'line';
-        this.points = attrs.points;
-        this.style = attrs.style;
+        this.Type = 'Line';
+        this.Points = Attrs.Points;
+        this.Style = Attrs.Style;
     }, Shape);
 
-    var Polygon = Types.Function.Inherits(function Polygon(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.locked = attrs.locked;
-        this.visible = attrs.visible;
-        this.status = attrs.status;
+    var Polygon = Types.Function.Inherits(function Polygon(Attrs) {
+        this.Uuid = Attrs.Uuid;
+        this.Name = Attrs.Name;
+        this.Locked = Attrs.Locked;
+        this.Visible = Attrs.Visible;
+        this.Status = Attrs.Status;
 
-        this.type = 'polygon';
-        this.point = attrs.point;
-        this.points = attrs.points;
-        this.sides = attrs.sides;
+        this.Type = 'Polygon';
+        this.Point = Attrs.Point;
+        this.Points = Attrs.Points;
+        this.Sides = Attrs.Sides;
     }, Shape);
 
-    var Rectangle = Types.Function.Inherits(function Rectangle(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.locked = attrs.locked;
-        this.visible = attrs.visible;
-        this.status = attrs.status;
+    var Rectangle = Types.Function.Inherits(function Rectangle(Attrs) {
+        this.Uuid = Attrs.Uuid;
+        this.Name = Attrs.Name;
+        this.Locked = Attrs.Locked;
+        this.Visible = Attrs.Visible;
+        this.Status = Attrs.Status;
 
-        this.type = 'rectangle';
-        this.point = attrs.point;
-        this.height = attrs.height;
-        this.width = attrs.width;
+        this.Type = 'Rectangle';
+        this.Point = Attrs.Point;
+        this.Height = Attrs.Height;
+        this.Width = Attrs.Width;
     }, Shape);
 
 
-    function Create(uuid, type, x, y, style, radius, startAngle, endAngle, clockWise, sides, height, width, radiusY, radiusX) {
+    function Create(Uuid, Type, X, Y, Style, Radius, StartAngle, EndAngle, ClockWise, Sides, Height, Width, RadiusY, RadiusX) {
 
-        var attrs = {
-            uuid: uuid,
-            name: 'Shape '.concat(uuid),
-            style: style,
-            locked: false,
-            visible: true,
-            status: null
+        var Attrs = {
+            Uuid: Uuid,
+            Name: 'Shape '.concat(Uuid),
+            Style: Style,
+            Locked: false,
+            Visible: true,
+            Status: null
         };
 
-        switch (type) {
-        case 'line':
+        switch (Type) {
+        case 'Line':
             {
-                attrs.points = [Point.Create(x[0], x[1]), Point.Create(y[0], y[1])];
-                return new Line(attrs);
+                Attrs.Points = [Point.Create(X[0], X[1]), Point.Create(Y[0], Y[1])];
+                return new Line(Attrs);
             }
-        case 'rectangle':
+        case 'Rectangle':
             {
-                attrs.point = Point.Create(x, y);
-                attrs.height = height;
-                attrs.width = width;
-                return new Rectangle(attrs);
+                Attrs.Point = Point.Create(X, Y);
+                Attrs.Height = Height;
+                Attrs.Width = Width;
+                return new Rectangle(Attrs);
             }
-        case 'arc':
+        case 'Arc':
             {
-                attrs.point = Point.Create(x, y);
-                attrs.radius = radius;
-                attrs.startAngle = startAngle;
-                attrs.endAngle = endAngle;
-                attrs.clockWise = clockWise;
-                return new Arc(attrs);
+                Attrs.Point = Point.Create(X, Y);
+                Attrs.Radius = Radius;
+                Attrs.StartAngle = StartAngle;
+                Attrs.EndAngle = EndAngle;
+                Attrs.ClockWise = ClockWise;
+                return new Arc(Attrs);
             }
-        case 'circle':
+        case 'Circle':
             {
-                attrs.point = Point.Create(x, y);
-                attrs.radius = radius;
-                return new Circle(attrs);
+                Attrs.Point = Point.Create(X, Y);
+                Attrs.Radius = Radius;
+                return new Circle(Attrs);
             }
-        case 'ellipse':
+        case 'Ellipse':
             {
-                attrs.point = Point.Create(x, y);
-                attrs.radiusY = radiusY;
-                attrs.radiusX = radiusX;
-                return new Ellipse(attrs);
+                Attrs.Point = Point.Create(X, Y);
+                Attrs.RadiusY = RadiusY;
+                Attrs.RadiusX = RadiusX;
+                return new Ellipse(Attrs);
             }
-        case 'polygon':
+        case 'Polygon':
             {
-                attrs.point = Point.Create(x, y);
-                attrs.points = [];
-                attrs.sides = sides;
+                Attrs.Point = Point.Create(X, Y);
+                Attrs.Points = [];
+                Attrs.Sides = Sides;
 
-                for (var i = 0; i < sides; i++) {
+                for (var i = 0; i < Sides; i++) {
 
-                    var pointX = (radius * Math.cos(((Math.PI * 2) / sides) * i) + x),
-                        pointY = (radius * Math.sin(((Math.PI * 2) / sides) * i) + y);
+                    var pointX = (Radius * Math.cos(((Math.PI * 2) / Sides) * i) + X),
+                        pointY = (Radius * Math.sin(((Math.PI * 2) / Sides) * i) + Y);
 
-                    attrs['points'].push(Point.Create(pointX, pointY));
+                    Attrs['Points'].push(Point.Create(pointX, pointY));
                 }
 
-                return new Polygon(attrs);
+                return new Polygon(Attrs);
             }
         default:
             break;

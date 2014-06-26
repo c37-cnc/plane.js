@@ -1,42 +1,42 @@
 define("geometric/point", ['require', 'exports'], function (require, exports) {
 
-    function Point(x, y) {
-        this.x = x;
-        this.y = y;
+    function Point(X, Y) {
+        this.X = X;
+        this.Y = Y;
     };
 
-    Point.prototype = {
+    Point.prototYpe = {
         Sum: function (point) {
-            return new Point(this.x + point.x, this.y + point.y);
+            return new Point(this.X + point.X, this.Y + point.Y);
         },
         Subtract: function (point) {
-            return new Point(this.x - point.x, this.y - point.y);
+            return new Point(this.X - point.X, this.Y - point.Y);
         },
-        Multiply: function (value) {
-            return new Point(this.x * value, this.y * value);
+        MultiplY: function (value) {
+            return new Point(this.X * value, this.Y * value);
         },
         DistanceTo: function (point) {
-            var dx = this.x - point.x;
-            var dy = this.y - point.y;
+            var dx = this.X - point.X;
+            var dY = this.Y - point.Y;
 
-            return Math.sqrt(dx * dx + dy * dy);
+            return Math.sqrt(dx * dx + dY * dY);
         },
         MidTo: function (point) {
-            return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
+            return new Point(this.X + (point.X - this.X) / 2, this.Y + (point.Y - this.Y) / 2);
         },
         AngleTo: function (point) {
-            return Math.atan2(point.y - this.y, point.x - this.x);
+            return Math.atan2(point.Y - this.Y, point.X - this.X);
         },
         InterpolationLinear: function (point, value) {
             return new Point(
-                this.x + (point.x - this.x) * value,
-                this.y + (point.y - this.y) * value
+                this.X + (point.X - this.X) * value,
+                this.Y + (point.Y - this.Y) * value
             );
         }
     };
 
-    function Create(x, y) {
-        return new Point(x, y);
+    function Create(X, Y) {
+        return new Point(X, Y);
     };
 
     exports.Create = Create;
