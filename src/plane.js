@@ -141,7 +141,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
             Delete: function (value) {
                 LayerStore.List().forEach(function (Layer) {
                     var element = document.getElementById(Layer.Render.id);
-                    return element && element.parentNode && element.parentNode.removeChild(element);
+                    if (element && element.parentNode) {
+                        element.parentNode.removeChild(element);
+                    }
+                    LayerStore.Delete(Layer.Uuid);
                 });
             },
             get Active() {
@@ -191,10 +194,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                 var PlaneObject = JSON.parse(StringJson);
 
-                Settings = PlaneObject.Settings;
-
                 Plane.Clear();
 
+                Settings = PlaneObject.Settings;
                 Plane.Zoom = PlaneObject.Zoom;
                 Plane.Scroll = PlaneObject.Scroll;
 
@@ -209,78 +211,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     });
 
                     Layer.Shapes.forEach(function (Shape) {
-
-                        switch (Shape.type) {
-                        case 'arc':
-                            {
-                                Plane.Shape.Create({
-                                    uuid: Shape.uuid,
-                                    type: Shape.type,
-                                    x: Shape.point.x,
-                                    y: Shape.point.y,
-                                    radius: Shape.radius,
-                                    startAngle: Shape.startAngle,
-                                    endAngle: Shape.endAngle
-                                });
-                                break;
-                            }
-                        case 'circle':
-                            {
-                                Plane.Shape.Create({
-                                    uuid: Shape.uuid,
-                                    type: Shape.type,
-                                    x: Shape.point.x,
-                                    y: Shape.point.y,
-                                    radius: Shape.radius
-                                });
-                                break;
-                            }
-                        case 'ellipse':
-                            {
-                                Plane.Shape.Create({
-                                    uuid: Shape.uuid,
-                                    type: Shape.type,
-                                    x: Shape.point.x,
-                                    y: Shape.point.y,
-                                    radiusX: Shape.radiusX,
-                                    radiusY: Shape.radiusY
-                                });
-                                break;
-                            }
-                        case 'line':
-                            {
-                                Plane.Shape.Create({
-                                    uuid: Shape.uuid,
-                                    type: Shape.type,
-                                    x: [Shape.points[0].x, Shape.points[0].y],
-                                    y: [Shape.points[1].x, Shape.points[1].y],
-                                });
-                                break;
-                            }
-                        case 'polygon':
-                            {
-                                Plane.Shape.Create({
-                                    uuid: Shape.uuid,
-                                    type: Shape.type,
-                                    x: Shape.point.x,
-                                    y: Shape.point.y,
-                                    sides: Shape.sides
-                                });
-                                break;
-                            }
-                        case 'rectangle':
-                            {
-                                Plane.Shape.Create({
-                                    uuid: Shape.uuid,
-                                    type: Shape.type,
-                                    x: Shape.point.x,
-                                    y: Shape.point.y,
-                                    height: Shape.height,
-                                    width: Shape.width
-                                });
-                                break;
-                            }
-                        }
+                        Plane.Shape.Create(Shape);
                     });
 
                     Plane.Update();
@@ -312,32 +243,21 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         Export: {
             ToJson: function () {
-
                 var PlaneObject = {
                     Settings: Settings,
-                    Zoom: Plane.Zoom,
+                    Zoom: Types.Math.ParseFloat(Plane.Zoom, 5),
                     Scroll: Plane.Scroll,
                     Layers: LayerStore.List().map(function (Layer) {
-
                         var LayerObject = Layer.ToObject();
 
                         LayerObject.Shapes = LayerObject.Shapes.map(function (Shape) {
-
-                            debugger;
-
                             return Shape.ToObject();
                         });
 
                         return LayerObject;
-
-                        //                        return Layer.ToObject().Shapes.map(function (Shape) {
-                        //                            return Shape.ToObject()
-                        //                        });
                     })
                 }
-
                 return JSON.stringify(PlaneObject);
-                //                return JSON.stringify(PlaneObject).replace(/_/g, '');
             }
         },
         get Zoom() {

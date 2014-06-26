@@ -2,8 +2,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
 
-    function Layer(Attrs) {
-
+    var Layer = Types.Function.Inherits(function Layer(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
         this.Locked = Attrs.Locked;
@@ -11,11 +10,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         this.Style = Attrs.Style;
         this.Render = Attrs.Render;
         this.Shapes = Attrs.Shapes;
-
-        Types.Object.Event.call(this);
-
-    }
-    Layer.prototype = Types.Object.Event.prototype;
+    }, Types.Object.Event);
 
     Layer.prototype.ToObject = function () {
         return {
@@ -77,7 +72,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
         return layer;
     }
-    
+
     exports.Create = Create;
 
 });

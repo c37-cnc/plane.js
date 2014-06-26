@@ -7,7 +7,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     function Shape() {};
 
     Shape.prototype = {
-        rotate: function (value) {
+        Rotate: function (value) {
             return true;
         },
         get Scale() {
@@ -238,59 +238,76 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
             switch (this.type) {
             case 'arc':
-                {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
-
-                    return true;
-                }
+                return {
+                    uuid: this.uuid,
+                    type: this.type,
+                    name: this.name,
+                    locked: this.locked,
+                    visible: this.visible,
+                    x: Types.Math.ParseFloat(this.point.x, 5),
+                    y: Types.Math.ParseFloat(this.point.y, 5),
+                    radius: Types.Math.ParseFloat(this.radius, 5),
+                    startAngle: Types.Math.ParseFloat(this.startAngle, 5),
+                    endAngle: Types.Math.ParseFloat(this.endAngle, 5),
+                    clockWise: this.clockWise
+                };
             case 'circle':
-                {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.arc(0, 0, this.radius, 0, Math.PI * 2, true);
-
-                    return true;
-                }
+                return {
+                    uuid: this.uuid,
+                    type: this.type,
+                    name: this.name,
+                    locked: this.locked,
+                    visible: this.visible,
+                    x: Types.Math.ParseFloat(this.point.x, 5),
+                    y: Types.Math.ParseFloat(this.point.y, 5),
+                    radius: Types.Math.ParseFloat(this.radius, 5)
+                };
             case 'ellipse':
-                {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.ellipse(0, 0, this.radiusX, this.radiusY, 0, 0, Math.PI * 2)
-
-                    return true;
-                }
+                return {
+                    uuid: this.uuid,
+                    type: this.type,
+                    name: this.name,
+                    locked: this.locked,
+                    visible: this.visible,
+                    x: Types.Math.ParseFloat(this.point.x, 5),
+                    y: Types.Math.ParseFloat(this.point.y, 5),
+                    radiusX: Types.Math.ParseFloat(this.radiusX, 5),
+                    radiusY: Types.Math.ParseFloat(this.radiusY, 5)
+                };
             case 'line':
-                {
-                    // possivel personalização
-                    if (this.status != 'Over') {
-                        context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
-                        context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
-                    }
-
-                    context2D.moveTo(this.points[0].x, this.points[0].y);
-                    context2D.lineTo(this.points[1].x, this.points[1].y);
-
-                    return true;
-                }
+                return {
+                    uuid: this.uuid,
+                    type: this.type,
+                    name: this.name,
+                    locked: this.locked,
+                    visible: this.visible,
+                    x: [Types.Math.ParseFloat(this.points[0].x, 5), Types.Math.ParseFloat(this.points[0].y, 5)],
+                    y: [Types.Math.ParseFloat(this.points[1].x, 5), Types.Math.ParseFloat(this.points[1].y, 5)]
+                };
             case 'polygon':
-                {
-                    context2D.moveTo(this.points[0].x, this.points[0].y);
-
-                    this.points.forEach(function (point) {
-                        context2D.lineTo(point.x, point.y);
-                    });
-                    context2D.closePath();
-
-                    return true;
-                }
+                return {
+                    uuid: this.uuid,
+                    type: this.type,
+                    name: this.name,
+                    locked: this.locked,
+                    visible: this.visible,
+                    x: Types.Math.ParseFloat(this.point.x, 5),
+                    y: Types.Math.ParseFloat(this.point.y, 5),
+                    sides: this.sides
+                };
             case 'rectangle':
-                {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.strokeRect(0, 0, this.width, this.height);
-
-                    return true;
-                }
+                return {
+                    uuid: this.uuid,
+                    type: this.type,
+                    name: this.name,
+                    locked: this.locked,
+                    visible: this.visible,
+                    x: Types.Math.ParseFloat(this.point.x, 5),
+                    y: Types.Math.ParseFloat(this.point.y, 5),
+                    height: Types.Math.ParseFloat(this.height, 5),
+                    width: Types.Math.ParseFloat(this.width, 5)
+                };
             }
-
 
         }
     };
@@ -311,22 +328,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.clockWise = attrs.clockWise;
     }, Shape);
 
-    Arc.prototype.ToObject = function () {
-        return {
-            uuid: this.uuid,
-            type: this.type,
-            name: this.name,
-            locked: this.locked,
-            visible: this.visible,
-            point: this.point,
-            radius: this.radius,
-            startAngle: this.startAngle,
-            endAngle: this.endAngle,
-            clockWise: this.clockWise
-        };
-    };
-
-
     var Circle = Types.Function.Inherits(function Circle(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -338,19 +339,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.point = attrs.point;
         this.radius = attrs.radius;
     }, Shape);
-
-    Circle.prototype.ToObject = function () {
-        return {
-            uuid: this.uuid,
-            type: this.type,
-            name: this.name,
-            locked: this.locked,
-            visible: this.visible,
-            point: this.point,
-            radius: this.radius
-        };
-    };
-
 
     var Ellipse = Types.Function.Inherits(function Ellipse(attrs) {
         this.uuid = attrs.uuid;
@@ -365,19 +353,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.radiusX = attrs.radiusX;
     }, Shape);
 
-    Ellipse.prototype.ToObject = function () {
-        return {
-            uuid: this.uuid,
-            type: this.type,
-            name: this.name,
-            locked: this.locked,
-            visible: this.visible,
-            point: this.point,
-            radiusX: this.radiusX,
-            radiusY: this.radiusY
-        };
-    };
-
     var Line = Types.Function.Inherits(function Line(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -390,18 +365,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.style = attrs.style;
     }, Shape);
 
-    Line.prototype.ToObject = function () {
-        return {
-            uuid: this.uuid,
-            type: this.type,
-            name: this.name,
-            locked: this.locked,
-            visible: this.visible,
-            points: this.points
-        };
-    };
-
-
     var Polygon = Types.Function.Inherits(function Polygon(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -410,22 +373,10 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.status = attrs.status;
 
         this.type = 'polygon';
+        this.point = attrs.point;
         this.points = attrs.points;
         this.sides = attrs.sides;
     }, Shape);
-
-    Polygon.prototype.ToObject = function () {
-        return {
-            uuid: this.uuid,
-            type: this.type,
-            name: this.name,
-            locked: this.locked,
-            visible: this.visible,
-            points: this.points,
-            sides: this.sides
-        };
-    };
-
 
     var Rectangle = Types.Function.Inherits(function Rectangle(attrs) {
         this.uuid = attrs.uuid;
@@ -439,19 +390,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.height = attrs.height;
         this.width = attrs.width;
     }, Shape);
-
-    Rectangle.prototype.ToObject = function () {
-        return {
-            uuid: this.uuid,
-            type: this.type,
-            name: this.name,
-            locked: this.locked,
-            visible: this.visible,
-            point: this.point,
-            height: this.height,
-            width: this.width
-        };
-    };
 
 
     function Create(uuid, type, x, y, style, radius, startAngle, endAngle, clockWise, sides, height, width, radiusY, radiusX) {
@@ -502,6 +440,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             }
         case 'polygon':
             {
+                attrs.point = Point.Create(x, y);
                 attrs.points = [];
                 attrs.sides = sides;
 

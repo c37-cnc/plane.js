@@ -25,6 +25,9 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             }
 
             return uuid.join('').toLowerCase();
+        },
+        ParseFloat: function(float, decimal) {
+            return Number(parseFloat(float).toFixed(decimal));
         }
     }
 
@@ -98,19 +101,9 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     var Functions = {
         Inherits: function (f, p) {
             f.prototype = new p();
-//            f.prototype.constructor = p;
             return f;
         }
-//        Function.method('inherits', function (parent) {
-//            this.prototype = new parent();
-//            var d = {},
-//                p = this.prototype;
-//            this.prototype.constructor = parent;
-//            return this;
-//        });
-
     }
-
 
     var Objects = {
         /*
