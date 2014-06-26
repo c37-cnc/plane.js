@@ -1,5 +1,5 @@
 /*!
- * C37 in 25-06-2014 at 19:14:17 
+ * C37 in 25-06-2014 at 21:27:54 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -717,20 +717,23 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
             return false;
         },
-        render: function (context2D) {
+        render: function (context2D, Zoom) {
 
             if (this.status == 'Over') {
                 context2D.strokeStyle = 'rgb(61, 142, 193)';
             }
 
             if (this.status == 'Selected') {
+
+                var RectFactor = Math.round(2 * Zoom);
+
                 context2D.strokeStyle = 'rgb(68, 121, 154)';
                 if (this.point) {
-                    context2D.strokeRect(this.point.x - 3, this.point.y - 3, 6, 6);
+                    context2D.strokeRect(this.point.x - (RectFactor / 2), this.point.y - (RectFactor / 2), RectFactor, RectFactor);
                 }
                 if (this.points) {
                     this.points.forEach(function (point) {
-                        context2D.strokeRect(point.x - 3, point.y - 3, 6, 6);
+                        context2D.strokeRect(point.x - (RectFactor / 2), point.y - (RectFactor / 2), RectFactor, RectFactor);
                     });
                 }
             }
@@ -1028,7 +1031,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 Context2D.save();
                 Context2D.beginPath();
 
-                shape.render(Context2D);
+                shape.render(Context2D, Plane.Zoom);
 
                 Context2D.stroke();
                 // restore state of all Configuration
@@ -1038,13 +1041,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return true;
         },
         Clear: function () {
-            
+
             Plane.Scroll = {
                 X: 0,
                 Y: 0
             };
             Plane.Zoom = 1;
-            
+
             Plane.Layer.Delete();
 
             GridDraw(Settings.gridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.gridColor, this.Zoom, this.Scroll);
@@ -1115,7 +1118,109 @@ define("plane", ['require', 'exports'], function (require, exports) {
             }
         },
         Import: {
-            FromJson: null,
+            FromJson: function (StringJson) {
+
+                debugger;
+
+                var PlaneObject = JSON.parse(StringJson);
+
+                Settings = PlaneObject.Settings;
+
+                Plane.Clear();
+
+                Plane.Zoom = PlaneObject.Zoom;
+                Plane.Scroll = PlaneObject.Scroll;
+
+                PlaneObject.Layers.forEach(function (Layer) {
+
+                    Plane.Layer.Create({
+                        Uuid: Layer.Uuid,
+                        Name: Layer.Name,
+                        Locked: Layer.Locked,
+                        Visible: Layer.Visible,
+                        Style: Layer.Style
+                    });
+
+                    Layer.Shapes.forEach(function (Shape) {
+
+                        switch (Shape.type) {
+                        case 'arc':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: Shape.point.x,
+                                    y: Shape.point.y,
+                                    radius: Shape.radius,
+                                    startAngle: Shape.startAngle,
+                                    endAngle: Shape.endAngle
+                                });
+                                break;
+                            }
+                        case 'circle':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: Shape.point.x,
+                                    y: Shape.point.y,
+                                    radius: Shape.radius
+                                });
+                                break;
+                            }
+                        case 'ellipse':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: Shape.point.x,
+                                    y: Shape.point.y,
+                                    radiusX: Shape.radiusX,
+                                    radiusY: Shape.radiusY
+                                });
+                                break;
+                            }
+                        case 'line':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: [Shape.points[0].x, Shape.points[0].y],
+                                    y: [Shape.points[1].x, Shape.points[1].y],
+                                });
+                                break;
+                            }
+                        case 'polygon':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: Shape.point.x,
+                                    y: Shape.point.y,
+                                    sides: Shape.sides
+                                });
+                                break;
+                            }
+                        case 'rectangle':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: Shape.point.x,
+                                    y: Shape.point.y,
+                                    height: Shape.height,
+                                    width: Shape.width
+                                });
+                                break;
+                            }
+                        }
+                    });
+
+                    Plane.Update();
+                });
+
+                return true;
+            },
             FromSvg: null,
             FromDxf: function (StringDxf) {
                 try {
@@ -1137,6 +1242,21 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 }
             },
             FromDwg: null
+        },
+        Export: {
+            ToJson: function () {
+
+                var PlaneObject = {
+                    Settings: Settings,
+                    Zoom: Plane.Zoom,
+                    Scroll: Plane.Scroll,
+                    Layers: LayerStore.List().map(function (Layer) {
+                        return Layer.ToObject();
+                    })
+                }
+
+                return JSON.stringify(PlaneObject).replace(/_/g, '');
+            }
         },
         get Zoom() {
             return this._zoom || 1;
@@ -1312,7 +1432,28 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     Layer.prototype = Types.Object.Event.prototype;
 
     Layer.prototype.ToJson = function () {
-        return JSON.stringify(this).replace(/_/g, '');
+        
+        var LayerJson = {
+            Uuid: this.Uuid,
+            Name: this.Name,
+            Locked: this.Locked,
+            Visible: this.Visible,
+            Style: this.Style,
+            Shapes: this.Shapes.List()
+        };
+        
+        return JSON.stringify(LayerJson);
+    }
+
+    Layer.prototype.ToObject = function () {
+        return {
+            Uuid: this.Uuid,
+            Name: this.Name,
+            Locked: this.Locked,
+            Visible: this.Visible,
+            Style: this.Style,
+            Shapes: this.Shapes.List()
+        };
     }
 
 

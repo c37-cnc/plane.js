@@ -163,20 +163,23 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
             return false;
         },
-        render: function (context2D) {
+        render: function (context2D, Zoom) {
 
             if (this.status == 'Over') {
                 context2D.strokeStyle = 'rgb(61, 142, 193)';
             }
 
             if (this.status == 'Selected') {
+
+                var RectFactor = Math.round(2 * Zoom);
+
                 context2D.strokeStyle = 'rgb(68, 121, 154)';
                 if (this.point) {
-                    context2D.strokeRect(this.point.x - 3, this.point.y - 3, 6, 6);
+                    context2D.strokeRect(this.point.x - (RectFactor / 2), this.point.y - (RectFactor / 2), RectFactor, RectFactor);
                 }
                 if (this.points) {
                     this.points.forEach(function (point) {
-                        context2D.strokeRect(point.x - 3, point.y - 3, 6, 6);
+                        context2D.strokeRect(point.x - (RectFactor / 2), point.y - (RectFactor / 2), RectFactor, RectFactor);
                     });
                 }
             }

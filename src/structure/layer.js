@@ -18,7 +18,28 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     Layer.prototype = Types.Object.Event.prototype;
 
     Layer.prototype.ToJson = function () {
-        return JSON.stringify(this).replace(/_/g, '');
+        
+        var LayerJson = {
+            Uuid: this.Uuid,
+            Name: this.Name,
+            Locked: this.Locked,
+            Visible: this.Visible,
+            Style: this.Style,
+            Shapes: this.Shapes.List()
+        };
+        
+        return JSON.stringify(LayerJson);
+    }
+
+    Layer.prototype.ToObject = function () {
+        return {
+            Uuid: this.Uuid,
+            Name: this.Name,
+            Locked: this.Locked,
+            Visible: this.Visible,
+            Style: this.Style,
+            Shapes: this.Shapes.List()
+        };
     }
 
 

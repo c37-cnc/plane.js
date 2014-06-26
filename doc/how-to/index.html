@@ -94,86 +94,86 @@
             // plane - initialize
 
 
-//            Plane.Layer.Create();
-//            Plane.Shape.Create({
-//                type: 'polygon',
-//                x: 150,
-//                y: 150,
-//                radius: 70,
-//                sides: 5
-//            });
-//            Plane.Shape.Create({
-//                type: 'rectangle',
-//                x: 300,
-//                y: 10,
-//                width: 125,
-//                height: 100
-//            });
-//            Plane.Shape.Create({
-//                type: 'line',
-//                x: [350, 350],
-//                y: [600, 50]
-//            });
-//            Plane.Shape.Create({
-//                type: 'arc',
-//                x: 800,
-//                y: 150,
-//                radius: 50,
-//                startAngle: 0,
-//                endAngle: 180,
-//                clockWise: true
-//            });
-//            Plane.Shape.Create({
-//                type: 'arc',
-//                x: 500,
-//                y: 250,
-//                radius: 50,
-//                startAngle: 90,
-//                endAngle: 180,
-//                clockWise: false
-//            });
-//            Plane.Shape.Create({
-//                type: 'arc',
-//                x: 700,
-//                y: 250,
-//                radius: 50,
-//                startAngle: 90,
-//                endAngle: 270,
-//                clockWise: false
-//            });
-//            Plane.Shape.Create({
-//                type: 'arc',
-//                x: 1000,
-//                y: 250,
-//                radius: 50,
-//                startAngle: 90,
-//                endAngle: 270,
-//                clockWise: true
-//            });
-//            Plane.Shape.Create({
-//                type: 'arc',
-//                x: 50,
-//                y: 50,
-//                radius: 30,
-//                startAngle: 90,
-//                endAngle: 180,
-//                clockWise: true
-//            });
-//            Plane.Shape.Create({
-//                type: 'circle',
-//                x: 1200,
-//                y: 100,
-//                radius: 50
-//            });
-//            Plane.Shape.Create({
-//                type: 'ellipse',
-//                x: 1000,
-//                y: 100,
-//                radiusY: 25,
-//                radiusX: 45
-//            });
-//
-//            Plane.Update();
+            //            Plane.Layer.Create();
+            //            Plane.Shape.Create({
+            //                type: 'polygon',
+            //                x: 150,
+            //                y: 150,
+            //                radius: 70,
+            //                sides: 5
+            //            });
+            //            Plane.Shape.Create({
+            //                type: 'rectangle',
+            //                x: 300,
+            //                y: 10,
+            //                width: 125,
+            //                height: 100
+            //            });
+            //            Plane.Shape.Create({
+            //                type: 'line',
+            //                x: [350, 350],
+            //                y: [600, 50]
+            //            });
+            //            Plane.Shape.Create({
+            //                type: 'arc',
+            //                x: 800,
+            //                y: 150,
+            //                radius: 50,
+            //                startAngle: 0,
+            //                endAngle: 180,
+            //                clockWise: true
+            //            });
+            //            Plane.Shape.Create({
+            //                type: 'arc',
+            //                x: 500,
+            //                y: 250,
+            //                radius: 50,
+            //                startAngle: 90,
+            //                endAngle: 180,
+            //                clockWise: false
+            //            });
+            //            Plane.Shape.Create({
+            //                type: 'arc',
+            //                x: 700,
+            //                y: 250,
+            //                radius: 50,
+            //                startAngle: 90,
+            //                endAngle: 270,
+            //                clockWise: false
+            //            });
+            //            Plane.Shape.Create({
+            //                type: 'arc',
+            //                x: 1000,
+            //                y: 250,
+            //                radius: 50,
+            //                startAngle: 90,
+            //                endAngle: 270,
+            //                clockWise: true
+            //            });
+            //            Plane.Shape.Create({
+            //                type: 'arc',
+            //                x: 50,
+            //                y: 50,
+            //                radius: 30,
+            //                startAngle: 90,
+            //                endAngle: 180,
+            //                clockWise: true
+            //            });
+            //            Plane.Shape.Create({
+            //                type: 'circle',
+            //                x: 1200,
+            //                y: 100,
+            //                radius: 50
+            //            });
+            //            Plane.Shape.Create({
+            //                type: 'ellipse',
+            //                x: 1000,
+            //                y: 100,
+            //                radiusY: 25,
+            //                radiusX: 45
+            //            });
+            //
+            //            Plane.Update();
 
 
             document.getElementById('fileImport').addEventListener('change', function () {
@@ -194,7 +194,7 @@
                         Plane.Import.FromDxf(fileData);
                         break;
                     case 'json':
-                        Plane.importJson(fileData);
+                        Plane.Import.FromJson(fileData);
                         break;
                     default:
                         return;
@@ -202,6 +202,10 @@
 
                 };
                 reader.readAsText(file);
+            });
+            
+            document.getElementById('exportJsonButton').addEventListener('click', function (event) {
+                console.log(Plane.Export.ToJson());
             });
 
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
@@ -245,8 +249,12 @@
         </ul>
         <div id="toolsPanel">
             <input id="fileImport" type="file"></input>
+            <button id="exportJsonButton">Export Json</button>
+            <br>
+            <br>
             <button id="zoomMoreButton">Zoom +++</button>
             <button id="zoomLessButton">Zoom ---</button>
+            <br>
             <br>
             <label>X</label>
             <input id="scrollInputX" type="text" style="width:60px" value="50">

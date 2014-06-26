@@ -100,7 +100,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 Context2D.save();
                 Context2D.beginPath();
 
-                shape.render(Context2D);
+                shape.render(Context2D, Plane.Zoom);
 
                 Context2D.stroke();
                 // restore state of all Configuration
@@ -110,13 +110,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return true;
         },
         Clear: function () {
-            
+
             Plane.Scroll = {
                 X: 0,
                 Y: 0
             };
             Plane.Zoom = 1;
-            
+
             Plane.Layer.Delete();
 
             GridDraw(Settings.gridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.gridColor, this.Zoom, this.Scroll);
@@ -187,7 +187,109 @@ define("plane", ['require', 'exports'], function (require, exports) {
             }
         },
         Import: {
-            FromJson: null,
+            FromJson: function (StringJson) {
+
+                debugger;
+
+                var PlaneObject = JSON.parse(StringJson);
+
+                Settings = PlaneObject.Settings;
+
+                Plane.Clear();
+
+                Plane.Zoom = PlaneObject.Zoom;
+                Plane.Scroll = PlaneObject.Scroll;
+
+                PlaneObject.Layers.forEach(function (Layer) {
+
+                    Plane.Layer.Create({
+                        Uuid: Layer.Uuid,
+                        Name: Layer.Name,
+                        Locked: Layer.Locked,
+                        Visible: Layer.Visible,
+                        Style: Layer.Style
+                    });
+
+                    Layer.Shapes.forEach(function (Shape) {
+
+                        switch (Shape.type) {
+                        case 'arc':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: Shape.point.x,
+                                    y: Shape.point.y,
+                                    radius: Shape.radius,
+                                    startAngle: Shape.startAngle,
+                                    endAngle: Shape.endAngle
+                                });
+                                break;
+                            }
+                        case 'circle':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: Shape.point.x,
+                                    y: Shape.point.y,
+                                    radius: Shape.radius
+                                });
+                                break;
+                            }
+                        case 'ellipse':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: Shape.point.x,
+                                    y: Shape.point.y,
+                                    radiusX: Shape.radiusX,
+                                    radiusY: Shape.radiusY
+                                });
+                                break;
+                            }
+                        case 'line':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: [Shape.points[0].x, Shape.points[0].y],
+                                    y: [Shape.points[1].x, Shape.points[1].y],
+                                });
+                                break;
+                            }
+                        case 'polygon':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: Shape.point.x,
+                                    y: Shape.point.y,
+                                    sides: Shape.sides
+                                });
+                                break;
+                            }
+                        case 'rectangle':
+                            {
+                                Plane.Shape.Create({
+                                    uuid: Shape.uuid,
+                                    type: Shape.type,
+                                    x: Shape.point.x,
+                                    y: Shape.point.y,
+                                    height: Shape.height,
+                                    width: Shape.width
+                                });
+                                break;
+                            }
+                        }
+                    });
+
+                    Plane.Update();
+                });
+
+                return true;
+            },
             FromSvg: null,
             FromDxf: function (StringDxf) {
                 try {
@@ -209,6 +311,21 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 }
             },
             FromDwg: null
+        },
+        Export: {
+            ToJson: function () {
+
+                var PlaneObject = {
+                    Settings: Settings,
+                    Zoom: Plane.Zoom,
+                    Scroll: Plane.Scroll,
+                    Layers: LayerStore.List().map(function (Layer) {
+                        return Layer.ToObject();
+                    })
+                }
+
+                return JSON.stringify(PlaneObject).replace(/_/g, '');
+            }
         },
         get Zoom() {
             return this._zoom || 1;
