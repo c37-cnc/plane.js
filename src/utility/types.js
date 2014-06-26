@@ -95,6 +95,23 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     }
 
+    var Functions = {
+        Inherits: function (f, p) {
+            f.prototype = new p();
+//            f.prototype.constructor = p;
+            return f;
+        }
+//        Function.method('inherits', function (parent) {
+//            this.prototype = new parent();
+//            var d = {},
+//                p = this.prototype;
+//            this.prototype.constructor = parent;
+//            return this;
+//        });
+
+    }
+
+
     var Objects = {
         /*
          * Copy the enumerable properties of p to o, and return o
@@ -206,4 +223,5 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     exports.Graphic = Graphic;
     exports.Data = Data;
     exports.Object = Objects;
+    exports.Function = Functions;
 });

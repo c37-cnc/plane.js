@@ -189,8 +189,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
         Import: {
             FromJson: function (StringJson) {
 
-                debugger;
-
                 var PlaneObject = JSON.parse(StringJson);
 
                 Settings = PlaneObject.Settings;
@@ -320,11 +318,26 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     Zoom: Plane.Zoom,
                     Scroll: Plane.Scroll,
                     Layers: LayerStore.List().map(function (Layer) {
-                        return Layer.ToObject();
+
+                        var LayerObject = Layer.ToObject();
+
+                        LayerObject.Shapes = LayerObject.Shapes.map(function (Shape) {
+
+                            debugger;
+
+                            return Shape.ToObject();
+                        });
+
+                        return LayerObject;
+
+                        //                        return Layer.ToObject().Shapes.map(function (Shape) {
+                        //                            return Shape.ToObject()
+                        //                        });
                     })
                 }
 
-                return JSON.stringify(PlaneObject).replace(/_/g, '');
+                return JSON.stringify(PlaneObject);
+                //                return JSON.stringify(PlaneObject).replace(/_/g, '');
             }
         },
         get Zoom() {
@@ -369,8 +382,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 Y: value.Y + this.Scroll.Y
             };
 
-            value.X = Math.round(value.X * this.Zoom);
-            value.Y = Math.round(value.Y * this.Zoom);
+            value.X = value.X * this.Zoom;
+            value.Y = value.Y * this.Zoom;
 
             GridDraw(Settings.gridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.gridColor, this.Zoom, MoveFactor);
 
@@ -411,20 +424,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
             LayerGrid.Shapes = new Types.Data.Dictionary();
         }
 
-        var LineBold = 0;
-
         // calculos para o Zoom
         Width = Zoom > 1 ? Math.round(Width * Zoom) : Math.round(Width / Zoom);
         Height = Zoom > 1 ? Math.round(Height * Zoom) : Math.round(Height / Zoom);
 
+        var LineBold = 0;
         if (Scroll.X > 0) {
             for (var x = (Scroll.X * Zoom); x >= 0; x -= (10 * Zoom)) {
 
-                var LineFactor = Math.round(x),
-                    ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [LineFactor, 0], [LineFactor, Height], {
-                        lineColor: Color,
-                        lineWidth: LineBold % 5 == 0 ? .8 : .3
-                    });
+                var ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [x, 0], [x, Height], {
+                    lineColor: Color,
+                    lineWidth: LineBold % 5 == 0 ? .8 : .3
+                });
 
                 LayerGrid.Shapes.Add(ShapeGrid.uuid, ShapeGrid);
                 LineBold++;
@@ -432,29 +443,25 @@ define("plane", ['require', 'exports'], function (require, exports) {
         }
 
         LineBold = 0;
-
         for (var x = (Scroll.X * Zoom); x <= Width; x += (10 * Zoom)) {
 
-            var LineFactor = Math.round(x),
-                ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [LineFactor, 0], [LineFactor, Height], {
-                    lineColor: Color,
-                    lineWidth: LineBold % 5 == 0 ? .8 : .3
-                });
+            var ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [x, 0], [x, Height], {
+                lineColor: Color,
+                lineWidth: LineBold % 5 == 0 ? .8 : .3
+            });
 
             LayerGrid.Shapes.Add(ShapeGrid.uuid, ShapeGrid);
             LineBold++;
         }
 
         LineBold = 0;
-
         if (Scroll.Y > 0) {
             for (var y = (Scroll.Y * Zoom); y >= 0; y -= (10 * Zoom)) {
 
-                var LineFactor = Math.round(y),
-                    ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [0, LineFactor], [Width, LineFactor], {
-                        lineColor: Color,
-                        lineWidth: LineBold % 5 == 0 ? .8 : .3
-                    });
+                var ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [0, y], [Width, y], {
+                    lineColor: Color,
+                    lineWidth: LineBold % 5 == 0 ? .8 : .3
+                });
 
                 LayerGrid.Shapes.Add(ShapeGrid.uuid, ShapeGrid);
                 LineBold++;
@@ -462,14 +469,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
         }
 
         LineBold = 0;
-
         for (var y = (Scroll.Y * Zoom); y <= Height; y += (10 * Zoom)) {
 
-            var LineFactor = Math.round(y),
-                ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [0, LineFactor], [Width, LineFactor], {
-                    lineColor: Color,
-                    lineWidth: LineBold % 5 == 0 ? .8 : .3
-                });
+            var ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'line', [0, y], [Width, y], {
+                lineColor: Color,
+                lineWidth: LineBold % 5 == 0 ? .8 : .3
+            });
 
             LayerGrid.Shapes.Add(ShapeGrid.uuid, ShapeGrid);
             LineBold++;

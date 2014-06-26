@@ -1,17 +1,11 @@
 define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
-    var Point = require('geometric/point'),
+    var Types = require('utility/types'),
+        Point = require('geometric/point'),
         Intersection = require('geometric/intersection');
 
-    function Shape(uuid, name, locked, visible, selected) {
+    function Shape() {};
 
-        this.uuid = uuid;
-        this.name = name;
-        this.locked = locked;
-        this.visible = visible;
-        this.status = selected;
-
-    };
     Shape.prototype = {
         rotate: function (value) {
             return true;
@@ -240,70 +234,224 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             }
 
         },
-        toJson: function () {
-            return JSON.stringify(this);
+        ToObject: function () {
+
+            switch (this.type) {
+            case 'arc':
+                {
+                    context2D.translate(this.point.x, this.point.y);
+                    context2D.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+
+                    return true;
+                }
+            case 'circle':
+                {
+                    context2D.translate(this.point.x, this.point.y);
+                    context2D.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+
+                    return true;
+                }
+            case 'ellipse':
+                {
+                    context2D.translate(this.point.x, this.point.y);
+                    context2D.ellipse(0, 0, this.radiusX, this.radiusY, 0, 0, Math.PI * 2)
+
+                    return true;
+                }
+            case 'line':
+                {
+                    // possivel personalização
+                    if (this.status != 'Over') {
+                        context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
+                        context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
+                    }
+
+                    context2D.moveTo(this.points[0].x, this.points[0].y);
+                    context2D.lineTo(this.points[1].x, this.points[1].y);
+
+                    return true;
+                }
+            case 'polygon':
+                {
+                    context2D.moveTo(this.points[0].x, this.points[0].y);
+
+                    this.points.forEach(function (point) {
+                        context2D.lineTo(point.x, point.y);
+                    });
+                    context2D.closePath();
+
+                    return true;
+                }
+            case 'rectangle':
+                {
+                    context2D.translate(this.point.x, this.point.y);
+                    context2D.strokeRect(0, 0, this.width, this.height);
+
+                    return true;
+                }
+            }
+
+
         }
     };
 
 
-    function Arc(attrs) {
+    var Arc = Types.Function.Inherits(function Arc(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.locked = attrs.locked;
+        this.visible = attrs.visible;
+        this.status = attrs.status;
+
         this.type = 'arc';
         this.point = attrs.point;
         this.radius = attrs.radius;
         this.startAngle = attrs.startAngle;
         this.endAngle = attrs.endAngle;
         this.clockWise = attrs.clockWise;
+    }, Shape);
 
-        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
+    Arc.prototype.ToObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            name: this.name,
+            locked: this.locked,
+            visible: this.visible,
+            point: this.point,
+            radius: this.radius,
+            startAngle: this.startAngle,
+            endAngle: this.endAngle,
+            clockWise: this.clockWise
+        };
     };
-    Arc.prototype = Shape.prototype;
 
-    function Circle(attrs) {
+
+    var Circle = Types.Function.Inherits(function Circle(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.locked = attrs.locked;
+        this.visible = attrs.visible;
+        this.status = attrs.status;
+
         this.type = 'circle';
         this.point = attrs.point;
         this.radius = attrs.radius;
+    }, Shape);
 
-        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
-    }
-    Circle.prototype = Shape.prototype;
+    Circle.prototype.ToObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            name: this.name,
+            locked: this.locked,
+            visible: this.visible,
+            point: this.point,
+            radius: this.radius
+        };
+    };
 
-    function Ellipse(attrs) {
+
+    var Ellipse = Types.Function.Inherits(function Ellipse(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.locked = attrs.locked;
+        this.visible = attrs.visible;
+        this.status = attrs.status;
+
         this.type = 'ellipse';
         this.point = attrs.point;
         this.radiusY = attrs.radiusY;
         this.radiusX = attrs.radiusX;
+    }, Shape);
 
-        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
-    }
-    Ellipse.prototype = Shape.prototype;
+    Ellipse.prototype.ToObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            name: this.name,
+            locked: this.locked,
+            visible: this.visible,
+            point: this.point,
+            radiusX: this.radiusX,
+            radiusY: this.radiusY
+        };
+    };
 
-    function Line(attrs) {
+    var Line = Types.Function.Inherits(function Line(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.locked = attrs.locked;
+        this.visible = attrs.visible;
+        this.status = attrs.status;
+
         this.type = 'line';
         this.points = attrs.points;
         this.style = attrs.style;
+    }, Shape);
 
-        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
-    }
-    Line.prototype = Shape.prototype;
+    Line.prototype.ToObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            name: this.name,
+            locked: this.locked,
+            visible: this.visible,
+            points: this.points
+        };
+    };
 
-    function Polygon(attrs) {
+
+    var Polygon = Types.Function.Inherits(function Polygon(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.locked = attrs.locked;
+        this.visible = attrs.visible;
+        this.status = attrs.status;
+
         this.type = 'polygon';
         this.points = attrs.points;
         this.sides = attrs.sides;
+    }, Shape);
 
-        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
-    }
-    Polygon.prototype = Shape.prototype;
+    Polygon.prototype.ToObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            name: this.name,
+            locked: this.locked,
+            visible: this.visible,
+            points: this.points,
+            sides: this.sides
+        };
+    };
 
-    function Rectangle(attrs) {
+
+    var Rectangle = Types.Function.Inherits(function Rectangle(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.locked = attrs.locked;
+        this.visible = attrs.visible;
+        this.status = attrs.status;
+
         this.type = 'rectangle';
         this.point = attrs.point;
         this.height = attrs.height;
         this.width = attrs.width;
+    }, Shape);
 
-        Shape.call(this, attrs.uuid, attrs.name, attrs.locked, attrs.visible, attrs.selected);
-    }
-    Rectangle.prototype = Shape.prototype;
+    Rectangle.prototype.ToObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            name: this.name,
+            locked: this.locked,
+            visible: this.visible,
+            point: this.point,
+            height: this.height,
+            width: this.width
+        };
+    };
 
 
     function Create(uuid, type, x, y, style, radius, startAngle, endAngle, clockWise, sides, height, width, radiusY, radiusX) {
@@ -314,7 +462,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             style: style,
             locked: false,
             visible: true,
-            selected: false
+            status: null
         };
 
         switch (type) {
