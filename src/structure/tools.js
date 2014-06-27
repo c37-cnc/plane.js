@@ -59,8 +59,8 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
 
     EventProxy.Listen('onMouseMove', function (Message) {
         Message.Shapes.forEach(function (Shape) {
-            if (Shape.status != 'Selected') {
-                Shape.status = Shape.Contains(Message.Position) ? 'Over' : 'Out';
+            if (Shape.Status != 'Selected') {
+                Shape.Status = Shape.Contains(Message.Position) ? 'Over' : 'Out';
             }
         });
         Message.Update();
@@ -69,7 +69,7 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
     EventProxy.Listen('onClick', function (Message) {
         Message.Shapes.forEach(function (Shape) {
             if (Shape.Contains(Message.Position)) {
-                Shape.status = Shape.status != 'Selected' ? 'Selected' : 'Over' ;
+                Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over' ;
             }
         });
         Message.Update();

@@ -118,7 +118,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             Plane.Layer.Delete();
 
             GridDraw(Settings.GridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.GridColor, this.Zoom, this.Scroll);
-            
+
             return true;
         },
         Layer: Types.Object.Extend(new Types.Object.Event(), {
@@ -169,10 +169,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if ((typeof Attrs == "function") || (Attrs == null)) {
                     throw new Error('Shape - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if (['polygon', 'rectangle', 'Line', 'arc', 'circle', 'ellipse'].indexOf(Attrs.type.toLowerCase()) == -1) {
+                if (['Polygon', 'Rectangle', 'Line', 'Arc', 'Circle', 'Ellipse'].indexOf(Attrs.Type) == -1) {
                     throw new Error('Shape - Create - Type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if ((Attrs.x == undefined) || (Attrs.y == undefined)) {
+                if ((Attrs.X == undefined) || (Attrs.Y == undefined)) {
                     throw new Error('Shape - Create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
@@ -220,22 +220,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
             },
             FromSvg: null,
             FromDxf: function (StringDxf) {
-                try {
-                    Plane.Clear();
+                Plane.Clear();
 
-                    var StringJson = Import.FromDxf(StringDxf);
-                    var ObjectDxf = JSON.parse(StringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
+                var StringJson = Import.FromDxf(StringDxf);
+                var ObjectDxf = JSON.parse(StringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
 
-                    if (StringJson) {
-                        Plane.Layer.Create();
-                        for (var prop in ObjectDxf) {
-                            Plane.Shape.Create(ObjectDxf[prop]);
-                        }
-                        Plane.Update();
+                if (StringJson) {
+                    Plane.Layer.Create();
+                    for (var prop in ObjectDxf) {
+                        Plane.Shape.Create(ObjectDxf[prop]);
                     }
-
-                } catch (error) {
-                    alert(error);
+                    Plane.Update();
                 }
             },
             FromDwg: null
@@ -347,8 +342,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
         Width = Zoom > 1 ? Math.round(Width * Zoom) : Math.round(Width / Zoom);
         Height = Zoom > 1 ? Math.round(Height * Zoom) : Math.round(Height / Zoom);
 
-        debugger;
-        
         var LineBold = 0;
         if (Scroll.X > 0) {
             for (var X = (Scroll.X * Zoom); X >= 0; X -= (10 * Zoom)) {

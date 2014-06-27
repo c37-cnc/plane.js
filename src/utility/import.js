@@ -28,22 +28,22 @@ define("utility/import", ['require', 'exports'], function (require, exports) {
             switch (dxfObject.type) {
             case 'LINE':
                 {
-                    var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] }';
+                    var line = '{ "Type": "Line", "X": [{0}, {1}], "Y": [{2}, {3}] }';
                     return line.format(dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1);
                 }
             case 'CIRCLE':
                 {
-                    var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} }';
+                    var circle = '{ "Type": "Circle", "X": {0}, "Y": {1}, "Radius": {2} }';
                     return circle.format(dxfObject.x, dxfObject.y, dxfObject.r);
                 }
             case 'ARC':
                 {
-                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} }';
+                    var arc = '{"Type": "Arc", "X": {0}, "Y": {1}, "Radius": {2},"StartAngle": {3}, "EndAngle": {4}, "ClockWise": {5} }';
                     return arc.format(dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false);
                 }
             case 'ELLIPSE':
                 {
-                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} }',
+                    var ellipse = '{"Type": "Ellipse", "X": {0}, "Y": {1}, "RadiusY": {2},"RadiusX": {3} }',
                         radiusX = Math.abs(dxfObject.x1),
                         radiusY = radiusX * dxfObject.r;
 

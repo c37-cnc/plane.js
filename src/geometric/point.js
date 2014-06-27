@@ -5,7 +5,7 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
         this.Y = Y;
     };
 
-    Point.prototYpe = {
+    Point.prototype = {
         Sum: function (point) {
             return new Point(this.X + point.X, this.Y + point.Y);
         },

@@ -47,18 +47,18 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     var Graphic = {
 
-        MousePosition: function (element, position) {
-            var bb = element.getBoundingClientRect();
+        MousePosition: function (Element, Position) {
+            var bb = Element.getBoundingClientRect();
 
-            var x = (position.x - bb.left) * (element.clientWidth / bb.width);
-            var y = (position.y - bb.top) * (element.clientHeight / bb.height);
+            var X = (Position.X - bb.left) * (Element.clientWidth / bb.width);
+            var Y = (Position.Y - bb.top) * (Element.clientHeight / bb.height);
 
             // tradução para o sistema de coordenadas cartesiano
-            y = (y - element.clientHeight) * -1;
+            Y = (Y - Element.clientHeight) * -1;
 
             return {
-                x: x,
-                y: y
+                X: X,
+                Y: Y
             };
         }
 

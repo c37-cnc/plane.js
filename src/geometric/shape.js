@@ -177,28 +177,28 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             case 'Arc':
                 {
                     Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.Arc(0, 0, this.Radius, (Math.PI / 180) * this.StartAngle, (Math.PI / 180) * this.EndAngle, this.ClockWise);
+                    Context2D.arc(0, 0, this.Radius, (Math.PI / 180) * this.StartAngle, (Math.PI / 180) * this.EndAngle, this.ClockWise);
 
                     return true;
                 }
             case 'Circle':
                 {
                     Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.Arc(0, 0, this.Radius, 0, Math.PI * 2, true);
+                    Context2D.arc(0, 0, this.Radius, 0, Math.PI * 2, true);
 
                     return true;
                 }
             case 'Ellipse':
                 {
                     Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.Ellipse(0, 0, this.RadiusX, this.RadiusY, 0, 0, Math.PI * 2)
+                    Context2D.ellipse(0, 0, this.RadiusX, this.RadiusY, 0, 0, Math.PI * 2)
 
                     return true;
                 }
             case 'Line':
                 {
                     // possivel personalização
-                    if (this.Status && (this.Status != 'Over')) {
+                    if (this.Status != 'Over') {
                         Context2D.lineWidth = (this.Style && this.Style.LineWidth) ? this.Style.LineWidth : Context2D.LineWidth;
                         Context2D.strokeStyle = (this.Style && this.Style.LineColor) ? this.Style.LineColor : Context2D.strokeStyle;
                     }
@@ -213,7 +213,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Context2D.moveTo(this.Points[0].X, this.Points[0].Y);
 
                     this.Points.forEach(function (Point) {
-                        Context2D.LineTo(Point.X, Point.Y);
+                        Context2D.lineTo(Point.X, Point.Y);
                     });
                     Context2D.closePath();
 

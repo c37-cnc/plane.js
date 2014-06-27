@@ -1,5 +1,5 @@
 /*!
- * C37 in 26-06-2014 at 14:42:22 
+ * C37 in 26-06-2014 at 18:14:51 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -291,7 +291,7 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
         this.Y = Y;
     };
 
-    Point.prototYpe = {
+    Point.prototype = {
         Sum: function (point) {
             return new Point(this.X + point.X, this.Y + point.Y);
         },
@@ -731,28 +731,28 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             case 'Arc':
                 {
                     Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.Arc(0, 0, this.Radius, (Math.PI / 180) * this.StartAngle, (Math.PI / 180) * this.EndAngle, this.ClockWise);
+                    Context2D.arc(0, 0, this.Radius, (Math.PI / 180) * this.StartAngle, (Math.PI / 180) * this.EndAngle, this.ClockWise);
 
                     return true;
                 }
             case 'Circle':
                 {
                     Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.Arc(0, 0, this.Radius, 0, Math.PI * 2, true);
+                    Context2D.arc(0, 0, this.Radius, 0, Math.PI * 2, true);
 
                     return true;
                 }
             case 'Ellipse':
                 {
                     Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.Ellipse(0, 0, this.RadiusX, this.RadiusY, 0, 0, Math.PI * 2)
+                    Context2D.ellipse(0, 0, this.RadiusX, this.RadiusY, 0, 0, Math.PI * 2)
 
                     return true;
                 }
             case 'Line':
                 {
                     // possivel personalização
-                    if (this.Status && (this.Status != 'Over')) {
+                    if (this.Status != 'Over') {
                         Context2D.lineWidth = (this.Style && this.Style.LineWidth) ? this.Style.LineWidth : Context2D.LineWidth;
                         Context2D.strokeStyle = (this.Style && this.Style.LineColor) ? this.Style.LineColor : Context2D.strokeStyle;
                     }
@@ -767,7 +767,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Context2D.moveTo(this.Points[0].X, this.Points[0].Y);
 
                     this.Points.forEach(function (Point) {
-                        Context2D.LineTo(Point.X, Point.Y);
+                        Context2D.lineTo(Point.X, Point.Y);
                     });
                     Context2D.closePath();
 
@@ -1131,7 +1131,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             Plane.Layer.Delete();
 
             GridDraw(Settings.GridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.GridColor, this.Zoom, this.Scroll);
-            
+
             return true;
         },
         Layer: Types.Object.Extend(new Types.Object.Event(), {
@@ -1182,10 +1182,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if ((typeof Attrs == "function") || (Attrs == null)) {
                     throw new Error('Shape - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if (['polygon', 'rectangle', 'Line', 'arc', 'circle', 'ellipse'].indexOf(Attrs.type.toLowerCase()) == -1) {
+                if (['Polygon', 'Rectangle', 'Line', 'Arc', 'Circle', 'Ellipse'].indexOf(Attrs.Type) == -1) {
                     throw new Error('Shape - Create - Type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if ((Attrs.x == undefined) || (Attrs.y == undefined)) {
+                if ((Attrs.X == undefined) || (Attrs.Y == undefined)) {
                     throw new Error('Shape - Create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
@@ -1233,22 +1233,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
             },
             FromSvg: null,
             FromDxf: function (StringDxf) {
-                try {
-                    Plane.Clear();
+                Plane.Clear();
 
-                    var StringJson = Import.FromDxf(StringDxf);
-                    var ObjectDxf = JSON.parse(StringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
+                var StringJson = Import.FromDxf(StringDxf);
+                var ObjectDxf = JSON.parse(StringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
 
-                    if (StringJson) {
-                        Plane.Layer.Create();
-                        for (var prop in ObjectDxf) {
-                            Plane.Shape.Create(ObjectDxf[prop]);
-                        }
-                        Plane.Update();
+                if (StringJson) {
+                    Plane.Layer.Create();
+                    for (var prop in ObjectDxf) {
+                        Plane.Shape.Create(ObjectDxf[prop]);
                     }
-
-                } catch (error) {
-                    alert(error);
+                    Plane.Update();
                 }
             },
             FromDwg: null
@@ -1360,8 +1355,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
         Width = Zoom > 1 ? Math.round(Width * Zoom) : Math.round(Width / Zoom);
         Height = Zoom > 1 ? Math.round(Height * Zoom) : Math.round(Height / Zoom);
 
-        debugger;
-        
         var LineBold = 0;
         if (Scroll.X > 0) {
             for (var X = (Scroll.X * Zoom); X >= 0; X -= (10 * Zoom)) {
@@ -1559,8 +1552,8 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
 
     EventProxy.Listen('onMouseMove', function (Message) {
         Message.Shapes.forEach(function (Shape) {
-            if (Shape.status != 'Selected') {
-                Shape.status = Shape.Contains(Message.Position) ? 'Over' : 'Out';
+            if (Shape.Status != 'Selected') {
+                Shape.Status = Shape.Contains(Message.Position) ? 'Over' : 'Out';
             }
         });
         Message.Update();
@@ -1569,7 +1562,7 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
     EventProxy.Listen('onClick', function (Message) {
         Message.Shapes.forEach(function (Shape) {
             if (Shape.Contains(Message.Position)) {
-                Shape.status = Shape.status != 'Selected' ? 'Selected' : 'Over' ;
+                Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over' ;
             }
         });
         Message.Update();
@@ -1640,22 +1633,22 @@ define("utility/import", ['require', 'exports'], function (require, exports) {
             switch (dxfObject.type) {
             case 'LINE':
                 {
-                    var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] }';
+                    var line = '{ "Type": "Line", "X": [{0}, {1}], "Y": [{2}, {3}] }';
                     return line.format(dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1);
                 }
             case 'CIRCLE':
                 {
-                    var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} }';
+                    var circle = '{ "Type": "Circle", "X": {0}, "Y": {1}, "Radius": {2} }';
                     return circle.format(dxfObject.x, dxfObject.y, dxfObject.r);
                 }
             case 'ARC':
                 {
-                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} }';
+                    var arc = '{"Type": "Arc", "X": {0}, "Y": {1}, "Radius": {2},"StartAngle": {3}, "EndAngle": {4}, "ClockWise": {5} }';
                     return arc.format(dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false);
                 }
             case 'ELLIPSE':
                 {
-                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} }',
+                    var ellipse = '{"Type": "Ellipse", "X": {0}, "Y": {1}, "RadiusY": {2},"RadiusX": {3} }',
                         radiusX = Math.abs(dxfObject.x1),
                         radiusY = radiusX * dxfObject.r;
 
@@ -1793,18 +1786,18 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     var Graphic = {
 
-        MousePosition: function (element, position) {
-            var bb = element.getBoundingClientRect();
+        MousePosition: function (Element, Position) {
+            var bb = Element.getBoundingClientRect();
 
-            var x = (position.x - bb.left) * (element.clientWidth / bb.width);
-            var y = (position.y - bb.top) * (element.clientHeight / bb.height);
+            var X = (Position.X - bb.left) * (Element.clientWidth / bb.width);
+            var Y = (Position.Y - bb.top) * (Element.clientHeight / bb.height);
 
             // tradução para o sistema de coordenadas cartesiano
-            y = (y - element.clientHeight) * -1;
+            Y = (Y - Element.clientHeight) * -1;
 
             return {
-                x: x,
-                y: y
+                X: X,
+                Y: Y
             };
         }
 
