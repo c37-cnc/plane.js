@@ -1,5 +1,5 @@
 /*!
- * C37 in 26-06-2014 at 18:14:51 
+ * C37 in 27-06-2014 at 12:37:39 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -23,6 +23,7 @@ var define, require;
     };
 
     require = function (name) {
+        
         if (seen[name]) {
             return seen[name];
         }
@@ -686,7 +687,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 {
                     var PointA = null,
                         PointB = null;
-                    
+
                     for (var i = 0; i < this.Points.length; i++) {
 
                         if (i + 1 == this.Points.length) {
@@ -941,57 +942,59 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     }, Shape);
 
 
-    function Create(Uuid, Type, X, Y, Style, Radius, StartAngle, EndAngle, ClockWise, Sides, Height, Width, RadiusY, RadiusX) {
+    function Create(Attrs) {
 
-        var Attrs = {
+        var Uuid = Types.Math.Uuid(9, 16);
+
+        Attrs = Types.Object.Merge({
             Uuid: Uuid,
             Name: 'Shape '.concat(Uuid),
-            Style: Style,
+            Style: null,
             Locked: false,
             Visible: true,
             Status: null
-        };
+        }, Attrs);
 
-        switch (Type) {
+        switch (Attrs.Type) {
         case 'Line':
             {
-                Attrs.Points = [Point.Create(X[0], X[1]), Point.Create(Y[0], Y[1])];
+                Attrs.Points = [Point.Create(Attrs.X[0], Attrs.X[1]), Point.Create(Attrs.Y[0], Attrs.Y[1])];
                 return new Line(Attrs);
             }
         case 'Rectangle':
             {
-                Attrs.Point = Point.Create(X, Y);
-                Attrs.Height = Height;
-                Attrs.Width = Width;
+                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
+                Attrs.Height = Attrs.Height;
+                Attrs.Width = Attrs.Width;
                 return new Rectangle(Attrs);
             }
         case 'Arc':
             {
-                Attrs.Point = Point.Create(X, Y);
-                Attrs.Radius = Radius;
-                Attrs.StartAngle = StartAngle;
-                Attrs.EndAngle = EndAngle;
-                Attrs.ClockWise = ClockWise;
+                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
+                Attrs.Radius = Attrs.Radius;
+                Attrs.StartAngle = Attrs.StartAngle;
+                Attrs.EndAngle = Attrs.EndAngle;
+                Attrs.ClockWise = Attrs.ClockWise;
                 return new Arc(Attrs);
             }
         case 'Circle':
             {
-                Attrs.Point = Point.Create(X, Y);
-                Attrs.Radius = Radius;
+                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
+                Attrs.Radius = Attrs.Radius;
                 return new Circle(Attrs);
             }
         case 'Ellipse':
             {
-                Attrs.Point = Point.Create(X, Y);
-                Attrs.RadiusY = RadiusY;
-                Attrs.RadiusX = RadiusX;
+                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
+                Attrs.RadiusY = Attrs.RadiusY;
+                Attrs.RadiusX = Attrs.RadiusX;
                 return new Ellipse(Attrs);
             }
         case 'Polygon':
             {
-                Attrs.Point = Point.Create(X, Y);
+                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
                 Attrs.Points = [];
-                Attrs.Sides = Sides;
+                Attrs.Sides = Attrs.Sides;
 
                 for (var i = 0; i < Sides; i++) {
 
@@ -1009,7 +1012,17 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
     }
 
+    function Delete(value) {}
+
+    function List() {}
+
+    function Find() {}
+
+
     exports.Create = Create;
+    exports.Delete = Delete;
+    exports.List = List;
+    exports.Find = Find;
 });
 define("plane", ['require', 'exports'], function (require, exports) {
 
@@ -1019,23 +1032,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var Types = require('utility/types'),
         Import = require('utility/import');
 
-    var LayerStore = new Types.Data.Dictionary(),
-        ToolsStore = new Types.Data.Dictionary();
+    var LayerManager = require('structure/layer'),
+        ShapeManager = require('geometric/shape'),
+        ToolManager = require('structure/tool');
 
-    var Layer = require('structure/layer'),
-        Shape = require('geometric/shape'),
-        Tools = require('structure/tools');
-
-    var LayerActive = null,
-        LayerGrid = null,
-        ViewPort = null,
-        Settings = null;
+    var LayerGrid = null,
+        ViewPort = null;
 
 
     var Plane = Types.Object.Extend(new Types.Object.Event(), {
 
         Initialize: function (Config) {
-            // verificações para as configurações
             if (Config == null) {
                 throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
@@ -1045,41 +1052,35 @@ define("plane", ['require', 'exports'], function (require, exports) {
             if (Config.ViewPort == null) {
                 throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
-            // verificações para as Configurações
 
             ViewPort = Config.ViewPort;
 
-            Settings = Types.Object.Merge({
-                MetricSystem: 'mm',
-                BackgroundColor: 'rgb(255, 255, 255)',
-                GridEnable: true,
-                GridColor: 'rgb(218, 222, 215)'
-            }, Config.Settings || {});
+            Plane.Settings = Config.Settings ? Config.Settings : Plane.Settings;
 
             // start em eventos
             ViewPort.onmousemove = function (Event) {
-                if (LayerActive) {
-                    Tools.Event.Notify('onMouseMove', {
+                if (LayerManager.Active()) {
+                    ToolManager.Event.Notify('onMouseMove', {
                         Type: 'onMouseMove',
                         Position: Types.Graphic.MousePosition(ViewPort, {
                             X: Event.clientX,
                             Y: Event.clientY
                         }),
-                        Shapes: LayerActive.Shapes.List(),
+                        Shapes: LayerManager.Active().Shapes.List(),
                         Scroll: Plane.Scroll,
                         Update: Plane.Update
                     });
                 }
             };
             ViewPort.onclick = function (Event) {
-                if (LayerActive) {
-                    Tools.Event.Notify('onClick', {
+                if (LayerManager.Active()) {
+                    ToolManager.Event.Notify('onClick', {
                         Type: 'onClick',
                         Position: Types.Graphic.MousePosition(ViewPort, {
                             X: Event.clientX,
                             Y: Event.clientY
                         }),
-                        Shapes: LayerActive.Shapes.List(),
+                        Shapes: LayerManager.Active().Shapes.List(),
                         Scroll: Plane.Scroll,
                         Update: Plane.Update
                     });
@@ -1087,15 +1088,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
             }
             // start em eventos
 
-            GridDraw(Settings.GridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.GridColor, this.Zoom, this.Scroll);
+            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, this.Scroll);
 
             return true;
         },
         Update: function (LayerSystem) {
 
-            var LayerStyle = LayerSystem ? LayerSystem.Style : LayerActive.Style,
-                LayerShapes = LayerSystem ? LayerSystem.Shapes.List() : LayerActive.Shapes.List(),
-                LayerRender = LayerSystem ? LayerSystem.Render : LayerActive.Render,
+            var LayerStyle = LayerSystem ? LayerSystem.Style : LayerManager.Active().Style,
+                LayerShapes = LayerSystem ? LayerSystem.Shapes.List() : LayerManager.Active().Shapes.List(),
+                LayerRender = LayerSystem ? LayerSystem.Render : LayerManager.Active().Render,
                 Context2D = LayerRender.getContext('2d');
 
             // limpando o render
@@ -1122,57 +1123,52 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         Clear: function () {
 
+            // reset em scroll
             Plane.Scroll = {
                 X: 0,
                 Y: 0
             };
+            // reset em zoom
             Plane.Zoom = 1;
-
-            Plane.Layer.Delete();
-
-            GridDraw(Settings.GridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.GridColor, this.Zoom, this.Scroll);
+            // delete em todas as layers
+            LayerManager.Delete();
+            // um novo grid com as configurações limpas
+            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, this.Scroll);
 
             return true;
         },
         Layer: Types.Object.Extend(new Types.Object.Event(), {
             Create: function (Attrs) {
+                if ((typeof Attrs == "function") || (Attrs == null)) {
+                    throw new Error('Layer - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                }
 
                 Attrs = Types.Object.Union(Attrs, {
                     ViewPort: ViewPort
                 });
 
-                var layer = Layer.Create(Attrs);
-
-                LayerStore.Add(layer.Uuid, layer);
-                this.Active = layer.Uuid;
-
+                return LayerManager.Create(Attrs);
             },
             List: function (Selector) {
-                return LayerStore.List();
+                return LayerManager.List();
             },
-            Delete: function (value) {
-                LayerStore.List().forEach(function (Layer) {
-                    var Element = document.getElementById(Layer.Render.id);
-                    if (Element && Element.parentNode) {
-                        Element.parentNode.removeChild(Element);
-                    }
-                    LayerStore.Delete(Layer.Uuid);
-                });
+            Delete: function (Uuid) {
+                LayerManager.Delete(Uuid);
             },
             get Active() {
-                return LayerActive || {};
+                return LayerManager.Active();
             },
-            set Active(value) {
+            set Active(Value) {
                 this.Notify('onDeactive', {
-                    type: 'onDeactive',
-                    layer: LayerActive
+                    Type: 'onDeactive',
+                    Layer: LayerManager.Active()
                 });
 
-                LayerActive = LayerStore.Find(value);
+                LayerManager.Active(Value);
 
                 this.Notify('onActive', {
-                    type: 'onActive',
-                    layer: LayerActive
+                    Type: 'onActive',
+                    Layer: LayerManager.Active()
                 });
             }
 
@@ -1189,14 +1185,22 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     throw new Error('Shape - Create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                Attrs = Types.Object.Merge({
-                    Uuid: Types.Math.Uuid(9, 16)
-                }, Attrs);
+                var shape = ShapeManager.Create(Attrs);
 
-                var shape = Shape.Create(Attrs.Uuid, Attrs.Type, Attrs.X, Attrs.Y, Attrs.Style, Attrs.Radius, Attrs.StartAngle,
-                    Attrs.EndAngle, Attrs.ClockWise, Attrs.Sides, Attrs.Height, Attrs.Width, Attrs.RadiusY, Attrs.RadiusX);
+                LayerManager.Active().Shapes.Add(shape.Uuid, shape);
 
-                LayerActive.Shapes.Add(shape.Uuid, shape);
+                return true;
+            }
+        },
+        Tool: {
+            Create: function (Attrs) {
+                if (typeof Attrs == "function") {
+                    throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                }
+
+                ToolManager.Create(Attrs)
+
+
 
                 return true;
             }
@@ -1208,22 +1212,23 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                 Plane.Clear();
 
-                Settings = PlaneObject.Settings;
+                Plane.Settings = PlaneObject.Settings;
                 Plane.Zoom = PlaneObject.Zoom;
                 Plane.Scroll = PlaneObject.Scroll;
 
-                PlaneObject.Layers.forEach(function (Layer) {
+                PlaneObject.Layers.forEach(function (LayerObject) {
 
-                    Plane.Layer.Create({
-                        Uuid: Layer.Uuid,
-                        Name: Layer.Name,
-                        Locked: Layer.Locked,
-                        Visible: Layer.Visible,
-                        Style: Layer.Style
+                    LayerManager.Create({
+                        Uuid: LayerObject.Uuid,
+                        Name: LayerObject.Name,
+                        Locked: LayerObject.Locked,
+                        Visible: LayerObject.Visible,
+                        Style: LayerObject.Style,
+                        ViewPort: ViewPort
                     });
 
-                    Layer.Shapes.forEach(function (Shape) {
-                        Plane.Shape.Create(Shape);
+                    LayerObject.Shapes.forEach(function (ShapeObject) {
+                        Plane.Shape.Create(ShapeObject)
                     });
 
                     Plane.Update();
@@ -1250,21 +1255,24 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         Export: {
             ToJson: function () {
-                var PlaneObject = {
-                    Settings: Settings,
+
+                var PlaneExport = {
+                    Settings: Plane.Settings,
                     Zoom: Types.Math.ParseFloat(Plane.Zoom, 5),
                     Scroll: Plane.Scroll,
-                    Layers: LayerStore.List().map(function (Layer) {
-                        var LayerObject = Layer.ToObject();
+                    Layers: LayerManager.List().map(function (LayerExport) {
+                        var LayerObject = LayerExport.ToObject();
 
-                        LayerObject.Shapes = LayerObject.Shapes.map(function (Shape) {
-                            return Shape.ToObject();
+                        LayerObject.Shapes = LayerObject.Shapes.map(function (ShapeExport) {
+                            return ShapeExport.ToObject();
                         });
 
                         return LayerObject;
                     })
                 }
-                return JSON.stringify(PlaneObject);
+
+                return JSON.stringify(PlaneExport);
+
             }
         },
         get Zoom() {
@@ -1275,23 +1283,23 @@ define("plane", ['require', 'exports'], function (require, exports) {
             // Plane.Zoom /= .9;  - more
             // Plane.Zoom *= .9; - less
 
-            GridDraw(Settings.GridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.GridColor, value, this.Scroll);
-
-            var LayerActive = Plane.Layer.Active,
+            var LayerActive = LayerManager.Active(),
                 ZoomFactor = value / Plane.Zoom;
 
-            Plane.Layer.List().forEach(function (Layer) {
+            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, value, this.Scroll);
 
-                Plane.Layer.Active = Layer.Uuid;
+            LayerManager.List().forEach(function (Layer) {
 
-                Plane.Layer.Active.Shapes.List().forEach(function (Shape) {
+                LayerManager.Active(Layer.Uuid)
+
+                LayerManager.Active().Shapes.List().forEach(function (Shape) {
                     Shape.Scale = ZoomFactor;
                 });
 
                 Plane.Update();
             });
 
-            Plane.Layer.Active = LayerActive.Uuid;
+            LayerManager.Active(LayerActive);
 
             this._zoom = value;
         },
@@ -1301,52 +1309,62 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 Y: 0
             };
         },
-        set Scroll(value) {
+        set Scroll(Value) {
 
-            var LayerActive = Plane.Layer.Active;
-            var MoveFactor = {
-                X: value.X + this.Scroll.X,
-                Y: value.Y + this.Scroll.Y
-            };
+            var LayerActive = LayerManager.Active(),
+                MoveFactor = {
+                    X: Value.X + this.Scroll.X,
+                    Y: Value.Y + this.Scroll.Y
+                };
 
-            value.X = value.X * this.Zoom;
-            value.Y = value.Y * this.Zoom;
+            Value.X = Value.X * this.Zoom;
+            Value.Y = Value.Y * this.Zoom;
 
-            GridDraw(Settings.GridEnable, ViewPort.clientHeight, ViewPort.clientWidth, Settings.GridColor, this.Zoom, MoveFactor);
+            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, MoveFactor);
 
-            Plane.Layer.List().forEach(function (Layer) {
+            LayerManager.List().forEach(function (Layer) {
 
-                Plane.Layer.Active = Layer.Uuid;
+                LayerManager.Active(Layer.Uuid);
 
-                Plane.Layer.Active.Shapes.List().forEach(function (Shape) {
-                    Shape.MoveTo(value);
+                LayerManager.Active().Shapes.List().forEach(function (Shape) {
+                    Shape.MoveTo(Value);
                 });
 
                 Plane.Update();
             });
 
-            Plane.Layer.Active = LayerActive.Uuid;
+            LayerManager.Active(LayerActive);
 
             this._scroll = MoveFactor;
+        },
+        get Settings() {
+            return this._settings || {
+                MetricSystem: 'mm',
+                BackgroundColor: 'rgb(255, 255, 255)',
+                GridEnable: true,
+                GridColor: 'rgb(218, 222, 215)'
+            };
+        },
+        set Settings(Value) {
+            this._settings = Value;
         }
     });
 
 
-    function GridDraw(Enabled, Height, Width, Color, Zoom, Scroll) {
+    function GridDraw(Height, Width, Zoom, Scroll) {
 
-        if (!Enabled) return;
+        if (!Plane.Settings.GridEnable) return;
 
         if (!LayerGrid) {
             var Attrs = { // atributos para a layer do grid (sistema) 
                 ViewPort: ViewPort,
                 Name: 'System - Grid',
+                System: true,
                 Style: {
-                    LineCap: 'butt',
-                    LineJoin: 'miter',
-                    BackgroundColor: Settings.BackgroundColor
+                    BackgroundColor: Plane.Settings.BackgroundColor
                 }
             };
-            LayerGrid = Layer.Create(Attrs);
+            LayerGrid = LayerManager.Create(Attrs);
         } else {
             LayerGrid.Shapes = new Types.Data.Dictionary();
         }
@@ -1359,9 +1377,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (Scroll.X > 0) {
             for (var X = (Scroll.X * Zoom); X >= 0; X -= (10 * Zoom)) {
 
-                var ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'Line', [X, 0], [X, Height], {
-                    LineColor: Color,
-                    LineWidth: LineBold % 5 == 0 ? .8 : .3
+                var ShapeGrid = ShapeManager.Create({
+                    Uuid: Types.Math.Uuid(9, 16),
+                    Type: 'Line',
+                    X: [X, 0],
+                    Y: [X, Height],
+                    Style: {
+                        LineColor: Plane.Settings.GridColor,
+                        LineWidth: LineBold % 5 == 0 ? .8 : .3
+                    }
                 });
 
                 LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
@@ -1372,9 +1396,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
         LineBold = 0;
         for (var X = (Scroll.X * Zoom); X <= Width; X += (10 * Zoom)) {
 
-            var ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'Line', [X, 0], [X, Height], {
-                LineColor: Color,
-                LineWidth: LineBold % 5 == 0 ? .8 : .3
+            var ShapeGrid = ShapeManager.Create({
+                Uuid: Types.Math.Uuid(9, 16),
+                Type: 'Line',
+                X: [X, 0],
+                Y: [X, Height],
+                Style: {
+                    LineColor: Plane.Settings.GridColor,
+                    LineWidth: LineBold % 5 == 0 ? .8 : .3
+                }
             });
 
             LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
@@ -1385,9 +1415,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (Scroll.Y > 0) {
             for (var Y = (Scroll.Y * Zoom); Y >= 0; Y -= (10 * Zoom)) {
 
-                var ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'Line', [0, Y], [Width, Y], {
-                    LineColor: Color,
-                    LineWidth: LineBold % 5 == 0 ? .8 : .3
+                var ShapeGrid = ShapeManager.Create({
+                    Uuid: Types.Math.Uuid(9, 16),
+                    Type: 'Line',
+                    X: [0, Y],
+                    Y: [Width, Y],
+                    Style: {
+                        LineColor: Plane.Settings.GridColor,
+                        LineWidth: LineBold % 5 == 0 ? .8 : .3
+                    }
                 });
 
                 LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
@@ -1398,9 +1434,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
         LineBold = 0;
         for (var Y = (Scroll.Y * Zoom); Y <= Height; Y += (10 * Zoom)) {
 
-            var ShapeGrid = Shape.Create(Types.Math.Uuid(9, 16), 'Line', [0, Y], [Width, Y], {
-                LineColor: Color,
-                LineWidth: LineBold % 5 == 0 ? .8 : .3
+            var ShapeGrid = ShapeManager.Create({
+                Uuid: Types.Math.Uuid(9, 16),
+                Type: 'Line',
+                X: [0, Y],
+                Y: [Width, Y],
+                Style: {
+                    LineColor: Plane.Settings.GridColor,
+                    LineWidth: LineBold % 5 == 0 ? .8 : .3
+                }
             });
 
             LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
@@ -1417,11 +1459,15 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
 
+    var LayerStore = new Types.Data.Dictionary(),
+        LayerActive = null;
+
     var Layer = Types.Function.Inherits(function Layer(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
         this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
+        this.System = Attrs.System;
         this.Style = Attrs.Style;
         this.Render = Attrs.Render;
         this.Shapes = Attrs.Shapes;
@@ -1440,9 +1486,6 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
 
     function Create(Attrs) {
-        if (typeof Attrs == "function") {
-            throw new Error('Layer - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
 
         var Uuid = Types.Math.Uuid(9, 16);
 
@@ -1474,6 +1517,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             },
             Locked: false,
             Visible: true,
+            System: false,
             Shapes: new Types.Data.Dictionary(),
             Render: Render
         }, Attrs);
@@ -1485,69 +1529,81 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // add em ViewPort
         Attrs.ViewPort.appendChild(layer.Render);
 
-        return layer;
+        if (!layer.System) {
+
+            LayerStore.Add(layer.Uuid, layer);
+            this.Active(layer.Uuid);
+
+            return true;
+        } else {
+            return layer;
+        }
     }
 
-    exports.Create = Create;
+    function Active(Value) {
+        return Value ? LayerActive = LayerStore.Find(Value) : LayerActive;
+    }
 
+    function Delete(Value) {
+        LayerStore.List().forEach(function (Layer) {
+            var Element = document.getElementById(Layer.Render.id);
+            if (Element && Element.parentNode) {
+                Element.parentNode.removeChild(Element);
+            }
+            LayerStore.Delete(Layer.Uuid);
+        });
+    }
+    
+    function List() {
+        return LayerStore.List();
+    }
+
+
+
+    exports.Create = Create;
+    exports.Active = Active;
+    exports.List = List;
+    exports.Delete = Delete;
 });
-define("structure/tools", ['require', 'exports'], function (require, exports) {
+define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
+    
+    var ToolStore = new Types.Data.Dictionary()
 
-    var ToolStore = new Types.Data.Dictionary();
-
-    //    var Tools = Object.Extend(new Object.Event(), {
-    //
-    //        this.uuid: null,
-    //        this.name: '',
-    //        get active() {
-    //            return this._active;
-    //        },
-    //        set active(value) {
-    //            this._active = value;
-    //        }
-    //
-    //    });
-
-    function Tool(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-
-        this.__defineGetter__('active', function () {
+    var Tool = Types.Function.Inherits(function Tool(Attrs) {
+        this.Uuid = Attrs.Uuid;
+        this.Name = Attrs.Name;
+        this.__defineGetter__('Active', function () {
             return this._active || false;
         });
-        this.__defineSetter__('active', function (value) {
-            this.notify(value ? 'onActive' : 'onDeactive', {
-                type: value ? 'onActive' : 'onDeactive',
-                now: new Date().toISOString()
+        this.__defineSetter__('Active', function (value) {
+            this.Notify(value ? 'onActive' : 'onDeactive', {
+                Type: value ? 'onActive' : 'onDeactive',
+                Now: new Date().toISOString()
 
             });
             this._active = value;
         });
-
-        utility.object.event.call(this);
-    }
-    Tool.prototype = Types.Object.Event.prototype;
+    }, Types.Object.Event);
 
 
-    function Create(attrs) {
-        if (typeof attrs == "function") {
-            throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
+    function Create(Attrs) {
 
-        attrs = Types.Object.Merge({
-            uuid: Types.Math.Uuid(9, 16),
-            name: 'Tool '.concat(ToolStore.count())
-        }, attrs);
+        Attrs = Types.Object.Merge({
+            Uuid: Types.Math.Uuid(9, 16),
+            Name: 'Tool '.concat(ToolStore.count())
+        }, Attrs);
 
-        var tool = Tool.Create(attrs.uuid, attrs.name);
-
-        toolStore.add(attrs.uuid, tool);
-
+        // nova tool
+        var tool = Tool.Create(Attrs)
+        
+        ToolStore.Add(tool.Uuid, tool);
+        
         return true;
     }
 
+    
     var EventProxy = new Types.Object.Event();
 
     EventProxy.Listen('onMouseMove', function (Message) {
@@ -1562,7 +1618,7 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
     EventProxy.Listen('onClick', function (Message) {
         Message.Shapes.forEach(function (Shape) {
             if (Shape.Contains(Message.Position)) {
-                Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over' ;
+                Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over';
             }
         });
         Message.Update();
@@ -1571,7 +1627,6 @@ define("structure/tools", ['require', 'exports'], function (require, exports) {
 
     exports.Event = EventProxy;
     exports.Create = Create;
-
 });
 define("utility/export", ['require', 'exports'], function (require, exports) {
     

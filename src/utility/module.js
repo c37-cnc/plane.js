@@ -12,6 +12,7 @@ var define, require;
     };
 
     require = function (name) {
+        
         if (seen[name]) {
             return seen[name];
         }

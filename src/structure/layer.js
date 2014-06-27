@@ -2,11 +2,15 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
 
+    var LayerStore = new Types.Data.Dictionary(),
+        LayerActive = null;
+
     var Layer = Types.Function.Inherits(function Layer(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
         this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
+        this.System = Attrs.System;
         this.Style = Attrs.Style;
         this.Render = Attrs.Render;
         this.Shapes = Attrs.Shapes;
@@ -25,9 +29,6 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
 
     function Create(Attrs) {
-        if (typeof Attrs == "function") {
-            throw new Error('Layer - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
 
         var Uuid = Types.Math.Uuid(9, 16);
 
@@ -59,6 +60,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             },
             Locked: false,
             Visible: true,
+            System: false,
             Shapes: new Types.Data.Dictionary(),
             Render: Render
         }, Attrs);
@@ -70,9 +72,39 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // add em ViewPort
         Attrs.ViewPort.appendChild(layer.Render);
 
-        return layer;
+        if (!layer.System) {
+
+            LayerStore.Add(layer.Uuid, layer);
+            this.Active(layer.Uuid);
+
+            return true;
+        } else {
+            return layer;
+        }
     }
 
-    exports.Create = Create;
+    function Active(Value) {
+        return Value ? LayerActive = LayerStore.Find(Value) : LayerActive;
+    }
 
+    function Delete(Value) {
+        LayerStore.List().forEach(function (Layer) {
+            var Element = document.getElementById(Layer.Render.id);
+            if (Element && Element.parentNode) {
+                Element.parentNode.removeChild(Element);
+            }
+            LayerStore.Delete(Layer.Uuid);
+        });
+    }
+    
+    function List() {
+        return LayerStore.List();
+    }
+
+
+
+    exports.Create = Create;
+    exports.Active = Active;
+    exports.List = List;
+    exports.Delete = Delete;
 });

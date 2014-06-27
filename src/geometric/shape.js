@@ -132,7 +132,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 {
                     var PointA = null,
                         PointB = null;
-                    
+
                     for (var i = 0; i < this.Points.length; i++) {
 
                         if (i + 1 == this.Points.length) {
@@ -387,57 +387,59 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     }, Shape);
 
 
-    function Create(Uuid, Type, X, Y, Style, Radius, StartAngle, EndAngle, ClockWise, Sides, Height, Width, RadiusY, RadiusX) {
+    function Create(Attrs) {
 
-        var Attrs = {
+        var Uuid = Types.Math.Uuid(9, 16);
+
+        Attrs = Types.Object.Merge({
             Uuid: Uuid,
             Name: 'Shape '.concat(Uuid),
-            Style: Style,
+            Style: null,
             Locked: false,
             Visible: true,
             Status: null
-        };
+        }, Attrs);
 
-        switch (Type) {
+        switch (Attrs.Type) {
         case 'Line':
             {
-                Attrs.Points = [Point.Create(X[0], X[1]), Point.Create(Y[0], Y[1])];
+                Attrs.Points = [Point.Create(Attrs.X[0], Attrs.X[1]), Point.Create(Attrs.Y[0], Attrs.Y[1])];
                 return new Line(Attrs);
             }
         case 'Rectangle':
             {
-                Attrs.Point = Point.Create(X, Y);
-                Attrs.Height = Height;
-                Attrs.Width = Width;
+                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
+                Attrs.Height = Attrs.Height;
+                Attrs.Width = Attrs.Width;
                 return new Rectangle(Attrs);
             }
         case 'Arc':
             {
-                Attrs.Point = Point.Create(X, Y);
-                Attrs.Radius = Radius;
-                Attrs.StartAngle = StartAngle;
-                Attrs.EndAngle = EndAngle;
-                Attrs.ClockWise = ClockWise;
+                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
+                Attrs.Radius = Attrs.Radius;
+                Attrs.StartAngle = Attrs.StartAngle;
+                Attrs.EndAngle = Attrs.EndAngle;
+                Attrs.ClockWise = Attrs.ClockWise;
                 return new Arc(Attrs);
             }
         case 'Circle':
             {
-                Attrs.Point = Point.Create(X, Y);
-                Attrs.Radius = Radius;
+                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
+                Attrs.Radius = Attrs.Radius;
                 return new Circle(Attrs);
             }
         case 'Ellipse':
             {
-                Attrs.Point = Point.Create(X, Y);
-                Attrs.RadiusY = RadiusY;
-                Attrs.RadiusX = RadiusX;
+                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
+                Attrs.RadiusY = Attrs.RadiusY;
+                Attrs.RadiusX = Attrs.RadiusX;
                 return new Ellipse(Attrs);
             }
         case 'Polygon':
             {
-                Attrs.Point = Point.Create(X, Y);
+                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
                 Attrs.Points = [];
-                Attrs.Sides = Sides;
+                Attrs.Sides = Attrs.Sides;
 
                 for (var i = 0; i < Sides; i++) {
 
@@ -455,5 +457,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
     }
 
+    function Delete(value) {}
+
+    function List() {}
+
+    function Find() {}
+
+
     exports.Create = Create;
+    exports.Delete = Delete;
+    exports.List = List;
+    exports.Find = Find;
 });
