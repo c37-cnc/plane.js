@@ -32,32 +32,39 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             Plane.Settings = Config.Settings ? Config.Settings : Plane.Settings;
 
-            // start em eventos
-            ViewPort.onmousemove = function (Event) {
-                if (LayerManager.Active()) {
-                    ToolManager.Event.Notify('onMouseMove', {
-                        Type: 'onMouseMove',
-                        Position: Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY),
-                        Shapes: LayerManager.Active().Shapes.List(),
-                        Scroll: Plane.Scroll,
-                        Update: Plane.Update
-                    });
-                }
-            };
-            ViewPort.onclick = function (Event) {
-                if (LayerManager.Active()) {
-                    ToolManager.Event.Notify('onClick', {
-                        Type: 'onClick',
-                        Position: Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY),
-                        Shapes: LayerManager.Active().Shapes.List(),
-                        Scroll: Plane.Scroll,
-                        Update: Plane.Update
-                    });
-                }
-            }
-            // start em eventos
+            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, Plane.Zoom, Plane.Scroll);
 
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, this.Scroll);
+            ToolManager.Event.Start({
+                ViewPort: ViewPort,
+                Update: Plane.Update
+            });
+
+
+
+            //            // start em eventos
+            //            ViewPort.onmousemove = function (Event) {
+            //                if (LayerManager.Active()) {
+            //                    ToolManager.Event.Notify('onMouseMove', {
+            //                        Type: 'onMouseMove',
+            //                        Position: Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY),
+            //                        Shapes: LayerManager.Active().Shapes.List(),
+            //                        Scroll: Plane.Scroll,
+            //                        Update: Plane.Update
+            //                    });
+            //                }
+            //            };
+            //            ViewPort.onclick = function (Event) {
+            //                if (LayerManager.Active()) {
+            //                    ToolManager.Event.Notify('onClick', {
+            //                        Type: 'onClick',
+            //                        Position: Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY),
+            //                        Shapes: LayerManager.Active().Shapes.List(),
+            //                        Scroll: Plane.Scroll,
+            //                        Update: Plane.Update
+            //                    });
+            //                }
+            //            }
+            //            // start em eventos
 
             return true;
         },
@@ -93,16 +100,20 @@ define("plane", ['require', 'exports'], function (require, exports) {
         Clear: function () {
 
             // reset em scroll
-            Plane.Scroll = {
-                X: 0,
-                Y: 0
+            if ((Plane.Scroll.X != 0) || (Plane.Scroll.Y != 0)) {
+                Plane.Scroll = {
+                    X: 0,
+                    Y: 0
+                }
             };
+
             // reset em zoom
-            Plane.Zoom = 1;
+            if (Plane.Zoom != 1) {
+                Plane.Zoom = 1;
+            }
+
             // delete em todas as layers
-            Layer.Delete();
-            // um novo grid com as configurações limpas
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, this.Scroll);
+            LayerManager.Delete();
 
             return true;
         },
@@ -183,18 +194,20 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, Value, this.Scroll);
 
-            LayerManager.List().forEach(function (Layer) {
+            // Se não alguma Layer Ativa = Clear || Import
+            if (LayerActive) {
+                LayerManager.List().forEach(function (Layer) {
 
-                LayerManager.Active(Layer.Uuid);
+                    LayerManager.Active(Layer.Uuid);
 
-                LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                    Shape.ScaleTo(ZoomFactor);
+                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
+                        Shape.ScaleTo(ZoomFactor);
+                    });
+
+                    Plane.Update();
                 });
-
-                Plane.Update();
-            });
-
-            Layer.Active(LayerActive ? LayerActive.Uuid : LayerManager.Active().Uuid);
+                LayerManager.Active(LayerActive.Uuid);
+            }
 
             this._zoom = Value;
         },
@@ -212,23 +225,26 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     Y: Value.Y + this.Scroll.Y
                 };
 
-            Value.X = Value.X * this.Zoom;
-            Value.Y = Value.Y * this.Zoom;
-
             GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, MoveFactor);
 
-            LayerManager.List().forEach(function (Layer) {
+            // Se não alguma Layer Ativa = Clear || Import
+            if (LayerActive) {
+                Value.X = Value.X * this.Zoom;
+                Value.Y = Value.Y * this.Zoom;
 
-                LayerManager.Active(Layer.Uuid);
+                LayerManager.List().forEach(function (Layer) {
 
-                LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                    Shape.MoveTo(Value);
+                    LayerManager.Active(Layer.Uuid);
+
+                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
+                        Shape.MoveTo(Value);
+                    });
+
+                    Plane.Update();
+
                 });
-
-                Plane.Update();
-            });
-
-            Layer.Active(LayerActive ? LayerActive.Uuid : LayerManager.Active().Uuid);
+                LayerManager.Active(LayerActive.Uuid);
+            }
 
             this._scroll = MoveFactor;
         },
@@ -298,7 +314,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     Settings: Plane.Settings,
                     Zoom: Types.Math.ParseFloat(Plane.Zoom, 5),
                     Scroll: Plane.Scroll,
-                    Layers: Layer.List().map(function (LayerExport) {
+                    Layers: LayerManager.List().map(function (LayerExport) {
                         var LayerObject = LayerExport.ToObject();
 
                         LayerObject.Shapes = LayerObject.Shapes.map(function (ShapeExport) {

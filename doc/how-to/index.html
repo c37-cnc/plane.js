@@ -93,88 +93,18 @@
             // plane - initialize
 
 
-            Plane.Layer.Create();
+            var Tool001 = Plane.Tool.Create();
+            Tool001.Active = true;
+            
+            console.log(Tool001);
 
-            Plane.Shape.Create({
-                Type: 'Polygon',
-                X: 150,
-                Y: 150,
-                Radius: 70,
-                Sides: 5
+            Tool001.Listen('onMouseMove', function (Event) {
+            
+                console.log(Event);
+            
             });
-            Plane.Shape.Create({
-                Type: 'Rectangle',
-                X: 300,
-                Y: 10,
-                Width: 125,
-                Height: 100
-            });
-            Plane.Shape.Create({
-                Type: 'Line',
-                X: [350, 350],
-                Y: [600, 50]
-            });
-            Plane.Shape.Create({
-                Type: 'Arc',
-                X: 800,
-                Y: 150,
-                Radius: 50,
-                StartAngle: 0,
-                EndAngle: 180,
-                ClockWise: true
-            });
-            Plane.Shape.Create({
-                Type: 'Arc',
-                X: 500,
-                Y: 250,
-                Radius: 50,
-                StartAngle: 90,
-                EndAngle: 180,
-                ClockWise: false
-            });
-            Plane.Shape.Create({
-                Type: 'Arc',
-                X: 700,
-                Y: 250,
-                Radius: 50,
-                StartAngle: 90,
-                EndAngle: 270,
-                ClockWise: false
-            });
-            Plane.Shape.Create({
-                Type: 'Arc',
-                X: 1000,
-                Y: 250,
-                Radius: 50,
-                StartAngle: 90,
-                EndAngle: 270,
-                ClockWise: true
-            });
-            Plane.Shape.Create({
-                Type: 'Arc',
-                X: 50,
-                Y: 50,
-                Radius: 30,
-                StartAngle: 90,
-                EndAngle: 180,
-                ClockWise: true
-            });
-            Plane.Shape.Create({
-                Type: 'Circle',
-                X: 1200,
-                Y: 100,
-                Radius: 50
-            });
-            Plane.Shape.Create({
-                Type: 'Ellipse',
-                X: 1000,
-                Y: 100,
-                RadiusY: 25,
-                RadiusX: 45
-            });
-            Plane.Update();
-
-
+            
+            
             document.getElementById('fileImport').addEventListener('change', function () {
                 var file = this.files[0],
                     filename = file.name;

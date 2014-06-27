@@ -2,7 +2,13 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
 
-    var ToolStore = new Types.Data.Dictionary()
+    var ToolStore = new Types.Data.Dictionary();
+
+    var LayerManager = require('structure/layer');
+
+    var ViewPort = null,
+        Update = null;
+
 
     var Tool = Types.Function.Inherits(function Tool(Attrs) {
         this.Uuid = Attrs.Uuid;
@@ -26,13 +32,15 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     function Create(Attrs) {
 
+        var Uuid = Types.Math.Uuid(9, 16);
+
         Attrs = Types.Object.Merge({
-            Uuid: Types.Math.Uuid(9, 16),
-            Name: 'Tool '.concat(ToolStore.count())
+            Uuid: Uuid,
+            Name: 'Tool '.concat(Uuid)
         }, Attrs);
 
         // nova tool
-        var tool = Tool.Create(Attrs)
+        var tool = new Tool(Attrs)
 
         ToolStore.Add(tool.Uuid, tool);
 
@@ -40,25 +48,94 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
     }
 
 
-    var EventProxy = new Types.Object.Event();
+    var EventProxy = Types.Object.Extend(new Types.Object.Event(), {
 
-    EventProxy.Listen('onMouseMove', function (Message) {
-        Message.Shapes.forEach(function (Shape) {
-            if (Shape.Status != 'Selected') {
-                Shape.Status = Shape.Contains(Message.Position) ? 'Over' : 'Out';
-            }
-        });
-        Message.Update();
-    });
+        Start: function (Config) {
 
-    EventProxy.Listen('onClick', function (Message) {
-        Message.Shapes.forEach(function (Shape) {
-            if (Shape.Contains(Message.Position)) {
-                Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over';
+            ViewPort = Config.ViewPort;
+            Update = Config.Update;
+
+            ViewPort.onmousemove = function (Event) {
+                if (LayerManager.Active()) {
+
+                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
+
+                        if (Shape.Status != 'Selected') {
+                            Shape.Status = Shape.Contains(Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY)) ? 'Over' : 'Out';
+                        }
+
+                    });
+                    
+                    Update();
+
+
+                }
+
+
+
+                console.log();
+
+                //                Layer.Shapes.List().forEach(function (Shape) {
+                //
+                //
+                //                    if (Shape.Status != 'Selected') {
+                //                        Shape.Status = Shape.Contains(Message.Position) ? 'Over' : 'Out';
+                //                    }
+                //
+                //
+                //                });
+                //                
+                //                Update();
+
             }
-        });
-        Message.Update();
-    });
+
+
+
+
+        }
+
+    })
+
+
+
+    //    var EventProxy = new Types.Object.Event();
+
+    //    EventProxy.Listen('onMouseMove', function (Message) {
+    //
+    //        var ShapeSelected = [];
+    //
+    //        Message.Shapes.forEach(function (Shape) {
+    //            if (Shape.Status != 'Selected') {
+    //                Shape.Status = Shape.Contains(Message.Position) ? 'Over' : 'Out';
+    //            }
+    //        });
+    //        Message.Update();
+    //
+    //
+    //        var ToolActive = ToolStore.List().filter(function (Tool) {
+    //            return Tool.Active
+    //        });
+    //
+    //        ToolActive.forEach(function (Tool) {
+    //
+    //            Tool.Notify('onMouseMove', {
+    //                Type: 'onMouseMove',
+    //                Shape: ShapeSelected,
+    //                Now: new Date().toISOString()
+    //            });
+    //
+    //        });
+    //
+    //    });
+    //
+    //    EventProxy.Listen('onClick', function (Message) {
+    //        Message.Shapes.forEach(function (Shape) {
+    //            if (Shape.Contains(Message.Position)) {
+    //                Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over';
+    //            }
+    //        });
+    //        Message.Update();
+    //    });
 
 
     exports.Event = EventProxy;
