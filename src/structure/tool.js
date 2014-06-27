@@ -1,22 +1,25 @@
 define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
-    
+
     var ToolStore = new Types.Data.Dictionary()
 
     var Tool = Types.Function.Inherits(function Tool(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.__defineGetter__('Active', function () {
-            return this._active || false;
-        });
-        this.__defineSetter__('Active', function (value) {
-            this.Notify(value ? 'onActive' : 'onDeactive', {
-                Type: value ? 'onActive' : 'onDeactive',
-                Now: new Date().toISOString()
 
-            });
-            this._active = value;
+        Object.defineProperty(this, 'Active', {
+            get: function () {
+                return this._active || false;
+            },
+            set: function (Value) {
+                this.Notify(Value ? 'onActive' : 'onDeactive', {
+                    Type: Value ? 'onActive' : 'onDeactive',
+                    Now: new Date().toISOString()
+
+                });
+                this._active = Value;
+            }
         });
     }, Types.Object.Event);
 
@@ -30,13 +33,13 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
         // nova tool
         var tool = Tool.Create(Attrs)
-        
+
         ToolStore.Add(tool.Uuid, tool);
-        
-        return true;
+
+        return tool;
     }
 
-    
+
     var EventProxy = new Types.Object.Event();
 
     EventProxy.Listen('onMouseMove', function (Message) {

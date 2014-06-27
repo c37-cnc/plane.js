@@ -7,13 +7,10 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     function Shape() {};
 
     Shape.prototype = {
-        Rotate: function (Value) {
+        RotateTo: function (Value) {
             return true;
         },
-        get Scale() {
-            return this._scale || 1;
-        },
-        set Scale(Value) {
+        ScaleTo: function (Value) {
 
             switch (this.Type) {
             case 'Arc':
@@ -52,6 +49,9 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'Polygon':
                 {
+                    this.Point.X *= Value;
+                    this.Point.Y *= Value;
+                    
                     this.Points.forEach(function (Point) {
                         Point.X *= Value;
                         Point.Y *= Value;
@@ -70,18 +70,12 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             }
 
-            this._scale = Value;
         },
         MoveTo: function (Value) {
-
-            Value = {
-                X: Value.X,
-                Y: Value.Y
-            };
-
             if (this.Point) {
                 this.Point = this.Point.Sum(Value);
-            } else {
+            }
+            if (this.Points) {
                 for (var i = 0; i <= this.Points.length - 1; i++) {
                     this.Points[i] = this.Points[i].Sum(Value);
                 }
@@ -110,18 +104,14 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'Arc':
                 {
-                    PointMouse = Point.Create(PointMouse.X, PointMouse.Y);
-
-                    if (Intersection.CircleArc(PointMouse, 2, this.Point, this.Radius, this.StartAngle, this.EndAngle, this.ClockWise))
+                    if (Intersection.CircleArc(Point.Create(PointMouse.X, PointMouse.Y), 2, this.Point, this.Radius, this.StartAngle, this.EndAngle, this.ClockWise))
                         return true;
 
                     break;
                 }
             case 'Circle':
                 {
-                    PointMouse = Point.Create(PointMouse.X, PointMouse.Y);
-
-                    if (Intersection.CircleCircle(PointMouse, 2, this.Point, this.Radius))
+                    if (Intersection.CircleCircle(PointMouse = Point.Create(PointMouse.X, PointMouse.Y), 2, this.Point, this.Radius))
                         return true;
 
                     break;
@@ -143,7 +133,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                             PointB = this.Points[i + 1];
                         }
 
-                        if (Intersection.CircleLine(PointMouse, 2, pointOrigin, pointDestination))
+                        if (Intersection.CircleLine(PointMouse, 2, PointA, PointB))
                             return true;
                     }
                     break;
@@ -237,7 +227,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: Types.Math.ParseFloat(this.Point.X, 5),
                     Y: Types.Math.ParseFloat(this.Point.Y, 5),
@@ -251,7 +240,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: Types.Math.ParseFloat(this.Point.X, 5),
                     Y: Types.Math.ParseFloat(this.Point.Y, 5),
@@ -262,7 +250,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: Types.Math.ParseFloat(this.Point.X, 5),
                     Y: Types.Math.ParseFloat(this.Point.Y, 5),
@@ -274,7 +261,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: [Types.Math.ParseFloat(this.Points[0].X, 5), Types.Math.ParseFloat(this.Points[0].Y, 5)],
                     Y: [Types.Math.ParseFloat(this.Points[1].X, 5), Types.Math.ParseFloat(this.Points[1].Y, 5)]
@@ -284,7 +270,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: Types.Math.ParseFloat(this.Point.X, 5),
                     Y: Types.Math.ParseFloat(this.Point.Y, 5),
@@ -295,7 +280,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: Types.Math.ParseFloat(this.Point.X, 5),
                     Y: Types.Math.ParseFloat(this.Point.Y, 5),
@@ -311,7 +295,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Arc = Types.Function.Inherits(function Arc(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -326,7 +309,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Circle = Types.Function.Inherits(function Circle(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -338,7 +320,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Ellipse = Types.Function.Inherits(function Ellipse(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -351,7 +332,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Line = Types.Function.Inherits(function Line(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -363,7 +343,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Polygon = Types.Function.Inherits(function Polygon(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -376,7 +355,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Rectangle = Types.Function.Inherits(function Rectangle(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -395,7 +373,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             Uuid: Uuid,
             Name: 'Shape '.concat(Uuid),
             Style: null,
-            Locked: false,
             Visible: true,
             Status: null
         }, Attrs);
@@ -439,14 +416,13 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             {
                 Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
                 Attrs.Points = [];
-                Attrs.Sides = Attrs.Sides;
 
-                for (var i = 0; i < Sides; i++) {
+                for (var i = 0; i < Attrs.Sides; i++) {
 
-                    var pointX = (Radius * Math.cos(((Math.PI * 2) / Sides) * i) + X),
-                        pointY = (Radius * Math.sin(((Math.PI * 2) / Sides) * i) + Y);
+                    var PointX = (Attrs.Radius * Math.cos(((Math.PI * 2) / Attrs.Sides) * i) + Attrs.Point.X),
+                        PointY = (Attrs.Radius * Math.sin(((Math.PI * 2) / Attrs.Sides) * i) + Attrs.Point.Y);
 
-                    Attrs['Points'].push(Point.Create(pointX, pointY));
+                    Attrs['Points'].push(Point.Create(PointX, PointY));
                 }
 
                 return new Polygon(Attrs);

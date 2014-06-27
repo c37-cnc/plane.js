@@ -1,6 +1,7 @@
 var define, require;
 
-(function () { //http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
+// http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
+(function () {
     var registry = {},
         seen = {};
 
@@ -12,7 +13,7 @@ var define, require;
     };
 
     require = function (name) {
-        
+
         if (seen[name]) {
             return seen[name];
         }

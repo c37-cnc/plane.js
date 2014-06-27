@@ -8,9 +8,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     var Layer = Types.Function.Inherits(function Layer(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
-        this.Visible = Attrs.Visible;
-        this.System = Attrs.System;
+        this.Status = Attrs.Status;
         this.Style = Attrs.Style;
         this.Render = Attrs.Render;
         this.Shapes = Attrs.Shapes;
@@ -52,15 +50,12 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             Uuid: Uuid,
             Name: 'New Layer '.concat(Uuid),
             Style: {
-                fillColor: 'rgb(0,0,0)',
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                lineWidth: .7,
-                lineColor: 'rgb(0, 0, 0)',
+                LineCap: 'butt',
+                LineJoin: 'miter',
+                LineWidth: .7,
+                LineColor: 'rgb(0, 0, 0)',
             },
-            Locked: false,
-            Visible: true,
-            System: false,
+            Status: 'Visible',
             Shapes: new Types.Data.Dictionary(),
             Render: Render
         }, Attrs);
@@ -72,11 +67,9 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // add em ViewPort
         Attrs.ViewPort.appendChild(layer.Render);
 
-        if (!layer.System) {
-
+        if (layer.Status != 'System') {
             LayerStore.Add(layer.Uuid, layer);
             this.Active(layer.Uuid);
-
             return true;
         } else {
             return layer;
@@ -96,7 +89,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             LayerStore.Delete(Layer.Uuid);
         });
     }
-    
+
     function List() {
         return LayerStore.List();
     }

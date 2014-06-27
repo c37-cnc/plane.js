@@ -47,11 +47,11 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     var Graphic = {
 
-        MousePosition: function (Element, Position) {
+        MousePosition: function (Element, X, Y) {
             var bb = Element.getBoundingClientRect();
 
-            var X = (Position.X - bb.left) * (Element.clientWidth / bb.width);
-            var Y = (Position.Y - bb.top) * (Element.clientHeight / bb.height);
+            X = (X - bb.left) * (Element.clientWidth / bb.width);
+            Y = (Y - bb.top) * (Element.clientHeight / bb.height);
 
             // tradução para o sistema de coordenadas cartesiano
             Y = (Y - Element.clientHeight) * -1;

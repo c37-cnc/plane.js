@@ -1,5 +1,5 @@
 /*!
- * C37 in 27-06-2014 at 12:37:39 
+ * C37 in 27-06-2014 at 15:23:47 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -11,7 +11,8 @@
 "use strict";
 var define, require;
 
-(function () { //http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
+// http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
+(function () {
     var registry = {},
         seen = {};
 
@@ -23,7 +24,7 @@ var define, require;
     };
 
     require = function (name) {
-        
+
         if (seen[name]) {
             return seen[name];
         }
@@ -562,13 +563,10 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     function Shape() {};
 
     Shape.prototype = {
-        Rotate: function (Value) {
+        RotateTo: function (Value) {
             return true;
         },
-        get Scale() {
-            return this._scale || 1;
-        },
-        set Scale(Value) {
+        ScaleTo: function (Value) {
 
             switch (this.Type) {
             case 'Arc':
@@ -607,6 +605,9 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'Polygon':
                 {
+                    this.Point.X *= Value;
+                    this.Point.Y *= Value;
+                    
                     this.Points.forEach(function (Point) {
                         Point.X *= Value;
                         Point.Y *= Value;
@@ -625,18 +626,12 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             }
 
-            this._scale = Value;
         },
         MoveTo: function (Value) {
-
-            Value = {
-                X: Value.X,
-                Y: Value.Y
-            };
-
             if (this.Point) {
                 this.Point = this.Point.Sum(Value);
-            } else {
+            }
+            if (this.Points) {
                 for (var i = 0; i <= this.Points.length - 1; i++) {
                     this.Points[i] = this.Points[i].Sum(Value);
                 }
@@ -665,18 +660,14 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'Arc':
                 {
-                    PointMouse = Point.Create(PointMouse.X, PointMouse.Y);
-
-                    if (Intersection.CircleArc(PointMouse, 2, this.Point, this.Radius, this.StartAngle, this.EndAngle, this.ClockWise))
+                    if (Intersection.CircleArc(Point.Create(PointMouse.X, PointMouse.Y), 2, this.Point, this.Radius, this.StartAngle, this.EndAngle, this.ClockWise))
                         return true;
 
                     break;
                 }
             case 'Circle':
                 {
-                    PointMouse = Point.Create(PointMouse.X, PointMouse.Y);
-
-                    if (Intersection.CircleCircle(PointMouse, 2, this.Point, this.Radius))
+                    if (Intersection.CircleCircle(PointMouse = Point.Create(PointMouse.X, PointMouse.Y), 2, this.Point, this.Radius))
                         return true;
 
                     break;
@@ -698,7 +689,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                             PointB = this.Points[i + 1];
                         }
 
-                        if (Intersection.CircleLine(PointMouse, 2, pointOrigin, pointDestination))
+                        if (Intersection.CircleLine(PointMouse, 2, PointA, PointB))
                             return true;
                     }
                     break;
@@ -792,7 +783,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: Types.Math.ParseFloat(this.Point.X, 5),
                     Y: Types.Math.ParseFloat(this.Point.Y, 5),
@@ -806,7 +796,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: Types.Math.ParseFloat(this.Point.X, 5),
                     Y: Types.Math.ParseFloat(this.Point.Y, 5),
@@ -817,7 +806,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: Types.Math.ParseFloat(this.Point.X, 5),
                     Y: Types.Math.ParseFloat(this.Point.Y, 5),
@@ -829,7 +817,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: [Types.Math.ParseFloat(this.Points[0].X, 5), Types.Math.ParseFloat(this.Points[0].Y, 5)],
                     Y: [Types.Math.ParseFloat(this.Points[1].X, 5), Types.Math.ParseFloat(this.Points[1].Y, 5)]
@@ -839,7 +826,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: Types.Math.ParseFloat(this.Point.X, 5),
                     Y: Types.Math.ParseFloat(this.Point.Y, 5),
@@ -850,7 +836,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Uuid: this.Uuid,
                     Type: this.Type,
                     Name: this.Name,
-                    Locked: this.Locked,
                     Visible: this.Visible,
                     X: Types.Math.ParseFloat(this.Point.X, 5),
                     Y: Types.Math.ParseFloat(this.Point.Y, 5),
@@ -866,7 +851,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Arc = Types.Function.Inherits(function Arc(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -881,7 +865,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Circle = Types.Function.Inherits(function Circle(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -893,7 +876,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Ellipse = Types.Function.Inherits(function Ellipse(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -906,7 +888,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Line = Types.Function.Inherits(function Line(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -918,7 +899,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Polygon = Types.Function.Inherits(function Polygon(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -931,7 +911,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     var Rectangle = Types.Function.Inherits(function Rectangle(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
         this.Visible = Attrs.Visible;
         this.Status = Attrs.Status;
 
@@ -950,7 +929,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             Uuid: Uuid,
             Name: 'Shape '.concat(Uuid),
             Style: null,
-            Locked: false,
             Visible: true,
             Status: null
         }, Attrs);
@@ -994,14 +972,13 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             {
                 Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
                 Attrs.Points = [];
-                Attrs.Sides = Attrs.Sides;
 
-                for (var i = 0; i < Sides; i++) {
+                for (var i = 0; i < Attrs.Sides; i++) {
 
-                    var pointX = (Radius * Math.cos(((Math.PI * 2) / Sides) * i) + X),
-                        pointY = (Radius * Math.sin(((Math.PI * 2) / Sides) * i) + Y);
+                    var PointX = (Attrs.Radius * Math.cos(((Math.PI * 2) / Attrs.Sides) * i) + Attrs.Point.X),
+                        PointY = (Attrs.Radius * Math.sin(((Math.PI * 2) / Attrs.Sides) * i) + Attrs.Point.Y);
 
-                    Attrs['Points'].push(Point.Create(pointX, pointY));
+                    Attrs['Points'].push(Point.Create(PointX, PointY));
                 }
 
                 return new Polygon(Attrs);
@@ -1030,13 +1007,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
         Authors = ['lilo@c37.co', 'ser@c37.co'];
 
     var Types = require('utility/types'),
-        Import = require('utility/import');
+        Import = require('utility/import'),
+        Export = require('utility/export');
 
     var LayerManager = require('structure/layer'),
         ShapeManager = require('geometric/shape'),
         ToolManager = require('structure/tool');
 
-    var LayerGrid = null,
+    var LayerSystem = null,
         ViewPort = null;
 
 
@@ -1062,10 +1040,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if (LayerManager.Active()) {
                     ToolManager.Event.Notify('onMouseMove', {
                         Type: 'onMouseMove',
-                        Position: Types.Graphic.MousePosition(ViewPort, {
-                            X: Event.clientX,
-                            Y: Event.clientY
-                        }),
+                        Position: Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY),
                         Shapes: LayerManager.Active().Shapes.List(),
                         Scroll: Plane.Scroll,
                         Update: Plane.Update
@@ -1076,10 +1051,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if (LayerManager.Active()) {
                     ToolManager.Event.Notify('onClick', {
                         Type: 'onClick',
-                        Position: Types.Graphic.MousePosition(ViewPort, {
-                            X: Event.clientX,
-                            Y: Event.clientY
-                        }),
+                        Position: Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY),
                         Shapes: LayerManager.Active().Shapes.List(),
                         Scroll: Plane.Scroll,
                         Update: Plane.Update
@@ -1131,7 +1103,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             // reset em zoom
             Plane.Zoom = 1;
             // delete em todas as layers
-            LayerManager.Delete();
+            Layer.Delete();
             // um novo grid com as configurações limpas
             GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, this.Scroll);
 
@@ -1139,7 +1111,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         Layer: Types.Object.Extend(new Types.Object.Event(), {
             Create: function (Attrs) {
-                if ((typeof Attrs == "function") || (Attrs == null)) {
+                if ((typeof Attrs == "function")) {
                     throw new Error('Layer - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
@@ -1150,10 +1122,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 return LayerManager.Create(Attrs);
             },
             List: function (Selector) {
-                return LayerManager.List();
+                return Layer.List();
             },
             Delete: function (Uuid) {
-                LayerManager.Delete(Uuid);
+                Layer.Delete(Uuid);
             },
             get Active() {
                 return LayerManager.Active();
@@ -1161,14 +1133,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
             set Active(Value) {
                 this.Notify('onDeactive', {
                     Type: 'onDeactive',
-                    Layer: LayerManager.Active()
+                    Layer: Layer.Active()
                 });
 
                 LayerManager.Active(Value);
 
                 this.Notify('onActive', {
                     Type: 'onActive',
-                    Layer: LayerManager.Active()
+                    Layer: Layer.Active()
                 });
             }
 
@@ -1185,9 +1157,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     throw new Error('Shape - Create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                var shape = ShapeManager.Create(Attrs);
+                var Shape = ShapeManager.Create(Attrs);
 
-                LayerManager.Active().Shapes.Add(shape.Uuid, shape);
+                LayerManager.Active().Shapes.Add(Shape.Uuid, Shape);
 
                 return true;
             }
@@ -1198,12 +1170,81 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                ToolManager.Create(Attrs)
-
-
-
-                return true;
+                return ToolManager.Create(Attrs);
             }
+        },
+        get Zoom() {
+            return this._zoom || 1;
+        },
+        set Zoom(Value) {
+
+            // Plane.Zoom /= .9;  - more
+            // Plane.Zoom *= .9; - less
+
+            var LayerActive = LayerManager.Active(),
+                ZoomFactor = Value / Plane.Zoom;
+
+            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, Value, this.Scroll);
+
+            LayerManager.List().forEach(function (Layer) {
+
+                LayerManager.Active(Layer.Uuid);
+
+                LayerManager.Active().Shapes.List().forEach(function (Shape) {
+                    Shape.ScaleTo(ZoomFactor);
+                });
+
+                Plane.Update();
+            });
+
+            Layer.Active(LayerActive ? LayerActive.Uuid : LayerManager.Active().Uuid);
+
+            this._zoom = Value;
+        },
+        get Scroll() {
+            return this._scroll || {
+                X: 0,
+                Y: 0
+            };
+        },
+        set Scroll(Value) {
+
+            var LayerActive = LayerManager.Active(),
+                MoveFactor = {
+                    X: Value.X + this.Scroll.X,
+                    Y: Value.Y + this.Scroll.Y
+                };
+
+            Value.X = Value.X * this.Zoom;
+            Value.Y = Value.Y * this.Zoom;
+
+            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, MoveFactor);
+
+            LayerManager.List().forEach(function (Layer) {
+
+                LayerManager.Active(Layer.Uuid);
+
+                LayerManager.Active().Shapes.List().forEach(function (Shape) {
+                    Shape.MoveTo(Value);
+                });
+
+                Plane.Update();
+            });
+
+            Layer.Active(LayerActive ? LayerActive.Uuid : LayerManager.Active().Uuid);
+
+            this._scroll = MoveFactor;
+        },
+        get Settings() {
+            return this._settings || {
+                MetricSystem: 'mm',
+                BackgroundColor: 'rgb(255, 255, 255)',
+                GridEnable: true,
+                GridColor: 'rgb(218, 222, 215)'
+            };
+        },
+        set Settings(Value) {
+            this._settings = Value;
         },
         Import: {
             FromJson: function (StringJson) {
@@ -1260,7 +1301,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     Settings: Plane.Settings,
                     Zoom: Types.Math.ParseFloat(Plane.Zoom, 5),
                     Scroll: Plane.Scroll,
-                    Layers: LayerManager.List().map(function (LayerExport) {
+                    Layers: Layer.List().map(function (LayerExport) {
                         var LayerObject = LayerExport.ToObject();
 
                         LayerObject.Shapes = LayerObject.Shapes.map(function (ShapeExport) {
@@ -1274,79 +1315,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 return JSON.stringify(PlaneExport);
 
             }
-        },
-        get Zoom() {
-            return this._zoom || 1;
-        },
-        set Zoom(value) {
-
-            // Plane.Zoom /= .9;  - more
-            // Plane.Zoom *= .9; - less
-
-            var LayerActive = LayerManager.Active(),
-                ZoomFactor = value / Plane.Zoom;
-
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, value, this.Scroll);
-
-            LayerManager.List().forEach(function (Layer) {
-
-                LayerManager.Active(Layer.Uuid)
-
-                LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                    Shape.Scale = ZoomFactor;
-                });
-
-                Plane.Update();
-            });
-
-            LayerManager.Active(LayerActive);
-
-            this._zoom = value;
-        },
-        get Scroll() {
-            return this._scroll || {
-                X: 0,
-                Y: 0
-            };
-        },
-        set Scroll(Value) {
-
-            var LayerActive = LayerManager.Active(),
-                MoveFactor = {
-                    X: Value.X + this.Scroll.X,
-                    Y: Value.Y + this.Scroll.Y
-                };
-
-            Value.X = Value.X * this.Zoom;
-            Value.Y = Value.Y * this.Zoom;
-
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, MoveFactor);
-
-            LayerManager.List().forEach(function (Layer) {
-
-                LayerManager.Active(Layer.Uuid);
-
-                LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                    Shape.MoveTo(Value);
-                });
-
-                Plane.Update();
-            });
-
-            LayerManager.Active(LayerActive);
-
-            this._scroll = MoveFactor;
-        },
-        get Settings() {
-            return this._settings || {
-                MetricSystem: 'mm',
-                BackgroundColor: 'rgb(255, 255, 255)',
-                GridEnable: true,
-                GridColor: 'rgb(218, 222, 215)'
-            };
-        },
-        set Settings(Value) {
-            this._settings = Value;
         }
     });
 
@@ -1355,18 +1323,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         if (!Plane.Settings.GridEnable) return;
 
-        if (!LayerGrid) {
+        if (!LayerSystem) {
             var Attrs = { // atributos para a layer do grid (sistema) 
                 ViewPort: ViewPort,
-                Name: 'System - Grid',
-                System: true,
+                Name: 'Plane - System',
+                Status: 'System',
                 Style: {
                     BackgroundColor: Plane.Settings.BackgroundColor
                 }
             };
-            LayerGrid = LayerManager.Create(Attrs);
+            LayerSystem = LayerManager.Create(Attrs);
         } else {
-            LayerGrid.Shapes = new Types.Data.Dictionary();
+            LayerSystem.Shapes = new Types.Data.Dictionary();
         }
 
         // calculos para o Zoom
@@ -1377,7 +1345,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (Scroll.X > 0) {
             for (var X = (Scroll.X * Zoom); X >= 0; X -= (10 * Zoom)) {
 
-                var ShapeGrid = ShapeManager.Create({
+                var Shape = ShapeManager.Create({
                     Uuid: Types.Math.Uuid(9, 16),
                     Type: 'Line',
                     X: [X, 0],
@@ -1388,7 +1356,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     }
                 });
 
-                LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
+                LayerSystem.Shapes.Add(Shape.Uuid, Shape);
                 LineBold++;
             }
         }
@@ -1396,7 +1364,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         LineBold = 0;
         for (var X = (Scroll.X * Zoom); X <= Width; X += (10 * Zoom)) {
 
-            var ShapeGrid = ShapeManager.Create({
+            var Shape = ShapeManager.Create({
                 Uuid: Types.Math.Uuid(9, 16),
                 Type: 'Line',
                 X: [X, 0],
@@ -1407,7 +1375,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 }
             });
 
-            LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
+            LayerSystem.Shapes.Add(Shape.Uuid, Shape);
             LineBold++;
         }
 
@@ -1415,7 +1383,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (Scroll.Y > 0) {
             for (var Y = (Scroll.Y * Zoom); Y >= 0; Y -= (10 * Zoom)) {
 
-                var ShapeGrid = ShapeManager.Create({
+                var Shape = ShapeManager.Create({
                     Uuid: Types.Math.Uuid(9, 16),
                     Type: 'Line',
                     X: [0, Y],
@@ -1426,7 +1394,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     }
                 });
 
-                LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
+                LayerSystem.Shapes.Add(Shape.Uuid, Shape);
                 LineBold++;
             }
         }
@@ -1434,7 +1402,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         LineBold = 0;
         for (var Y = (Scroll.Y * Zoom); Y <= Height; Y += (10 * Zoom)) {
 
-            var ShapeGrid = ShapeManager.Create({
+            var Shape = ShapeManager.Create({
                 Uuid: Types.Math.Uuid(9, 16),
                 Type: 'Line',
                 X: [0, Y],
@@ -1445,15 +1413,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 }
             });
 
-            LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
+            LayerSystem.Shapes.Add(Shape.Uuid, Shape);
             LineBold++;
         }
 
-        Plane.Update(LayerGrid);
+        Plane.Update(LayerSystem);
     };
 
 
-    exports.PlaneApi = Plane;
+    exports.Public = Plane;
 });
 define("structure/layer", ['require', 'exports'], function (require, exports) {
 
@@ -1465,9 +1433,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     var Layer = Types.Function.Inherits(function Layer(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.Locked = Attrs.Locked;
-        this.Visible = Attrs.Visible;
-        this.System = Attrs.System;
+        this.Status = Attrs.Status;
         this.Style = Attrs.Style;
         this.Render = Attrs.Render;
         this.Shapes = Attrs.Shapes;
@@ -1509,15 +1475,12 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             Uuid: Uuid,
             Name: 'New Layer '.concat(Uuid),
             Style: {
-                fillColor: 'rgb(0,0,0)',
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                lineWidth: .7,
-                lineColor: 'rgb(0, 0, 0)',
+                LineCap: 'butt',
+                LineJoin: 'miter',
+                LineWidth: .7,
+                LineColor: 'rgb(0, 0, 0)',
             },
-            Locked: false,
-            Visible: true,
-            System: false,
+            Status: 'Visible',
             Shapes: new Types.Data.Dictionary(),
             Render: Render
         }, Attrs);
@@ -1529,11 +1492,9 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // add em ViewPort
         Attrs.ViewPort.appendChild(layer.Render);
 
-        if (!layer.System) {
-
+        if (layer.Status != 'System') {
             LayerStore.Add(layer.Uuid, layer);
             this.Active(layer.Uuid);
-
             return true;
         } else {
             return layer;
@@ -1553,7 +1514,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             LayerStore.Delete(Layer.Uuid);
         });
     }
-    
+
     function List() {
         return LayerStore.List();
     }
@@ -1568,22 +1529,25 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
-    
+
     var ToolStore = new Types.Data.Dictionary()
 
     var Tool = Types.Function.Inherits(function Tool(Attrs) {
         this.Uuid = Attrs.Uuid;
         this.Name = Attrs.Name;
-        this.__defineGetter__('Active', function () {
-            return this._active || false;
-        });
-        this.__defineSetter__('Active', function (value) {
-            this.Notify(value ? 'onActive' : 'onDeactive', {
-                Type: value ? 'onActive' : 'onDeactive',
-                Now: new Date().toISOString()
 
-            });
-            this._active = value;
+        Object.defineProperty(this, 'Active', {
+            get: function () {
+                return this._active || false;
+            },
+            set: function (Value) {
+                this.Notify(Value ? 'onActive' : 'onDeactive', {
+                    Type: Value ? 'onActive' : 'onDeactive',
+                    Now: new Date().toISOString()
+
+                });
+                this._active = Value;
+            }
         });
     }, Types.Object.Event);
 
@@ -1597,13 +1561,13 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
         // nova tool
         var tool = Tool.Create(Attrs)
-        
+
         ToolStore.Add(tool.Uuid, tool);
-        
-        return true;
+
+        return tool;
     }
 
-    
+
     var EventProxy = new Types.Object.Event();
 
     EventProxy.Listen('onMouseMove', function (Message) {
@@ -1841,11 +1805,11 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     var Graphic = {
 
-        MousePosition: function (Element, Position) {
+        MousePosition: function (Element, X, Y) {
             var bb = Element.getBoundingClientRect();
 
-            var X = (Position.X - bb.left) * (Element.clientWidth / bb.width);
-            var Y = (Position.Y - bb.top) * (Element.clientHeight / bb.height);
+            X = (X - bb.left) * (Element.clientWidth / bb.width);
+            Y = (Y - bb.top) * (Element.clientHeight / bb.height);
 
             // tradução para o sistema de coordenadas cartesiano
             Y = (Y - Element.clientHeight) * -1;
@@ -2012,5 +1976,5 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     exports.Object = Objects;
     exports.Function = Functions;
 });
-window.Plane = require("plane").PlaneApi;
+window.Plane = require("plane").Public;
 })(window);

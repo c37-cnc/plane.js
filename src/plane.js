@@ -4,13 +4,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
         Authors = ['lilo@c37.co', 'ser@c37.co'];
 
     var Types = require('utility/types'),
-        Import = require('utility/import');
+        Import = require('utility/import'),
+        Export = require('utility/export');
 
     var LayerManager = require('structure/layer'),
         ShapeManager = require('geometric/shape'),
         ToolManager = require('structure/tool');
 
-    var LayerGrid = null,
+    var LayerSystem = null,
         ViewPort = null;
 
 
@@ -36,10 +37,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if (LayerManager.Active()) {
                     ToolManager.Event.Notify('onMouseMove', {
                         Type: 'onMouseMove',
-                        Position: Types.Graphic.MousePosition(ViewPort, {
-                            X: Event.clientX,
-                            Y: Event.clientY
-                        }),
+                        Position: Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY),
                         Shapes: LayerManager.Active().Shapes.List(),
                         Scroll: Plane.Scroll,
                         Update: Plane.Update
@@ -50,10 +48,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if (LayerManager.Active()) {
                     ToolManager.Event.Notify('onClick', {
                         Type: 'onClick',
-                        Position: Types.Graphic.MousePosition(ViewPort, {
-                            X: Event.clientX,
-                            Y: Event.clientY
-                        }),
+                        Position: Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY),
                         Shapes: LayerManager.Active().Shapes.List(),
                         Scroll: Plane.Scroll,
                         Update: Plane.Update
@@ -105,7 +100,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             // reset em zoom
             Plane.Zoom = 1;
             // delete em todas as layers
-            LayerManager.Delete();
+            Layer.Delete();
             // um novo grid com as configurações limpas
             GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, this.Scroll);
 
@@ -113,7 +108,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         Layer: Types.Object.Extend(new Types.Object.Event(), {
             Create: function (Attrs) {
-                if ((typeof Attrs == "function") || (Attrs == null)) {
+                if ((typeof Attrs == "function")) {
                     throw new Error('Layer - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
@@ -124,10 +119,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 return LayerManager.Create(Attrs);
             },
             List: function (Selector) {
-                return LayerManager.List();
+                return Layer.List();
             },
             Delete: function (Uuid) {
-                LayerManager.Delete(Uuid);
+                Layer.Delete(Uuid);
             },
             get Active() {
                 return LayerManager.Active();
@@ -135,14 +130,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
             set Active(Value) {
                 this.Notify('onDeactive', {
                     Type: 'onDeactive',
-                    Layer: LayerManager.Active()
+                    Layer: Layer.Active()
                 });
 
                 LayerManager.Active(Value);
 
                 this.Notify('onActive', {
                     Type: 'onActive',
-                    Layer: LayerManager.Active()
+                    Layer: Layer.Active()
                 });
             }
 
@@ -159,9 +154,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     throw new Error('Shape - Create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                var shape = ShapeManager.Create(Attrs);
+                var Shape = ShapeManager.Create(Attrs);
 
-                LayerManager.Active().Shapes.Add(shape.Uuid, shape);
+                LayerManager.Active().Shapes.Add(Shape.Uuid, Shape);
 
                 return true;
             }
@@ -172,12 +167,81 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                ToolManager.Create(Attrs)
-
-
-
-                return true;
+                return ToolManager.Create(Attrs);
             }
+        },
+        get Zoom() {
+            return this._zoom || 1;
+        },
+        set Zoom(Value) {
+
+            // Plane.Zoom /= .9;  - more
+            // Plane.Zoom *= .9; - less
+
+            var LayerActive = LayerManager.Active(),
+                ZoomFactor = Value / Plane.Zoom;
+
+            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, Value, this.Scroll);
+
+            LayerManager.List().forEach(function (Layer) {
+
+                LayerManager.Active(Layer.Uuid);
+
+                LayerManager.Active().Shapes.List().forEach(function (Shape) {
+                    Shape.ScaleTo(ZoomFactor);
+                });
+
+                Plane.Update();
+            });
+
+            Layer.Active(LayerActive ? LayerActive.Uuid : LayerManager.Active().Uuid);
+
+            this._zoom = Value;
+        },
+        get Scroll() {
+            return this._scroll || {
+                X: 0,
+                Y: 0
+            };
+        },
+        set Scroll(Value) {
+
+            var LayerActive = LayerManager.Active(),
+                MoveFactor = {
+                    X: Value.X + this.Scroll.X,
+                    Y: Value.Y + this.Scroll.Y
+                };
+
+            Value.X = Value.X * this.Zoom;
+            Value.Y = Value.Y * this.Zoom;
+
+            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, MoveFactor);
+
+            LayerManager.List().forEach(function (Layer) {
+
+                LayerManager.Active(Layer.Uuid);
+
+                LayerManager.Active().Shapes.List().forEach(function (Shape) {
+                    Shape.MoveTo(Value);
+                });
+
+                Plane.Update();
+            });
+
+            Layer.Active(LayerActive ? LayerActive.Uuid : LayerManager.Active().Uuid);
+
+            this._scroll = MoveFactor;
+        },
+        get Settings() {
+            return this._settings || {
+                MetricSystem: 'mm',
+                BackgroundColor: 'rgb(255, 255, 255)',
+                GridEnable: true,
+                GridColor: 'rgb(218, 222, 215)'
+            };
+        },
+        set Settings(Value) {
+            this._settings = Value;
         },
         Import: {
             FromJson: function (StringJson) {
@@ -234,7 +298,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     Settings: Plane.Settings,
                     Zoom: Types.Math.ParseFloat(Plane.Zoom, 5),
                     Scroll: Plane.Scroll,
-                    Layers: LayerManager.List().map(function (LayerExport) {
+                    Layers: Layer.List().map(function (LayerExport) {
                         var LayerObject = LayerExport.ToObject();
 
                         LayerObject.Shapes = LayerObject.Shapes.map(function (ShapeExport) {
@@ -248,79 +312,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 return JSON.stringify(PlaneExport);
 
             }
-        },
-        get Zoom() {
-            return this._zoom || 1;
-        },
-        set Zoom(value) {
-
-            // Plane.Zoom /= .9;  - more
-            // Plane.Zoom *= .9; - less
-
-            var LayerActive = LayerManager.Active(),
-                ZoomFactor = value / Plane.Zoom;
-
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, value, this.Scroll);
-
-            LayerManager.List().forEach(function (Layer) {
-
-                LayerManager.Active(Layer.Uuid)
-
-                LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                    Shape.Scale = ZoomFactor;
-                });
-
-                Plane.Update();
-            });
-
-            LayerManager.Active(LayerActive);
-
-            this._zoom = value;
-        },
-        get Scroll() {
-            return this._scroll || {
-                X: 0,
-                Y: 0
-            };
-        },
-        set Scroll(Value) {
-
-            var LayerActive = LayerManager.Active(),
-                MoveFactor = {
-                    X: Value.X + this.Scroll.X,
-                    Y: Value.Y + this.Scroll.Y
-                };
-
-            Value.X = Value.X * this.Zoom;
-            Value.Y = Value.Y * this.Zoom;
-
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, MoveFactor);
-
-            LayerManager.List().forEach(function (Layer) {
-
-                LayerManager.Active(Layer.Uuid);
-
-                LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                    Shape.MoveTo(Value);
-                });
-
-                Plane.Update();
-            });
-
-            LayerManager.Active(LayerActive);
-
-            this._scroll = MoveFactor;
-        },
-        get Settings() {
-            return this._settings || {
-                MetricSystem: 'mm',
-                BackgroundColor: 'rgb(255, 255, 255)',
-                GridEnable: true,
-                GridColor: 'rgb(218, 222, 215)'
-            };
-        },
-        set Settings(Value) {
-            this._settings = Value;
         }
     });
 
@@ -329,18 +320,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         if (!Plane.Settings.GridEnable) return;
 
-        if (!LayerGrid) {
+        if (!LayerSystem) {
             var Attrs = { // atributos para a layer do grid (sistema) 
                 ViewPort: ViewPort,
-                Name: 'System - Grid',
-                System: true,
+                Name: 'Plane - System',
+                Status: 'System',
                 Style: {
                     BackgroundColor: Plane.Settings.BackgroundColor
                 }
             };
-            LayerGrid = LayerManager.Create(Attrs);
+            LayerSystem = LayerManager.Create(Attrs);
         } else {
-            LayerGrid.Shapes = new Types.Data.Dictionary();
+            LayerSystem.Shapes = new Types.Data.Dictionary();
         }
 
         // calculos para o Zoom
@@ -351,7 +342,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (Scroll.X > 0) {
             for (var X = (Scroll.X * Zoom); X >= 0; X -= (10 * Zoom)) {
 
-                var ShapeGrid = ShapeManager.Create({
+                var Shape = ShapeManager.Create({
                     Uuid: Types.Math.Uuid(9, 16),
                     Type: 'Line',
                     X: [X, 0],
@@ -362,7 +353,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     }
                 });
 
-                LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
+                LayerSystem.Shapes.Add(Shape.Uuid, Shape);
                 LineBold++;
             }
         }
@@ -370,7 +361,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         LineBold = 0;
         for (var X = (Scroll.X * Zoom); X <= Width; X += (10 * Zoom)) {
 
-            var ShapeGrid = ShapeManager.Create({
+            var Shape = ShapeManager.Create({
                 Uuid: Types.Math.Uuid(9, 16),
                 Type: 'Line',
                 X: [X, 0],
@@ -381,7 +372,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 }
             });
 
-            LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
+            LayerSystem.Shapes.Add(Shape.Uuid, Shape);
             LineBold++;
         }
 
@@ -389,7 +380,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (Scroll.Y > 0) {
             for (var Y = (Scroll.Y * Zoom); Y >= 0; Y -= (10 * Zoom)) {
 
-                var ShapeGrid = ShapeManager.Create({
+                var Shape = ShapeManager.Create({
                     Uuid: Types.Math.Uuid(9, 16),
                     Type: 'Line',
                     X: [0, Y],
@@ -400,7 +391,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     }
                 });
 
-                LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
+                LayerSystem.Shapes.Add(Shape.Uuid, Shape);
                 LineBold++;
             }
         }
@@ -408,7 +399,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         LineBold = 0;
         for (var Y = (Scroll.Y * Zoom); Y <= Height; Y += (10 * Zoom)) {
 
-            var ShapeGrid = ShapeManager.Create({
+            var Shape = ShapeManager.Create({
                 Uuid: Types.Math.Uuid(9, 16),
                 Type: 'Line',
                 X: [0, Y],
@@ -419,13 +410,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 }
             });
 
-            LayerGrid.Shapes.Add(ShapeGrid.Uuid, ShapeGrid);
+            LayerSystem.Shapes.Add(Shape.Uuid, Shape);
             LineBold++;
         }
 
-        Plane.Update(LayerGrid);
+        Plane.Update(LayerSystem);
     };
 
 
-    exports.PlaneApi = Plane;
+    exports.Public = Plane;
 });
