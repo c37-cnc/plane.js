@@ -2,7 +2,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
 
-    var ToolStore = new Types.Data.Dictionary();
+    var ToolStore = new Types.Data.Dictionary(),
+        ShapeSelected = new Types.Data.Dictionary();
 
     var LayerManager = require('structure/layer');
 
@@ -57,44 +58,59 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
             ViewPort.onmousemove = function (Event) {
                 if (LayerManager.Active()) {
-
                     LayerManager.Active().Shapes.List().forEach(function (Shape) {
-
                         if (Shape.Status != 'Selected') {
                             Shape.Status = Shape.Contains(Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY)) ? 'Over' : 'Out';
                         }
-
                     });
-                    
                     Update();
-
-
                 }
-
-
-
-                console.log();
-
-                //                Layer.Shapes.List().forEach(function (Shape) {
-                //
-                //
-                //                    if (Shape.Status != 'Selected') {
-                //                        Shape.Status = Shape.Contains(Message.Position) ? 'Over' : 'Out';
-                //                    }
-                //
-                //
-                //                });
-                //                
-                //                Update();
-
             }
 
+            ViewPort.onclick = function (Event) {
+                if (LayerManager.Active()) {
+                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
+                        if (Shape.Contains(Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY))) {
 
+                            Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over';
 
+                            if (Shape.Status == 'Selected') {
+                                ShapeSelected.Add(Shape.Uuid, Shape);
+                            } else {
+                                ShapeSelected.Delete(Shape.Uuid);
+                            }
+
+                        }
+                    });
+                    Update();
+
+                    ToolStore.List().forEach(function (Tool) {
+                        if (Tool.Active) {
+                            Tool.Notify('onMouseClick', {
+                                Type: 'onMouseClick',
+                                Shapes: ShapeSelected.List()
+                            });
+                        }
+                    });
+                }
+            }
 
         }
 
     })
+
+
+    //                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
+    //                        
+    //                        if (Shape.Contains(Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY))) {
+    //                            
+    //                            Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over';
+    //                            
+    //                            if (Shape.Status == 'Selected'){
+    //                                ShapeSelected.push(Shape);
+    //                            }
+    //                        }
+    //                    });
 
 
 

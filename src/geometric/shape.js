@@ -4,6 +4,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         Point = require('geometric/point'),
         Intersection = require('geometric/intersection');
 
+    
     function Shape() {};
 
     Shape.prototype = {

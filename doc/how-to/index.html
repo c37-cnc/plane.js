@@ -95,16 +95,32 @@
 
             var Tool001 = Plane.Tool.Create();
             Tool001.Active = true;
-            
+
             console.log(Tool001);
 
-            Tool001.Listen('onMouseMove', function (Event) {
-            
+            Tool001.Listen('onMouseClick', function (Event) {
+
                 console.log(Event);
-            
+
+                Event.Shapes.forEach(function (Shape) {
+
+                    if (Shape.Points) {
+                        
+                        Shape.Points.forEach(function(Point){
+                        
+                            Point.X += 10;
+                            Point.Y += 10;
+                        
+                        })
+                    }
+
+                })
+
+                Plane.Update();
+
             });
-            
-            
+
+
             document.getElementById('fileImport').addEventListener('change', function () {
                 var file = this.files[0],
                     filename = file.name;

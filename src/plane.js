@@ -39,33 +39,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 Update: Plane.Update
             });
 
-
-
-            //            // start em eventos
-            //            ViewPort.onmousemove = function (Event) {
-            //                if (LayerManager.Active()) {
-            //                    ToolManager.Event.Notify('onMouseMove', {
-            //                        Type: 'onMouseMove',
-            //                        Position: Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY),
-            //                        Shapes: LayerManager.Active().Shapes.List(),
-            //                        Scroll: Plane.Scroll,
-            //                        Update: Plane.Update
-            //                    });
-            //                }
-            //            };
-            //            ViewPort.onclick = function (Event) {
-            //                if (LayerManager.Active()) {
-            //                    ToolManager.Event.Notify('onClick', {
-            //                        Type: 'onClick',
-            //                        Position: Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY),
-            //                        Shapes: LayerManager.Active().Shapes.List(),
-            //                        Scroll: Plane.Scroll,
-            //                        Update: Plane.Update
-            //                    });
-            //                }
-            //            }
-            //            // start em eventos
-
             return true;
         },
         Update: function (LayerSystem) {
