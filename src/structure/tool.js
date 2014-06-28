@@ -12,8 +12,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
 
     var Tool = types.object.inherits(function Tool(attrs) {
-        this.Uuid = attrs.Uuid;
-        this.Name = attrs.Name;
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
 
         Object.defineProperty(this, 'active', {
             get: function () {
@@ -21,7 +21,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             },
             set: function (value) {
                 this.notify(value ? 'onActive' : 'onDeactive', {
-                    Type: value ? 'onActive' : 'onDeactive',
+                    type: value ? 'onActive' : 'onDeactive',
                     Now: new Date().toISOString()
 
                 });
@@ -33,17 +33,17 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     function create(attrs) {
 
-        var Uuid = types.math.uuid(9, 16);
+        var uuid = types.math.uuid(9, 16);
 
         attrs = types.object.merge({
-            Uuid: Uuid,
-            Name: 'Tool '.concat(Uuid)
+            uuid: uuid,
+            name: 'Tool '.concat(uuid)
         }, attrs); 
 
         // nova tool
         var tool = new Tool(attrs)
 
-        toolStore.Add(tool.Uuid, tool);
+        toolStore.Add(tool.uuid, tool);
 
         return tool;
     }
@@ -60,8 +60,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 
                 if (layerManager.active()) {
                     layerManager.active().shapes.list().forEach(function (Shape) {
-                        if (Shape.Status != 'Selected') {
-                            Shape.Status = Shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'Over' : 'Out';
+                        if (Shape.status != 'Selected') {
+                            Shape.status = Shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'Over' : 'Out';
                         }
                     });
                     update();
@@ -74,12 +74,12 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                     layerManager.active().shapes.list().forEach(function (Shape) {
                         if (Shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
 
-                            Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over';
+                            Shape.status = Shape.status != 'Selected' ? 'Selected' : 'Over';
 
-                            if (Shape.Status == 'Selected') {
-                                shapeSelected.Add(Shape.Uuid, Shape);
+                            if (Shape.status == 'Selected') {
+                                shapeSelected.Add(Shape.uuid, Shape);
                             } else {
-                                shapeSelected.remove(Shape.Uuid);
+                                shapeSelected.remove(Shape.uuid);
                             }
 
                         }
@@ -89,7 +89,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                     toolStore.list().forEach(function (Tool) {
                         if (Tool.active) {
                             Tool.notify('onMouseClick', {
-                                Type: 'onMouseClick',
+                                type: 'onMouseClick',
                                 shapes: shapeSelected.list()
                             });
                         }

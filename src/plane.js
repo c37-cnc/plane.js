@@ -43,7 +43,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         update: function (layerSystem) {
 
-            var layerStyle = layerSystem ? layerSystem.Style : layerManager.active().Style,
+            var layerStyle = layerSystem ? layerSystem.style : layerManager.active().style,
                 layerShapes = layerSystem ? layerSystem.shapes.list() : layerManager.active().shapes.list(),
                 layerRender = layerSystem ? layerSystem.render : layerManager.active().render,
                 context2D = layerRender.getContext('2d');
@@ -105,22 +105,22 @@ define("plane", ['require', 'exports'], function (require, exports) {
             list: function (Selector) {
                 return Layer.list();
             },
-            remove: function (Uuid) {
-                Layer.remove(Uuid);
+            remove: function (uuid) {
+                Layer.remove(uuid);
             },
             get active() {
                 return layerManager.active();
             },
             set active(value) {
                 this.notify('onDeactive', {
-                    Type: 'onDeactive',
+                    type: 'onDeactive',
                     Layer: Layer.active()
                 });
 
                 layerManager.active(value);
 
                 this.notify('onActive', {
-                    Type: 'onActive',
+                    type: 'onActive',
                     Layer: Layer.active()
                 });
             }
@@ -129,18 +129,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
         shape: {
             create: function (attrs) {
                 if ((typeof attrs == "function") || (attrs == null)) {
-                    throw new Error('Shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                    throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if (['Polygon', 'Rectangle', 'Line', 'Arc', 'Circle', 'Ellipse'].indexOf(attrs.Type) == -1) {
-                    throw new Error('Shape - create - Type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                if (['Polygon', 'Rectangle', 'Line', 'Arc', 'Circle', 'Ellipse'].indexOf(attrs.type) == -1) {
+                    throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
                 if ((attrs.X == undefined) || (attrs.Y == undefined)) {
-                    throw new Error('Shape - create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                    throw new Error('shape - create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                var Shape = shapeManager.create(attrs);
+                var shape = shapeManager.create(attrs);
 
-                layerManager.active().shapes.Add(Shape.Uuid, Shape);
+                layerManager.active().shapes.Add(shape.uuid, shape);
 
                 return true;
             }
@@ -171,7 +171,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             if (LayerActive) {
                 layerManager.list().forEach(function (Layer) {
 
-                    layerManager.active(Layer.Uuid);
+                    layerManager.active(Layer.uuid);
 
                     layerManager.active().shapes.list().forEach(function (Shape) {
                         Shape.scaleTo(zoomFactor);
@@ -179,7 +179,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                     plane.update();
                 });
-                layerManager.active(LayerActive.Uuid);
+                layerManager.active(LayerActive.uuid);
             }
 
             this._zoom = value;
@@ -207,7 +207,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                 layerManager.list().forEach(function (Layer) {
 
-                    layerManager.active(Layer.Uuid);
+                    layerManager.active(Layer.uuid);
 
                     layerManager.active().shapes.list().forEach(function (Shape) {
                         Shape.moveTo(value);
@@ -216,7 +216,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     plane.update();
 
                 });
-                layerManager.active(LayerActive.Uuid);
+                layerManager.active(LayerActive.uuid);
             }
 
             this._scroll = MoveFactor;
@@ -246,11 +246,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 planeObject.Layers.forEach(function (layerObject) {
 
                     layerManager.create({
-                        Uuid: layerObject.Uuid,
-                        Name: layerObject.Name,
+                        uuid: layerObject.uuid,
+                        name: layerObject.name,
                         Locked: layerObject.Locked,
                         Visible: layerObject.Visible,
-                        Style: layerObject.Style,
+                        style: layerObject.style,
                         viewPort: viewPort
                     });
 
@@ -305,16 +305,16 @@ define("plane", ['require', 'exports'], function (require, exports) {
     });
 
 
-    function gridDraw(height, Width, zoom, scroll) {
+    function gridDraw(height, width, zoom, scroll) {
 
         if (!plane.settings.gridEnable) return;
 
         if (!layerSystem) {
             var attrs = { // atributos para a layer do grid (sistema) 
                 viewPort: viewPort,
-                Name: 'Plane - System',
-                Status: 'System',
-                Style: {
+                name: 'Plane - System',
+                status: 'System',
+                style: {
                     backgroundColor: plane.settings.backgroundColor
                 }
             };
@@ -324,7 +324,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         }
 
         // calculos para o zoom
-        Width = zoom > 1 ? Math.round(Width * zoom) : Math.round(Width / zoom);
+        width = zoom > 1 ? Math.round(width * zoom) : Math.round(width / zoom);
         height = zoom > 1 ? Math.round(height * zoom) : Math.round(height / zoom);
 
         var lineBold = 0;
@@ -332,36 +332,36 @@ define("plane", ['require', 'exports'], function (require, exports) {
             for (var X = (scroll.X * zoom); X >= 0; X -= (10 * zoom)) {
 
                 var shape = shapeManager.create({
-                    Uuid: types.math.uuid(9, 16),
-                    Type: 'Line',
+                    uuid: types.math.uuid(9, 16),
+                    type: 'Line',
                     X: [X, 0],
                     Y: [X, height],
-                    Style: {
-                        LineColor: plane.settings.gridColor,
-                        LineWidth: lineBold % 5 == 0 ? .8 : .3
+                    style: {
+                        lineColor: plane.settings.gridColor,
+                        linewidth: lineBold % 5 == 0 ? .8 : .3
                     }
                 });
 
-                layerSystem.shapes.Add(shape.Uuid, shape);
+                layerSystem.shapes.Add(shape.uuid, shape);
                 lineBold++;
             }
         }
 
         lineBold = 0;
-        for (var X = (scroll.X * zoom); X <= Width; X += (10 * zoom)) {
+        for (var X = (scroll.X * zoom); X <= width; X += (10 * zoom)) {
 
             var shape = shapeManager.create({
-                Uuid: types.math.uuid(9, 16),
-                Type: 'Line',
+                uuid: types.math.uuid(9, 16),
+                type: 'Line',
                 X: [X, 0],
                 Y: [X, height],
-                Style: {
-                    LineColor: plane.settings.gridColor,
-                    LineWidth: lineBold % 5 == 0 ? .8 : .3
+                style: {
+                    lineColor: plane.settings.gridColor,
+                    lineWidth: lineBold % 5 == 0 ? .8 : .3
                 }
             });
 
-            layerSystem.shapes.Add(shape.Uuid, shape);
+            layerSystem.shapes.Add(shape.uuid, shape);
             lineBold++;
         }
 
@@ -370,17 +370,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
             for (var Y = (scroll.Y * zoom); Y >= 0; Y -= (10 * zoom)) {
 
                 var shape = shapeManager.create({
-                    Uuid: types.math.uuid(9, 16),
-                    Type: 'Line',
+                    uuid: types.math.uuid(9, 16),
+                    type: 'Line',
                     X: [0, Y],
-                    Y: [Width, Y],
-                    Style: {
-                        LineColor: plane.settings.gridColor,
-                        LineWidth: lineBold % 5 == 0 ? .8 : .3
+                    Y: [width, Y],
+                    style: {
+                        lineColor: plane.settings.gridColor,
+                        lineWidth: lineBold % 5 == 0 ? .8 : .3
                     }
                 });
 
-                layerSystem.shapes.Add(shape.Uuid, shape);
+                layerSystem.shapes.Add(shape.uuid, shape);
                 lineBold++;
             }
         }
@@ -389,17 +389,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
         for (var Y = (scroll.Y * zoom); Y <= height; Y += (10 * zoom)) {
 
             var shape = shapeManager.create({
-                Uuid: types.math.uuid(9, 16),
-                Type: 'Line',
+                uuid: types.math.uuid(9, 16),
+                type: 'Line',
                 X: [0, Y],
-                Y: [Width, Y],
-                Style: {
-                    LineColor: plane.settings.gridColor,
-                    LineWidth: lineBold % 5 == 0 ? .8 : .3
+                Y: [width, Y],
+                style: {
+                    lineColor: plane.settings.gridColor,
+                    lineWidth: lineBold % 5 == 0 ? .8 : .3
                 }
             });
 
-            layerSystem.shapes.Add(shape.Uuid, shape);
+            layerSystem.shapes.Add(shape.uuid, shape);
             lineBold++;
         }
 

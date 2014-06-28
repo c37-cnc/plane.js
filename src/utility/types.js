@@ -172,7 +172,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          * Return an array that holds the names of the enumerable own properties of o
          */
         keys: function (o) {
-            if (typeof o !== "object") throw TypeError(); // Object argument required
+            if (typeof o !== "object") throw typeError(); // Object argument required
             var result = []; // The array we will return
             for (var prop in o) { // For all enumerable properties
                 if (o.hasOwnProperty(prop)) // If it is an own property

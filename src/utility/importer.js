@@ -28,22 +28,22 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
             switch (dxfObject.type) {
             case 'LINE':
                 {
-                    var line = '{ "Type": "Line", "X": [{0}, {1}], "Y": [{2}, {3}] }';
+                    var line = '{ "type": "Line", "X": [{0}, {1}], "Y": [{2}, {3}] }';
                     return line.format(dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1);
                 }
             case 'CIRCLE':
                 {
-                    var circle = '{ "Type": "Circle", "X": {0}, "Y": {1}, "Radius": {2} }';
+                    var circle = '{ "type": "Circle", "X": {0}, "Y": {1}, "radius": {2} }';
                     return circle.format(dxfObject.x, dxfObject.y, dxfObject.r);
                 }
             case 'ARC':
                 {
-                    var arc = '{"Type": "Arc", "X": {0}, "Y": {1}, "Radius": {2},"StartAngle": {3}, "EndAngle": {4}, "ClockWise": {5} }';
+                    var arc = '{"type": "Arc", "X": {0}, "Y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} }';
                     return arc.format(dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false);
                 }
             case 'ELLIPSE':
                 {
-                    var ellipse = '{"Type": "Ellipse", "X": {0}, "Y": {1}, "RadiusY": {2},"RadiusX": {3} }',
+                    var ellipse = '{"type": "Ellipse", "X": {0}, "Y": {1}, "radiusY": {2},"radiusX": {3} }',
                         radiusX = Math.abs(dxfObject.x1),
                         radiusY = radiusX * dxfObject.r;
 
@@ -54,8 +54,8 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
         }
 
         var groupCodes = {
-            0: 'entityType',
-            2: 'blockName',
+            0: 'entitytype',
+            2: 'blockname',
             10: 'x',
             11: 'x1',
             20: 'y',
@@ -87,11 +87,11 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
             } else {
                 var value = line;
                 var groupCode = groupCodes[code];
-                if (groupCode === 'blockName' && value === 'ENTITIES') {
+                if (groupCode === 'blockname' && value === 'ENTITIES') {
                     isEntitiesSectionActive = true;
                 } else if (isEntitiesSectionActive) {
 
-                    if (groupCode === 'entityType') { // New entity starts.
+                    if (groupCode === 'entitytype') { // New entity starts.
                         if (object.type) {
                             json += json.substring(json.length - 1, json.length) == '[' ? '' : ',';
                             json += aaaa(object);

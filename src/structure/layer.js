@@ -6,21 +6,21 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         LayerActive = null;
 
     var Layer = types.object.inherits(function Layer(attrs) {
-        this.Uuid = attrs.Uuid;
-        this.Name = attrs.Name;
-        this.Status = attrs.Status;
-        this.Style = attrs.Style;
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.status = attrs.status;
+        this.style = attrs.style;
         this.render = attrs.render;
         this.shapes = attrs.shapes;
     }, types.object.event);
 
     Layer.prototype.toObject = function () {
         return {
-            Uuid: this.Uuid,
-            Name: this.Name,
+            uuid: this.uuid,
+            name: this.name,
             Locked: this.Locked,
             Visible: this.Visible,
-            Style: this.Style,
+            style: this.style,
             shapes: this.shapes.list()
         };
     }
@@ -28,7 +28,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     function create(attrs) {
 
-        var Uuid = types.math.uuid(9, 16);
+        var uuid = types.math.uuid(9, 16);
 
         // montando o render da Layer
         var render = document.createElement('canvas');
@@ -38,7 +38,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         render.height = attrs.viewPort.clientHeight;
 
         render.style.position = "absolute";
-        render.style.backgroundColor = (attrs.Style && attrs.Style.backgroundColor) ? attrs.Style.backgroundColor : 'transparent';
+        render.style.backgroundColor = (attrs.style && attrs.style.backgroundColor) ? attrs.style.backgroundColor : 'transparent';
 
         // sistema cartesiano de coordenadas
         var context2D = render.getContext('2d');
@@ -47,15 +47,15 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
         // parametros para a nova Layer
         attrs = types.object.merge({
-            Uuid: Uuid,
-            Name: 'New Layer '.concat(Uuid),
-            Style: {
+            uuid: uuid,
+            name: 'New Layer '.concat(uuid),
+            style: {
                 LineCap: 'butt',
                 LineJoin: 'miter',
-                LineWidth: .7,
-                LineColor: 'rgb(0, 0, 0)',
+                lineWidth: .7,
+                lineColor: 'rgb(0, 0, 0)',
             },
-            Status: 'Visible',
+            status: 'Visible',
             shapes: types.data.dictionary.create(),
             render: render
         }, attrs);
@@ -67,9 +67,9 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // add em viewPort
         attrs.viewPort.appendChild(layer.render);
 
-        if (layer.Status != 'System') {
-            LayerStore.Add(layer.Uuid, layer);
-            this.active(layer.Uuid);
+        if (layer.status != 'System') {
+            LayerStore.Add(layer.uuid, layer);
+            this.active(layer.uuid);
             return true;
         } else {
             return layer;
@@ -86,7 +86,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             if (Element && Element.parentNode) {
                 Element.parentNode.removeChild(Element);
             }
-            LayerStore.remove(Layer.Uuid);
+            LayerStore.remove(Layer.uuid);
         });
     }
 

@@ -1,7 +1,7 @@
 define("geometric/intersection", ['require', 'exports'], function (require, exports) {
 
     var polynomial = require('geometric/polynomial'),
-        Point = require('geometric/point');
+        point = require('geometric/point');
 
 
     function Bezout(e1, e2) {
@@ -60,10 +60,10 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
     function circleRectangle(c, r, p, h, w) {
 
-        var rightBottom = Point.create(p.X + w, p.Y),
-            rightTop = Point.create(p.X + w, p.Y + h),
-            leftTop = Point.create(p.X, p.Y + h),
-            leftBottom = Point.create(p.X, p.Y);
+        var rightBottom = point.create(p.X + w, p.Y),
+            rightTop = point.create(p.X + w, p.Y + h),
+            leftTop = point.create(p.X, p.Y + h),
+            leftBottom = point.create(p.X, p.Y);
 
         var inter1 = circleLine(c, r, rightBottom, rightTop);
         var inter2 = circleLine(c, r, rightTop, leftTop);
@@ -97,8 +97,8 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
             var p = c1.interpolationLinear(c2, a / c_dist);
             var b = h / c_dist;
 
-            result.points.push(Point.create(p.X - b * (c2.Y - c1.Y), p.Y + b * (c2.X - c1.X)));
-            result.points.push(Point.create(p.X + b * (c2.Y - c1.Y), p.Y - b * (c2.X - c1.X)));
+            result.points.push(point.create(p.X - b * (c2.Y - c1.Y), p.Y + b * (c2.X - c1.X)));
+            result.points.push(point.create(p.X + b * (c2.Y - c1.Y), p.Y - b * (c2.X - c1.X)));
 
         }
 
@@ -115,9 +115,9 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
                 radianEnd = ae / 360 * 2 * Math.PI,
                 radianMid = radianStart > radianEnd ? (radianStart - radianEnd) / 2 : (radianEnd - radianStart) / 2;
 
-            var pointStart = Point.create(ca.X + Math.cos(radianStart) * r2, ca.Y + Math.sin(radianStart) * r2),
-                pointEnd = Point.create(ca.X + Math.cos(radianEnd) * r2, ca.Y + Math.sin(radianEnd) * r2),
-                pointMid = Point.create(ca.X + Math.cos(radianMid) * r2, ck ? ca.Y - Math.sin(radianMid) * r2 : ca.Y + Math.sin(radianMid) * r2);
+            var pointStart = point.create(ca.X + Math.cos(radianStart) * r2, ca.Y + Math.sin(radianStart) * r2),
+                pointEnd = point.create(ca.X + Math.cos(radianEnd) * r2, ca.Y + Math.sin(radianEnd) * r2),
+                pointMid = point.create(ca.X + Math.cos(radianMid) * r2, ck ? ca.Y - Math.sin(radianMid) * r2 : ca.Y + Math.sin(radianMid) * r2);
 
             var twoPi = (Math.PI + Math.PI);
 
@@ -128,45 +128,45 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
                 if (radius - 4 <= pointDistance && pointDistance <= radius + 4) {
 
-                    var pointStartAngle = ca.angleTo(pointStart),
+                    var pointstartAngle = ca.angleTo(pointStart),
                         pointMidAngle = ca.angleTo(pointMid),
-                        pointEndAngle = ca.angleTo(pointEnd),
+                        pointendAngle = ca.angleTo(pointEnd),
                         pointMouseAngle = ca.angleTo(intersection.points[i]);
 
-                    if (pointStartAngle <= pointMidAngle && pointMidAngle <= pointEndAngle) {
+                    if (pointstartAngle <= pointMidAngle && pointMidAngle <= pointendAngle) {
                         // 2014.06.24 - 14:33 - lilo - em observação
                         //                        if (ck) {
-                        //                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? true : false;
+                        //                            return (pointstartAngle <= pointMouseAngle && pointMouseAngle <= pointendAngle) ? true : false;
                         //                        } else {
-                        //                            return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? false : true;
+                        //                            return (pointstartAngle <= pointMouseAngle && pointMouseAngle <= pointendAngle) ? false : true;
                         //                        }
-                        return (pointStartAngle <= pointMouseAngle && pointMouseAngle <= pointEndAngle) ? true : false;
+                        return (pointstartAngle <= pointMouseAngle && pointMouseAngle <= pointendAngle) ? true : false;
 
-                    } else if (pointEndAngle <= pointMidAngle && pointMidAngle <= pointStartAngle) {
+                    } else if (pointendAngle <= pointMidAngle && pointMidAngle <= pointstartAngle) {
                         if (ck) {
-                            return (pointEndAngle <= pointMouseAngle && pointMouseAngle <= pointStartAngle) ? true : false;
+                            return (pointendAngle <= pointMouseAngle && pointMouseAngle <= pointstartAngle) ? true : false;
                         } else {
-                            return (pointEndAngle <= pointMouseAngle && pointMouseAngle <= pointStartAngle) ? false : true;
+                            return (pointendAngle <= pointMouseAngle && pointMouseAngle <= pointstartAngle) ? false : true;
                         }
-                    } else if (pointStartAngle <= pointMidAngle && pointEndAngle <= pointMidAngle) {
-                        if (pointStartAngle < pointEndAngle) {
+                    } else if (pointstartAngle <= pointMidAngle && pointendAngle <= pointMidAngle) {
+                        if (pointstartAngle < pointendAngle) {
                             if (ck) {
-                                return (pointStartAngle < pointMouseAngle && pointMouseAngle < pointEndAngle) ? false : true;
+                                return (pointstartAngle < pointMouseAngle && pointMouseAngle < pointendAngle) ? false : true;
                             } else {
-                                return (pointStartAngle < pointMouseAngle && pointMouseAngle < pointEndAngle) ? true : false;
+                                return (pointstartAngle < pointMouseAngle && pointMouseAngle < pointendAngle) ? true : false;
                             }
-                        } else if (pointEndAngle < pointStartAngle) {
-                            return (pointEndAngle < pointMouseAngle && pointMouseAngle < pointStartAngle) ? false : true;
+                        } else if (pointendAngle < pointstartAngle) {
+                            return (pointendAngle < pointMouseAngle && pointMouseAngle < pointstartAngle) ? false : true;
                         }
-                    } else if (pointMidAngle <= pointStartAngle && pointMidAngle <= pointEndAngle) {
-                        if (pointStartAngle < pointEndAngle) {
+                    } else if (pointMidAngle <= pointstartAngle && pointMidAngle <= pointendAngle) {
+                        if (pointstartAngle < pointendAngle) {
                             if (ck) {
-                                return (pointStartAngle < pointMouseAngle && pointMouseAngle < pointEndAngle) ? false : true;
+                                return (pointstartAngle < pointMouseAngle && pointMouseAngle < pointendAngle) ? false : true;
                             } else {
-                                return (pointStartAngle < pointMouseAngle && pointMouseAngle < pointEndAngle) ? true : false;
+                                return (pointstartAngle < pointMouseAngle && pointMouseAngle < pointendAngle) ? true : false;
                             }
-                        } else if (pointEndAngle < pointStartAngle) {
-                            return (pointEndAngle < pointMouseAngle && pointMouseAngle < pointStartAngle) ? false : true;
+                        } else if (pointendAngle < pointstartAngle) {
+                            return (pointendAngle < pointMouseAngle && pointMouseAngle < pointstartAngle) ? false : true;
                         }
                     }
 
