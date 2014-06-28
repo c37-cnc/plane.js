@@ -1,6 +1,6 @@
 define("geometric/intersection", ['require', 'exports'], function (require, exports) {
 
-    var Polynomial = require('geometric/polynomial').Polynomial,
+    var polynomial = require('geometric/polynomial'),
         Point = require('geometric/point');
 
 
@@ -19,7 +19,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var BFpDE = BF + DE;
         var BEmCD = BE - CD;
 
-        return new Polynomial(
+        return polynomial.create(
             AB * BC - AC * AC,
             AB * BEmCD + AD * BC - 2 * AC * AE,
             AB * BFpDE + AD * BEmCD - AE * AE - 2 * AC * AF,
@@ -29,7 +29,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
     };
 
 
-    function CircleLine(c, r, a1, a2) {
+    function circleLine(c, r, a1, a2) {
         var result,
             a = (a2.X - a1.X) * (a2.X - a1.X) + (a2.Y - a1.Y) * (a2.Y - a1.Y),
             b = 2 * ((a2.X - a1.X) * (a1.X - c.X) + (a2.Y - a1.Y) * (a1.Y - c.Y)),
@@ -58,22 +58,22 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         return result;
     };
 
-    function CircleRectangle(c, r, p, h, w) {
+    function circleRectangle(c, r, p, h, w) {
 
-        var rightBottom = Point.Create(p.X + w, p.Y),
-            rightTop = Point.Create(p.X + w, p.Y + h),
-            leftTop = Point.Create(p.X, p.Y + h),
-            leftBottom = Point.Create(p.X, p.Y);
+        var rightBottom = Point.create(p.X + w, p.Y),
+            rightTop = Point.create(p.X + w, p.Y + h),
+            leftTop = Point.create(p.X, p.Y + h),
+            leftBottom = Point.create(p.X, p.Y);
 
-        var inter1 = CircleLine(c, r, rightBottom, rightTop);
-        var inter2 = CircleLine(c, r, rightTop, leftTop);
-        var inter3 = CircleLine(c, r, leftTop, leftBottom);
-        var inter4 = CircleLine(c, r, leftBottom, rightBottom);
+        var inter1 = circleLine(c, r, rightBottom, rightTop);
+        var inter2 = circleLine(c, r, rightTop, leftTop);
+        var inter3 = circleLine(c, r, leftTop, leftBottom);
+        var inter4 = circleLine(c, r, leftBottom, rightBottom);
 
         return inter1 || inter2 || inter3 || inter4;
     };
 
-    function CircleCircle(c1, r1, c2, r2) {
+    function circleCircle(c1, r1, c2, r2) {
         var result;
 
         // Determine minimum and maximum radii where circles can intersect
@@ -81,7 +81,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var r_min = Math.abs(r1 - r2);
 
         // Determine actual distance between circle circles
-        var c_dist = c1.DistanceTo(c2);
+        var c_dist = c1.distanceTo(c2);
 
         if (c_dist > r_max) {
             result = false;
@@ -94,20 +94,20 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
             var a = (r1 * r1 - r2 * r2 + c_dist * c_dist) / (2 * c_dist);
             var h = Math.sqrt(r1 * r1 - a * a);
-            var p = c1.InterpolationLinear(c2, a / c_dist);
+            var p = c1.interpolationLinear(c2, a / c_dist);
             var b = h / c_dist;
 
-            result.points.push(Point.Create(p.X - b * (c2.Y - c1.Y), p.Y + b * (c2.X - c1.X)));
-            result.points.push(Point.Create(p.X + b * (c2.Y - c1.Y), p.Y - b * (c2.X - c1.X)));
+            result.points.push(Point.create(p.X - b * (c2.Y - c1.Y), p.Y + b * (c2.X - c1.X)));
+            result.points.push(Point.create(p.X + b * (c2.Y - c1.Y), p.Y - b * (c2.X - c1.X)));
 
         }
 
         return result;
     };
 
-    function CircleArc(c, r1, ca, r2, as, ae, ck) {
+    function circleArc(c, r1, ca, r2, as, ae, ck) {
 
-        var intersection = CircleCircle(c, r1, ca, r2);
+        var intersection = circleCircle(c, r1, ca, r2);
 
         if (intersection.points) {
 
@@ -115,23 +115,23 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
                 radianEnd = ae / 360 * 2 * Math.PI,
                 radianMid = radianStart > radianEnd ? (radianStart - radianEnd) / 2 : (radianEnd - radianStart) / 2;
 
-            var pointStart = Point.Create(ca.X + Math.cos(radianStart) * r2, ca.Y + Math.sin(radianStart) * r2),
-                pointEnd = Point.Create(ca.X + Math.cos(radianEnd) * r2, ca.Y + Math.sin(radianEnd) * r2),
-                pointMid = Point.Create(ca.X + Math.cos(radianMid) * r2, ck ? ca.Y - Math.sin(radianMid) * r2 : ca.Y + Math.sin(radianMid) * r2);
+            var pointStart = Point.create(ca.X + Math.cos(radianStart) * r2, ca.Y + Math.sin(radianStart) * r2),
+                pointEnd = Point.create(ca.X + Math.cos(radianEnd) * r2, ca.Y + Math.sin(radianEnd) * r2),
+                pointMid = Point.create(ca.X + Math.cos(radianMid) * r2, ck ? ca.Y - Math.sin(radianMid) * r2 : ca.Y + Math.sin(radianMid) * r2);
 
             var twoPi = (Math.PI + Math.PI);
 
             for (var i = 0; i <= intersection.points.length - 1; i++) {
 
-                var pointDistance = intersection.points[i].DistanceTo(ca),
+                var pointDistance = intersection.points[i].distanceTo(ca),
                     radius = r2;
 
                 if (radius - 4 <= pointDistance && pointDistance <= radius + 4) {
 
-                    var pointStartAngle = ca.AngleTo(pointStart),
-                        pointMidAngle = ca.AngleTo(pointMid),
-                        pointEndAngle = ca.AngleTo(pointEnd),
-                        pointMouseAngle = ca.AngleTo(intersection.points[i]);
+                    var pointStartAngle = ca.angleTo(pointStart),
+                        pointMidAngle = ca.angleTo(pointMid),
+                        pointEndAngle = ca.angleTo(pointEnd),
+                        pointMouseAngle = ca.angleTo(intersection.points[i]);
 
                     if (pointStartAngle <= pointMidAngle && pointMidAngle <= pointEndAngle) {
                         // 2014.06.24 - 14:33 - lilo - em observação
@@ -178,7 +178,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
     };
 
 
-    function CircleEllipse(c1, ry1, rx1, c2, ry2, rx2) {
+    function circleEllipse(c1, ry1, rx1, c2, ry2, rx2) {
 
         var a = [ry1 * ry1, 0, rx1 * rx1, -2 * ry1 * ry1 * c1.X, -2 * rx1 * rx1 * c1.Y, ry1 * ry1 * c1.X * c1.X + rx1 * rx1 * c1.Y * c1.Y - rx1 * rx1 * ry1 * ry1];
         var b = [ry2 * ry2, 0, rx2 * rx2, -2 * ry2 * ry2 * c2.X, -2 * rx2 * rx2 * c2.Y, ry2 * ry2 * c2.X * c2.X + rx2 * rx2 * c2.Y * c2.Y - rx2 * rx2 * ry2 * ry2];
@@ -190,7 +190,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var norm1 = (b[0] * b[0] + 2 * b[1] * b[1] + b[2] * b[2]) * epsilon;
 
         for (var Y = 0; Y < yRoots.length; Y++) {
-            var xPoly = new Polynomial(
+            var xPoly = polynomial.create(
                 a[0],
                 a[3] + yRoots[Y] * a[1],
                 a[5] + yRoots[Y] * (a[4] + yRoots[Y] * a[2])
@@ -214,9 +214,9 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         return false;
     };
 
-    exports.CircleLine = CircleLine;
-    exports.CircleRectangle = CircleRectangle;
-    exports.CircleCircle = CircleCircle;
-    exports.CircleArc = CircleArc;
-    exports.CircleEllipse = CircleEllipse;
+    exports.circleLine = circleLine;
+    exports.circleRectangle = circleRectangle;
+    exports.circleCircle = circleCircle;
+    exports.circleArc = circleArc;
+    exports.circleEllipse = circleEllipse;
 });

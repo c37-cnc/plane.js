@@ -1,5 +1,5 @@
 /*!
- * C37 in 27-06-2014 at 21:51:06 
+ * C37 in 28-06-2014 at 09:56:32 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -66,7 +66,7 @@ define("geometric/group", ['require', 'exports'], function (require, exports) {
 });
 define("geometric/intersection", ['require', 'exports'], function (require, exports) {
 
-    var Polynomial = require('geometric/polynomial').Polynomial,
+    var polynomial = require('geometric/polynomial'),
         Point = require('geometric/point');
 
 
@@ -85,7 +85,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var BFpDE = BF + DE;
         var BEmCD = BE - CD;
 
-        return new Polynomial(
+        return polynomial.create(
             AB * BC - AC * AC,
             AB * BEmCD + AD * BC - 2 * AC * AE,
             AB * BFpDE + AD * BEmCD - AE * AE - 2 * AC * AF,
@@ -95,7 +95,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
     };
 
 
-    function CircleLine(c, r, a1, a2) {
+    function circleLine(c, r, a1, a2) {
         var result,
             a = (a2.X - a1.X) * (a2.X - a1.X) + (a2.Y - a1.Y) * (a2.Y - a1.Y),
             b = 2 * ((a2.X - a1.X) * (a1.X - c.X) + (a2.Y - a1.Y) * (a1.Y - c.Y)),
@@ -124,22 +124,22 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         return result;
     };
 
-    function CircleRectangle(c, r, p, h, w) {
+    function circleRectangle(c, r, p, h, w) {
 
-        var rightBottom = Point.Create(p.X + w, p.Y),
-            rightTop = Point.Create(p.X + w, p.Y + h),
-            leftTop = Point.Create(p.X, p.Y + h),
-            leftBottom = Point.Create(p.X, p.Y);
+        var rightBottom = Point.create(p.X + w, p.Y),
+            rightTop = Point.create(p.X + w, p.Y + h),
+            leftTop = Point.create(p.X, p.Y + h),
+            leftBottom = Point.create(p.X, p.Y);
 
-        var inter1 = CircleLine(c, r, rightBottom, rightTop);
-        var inter2 = CircleLine(c, r, rightTop, leftTop);
-        var inter3 = CircleLine(c, r, leftTop, leftBottom);
-        var inter4 = CircleLine(c, r, leftBottom, rightBottom);
+        var inter1 = circleLine(c, r, rightBottom, rightTop);
+        var inter2 = circleLine(c, r, rightTop, leftTop);
+        var inter3 = circleLine(c, r, leftTop, leftBottom);
+        var inter4 = circleLine(c, r, leftBottom, rightBottom);
 
         return inter1 || inter2 || inter3 || inter4;
     };
 
-    function CircleCircle(c1, r1, c2, r2) {
+    function circleCircle(c1, r1, c2, r2) {
         var result;
 
         // Determine minimum and maximum radii where circles can intersect
@@ -147,7 +147,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var r_min = Math.abs(r1 - r2);
 
         // Determine actual distance between circle circles
-        var c_dist = c1.DistanceTo(c2);
+        var c_dist = c1.distanceTo(c2);
 
         if (c_dist > r_max) {
             result = false;
@@ -160,20 +160,20 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
             var a = (r1 * r1 - r2 * r2 + c_dist * c_dist) / (2 * c_dist);
             var h = Math.sqrt(r1 * r1 - a * a);
-            var p = c1.InterpolationLinear(c2, a / c_dist);
+            var p = c1.interpolationLinear(c2, a / c_dist);
             var b = h / c_dist;
 
-            result.points.push(Point.Create(p.X - b * (c2.Y - c1.Y), p.Y + b * (c2.X - c1.X)));
-            result.points.push(Point.Create(p.X + b * (c2.Y - c1.Y), p.Y - b * (c2.X - c1.X)));
+            result.points.push(Point.create(p.X - b * (c2.Y - c1.Y), p.Y + b * (c2.X - c1.X)));
+            result.points.push(Point.create(p.X + b * (c2.Y - c1.Y), p.Y - b * (c2.X - c1.X)));
 
         }
 
         return result;
     };
 
-    function CircleArc(c, r1, ca, r2, as, ae, ck) {
+    function circleArc(c, r1, ca, r2, as, ae, ck) {
 
-        var intersection = CircleCircle(c, r1, ca, r2);
+        var intersection = circleCircle(c, r1, ca, r2);
 
         if (intersection.points) {
 
@@ -181,23 +181,23 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
                 radianEnd = ae / 360 * 2 * Math.PI,
                 radianMid = radianStart > radianEnd ? (radianStart - radianEnd) / 2 : (radianEnd - radianStart) / 2;
 
-            var pointStart = Point.Create(ca.X + Math.cos(radianStart) * r2, ca.Y + Math.sin(radianStart) * r2),
-                pointEnd = Point.Create(ca.X + Math.cos(radianEnd) * r2, ca.Y + Math.sin(radianEnd) * r2),
-                pointMid = Point.Create(ca.X + Math.cos(radianMid) * r2, ck ? ca.Y - Math.sin(radianMid) * r2 : ca.Y + Math.sin(radianMid) * r2);
+            var pointStart = Point.create(ca.X + Math.cos(radianStart) * r2, ca.Y + Math.sin(radianStart) * r2),
+                pointEnd = Point.create(ca.X + Math.cos(radianEnd) * r2, ca.Y + Math.sin(radianEnd) * r2),
+                pointMid = Point.create(ca.X + Math.cos(radianMid) * r2, ck ? ca.Y - Math.sin(radianMid) * r2 : ca.Y + Math.sin(radianMid) * r2);
 
             var twoPi = (Math.PI + Math.PI);
 
             for (var i = 0; i <= intersection.points.length - 1; i++) {
 
-                var pointDistance = intersection.points[i].DistanceTo(ca),
+                var pointDistance = intersection.points[i].distanceTo(ca),
                     radius = r2;
 
                 if (radius - 4 <= pointDistance && pointDistance <= radius + 4) {
 
-                    var pointStartAngle = ca.AngleTo(pointStart),
-                        pointMidAngle = ca.AngleTo(pointMid),
-                        pointEndAngle = ca.AngleTo(pointEnd),
-                        pointMouseAngle = ca.AngleTo(intersection.points[i]);
+                    var pointStartAngle = ca.angleTo(pointStart),
+                        pointMidAngle = ca.angleTo(pointMid),
+                        pointEndAngle = ca.angleTo(pointEnd),
+                        pointMouseAngle = ca.angleTo(intersection.points[i]);
 
                     if (pointStartAngle <= pointMidAngle && pointMidAngle <= pointEndAngle) {
                         // 2014.06.24 - 14:33 - lilo - em observação
@@ -244,7 +244,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
     };
 
 
-    function CircleEllipse(c1, ry1, rx1, c2, ry2, rx2) {
+    function circleEllipse(c1, ry1, rx1, c2, ry2, rx2) {
 
         var a = [ry1 * ry1, 0, rx1 * rx1, -2 * ry1 * ry1 * c1.X, -2 * rx1 * rx1 * c1.Y, ry1 * ry1 * c1.X * c1.X + rx1 * rx1 * c1.Y * c1.Y - rx1 * rx1 * ry1 * ry1];
         var b = [ry2 * ry2, 0, rx2 * rx2, -2 * ry2 * ry2 * c2.X, -2 * rx2 * rx2 * c2.Y, ry2 * ry2 * c2.X * c2.X + rx2 * rx2 * c2.Y * c2.Y - rx2 * rx2 * ry2 * ry2];
@@ -256,7 +256,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var norm1 = (b[0] * b[0] + 2 * b[1] * b[1] + b[2] * b[2]) * epsilon;
 
         for (var Y = 0; Y < yRoots.length; Y++) {
-            var xPoly = new Polynomial(
+            var xPoly = polynomial.create(
                 a[0],
                 a[3] + yRoots[Y] * a[1],
                 a[5] + yRoots[Y] * (a[4] + yRoots[Y] * a[2])
@@ -280,11 +280,11 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         return false;
     };
 
-    exports.CircleLine = CircleLine;
-    exports.CircleRectangle = CircleRectangle;
-    exports.CircleCircle = CircleCircle;
-    exports.CircleArc = CircleArc;
-    exports.CircleEllipse = CircleEllipse;
+    exports.circleLine = circleLine;
+    exports.circleRectangle = circleRectangle;
+    exports.circleCircle = circleCircle;
+    exports.circleArc = circleArc;
+    exports.circleEllipse = circleEllipse;
 });
 define("geometric/point", ['require', 'exports'], function (require, exports) {
 
@@ -294,28 +294,28 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
     };
 
     Point.prototype = {
-        Sum: function (point) {
+        sum: function (point) {
             return new Point(this.X + point.X, this.Y + point.Y);
         },
-        Subtract: function (point) {
+        subtract: function (point) {
             return new Point(this.X - point.X, this.Y - point.Y);
         },
-        MultiplY: function (value) {
+        multiply: function (value) {
             return new Point(this.X * value, this.Y * value);
         },
-        DistanceTo: function (point) {
+        distanceTo: function (point) {
             var dx = this.X - point.X;
             var dY = this.Y - point.Y;
 
             return Math.sqrt(dx * dx + dY * dY);
         },
-        MidTo: function (point) {
+        midTo: function (point) {
             return new Point(this.X + (point.X - this.X) / 2, this.Y + (point.Y - this.Y) / 2);
         },
-        AngleTo: function (point) {
+        angleTo: function (point) {
             return Math.atan2(point.Y - this.Y, point.X - this.X);
         },
-        InterpolationLinear: function (point, value) {
+        interpolationLinear: function (point, value) {
             return new Point(
                 this.X + (point.X - this.X) * value,
                 this.Y + (point.Y - this.Y) * value
@@ -323,21 +323,16 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
         }
     };
 
-    function Create(X, Y) {
+    function create(X, Y) {
         return new Point(X, Y);
     };
 
-    exports.Create = Create;
+    exports.create = create;
 
 });
 define("geometric/polynomial", ['require', 'exports'], function (require, exports) {
 
     function Polynomial(coefs) {
-        this.init(arguments);
-    }
-
-    Polynomial.prototype.init = function (coefs) {
-
         this.coefs = new Array();
 
         for (var i = coefs.length - 1; i >= 0; i--)
@@ -345,7 +340,7 @@ define("geometric/polynomial", ['require', 'exports'], function (require, export
 
         this._variable = "t";
         this._s = 0;
-    };
+    }
 
     Polynomial.prototype.simplify = function () {
         for (var i = this.getDegree(); i >= 0; i--) {
@@ -465,7 +460,7 @@ define("geometric/polynomial", ['require', 'exports'], function (require, export
             var c1 = this.coefs[1] / c4;
             var c0 = this.coefs[0] / c4;
 
-            var resolveRoots = new Polynomial(
+            var resolveRoots = create(
                 1, -c2, c3 * c1 - 4 * c0, -c3 * c3 * c0 + 4 * c2 * c0 - c1 * c1
             ).getCubicRoots();
             var y = resolveRoots[0];
@@ -551,151 +546,157 @@ define("geometric/polynomial", ['require', 'exports'], function (require, export
 
         return result;
     };
+    
+    
+    function create() {
+        return new Polynomial(arguments);
+    }
 
-    exports.Polynomial = Polynomial;
+
+    exports.create = create;
 
 });
 define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
-    var Types = require('utility/types'),
+    var types = require('utility/types'),
         Point = require('geometric/point'),
-        Intersection = require('geometric/intersection');
+        intersection = require('geometric/intersection');
 
 
     function Shape() {};
 
     Shape.prototype = {
-        RotateTo: function (Value) {
+        rotateTo: function (value) {
             return true;
         },
-        ScaleTo: function (Value) {
+        scaleTo: function (value) {
 
             switch (this.Type) {
             case 'Arc':
                 {
-                    this.Point.X *= Value;
-                    this.Point.Y *= Value;
-                    this.Radius *= Value;
+                    this.Point.X *= value;
+                    this.Point.Y *= value;
+                    this.Radius *= value;
 
                     break;
                 }
             case 'Circle':
                 {
-                    this.Point.X *= Value;
-                    this.Point.Y *= Value;
-                    this.Radius *= Value;
+                    this.Point.X *= value;
+                    this.Point.Y *= value;
+                    this.Radius *= value;
 
                     break;
                 }
             case 'Ellipse':
                 {
-                    this.Point.X *= Value;
-                    this.Point.Y *= Value;
-                    this.RadiusX *= Value;
-                    this.RadiusY *= Value;
+                    this.Point.X *= value;
+                    this.Point.Y *= value;
+                    this.RadiusX *= value;
+                    this.RadiusY *= value;
 
                     break;
                 }
             case 'Line':
                 {
                     this.Points.forEach(function (Point) {
-                        Point.X *= Value;
-                        Point.Y *= Value;
+                        Point.X *= value;
+                        Point.Y *= value;
                     });
 
                     break;
                 }
             case 'Polygon':
                 {
-                    this.Point.X *= Value;
-                    this.Point.Y *= Value;
+                    this.Point.X *= value;
+                    this.Point.Y *= value;
 
                     this.Points.forEach(function (Point) {
-                        Point.X *= Value;
-                        Point.Y *= Value;
+                        Point.X *= value;
+                        Point.Y *= value;
                     });
 
                     break;
                 }
             case 'Rectangle':
                 {
-                    this.Point.X *= Value;
-                    this.Point.Y *= Value;
-                    this.Height *= Value;
-                    this.Width *= Value;
+                    this.Point.X *= value;
+                    this.Point.Y *= value;
+                    this.Height *= value;
+                    this.Width *= value;
 
                     break;
                 }
             }
 
-            this.Scale = Value;
+            this.Scale = value;
 
         },
-        MoveTo: function (Value) {
+        moveTo: function (value) {
 
             if (this.Point) {
-                this.Point = this.Point.Sum(Value);
+                this.Point = this.Point.sum(value);
             }
             if (this.Points) {
                 for (var i = 0; i <= this.Points.length - 1; i++) {
-                    this.Points[i] = this.Points[i].Sum(Value);
+                    this.Points[i] = this.Points[i].sum(value);
                 }
             }
 
             return true;
         },
-        Contains: function (PointMouse) {
+        contains: function (pointMouse) {
 
             switch (this.Type) {
             case 'Line':
                 {
-                    var PointA = this.Points[0],
-                        PointB = this.Points[1]
+                    var pointA = this.Points[0],
+                        pointB = this.Points[1]
 
-                    if (Intersection.CircleLine(PointMouse, 2, PointA, PointB))
+                    if (intersection.circleLine(pointMouse, 2, pointA, pointB))
                         return true;
 
                     break;
                 }
             case 'Rectangle':
                 {
-                    if (Intersection.CircleRectangle(PointMouse, 2, this.Point, this.Height, this.Width))
+                    if (intersection.circleRectangle(pointMouse, 2, this.Point, this.Height, this.Width))
                         return true;
 
                     break;
                 }
             case 'Arc':
                 {
-                    if (Intersection.CircleArc(Point.Create(PointMouse.X, PointMouse.Y), 2, this.Point, this.Radius, this.StartAngle, this.EndAngle, this.ClockWise))
+                    if (intersection.circleArc(Point.create(pointMouse.X, pointMouse.Y), 2, this.Point, this.Radius, this.StartAngle, this.EndAngle, this.ClockWise))
                         return true;
 
                     break;
                 }
             case 'Circle':
                 {
-                    if (Intersection.CircleCircle(PointMouse = Point.Create(PointMouse.X, PointMouse.Y), 2, this.Point, this.Radius))
+                    if (intersection.circleCircle(pointMouse = Point.create(pointMouse.X, pointMouse.Y), 2, this.Point, this.Radius))
                         return true;
 
                     break;
                 }
             case 'Ellipse':
-                return (Intersection.CircleEllipse(PointMouse, 2, 2, this.Point, this.RadiusY, this.RadiusX))
+                return (intersection.circleEllipse(pointMouse, 2, 2, this.Point, this.RadiusY, this.RadiusX))
             case 'Polygon':
                 {
-                    var PointA = null,
-                        PointB = null;
+                    var pointA = null,
+                        pointB = null;
 
                     for (var i = 0; i < this.Points.length; i++) {
 
                         if (i + 1 == this.Points.length) {
-                            PointA = this.Points[i];
-                            PointB = this.Points[0];
+                            pointA = this.Points[i];
+                            pointB = this.Points[0];
                         } else {
-                            PointA = this.Points[i];
-                            PointB = this.Points[i + 1];
+                            pointA = this.Points[i];
+                            pointB = this.Points[i + 1];
                         }
 
-                        if (Intersection.CircleLine(PointMouse, 2, PointA, PointB))
+                        if (intersection.circleLine(pointMouse, 2, pointA, pointB))
                             return true;
                     }
                     break;
@@ -706,21 +707,21 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
             return false;
         },
-        Render: function (Context2D, Zoom) {
+        render: function (context2D, zoom) {
 
             if (this.Status == 'Over') {
-                Context2D.strokeStyle = 'rgb(61, 142, 193)';
+                context2D.strokeStyle = 'rgb(61, 142, 193)';
             }
 
             if (this.Status == 'Selected') {
 
-                Context2D.strokeStyle = 'rgb(68, 121, 154)';
+                context2D.strokeStyle = 'rgb(68, 121, 154)';
                 if (this.Point) {
-                    Context2D.strokeRect(this.Point.X - (Math.round(2 * Zoom) / 2), this.Point.Y - (Math.round(2 * Zoom) / 2), Math.round(2 * Zoom), Math.round(2 * Zoom));
+                    context2D.strokeRect(this.Point.X - (Math.round(2 * zoom) / 2), this.Point.Y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
                 }
                 if (this.Points) {
                     this.Points.forEach(function (Point) {
-                        Context2D.strokeRect(Point.X - (Math.round(2 * Zoom) / 2), Point.Y - (Math.round(2 * Zoom) / 2), Math.round(2 * Zoom), Math.round(2 * Zoom));
+                        context2D.strokeRect(Point.X - (Math.round(2 * zoom) / 2), Point.Y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
                     });
                 }
             }
@@ -728,22 +729,22 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             switch (this.Type) {
             case 'Arc':
                 {
-                    Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.arc(0, 0, this.Radius, (Math.PI / 180) * this.StartAngle, (Math.PI / 180) * this.EndAngle, this.ClockWise);
+                    context2D.translate(this.Point.X, this.Point.Y);
+                    context2D.arc(0, 0, this.Radius, (Math.PI / 180) * this.StartAngle, (Math.PI / 180) * this.EndAngle, this.ClockWise);
 
                     return true;
                 }
             case 'Circle':
                 {
-                    Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.arc(0, 0, this.Radius, 0, Math.PI * 2, true);
+                    context2D.translate(this.Point.X, this.Point.Y);
+                    context2D.arc(0, 0, this.Radius, 0, Math.PI * 2, true);
 
                     return true;
                 }
             case 'Ellipse':
                 {
-                    Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.ellipse(0, 0, this.RadiusX, this.RadiusY, 0, 0, Math.PI * 2)
+                    context2D.translate(this.Point.X, this.Point.Y);
+                    context2D.ellipse(0, 0, this.RadiusX, this.RadiusY, 0, 0, Math.PI * 2)
 
                     return true;
                 }
@@ -751,37 +752,37 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 {
                     // possivel personalização
                     if (this.Status != 'Over') {
-                        Context2D.lineWidth = (this.Style && this.Style.LineWidth) ? this.Style.LineWidth : Context2D.LineWidth;
-                        Context2D.strokeStyle = (this.Style && this.Style.LineColor) ? this.Style.LineColor : Context2D.strokeStyle;
+                        context2D.lineWidth = (this.Style && this.Style.LineWidth) ? this.Style.LineWidth : context2D.LineWidth;
+                        context2D.strokeStyle = (this.Style && this.Style.LineColor) ? this.Style.LineColor : context2D.strokeStyle;
                     }
 
-                    Context2D.moveTo(this.Points[0].X, this.Points[0].Y);
-                    Context2D.lineTo(this.Points[1].X, this.Points[1].Y);
+                    context2D.moveTo(this.Points[0].X, this.Points[0].Y);
+                    context2D.lineTo(this.Points[1].X, this.Points[1].Y);
 
                     return true;
                 }
             case 'Polygon':
                 {
-                    Context2D.moveTo(this.Points[0].X, this.Points[0].Y);
+                    context2D.moveTo(this.Points[0].X, this.Points[0].Y);
 
                     this.Points.forEach(function (Point) {
-                        Context2D.lineTo(Point.X, Point.Y);
+                        context2D.lineTo(Point.X, Point.Y);
                     });
-                    Context2D.closePath();
+                    context2D.closePath();
 
                     return true;
                 }
             case 'Rectangle':
                 {
-                    Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.strokeRect(0, 0, this.Width, this.Height);
+                    context2D.translate(this.Point.X, this.Point.Y);
+                    context2D.strokeRect(0, 0, this.Width, this.Height);
 
                     return true;
                 }
             }
 
         },
-        ToObject: function () {
+        toObject: function () {
 
             switch (this.Type) {
             case 'Arc':
@@ -790,11 +791,11 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: Types.Math.ParseFloat(this.Point.X, 5),
-                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
-                    Radius: Types.Math.ParseFloat(this.Radius, 5),
-                    StartAngle: Types.Math.ParseFloat(this.StartAngle, 5),
-                    EndAngle: Types.Math.ParseFloat(this.EndAngle, 5),
+                    X: types.math.parseFloat(this.Point.X, 5),
+                    Y: types.math.parseFloat(this.Point.Y, 5),
+                    Radius: types.math.parseFloat(this.Radius, 5),
+                    StartAngle: types.math.parseFloat(this.StartAngle, 5),
+                    EndAngle: types.math.parseFloat(this.EndAngle, 5),
                     ClockWise: this.ClockWise
                 };
             case 'Circle':
@@ -803,9 +804,9 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: Types.Math.ParseFloat(this.Point.X, 5),
-                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
-                    Radius: Types.Math.ParseFloat(this.Radius, 5)
+                    X: types.math.parseFloat(this.Point.X, 5),
+                    Y: types.math.parseFloat(this.Point.Y, 5),
+                    Radius: types.math.parseFloat(this.Radius, 5)
                 };
             case 'Ellipse':
                 return {
@@ -813,10 +814,10 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: Types.Math.ParseFloat(this.Point.X, 5),
-                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
-                    RadiusX: Types.Math.ParseFloat(this.RadiusX, 5),
-                    RadiusY: Types.Math.ParseFloat(this.RadiusY, 5)
+                    X: types.math.parseFloat(this.Point.X, 5),
+                    Y: types.math.parseFloat(this.Point.Y, 5),
+                    RadiusX: types.math.parseFloat(this.RadiusX, 5),
+                    RadiusY: types.math.parseFloat(this.RadiusY, 5)
                 };
             case 'Line':
                 return {
@@ -824,8 +825,8 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: [Types.Math.ParseFloat(this.Points[0].X, 5), Types.Math.ParseFloat(this.Points[0].Y, 5)],
-                    Y: [Types.Math.ParseFloat(this.Points[1].X, 5), Types.Math.ParseFloat(this.Points[1].Y, 5)]
+                    X: [types.math.parseFloat(this.Points[0].X, 5), types.math.parseFloat(this.Points[0].Y, 5)],
+                    Y: [types.math.parseFloat(this.Points[1].X, 5), types.math.parseFloat(this.Points[1].Y, 5)]
                 };
             case 'Polygon':
                 return {
@@ -833,8 +834,8 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: Types.Math.ParseFloat(this.Point.X, 5),
-                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
+                    X: types.math.parseFloat(this.Point.X, 5),
+                    Y: types.math.parseFloat(this.Point.Y, 5),
                     Sides: this.Sides
                 };
             case 'Rectangle':
@@ -843,10 +844,10 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: Types.Math.ParseFloat(this.Point.X, 5),
-                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
-                    Height: Types.Math.ParseFloat(this.Height, 5),
-                    Width: Types.Math.ParseFloat(this.Width, 5)
+                    X: types.math.parseFloat(this.Point.X, 5),
+                    Y: types.math.parseFloat(this.Point.Y, 5),
+                    Height: types.math.parseFloat(this.Height, 5),
+                    Width: types.math.parseFloat(this.Width, 5)
                 };
             }
 
@@ -854,140 +855,140 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     };
 
 
-    var Arc = Types.Function.Inherits(function Arc(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Arc = types.object.inherits(function Arc(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Arc';
-        this.Point = Attrs.Point;
-        this.Radius = Attrs.Radius;
-        this.StartAngle = Attrs.StartAngle;
-        this.EndAngle = Attrs.EndAngle;
-        this.ClockWise = Attrs.ClockWise;
+        this.Point = attrs.Point;
+        this.Radius = attrs.Radius;
+        this.StartAngle = attrs.StartAngle;
+        this.EndAngle = attrs.EndAngle;
+        this.ClockWise = attrs.ClockWise;
     }, Shape);
 
-    var Circle = Types.Function.Inherits(function Circle(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Circle = types.object.inherits(function Circle(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Circle';
-        this.Point = Attrs.Point;
-        this.Radius = Attrs.Radius;
+        this.Point = attrs.Point;
+        this.Radius = attrs.Radius;
     }, Shape);
 
-    var Ellipse = Types.Function.Inherits(function Ellipse(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Ellipse = types.object.inherits(function Ellipse(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Ellipse';
-        this.Point = Attrs.Point;
-        this.RadiusY = Attrs.RadiusY;
-        this.RadiusX = Attrs.RadiusX;
+        this.Point = attrs.Point;
+        this.RadiusY = attrs.RadiusY;
+        this.RadiusX = attrs.RadiusX;
     }, Shape);
 
-    var Line = Types.Function.Inherits(function Line(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Line = types.object.inherits(function Line(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Line';
-        this.Points = Attrs.Points;
-        this.Style = Attrs.Style;
+        this.Points = attrs.Points;
+        this.Style = attrs.Style;
     }, Shape);
 
-    var Polygon = Types.Function.Inherits(function Polygon(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Polygon = types.object.inherits(function Polygon(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Polygon';
-        this.Point = Attrs.Point;
-        this.Points = Attrs.Points;
-        this.Sides = Attrs.Sides;
+        this.Point = attrs.Point;
+        this.Points = attrs.Points;
+        this.Sides = attrs.Sides;
     }, Shape);
 
-    var Rectangle = Types.Function.Inherits(function Rectangle(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Rectangle = types.object.inherits(function Rectangle(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Rectangle';
-        this.Point = Attrs.Point;
-        this.Height = Attrs.Height;
-        this.Width = Attrs.Width;
+        this.Point = attrs.Point;
+        this.Height = attrs.Height;
+        this.Width = attrs.Width;
     }, Shape);
 
 
-    function Create(Attrs) {
+    function create(attrs) {
 
-        var Uuid = Types.Math.Uuid(9, 16);
+        var Uuid = types.math.uuid(9, 16);
 
-        Attrs = Types.Object.Merge({
+        attrs = types.object.merge({
             Uuid: Uuid,
             Name: 'Shape '.concat(Uuid),
             Style: null,
             Visible: true,
             Status: null
-        }, Attrs);
+        }, attrs);
 
-        switch (Attrs.Type) {
+        switch (attrs.Type) {
         case 'Line':
             {
-                Attrs.Points = [Point.Create(Attrs.X[0], Attrs.X[1]), Point.Create(Attrs.Y[0], Attrs.Y[1])];
-                return new Line(Attrs);
+                attrs.Points = [Point.create(attrs.X[0], attrs.X[1]), Point.create(attrs.Y[0], attrs.Y[1])];
+                return new Line(attrs);
             }
         case 'Rectangle':
             {
-                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
-                Attrs.Height = Attrs.Height;
-                Attrs.Width = Attrs.Width;
-                return new Rectangle(Attrs);
+                attrs.Point = Point.create(attrs.X, attrs.Y);
+                attrs.Height = attrs.Height;
+                attrs.Width = attrs.Width;
+                return new Rectangle(attrs);
             }
         case 'Arc':
             {
-                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
-                Attrs.Radius = Attrs.Radius;
-                Attrs.StartAngle = Attrs.StartAngle;
-                Attrs.EndAngle = Attrs.EndAngle;
-                Attrs.ClockWise = Attrs.ClockWise;
-                return new Arc(Attrs);
+                attrs.Point = Point.create(attrs.X, attrs.Y);
+                attrs.Radius = attrs.Radius;
+                attrs.StartAngle = attrs.StartAngle;
+                attrs.EndAngle = attrs.EndAngle;
+                attrs.ClockWise = attrs.ClockWise;
+                return new Arc(attrs);
             }
         case 'Circle':
             {
-                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
-                Attrs.Radius = Attrs.Radius;
-                return new Circle(Attrs);
+                attrs.Point = Point.create(attrs.X, attrs.Y);
+                attrs.Radius = attrs.Radius;
+                return new Circle(attrs);
             }
         case 'Ellipse':
             {
-                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
-                Attrs.RadiusY = Attrs.RadiusY;
-                Attrs.RadiusX = Attrs.RadiusX;
-                return new Ellipse(Attrs);
+                attrs.Point = Point.create(attrs.X, attrs.Y);
+                attrs.RadiusY = attrs.RadiusY;
+                attrs.RadiusX = attrs.RadiusX;
+                return new Ellipse(attrs);
             }
         case 'Polygon':
             {
-                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
-                Attrs.Points = [];
+                attrs.Point = Point.create(attrs.X, attrs.Y);
+                attrs.Points = [];
 
-                for (var i = 0; i < Attrs.Sides; i++) {
+                for (var i = 0; i < attrs.Sides; i++) {
 
-                    var PointX = (Attrs.Radius * Math.cos(((Math.PI * 2) / Attrs.Sides) * i) + Attrs.Point.X),
-                        PointY = (Attrs.Radius * Math.sin(((Math.PI * 2) / Attrs.Sides) * i) + Attrs.Point.Y);
+                    var PointX = (attrs.Radius * Math.cos(((Math.PI * 2) / attrs.Sides) * i) + attrs.Point.X),
+                        PointY = (attrs.Radius * Math.sin(((Math.PI * 2) / attrs.Sides) * i) + attrs.Point.Y);
 
-                    Attrs['Points'].push(Point.Create(PointX, PointY));
+                    attrs['Points'].push(Point.create(PointX, PointY));
                 }
 
-                return new Polygon(Attrs);
+                return new Polygon(attrs);
             }
         default:
             break;
@@ -995,478 +996,478 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
     }
 
-    function Delete(value) {}
+    function remove(value) {}
 
-    function List() {}
+    function list() {}
 
-    function Find() {}
+    function find() {}
 
 
-    exports.Create = Create;
-    exports.Delete = Delete;
-    exports.List = List;
-    exports.Find = Find;
+    exports.create = create;
+    exports.remove = remove;
+    exports.list = list;
+    exports.find = find;
 });
 define("plane", ['require', 'exports'], function (require, exports) {
 
-    var Version = '3.0.0',
-        Authors = ['lilo@c37.co', 'ser@c37.co'];
+    var version = '3.0.0',
+        authors = ['lilo@c37.co', 'ser@c37.co'];
 
-    var Types = require('utility/types'),
-        Import = require('utility/import'),
-        Export = require('utility/export');
+    var types = require('utility/types'),
+        importer = require('utility/importer'),
+        exporter = require('utility/exporter');
 
-    var LayerManager = require('structure/layer'),
-        ShapeManager = require('geometric/shape'),
-        ToolManager = require('structure/tool');
+    var layerManager = require('structure/layer'),
+        shapeManager = require('geometric/shape'),
+        toolManager = require('structure/tool');
 
-    var LayerSystem = null,
-        ViewPort = null;
+    var layerSystem = null,
+        viewPort = null;
 
 
-    var Plane = Types.Object.Extend(Types.Object.Event.Create(), {
+    var plane = types.object.extend(types.object.event.create(), {
 
-        Initialize: function (Config) {
-            if (Config == null) {
-                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        initialize: function (config) {
+            if (config == null) {
+                throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
-            if (typeof Config == "function") {
-                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            if (typeof config == "function") {
+                throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
-            if (Config.ViewPort == null) {
-                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            if (config.viewPort == null) {
+                throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
 
-            ViewPort = Config.ViewPort;
+            viewPort = config.viewPort;
 
-            Plane.Settings = Config.Settings ? Config.Settings : Plane.Settings;
+            plane.settings = config.settings ? config.settings : plane.settings;
 
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, Plane.Zoom, Plane.Scroll);
+            gridDraw(viewPort.clientHeight, viewPort.clientWidth, plane.zoom, plane.scroll);
 
-            ToolManager.Event.Start({
-                ViewPort: ViewPort,
-                Update: Plane.Update
+            toolManager.event.start({
+                viewPort: viewPort,
+                update: plane.update
             });
 
             return true;
         },
-        Update: function (LayerSystem) {
+        update: function (layerSystem) {
 
-            var LayerStyle = LayerSystem ? LayerSystem.Style : LayerManager.Active().Style,
-                LayerShapes = LayerSystem ? LayerSystem.Shapes.List() : LayerManager.Active().Shapes.List(),
-                LayerRender = LayerSystem ? LayerSystem.Render : LayerManager.Active().Render,
-                Context2D = LayerRender.getContext('2d');
+            var layerStyle = layerSystem ? layerSystem.Style : layerManager.active().Style,
+                layerShapes = layerSystem ? layerSystem.shapes.list() : layerManager.active().shapes.list(),
+                layerRender = layerSystem ? layerSystem.render : layerManager.active().render,
+                context2D = layerRender.getContext('2d');
 
             // limpando o render
-            Context2D.clearRect(0, 0, ViewPort.clientWidth, ViewPort.clientHeight);
+            context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
 
             // style of layer
-            Context2D.lineCap = LayerStyle.LineCap;
-            Context2D.lineJoin = LayerStyle.LineJoin;
+            context2D.lineCap = layerStyle.LineCap;
+            context2D.lineJoin = layerStyle.LineJoin;
 
             // render para cada shape
-            LayerShapes.forEach(function (Shape) {
-                // save state of all Configuration
-                Context2D.save();
-                Context2D.beginPath();
+            layerShapes.forEach(function (shape) {
+                // save state of all configuration
+                context2D.save();
+                context2D.beginPath();
 
-                Shape.Render(Context2D, Plane.Zoom);
+                shape.render(context2D, plane.zoom);
 
-                Context2D.stroke();
-                // restore state of all Configuration
-                Context2D.restore();
+                context2D.stroke();
+                // restore state of all configuration
+                context2D.restore();
             });
 
             return true;
         },
-        Clear: function () {
+        clear: function () {
 
             // reset em scroll
-            if ((Plane.Scroll.X != 0) || (Plane.Scroll.Y != 0)) {
-                Plane.Scroll = {
+            if ((plane.scroll.X != 0) || (plane.scroll.Y != 0)) {
+                plane.scroll = {
                     X: 0,
                     Y: 0
                 }
             };
 
             // reset em zoom
-            if (Plane.Zoom != 1) {
-                Plane.Zoom = 1;
+            if (plane.zoom != 1) {
+                plane.zoom = 1;
             }
 
-            // delete em todas as layers
-            LayerManager.Delete();
+            // remove em todas as layers
+            layerManager.remove();
 
             return true;
         },
-        Layer: Types.Object.Extend(Types.Object.Event.Create(), {
-            Create: function (Attrs) {
-                if ((typeof Attrs == "function")) {
-                    throw new Error('Layer - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        layer: types.object.extend(types.object.event.create(), {
+            create: function (attrs) {
+                if ((typeof attrs == "function")) {
+                    throw new Error('Layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                Attrs = Types.Object.Union(Attrs, {
-                    ViewPort: ViewPort
+                attrs = types.object.union(attrs, {
+                    viewPort: viewPort
                 });
 
-                return LayerManager.Create(Attrs);
+                return layerManager.create(attrs);
             },
-            List: function (Selector) {
-                return Layer.List();
+            list: function (Selector) {
+                return Layer.list();
             },
-            Delete: function (Uuid) {
-                Layer.Delete(Uuid);
+            remove: function (Uuid) {
+                Layer.remove(Uuid);
             },
-            get Active() {
-                return LayerManager.Active();
+            get active() {
+                return layerManager.active();
             },
-            set Active(Value) {
-                this.Notify('onDeactive', {
+            set active(value) {
+                this.notify('onDeactive', {
                     Type: 'onDeactive',
-                    Layer: Layer.Active()
+                    Layer: Layer.active()
                 });
 
-                LayerManager.Active(Value);
+                layerManager.active(value);
 
-                this.Notify('onActive', {
+                this.notify('onActive', {
                     Type: 'onActive',
-                    Layer: Layer.Active()
+                    Layer: Layer.active()
                 });
             }
 
         }),
-        Shape: {
-            Create: function (Attrs) {
-                if ((typeof Attrs == "function") || (Attrs == null)) {
-                    throw new Error('Shape - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        shape: {
+            create: function (attrs) {
+                if ((typeof attrs == "function") || (attrs == null)) {
+                    throw new Error('Shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if (['Polygon', 'Rectangle', 'Line', 'Arc', 'Circle', 'Ellipse'].indexOf(Attrs.Type) == -1) {
-                    throw new Error('Shape - Create - Type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                if (['Polygon', 'Rectangle', 'Line', 'Arc', 'Circle', 'Ellipse'].indexOf(attrs.Type) == -1) {
+                    throw new Error('Shape - create - Type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if ((Attrs.X == undefined) || (Attrs.Y == undefined)) {
-                    throw new Error('Shape - Create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                if ((attrs.X == undefined) || (attrs.Y == undefined)) {
+                    throw new Error('Shape - create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                var Shape = ShapeManager.Create(Attrs);
+                var Shape = shapeManager.create(attrs);
 
-                LayerManager.Active().Shapes.Add(Shape.Uuid, Shape);
+                layerManager.active().shapes.Add(Shape.Uuid, Shape);
 
                 return true;
             }
         },
-        Tool: {
-            Create: function (Attrs) {
-                if (typeof Attrs == "function") {
-                    throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        tool: {
+            create: function (attrs) {
+                if (typeof attrs == "function") {
+                    throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                return ToolManager.Create(Attrs);
+                return toolManager.create(attrs);
             }
         },
-        get Zoom() {
+        get zoom() {
             return this._zoom || 1;
         },
-        set Zoom(Value) {
+        set zoom(value) {
 
-            // Plane.Zoom /= .9;  - more
-            // Plane.Zoom *= .9; - less
+            // plane.zoom /= .9;  - more
+            // plane.zoom *= .9; - less
 
-            var LayerActive = LayerManager.Active(),
-                ZoomFactor = Value / Plane.Zoom;
+            var LayerActive = layerManager.active(),
+                zoomFactor = value / plane.zoom;
 
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, Value, this.Scroll);
+            gridDraw(viewPort.clientHeight, viewPort.clientWidth, value, this.scroll);
 
-            // Se não alguma Layer Ativa = Clear || Import
+            // Se não alguma Layer Ativa = clear || importer
             if (LayerActive) {
-                LayerManager.List().forEach(function (Layer) {
+                layerManager.list().forEach(function (Layer) {
 
-                    LayerManager.Active(Layer.Uuid);
+                    layerManager.active(Layer.Uuid);
 
-                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                        Shape.ScaleTo(ZoomFactor);
+                    layerManager.active().shapes.list().forEach(function (Shape) {
+                        Shape.scaleTo(zoomFactor);
                     });
 
-                    Plane.Update();
+                    plane.update();
                 });
-                LayerManager.Active(LayerActive.Uuid);
+                layerManager.active(LayerActive.Uuid);
             }
 
-            this._zoom = Value;
+            this._zoom = value;
         },
-        get Scroll() {
+        get scroll() {
             return this._scroll || {
                 X: 0,
                 Y: 0
             };
         },
-        set Scroll(Value) {
+        set scroll(value) {
 
-            var LayerActive = LayerManager.Active(),
+            var LayerActive = layerManager.active(),
                 MoveFactor = {
-                    X: Value.X + this.Scroll.X,
-                    Y: Value.Y + this.Scroll.Y
+                    X: value.X + this.scroll.X,
+                    Y: value.Y + this.scroll.Y
                 };
 
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, MoveFactor);
+            gridDraw(viewPort.clientHeight, viewPort.clientWidth, this.zoom, MoveFactor);
 
-            // Se não alguma Layer Ativa = Clear || Import
+            // Se não alguma Layer Ativa = clear || importer
             if (LayerActive) {
-                Value.X = Value.X * this.Zoom;
-                Value.Y = Value.Y * this.Zoom;
+                value.X = value.X * this.zoom;
+                value.Y = value.Y * this.zoom;
 
-                LayerManager.List().forEach(function (Layer) {
+                layerManager.list().forEach(function (Layer) {
 
-                    LayerManager.Active(Layer.Uuid);
+                    layerManager.active(Layer.Uuid);
 
-                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                        Shape.MoveTo(Value);
+                    layerManager.active().shapes.list().forEach(function (Shape) {
+                        Shape.moveTo(value);
                     });
 
-                    Plane.Update();
+                    plane.update();
 
                 });
-                LayerManager.Active(LayerActive.Uuid);
+                layerManager.active(LayerActive.Uuid);
             }
 
             this._scroll = MoveFactor;
         },
-        get Settings() {
+        get settings() {
             return this._settings || {
-                MetricSystem: 'mm',
-                BackgroundColor: 'rgb(255, 255, 255)',
-                GridEnable: true,
-                GridColor: 'rgb(218, 222, 215)'
+                metricSystem: 'mm',
+                backgroundColor: 'rgb(255, 255, 255)',
+                gridEnable: true,
+                gridColor: 'rgb(218, 222, 215)'
             };
         },
-        set Settings(Value) {
-            this._settings = Value;
+        set settings(value) {
+            this._settings = value;
         },
-        Import: {
-            FromJson: function (StringJson) {
+        importer: {
+            fromJson: function (stringJson) {
 
-                var PlaneObject = JSON.parse(StringJson);
+                var planeObject = JSON.parse(stringJson);
 
-                Plane.Clear();
+                plane.clear();
 
-                Plane.Settings = PlaneObject.Settings;
-                Plane.Zoom = PlaneObject.Zoom;
-                Plane.Scroll = PlaneObject.Scroll;
+                plane.settings = planeObject.settings;
+                plane.zoom = planeObject.zoom;
+                plane.scroll = planeObject.scroll;
 
-                PlaneObject.Layers.forEach(function (LayerObject) {
+                planeObject.Layers.forEach(function (layerObject) {
 
-                    LayerManager.Create({
-                        Uuid: LayerObject.Uuid,
-                        Name: LayerObject.Name,
-                        Locked: LayerObject.Locked,
-                        Visible: LayerObject.Visible,
-                        Style: LayerObject.Style,
-                        ViewPort: ViewPort
+                    layerManager.create({
+                        Uuid: layerObject.Uuid,
+                        Name: layerObject.Name,
+                        Locked: layerObject.Locked,
+                        Visible: layerObject.Visible,
+                        Style: layerObject.Style,
+                        viewPort: viewPort
                     });
 
-                    LayerObject.Shapes.forEach(function (ShapeObject) {
-                        Plane.Shape.Create(ShapeObject)
+                    layerObject.shapes.forEach(function (shapeObject) {
+                        plane.Shape.create(shapeObject)
                     });
 
-                    Plane.Update();
+                    plane.update();
                 });
 
                 return true;
             },
-            FromSvg: null,
-            FromDxf: function (StringDxf) {
-                Plane.Clear();
+            fromSvg: null,
+            fromDxf: function (StringDxf) {
+                plane.clear();
 
-                var StringJson = Import.FromDxf(StringDxf);
+                var StringJson = importer.FromDxf(StringDxf);
                 var ObjectDxf = JSON.parse(StringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
 
                 if (StringJson) {
-                    Plane.Layer.Create();
+                    plane.Layer.create();
                     for (var prop in ObjectDxf) {
-                        Plane.Shape.Create(ObjectDxf[prop]);
+                        plane.Shape.create(ObjectDxf[prop]);
                     }
-                    Plane.Update();
+                    plane.update();
                 }
             },
-            FromDwg: null
+            fromDwg: null
         },
-        Export: {
-            ToJson: function () {
+        exporter: {
+            toJson: function () {
 
-                var PlaneExport = {
-                    Settings: Plane.Settings,
-                    Zoom: Types.Math.ParseFloat(Plane.Zoom, 5),
-                    Scroll: Plane.Scroll,
-                    Layers: LayerManager.List().map(function (LayerExport) {
-                        var LayerObject = LayerExport.ToObject();
+                var planeExport = {
+                    settings: plane.settings,
+                    zoom: types.math.parseFloat(plane.zoom, 5),
+                    scroll: plane.scroll,
+                    layers: layerManager.list().map(function (layerExport) {
+                        var layerObject = layerExport.toObject();
 
-                        LayerObject.Shapes = LayerObject.Shapes.map(function (ShapeExport) {
-                            return ShapeExport.ToObject();
+                        layerObject.shapes = layerObject.shapes.map(function (shapeExport) {
+                            return shapeExport.toObject();
                         });
 
-                        return LayerObject;
+                        return layerObject;
                     })
                 }
 
-                return JSON.stringify(PlaneExport);
+                return JSON.stringify(planeExport);
 
             }
         }
     });
 
 
-    function GridDraw(Height, Width, Zoom, Scroll) {
+    function gridDraw(height, Width, zoom, scroll) {
 
-        if (!Plane.Settings.GridEnable) return;
+        if (!plane.settings.gridEnable) return;
 
-        if (!LayerSystem) {
-            var Attrs = { // atributos para a layer do grid (sistema) 
-                ViewPort: ViewPort,
+        if (!layerSystem) {
+            var attrs = { // atributos para a layer do grid (sistema) 
+                viewPort: viewPort,
                 Name: 'Plane - System',
                 Status: 'System',
                 Style: {
-                    BackgroundColor: Plane.Settings.BackgroundColor
+                    backgroundColor: plane.settings.backgroundColor
                 }
             };
-            LayerSystem = LayerManager.Create(Attrs);
+            layerSystem = layerManager.create(attrs);
         } else {
-            LayerSystem.Shapes.Clear();
+            layerSystem.shapes.clear();
         }
 
-        // calculos para o Zoom
-        Width = Zoom > 1 ? Math.round(Width * Zoom) : Math.round(Width / Zoom);
-        Height = Zoom > 1 ? Math.round(Height * Zoom) : Math.round(Height / Zoom);
+        // calculos para o zoom
+        Width = zoom > 1 ? Math.round(Width * zoom) : Math.round(Width / zoom);
+        height = zoom > 1 ? Math.round(height * zoom) : Math.round(height / zoom);
 
-        var LineBold = 0;
-        if (Scroll.X > 0) {
-            for (var X = (Scroll.X * Zoom); X >= 0; X -= (10 * Zoom)) {
+        var lineBold = 0;
+        if (scroll.X > 0) {
+            for (var X = (scroll.X * zoom); X >= 0; X -= (10 * zoom)) {
 
-                var Shape = ShapeManager.Create({
-                    Uuid: Types.Math.Uuid(9, 16),
+                var shape = shapeManager.create({
+                    Uuid: types.math.uuid(9, 16),
                     Type: 'Line',
                     X: [X, 0],
-                    Y: [X, Height],
+                    Y: [X, height],
                     Style: {
-                        LineColor: Plane.Settings.GridColor,
-                        LineWidth: LineBold % 5 == 0 ? .8 : .3
+                        LineColor: plane.settings.gridColor,
+                        LineWidth: lineBold % 5 == 0 ? .8 : .3
                     }
                 });
 
-                LayerSystem.Shapes.Add(Shape.Uuid, Shape);
-                LineBold++;
+                layerSystem.shapes.Add(shape.Uuid, shape);
+                lineBold++;
             }
         }
 
-        LineBold = 0;
-        for (var X = (Scroll.X * Zoom); X <= Width; X += (10 * Zoom)) {
+        lineBold = 0;
+        for (var X = (scroll.X * zoom); X <= Width; X += (10 * zoom)) {
 
-            var Shape = ShapeManager.Create({
-                Uuid: Types.Math.Uuid(9, 16),
+            var shape = shapeManager.create({
+                Uuid: types.math.uuid(9, 16),
                 Type: 'Line',
                 X: [X, 0],
-                Y: [X, Height],
+                Y: [X, height],
                 Style: {
-                    LineColor: Plane.Settings.GridColor,
-                    LineWidth: LineBold % 5 == 0 ? .8 : .3
+                    LineColor: plane.settings.gridColor,
+                    LineWidth: lineBold % 5 == 0 ? .8 : .3
                 }
             });
 
-            LayerSystem.Shapes.Add(Shape.Uuid, Shape);
-            LineBold++;
+            layerSystem.shapes.Add(shape.Uuid, shape);
+            lineBold++;
         }
 
-        LineBold = 0;
-        if (Scroll.Y > 0) {
-            for (var Y = (Scroll.Y * Zoom); Y >= 0; Y -= (10 * Zoom)) {
+        lineBold = 0;
+        if (scroll.Y > 0) {
+            for (var Y = (scroll.Y * zoom); Y >= 0; Y -= (10 * zoom)) {
 
-                var Shape = ShapeManager.Create({
-                    Uuid: Types.Math.Uuid(9, 16),
+                var shape = shapeManager.create({
+                    Uuid: types.math.uuid(9, 16),
                     Type: 'Line',
                     X: [0, Y],
                     Y: [Width, Y],
                     Style: {
-                        LineColor: Plane.Settings.GridColor,
-                        LineWidth: LineBold % 5 == 0 ? .8 : .3
+                        LineColor: plane.settings.gridColor,
+                        LineWidth: lineBold % 5 == 0 ? .8 : .3
                     }
                 });
 
-                LayerSystem.Shapes.Add(Shape.Uuid, Shape);
-                LineBold++;
+                layerSystem.shapes.Add(shape.Uuid, shape);
+                lineBold++;
             }
         }
 
-        LineBold = 0;
-        for (var Y = (Scroll.Y * Zoom); Y <= Height; Y += (10 * Zoom)) {
+        lineBold = 0;
+        for (var Y = (scroll.Y * zoom); Y <= height; Y += (10 * zoom)) {
 
-            var Shape = ShapeManager.Create({
-                Uuid: Types.Math.Uuid(9, 16),
+            var shape = shapeManager.create({
+                Uuid: types.math.uuid(9, 16),
                 Type: 'Line',
                 X: [0, Y],
                 Y: [Width, Y],
                 Style: {
-                    LineColor: Plane.Settings.GridColor,
-                    LineWidth: LineBold % 5 == 0 ? .8 : .3
+                    LineColor: plane.settings.gridColor,
+                    LineWidth: lineBold % 5 == 0 ? .8 : .3
                 }
             });
 
-            LayerSystem.Shapes.Add(Shape.Uuid, Shape);
-            LineBold++;
+            layerSystem.shapes.Add(shape.Uuid, shape);
+            lineBold++;
         }
 
-        Plane.Update(LayerSystem);
+        plane.update(layerSystem);
     };
 
 
-    exports.Public = Plane;
+    exports.Public = plane;
 });
 define("structure/layer", ['require', 'exports'], function (require, exports) {
 
-    var Types = require('utility/types');
+    var types = require('utility/types');
 
-    var LayerStore = Types.Data.Dictionary.Create(),
+    var LayerStore = types.data.dictionary.create(),
         LayerActive = null;
 
-    var Layer = Types.Function.Inherits(function Layer(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Status = Attrs.Status;
-        this.Style = Attrs.Style;
-        this.Render = Attrs.Render;
-        this.Shapes = Attrs.Shapes;
-    }, Types.Object.Event);
+    var Layer = types.object.inherits(function Layer(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Status = attrs.Status;
+        this.Style = attrs.Style;
+        this.render = attrs.render;
+        this.shapes = attrs.shapes;
+    }, types.object.event);
 
-    Layer.prototype.ToObject = function () {
+    Layer.prototype.toObject = function () {
         return {
             Uuid: this.Uuid,
             Name: this.Name,
             Locked: this.Locked,
             Visible: this.Visible,
             Style: this.Style,
-            Shapes: this.Shapes.List()
+            shapes: this.shapes.list()
         };
     }
 
 
-    function Create(Attrs) {
+    function create(attrs) {
 
-        var Uuid = Types.Math.Uuid(9, 16);
+        var Uuid = types.math.uuid(9, 16);
 
-        // montando o Render da Layer
-        var Render = document.createElement('canvas');
+        // montando o render da Layer
+        var render = document.createElement('canvas');
 
-        Render.id = Types.Math.Uuid(9, 16);
-        Render.width = Attrs.ViewPort.clientWidth;
-        Render.height = Attrs.ViewPort.clientHeight;
+        render.id = types.math.uuid(9, 16);
+        render.width = attrs.viewPort.clientWidth;
+        render.height = attrs.viewPort.clientHeight;
 
-        Render.style.position = "absolute";
-        Render.style.backgroundColor = (Attrs.Style && Attrs.Style.BackgroundColor) ? Attrs.Style.BackgroundColor : 'transparent';
+        render.style.position = "absolute";
+        render.style.backgroundColor = (attrs.Style && attrs.Style.backgroundColor) ? attrs.Style.backgroundColor : 'transparent';
 
         // sistema cartesiano de coordenadas
-        var Context2D = Render.getContext('2d');
-        Context2D.translate(0, Render.height);
-        Context2D.scale(1, -1);
+        var context2D = render.getContext('2d');
+        context2D.translate(0, render.height);
+        context2D.scale(1, -1);
 
         // parametros para a nova Layer
-        Attrs = Types.Object.Merge({
+        attrs = types.object.merge({
             Uuid: Uuid,
             Name: 'New Layer '.concat(Uuid),
             Style: {
@@ -1476,144 +1477,144 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
                 LineColor: 'rgb(0, 0, 0)',
             },
             Status: 'Visible',
-            Shapes: Types.Data.Dictionary.Create(),
-            Render: Render
-        }, Attrs);
+            shapes: types.data.dictionary.create(),
+            render: render
+        }, attrs);
         // parametros para a nova Layer
 
         // nova Layer
-        var layer = new Layer(Attrs);
+        var layer = new Layer(attrs);
 
-        // add em ViewPort
-        Attrs.ViewPort.appendChild(layer.Render);
+        // add em viewPort
+        attrs.viewPort.appendChild(layer.render);
 
         if (layer.Status != 'System') {
             LayerStore.Add(layer.Uuid, layer);
-            this.Active(layer.Uuid);
+            this.active(layer.Uuid);
             return true;
         } else {
             return layer;
         }
     }
 
-    function Active(Value) {
-        return Value ? LayerActive = LayerStore.Find(Value) : LayerActive;
+    function active(value) {
+        return value ? LayerActive = LayerStore.Find(value) : LayerActive;
     }
 
-    function Delete(Value) {
-        LayerStore.List().forEach(function (Layer) {
-            var Element = document.getElementById(Layer.Render.id);
+    function remove(value) {
+        LayerStore.list().forEach(function (Layer) {
+            var Element = document.getElementById(Layer.render.id);
             if (Element && Element.parentNode) {
                 Element.parentNode.removeChild(Element);
             }
-            LayerStore.Delete(Layer.Uuid);
+            LayerStore.remove(Layer.Uuid);
         });
     }
 
-    function List() {
-        return LayerStore.List();
+    function list() {
+        return LayerStore.list();
     }
 
 
 
-    exports.Create = Create;
-    exports.Active = Active;
-    exports.List = List;
-    exports.Delete = Delete;
+    exports.create = create;
+    exports.active = active;
+    exports.list = list;
+    exports.remove = remove;
 });
 define("structure/tool", ['require', 'exports'], function (require, exports) {
 
-    var Types = require('utility/types');
+    var types = require('utility/types');
 
-    var ToolStore = Types.Data.Dictionary.Create(),
-        ShapeSelected = Types.Data.Dictionary.Create();
+    var toolStore = types.data.dictionary.create(),
+        shapeSelected = types.data.dictionary.create();
 
-    var LayerManager = require('structure/layer');
+    var layerManager = require('structure/layer');
 
-    var ViewPort = null,
-        Update = null;
+    var viewPort = null,
+        update = null;
 
 
-    var Tool = Types.Function.Inherits(function Tool(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
+    var Tool = types.object.inherits(function Tool(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
 
-        Object.defineProperty(this, 'Active', {
+        Object.defineProperty(this, 'active', {
             get: function () {
                 return this._active || false;
             },
-            set: function (Value) {
-                this.Notify(Value ? 'onActive' : 'onDeactive', {
-                    Type: Value ? 'onActive' : 'onDeactive',
+            set: function (value) {
+                this.notify(value ? 'onActive' : 'onDeactive', {
+                    Type: value ? 'onActive' : 'onDeactive',
                     Now: new Date().toISOString()
 
                 });
-                this._active = Value;
+                this._active = value;
             }
         });
-    }, Types.Object.Event);
+    }, types.object.event);
 
 
-    function Create(Attrs) {
+    function create(attrs) {
 
-        var Uuid = Types.Math.Uuid(9, 16);
+        var Uuid = types.math.uuid(9, 16);
 
-        Attrs = Types.Object.Merge({
+        attrs = types.object.merge({
             Uuid: Uuid,
             Name: 'Tool '.concat(Uuid)
-        }, Attrs);
+        }, attrs); 
 
         // nova tool
-        var tool = new Tool(Attrs)
+        var tool = new Tool(attrs)
 
-        ToolStore.Add(tool.Uuid, tool);
+        toolStore.Add(tool.Uuid, tool);
 
         return tool;
     }
 
 
-    var EventProxy = Types.Object.Extend(Types.Object.Event.Create(), {
+    var eventProxy = types.object.extend(types.object.event.create(), {
 
-        Start: function (Config) {
+        start: function (config) {
 
-            ViewPort = Config.ViewPort;
-            Update = Config.Update;
+            viewPort = config.viewPort;
+            update = config.update;
 
-            ViewPort.onmousemove = function (Event) {
+            viewPort.onmousemove = function (event) {
                 
-                if (LayerManager.Active()) {
-                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
+                if (layerManager.active()) {
+                    layerManager.active().shapes.list().forEach(function (Shape) {
                         if (Shape.Status != 'Selected') {
-                            Shape.Status = Shape.Contains(Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY)) ? 'Over' : 'Out';
+                            Shape.Status = Shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'Over' : 'Out';
                         }
                     });
-                    Update();
+                    update();
                 }
             }
 
-            ViewPort.onclick = function (Event) {
-                if (LayerManager.Active()) {
+            viewPort.onclick = function (event) {
+                if (layerManager.active()) {
                     
-                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                        if (Shape.Contains(Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY))) {
+                    layerManager.active().shapes.list().forEach(function (Shape) {
+                        if (Shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
 
                             Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over';
 
                             if (Shape.Status == 'Selected') {
-                                ShapeSelected.Add(Shape.Uuid, Shape);
+                                shapeSelected.Add(Shape.Uuid, Shape);
                             } else {
-                                ShapeSelected.Delete(Shape.Uuid);
+                                shapeSelected.remove(Shape.Uuid);
                             }
 
                         }
                     });
-                    Update();
+                    update();
 
-                    ToolStore.List().forEach(function (Tool) {
-                        if (Tool.Active) {
-                            Tool.Notify('onMouseClick', {
+                    toolStore.list().forEach(function (Tool) {
+                        if (Tool.active) {
+                            Tool.notify('onMouseClick', {
                                 Type: 'onMouseClick',
-                                Shapes: ShapeSelected.List()
+                                shapes: shapeSelected.list()
                             });
                         }
                     });
@@ -1623,44 +1624,44 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     })
 
-    exports.Event = EventProxy;
-    exports.Create = Create;
+    exports.event = eventProxy;
+    exports.create = create;
 });
-define("utility/export", ['require', 'exports'], function (require, exports) {
+define("utility/exporter", ['require', 'exports'], function (require, exports) {
     
-    function ToJson (){
+    function toJson (){
         return true;
     }
     
-    function ToSvg (){
+    function toSvg (){
         return true;
     }
     
-    function ToDxf (){
+    function toDxf (){
         return true;
     }
     
-    function ToPng (){
+    function toPng (){
         return true;
     }
     
-    function ToPdf (){
+    function toPdf (){
         return true;
     }
 
     
-    exports.ToJson = ToJson;
-    exports.ToSvg = ToSvg;
-    exports.ToDxf = ToDxf;
-    exports.ToPng = ToPng;
-    exports.ToPdf = ToPdf;
+    exports.toJson = toJson;
+    exports.toSvg = toSvg;
+    exports.toDxf = toDxf;
+    exports.toPng = toPng;
+    exports.toPdf = toPdf;
 
 });
-define("utility/import", ['require', 'exports'], function (require, exports) {
+define("utility/importer", ['require', 'exports'], function (require, exports) {
 
-//    var Types = require('utility/types');
+//    var types = require('utility/types');
     
-    function FromDxf(stringDxf) {
+    function fromDxf(stringDxf) {
         
         
         if (!String.prototype.format) {
@@ -1772,28 +1773,28 @@ define("utility/import", ['require', 'exports'], function (require, exports) {
         return json += ']';
     }
 
-    function FromDwg(stringDwg) {
+    function fromDwg(stringDwg) {
         return true;
     }
 
-    function FromJson(stringJson) {
+    function fromJson(stringJson) {
         return true;
     }
 
-    function FromSvg(stringSvg) {
+    function fromSvg(stringSvg) {
         return true;
     }
 
-    exports.FromDxf = FromDxf;
-    exports.FromDwg = FromDwg;
-    exports.FromJson = FromJson;
-    exports.FromSvg = FromSvg;
+    exports.fromDxf = fromDxf;
+    exports.fromDwg = fromDwg;
+    exports.fromJson = fromJson;
+    exports.fromSvg = fromSvg;
 
 });
 define("utility/types", ['require', 'exports'], function (require, exports) {
 
-    var Maths = {
-        Uuid: function (length, radix) {
+    var math = {
+        uuid: function (length, radix) {
             // http://www.ietf.org/rfc/rfc4122.txt
             var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''),
                 uuid = [],
@@ -1818,28 +1819,28 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
             return uuid.join('').toLowerCase();
         },
-        ParseFloat: function (float, decimal) {
+        parseFloat: function (float, decimal) {
             return Number(parseFloat(float).toFixed(decimal));
         }
     }
 
-    var String = {
+    var string = {
 
-        Format: function () {
+        format: function () {
             var args = arguments;
             return this.replace(/{(\d+)}/g, function (match, number) {
                 return typeof args[number] != 'undefined' ? args[number] : match;
             });
         },
-        Contains: function () {
+        contains: function () {
             return String.prototype.indexOf.apply(this, arguments) !== -1;
         }
 
     }
 
-    var Graphic = {
+    var graphic = {
 
-        MousePosition: function (Element, X, Y) {
+        mousePosition: function (Element, X, Y) {
             var bb = Element.getBoundingClientRect();
 
             X = (X - bb.left) * (Element.clientWidth / bb.width);
@@ -1853,12 +1854,12 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 Y: Y
             };
         }
-
+ 
     }
 
-    var Data = {
+    var data = {
 
-        Dictionary: (function () {
+        dictionary: (function () {
 
             function Dictionary() {
                 this.store = new Array();
@@ -1871,16 +1872,16 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 Find: function (key) {
                     return this.store[key];
                 },
-                Delete: function (key) {
+                remove: function (key) {
                     delete this.store[key];
                 },
                 Count: function () {
                     return Object.keys(this.store).length;
                 },
-                Clear: function(){
+                clear: function(){
                     return this.store = new Array();
                 },
-                List: function () {
+                list: function () {
                     var self = this;
                     return Object.keys(this.store).map(function (key) {
                         return self.store[key];
@@ -1888,7 +1889,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 }
             }
 
-            Dictionary.Create = function () {
+            Dictionary.create = function () {
                 return new Dictionary();
             }
 
@@ -1897,20 +1898,17 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     }
 
-    var Functions = {
-        Inherits: function (f, p) {
+    var object = {
+        inherits: function (f, p) {
             f.prototype = new p();
             return f;
-        }
-    }
-
-    var Objects = {
+        },
         /*
          * Copy the enumerable properties of p to o, and return o
          * If o and p have a property by the same name, o's property is overwritten
          * This function does not handle getters and setters or copy attributes
          */
-        Extend: function (o, p) {
+        extend: function (o, p) {
             for (var prop in p) { // For all props in p.
                 Object.defineProperty(o, prop, Object.getOwnPropertyDescriptor(p, prop)); // Add the property to o.
             }
@@ -1921,7 +1919,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          * If o and p have a property by the same name, o's property is left alone
          * This function does not handle getters and setters or copy attributes
          */
-        Merge: function (o, p) {
+        merge: function (o, p) {
             for (var prop in p) { // For all props in p
                 if (o.hasOwnProperty[prop]) continue; // Except those already in o
                 o[prop] = p[prop]; // Add the property to o
@@ -1932,19 +1930,19 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          * Remove properties from o if there is not a property with the same name in p
          * Return o
          */
-        Restrict: function (o, p) {
+        restrict: function (o, p) {
             for (var prop in o) { // For all props in o
-                if (!(prop in p)) delete o[prop]; // Delete if not in p
+                if (!(prop in p)) delete o[prop]; // remove if not in p
             }
             return o;
         },
         /*
-         * For each property of p, delete the property with the same name from o
+         * For each property of p, remove the property with the same name from o
          * Return o
          */
-        Subtract: function (o, p) {
+        subtract: function (o, p) {
             for (var prop in p) { // For all props in p
-                delete o[prop]; // Delete from o (deleting a nonexistent prop is harmless)
+                delete o[prop]; // remove from o (deleting a nonexistent prop is harmless)
             }
             return o;
         },
@@ -1952,21 +1950,21 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          * Return a new object that holds the properties of both o and p.
          * If o and p have properties by the same name, the values from o are used
          */
-        Union: function (o, p) {
-            return Objects.Extend(Objects.Extend({}, o), p);
+        union: function (o, p) {
+            return object.extend(object.extend({}, o), p);
         },
         /*
          * Return a new object that holds only the properties of o that also appear
          * in p. This is something like the intersection of o and p, but the values of
          * the properties in p are discarded
          */
-        Intersection: function (o, p) {
-            return Restrict(extend({}, o), p);
+        intersection: function (o, p) {
+            return object.restrict(object.extend({}, o), p);
         },
         /*
          * Return an array that holds the names of the enumerable own properties of o
          */
-        Keys: function (o) {
+        keys: function (o) {
             if (typeof o !== "object") throw TypeError(); // Object argument required
             var result = []; // The array we will return
             for (var prop in o) { // For all enumerable properties
@@ -1975,20 +1973,20 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             }
             return result; // Return the array.
         },
-        Event: (function () {
+        event: (function () {
 
             function Event() {
                 this.listeners = {};
             }
 
-            Event.prototype.Listen = function (event, handler) {
+            Event.prototype.listen = function (event, handler) {
                 if (this.listeners[event] === undefined) {
                     this.listeners[event] = [];
                 }
                 this.listeners[event].push(handler);
             };
 
-            Event.prototype.Notify = function (event, data) {
+            Event.prototype.notify = function (event, data) {
                 if (this.listeners[event] !== undefined) {
                     for (var callback in this.listeners[event]) {
                         this.listeners[event][callback].call(this, data);
@@ -1996,7 +1994,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 }
             };
 
-            Event.prototype.Unlisten = function (event, handler) {
+            Event.prototype.unListen = function (event, handler) {
                 if (this.listeners[event] !== undefined) {
                     var index = this.listeners[event].indexOf(handler);
                     if (index !== -1) {
@@ -2005,7 +2003,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 }
             };
 
-            Event.Create = function () {
+            Event.create = function () {
                 return new Event();
             }
 
@@ -2014,12 +2012,11 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         })()
     }
 
-    exports.Math = Maths;
-    exports.String = String;
-    exports.Graphic = Graphic;
-    exports.Data = Data;
-    exports.Object = Objects;
-    exports.Function = Functions;
+    exports.math = math;
+    exports.string = string;
+    exports.graphic = graphic;
+    exports.data = data;
+    exports.object = object;
 });
-window.Plane = require("plane").Public;
+window.plane = require("plane").Public;
 })(window);

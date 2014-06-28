@@ -1,52 +1,52 @@
 define("structure/layer", ['require', 'exports'], function (require, exports) {
 
-    var Types = require('utility/types');
+    var types = require('utility/types');
 
-    var LayerStore = Types.Data.Dictionary.Create(),
+    var LayerStore = types.data.dictionary.create(),
         LayerActive = null;
 
-    var Layer = Types.Function.Inherits(function Layer(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Status = Attrs.Status;
-        this.Style = Attrs.Style;
-        this.Render = Attrs.Render;
-        this.Shapes = Attrs.Shapes;
-    }, Types.Object.Event);
+    var Layer = types.object.inherits(function Layer(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Status = attrs.Status;
+        this.Style = attrs.Style;
+        this.render = attrs.render;
+        this.shapes = attrs.shapes;
+    }, types.object.event);
 
-    Layer.prototype.ToObject = function () {
+    Layer.prototype.toObject = function () {
         return {
             Uuid: this.Uuid,
             Name: this.Name,
             Locked: this.Locked,
             Visible: this.Visible,
             Style: this.Style,
-            Shapes: this.Shapes.List()
+            shapes: this.shapes.list()
         };
     }
 
 
-    function Create(Attrs) {
+    function create(attrs) {
 
-        var Uuid = Types.Math.Uuid(9, 16);
+        var Uuid = types.math.uuid(9, 16);
 
-        // montando o Render da Layer
-        var Render = document.createElement('canvas');
+        // montando o render da Layer
+        var render = document.createElement('canvas');
 
-        Render.id = Types.Math.Uuid(9, 16);
-        Render.width = Attrs.ViewPort.clientWidth;
-        Render.height = Attrs.ViewPort.clientHeight;
+        render.id = types.math.uuid(9, 16);
+        render.width = attrs.viewPort.clientWidth;
+        render.height = attrs.viewPort.clientHeight;
 
-        Render.style.position = "absolute";
-        Render.style.backgroundColor = (Attrs.Style && Attrs.Style.BackgroundColor) ? Attrs.Style.BackgroundColor : 'transparent';
+        render.style.position = "absolute";
+        render.style.backgroundColor = (attrs.Style && attrs.Style.backgroundColor) ? attrs.Style.backgroundColor : 'transparent';
 
         // sistema cartesiano de coordenadas
-        var Context2D = Render.getContext('2d');
-        Context2D.translate(0, Render.height);
-        Context2D.scale(1, -1);
+        var context2D = render.getContext('2d');
+        context2D.translate(0, render.height);
+        context2D.scale(1, -1);
 
         // parametros para a nova Layer
-        Attrs = Types.Object.Merge({
+        attrs = types.object.merge({
             Uuid: Uuid,
             Name: 'New Layer '.concat(Uuid),
             Style: {
@@ -56,48 +56,48 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
                 LineColor: 'rgb(0, 0, 0)',
             },
             Status: 'Visible',
-            Shapes: Types.Data.Dictionary.Create(),
-            Render: Render
-        }, Attrs);
+            shapes: types.data.dictionary.create(),
+            render: render
+        }, attrs);
         // parametros para a nova Layer
 
         // nova Layer
-        var layer = new Layer(Attrs);
+        var layer = new Layer(attrs);
 
-        // add em ViewPort
-        Attrs.ViewPort.appendChild(layer.Render);
+        // add em viewPort
+        attrs.viewPort.appendChild(layer.render);
 
         if (layer.Status != 'System') {
             LayerStore.Add(layer.Uuid, layer);
-            this.Active(layer.Uuid);
+            this.active(layer.Uuid);
             return true;
         } else {
             return layer;
         }
     }
 
-    function Active(Value) {
-        return Value ? LayerActive = LayerStore.Find(Value) : LayerActive;
+    function active(value) {
+        return value ? LayerActive = LayerStore.Find(value) : LayerActive;
     }
 
-    function Delete(Value) {
-        LayerStore.List().forEach(function (Layer) {
-            var Element = document.getElementById(Layer.Render.id);
+    function remove(value) {
+        LayerStore.list().forEach(function (Layer) {
+            var Element = document.getElementById(Layer.render.id);
             if (Element && Element.parentNode) {
                 Element.parentNode.removeChild(Element);
             }
-            LayerStore.Delete(Layer.Uuid);
+            LayerStore.remove(Layer.Uuid);
         });
     }
 
-    function List() {
-        return LayerStore.List();
+    function list() {
+        return LayerStore.list();
     }
 
 
 
-    exports.Create = Create;
-    exports.Active = Active;
-    exports.List = List;
-    exports.Delete = Delete;
+    exports.create = create;
+    exports.active = active;
+    exports.list = list;
+    exports.remove = remove;
 });

@@ -1,144 +1,144 @@
 define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
-    var Types = require('utility/types'),
+    var types = require('utility/types'),
         Point = require('geometric/point'),
-        Intersection = require('geometric/intersection');
+        intersection = require('geometric/intersection');
 
 
     function Shape() {};
 
     Shape.prototype = {
-        RotateTo: function (Value) {
+        rotateTo: function (value) {
             return true;
         },
-        ScaleTo: function (Value) {
+        scaleTo: function (value) {
 
             switch (this.Type) {
             case 'Arc':
                 {
-                    this.Point.X *= Value;
-                    this.Point.Y *= Value;
-                    this.Radius *= Value;
+                    this.Point.X *= value;
+                    this.Point.Y *= value;
+                    this.Radius *= value;
 
                     break;
                 }
             case 'Circle':
                 {
-                    this.Point.X *= Value;
-                    this.Point.Y *= Value;
-                    this.Radius *= Value;
+                    this.Point.X *= value;
+                    this.Point.Y *= value;
+                    this.Radius *= value;
 
                     break;
                 }
             case 'Ellipse':
                 {
-                    this.Point.X *= Value;
-                    this.Point.Y *= Value;
-                    this.RadiusX *= Value;
-                    this.RadiusY *= Value;
+                    this.Point.X *= value;
+                    this.Point.Y *= value;
+                    this.RadiusX *= value;
+                    this.RadiusY *= value;
 
                     break;
                 }
             case 'Line':
                 {
                     this.Points.forEach(function (Point) {
-                        Point.X *= Value;
-                        Point.Y *= Value;
+                        Point.X *= value;
+                        Point.Y *= value;
                     });
 
                     break;
                 }
             case 'Polygon':
                 {
-                    this.Point.X *= Value;
-                    this.Point.Y *= Value;
+                    this.Point.X *= value;
+                    this.Point.Y *= value;
 
                     this.Points.forEach(function (Point) {
-                        Point.X *= Value;
-                        Point.Y *= Value;
+                        Point.X *= value;
+                        Point.Y *= value;
                     });
 
                     break;
                 }
             case 'Rectangle':
                 {
-                    this.Point.X *= Value;
-                    this.Point.Y *= Value;
-                    this.Height *= Value;
-                    this.Width *= Value;
+                    this.Point.X *= value;
+                    this.Point.Y *= value;
+                    this.Height *= value;
+                    this.Width *= value;
 
                     break;
                 }
             }
 
-            this.Scale = Value;
+            this.Scale = value;
 
         },
-        MoveTo: function (Value) {
+        moveTo: function (value) {
 
             if (this.Point) {
-                this.Point = this.Point.Sum(Value);
+                this.Point = this.Point.sum(value);
             }
             if (this.Points) {
                 for (var i = 0; i <= this.Points.length - 1; i++) {
-                    this.Points[i] = this.Points[i].Sum(Value);
+                    this.Points[i] = this.Points[i].sum(value);
                 }
             }
 
             return true;
         },
-        Contains: function (PointMouse) {
+        contains: function (pointMouse) {
 
             switch (this.Type) {
             case 'Line':
                 {
-                    var PointA = this.Points[0],
-                        PointB = this.Points[1]
+                    var pointA = this.Points[0],
+                        pointB = this.Points[1]
 
-                    if (Intersection.CircleLine(PointMouse, 2, PointA, PointB))
+                    if (intersection.circleLine(pointMouse, 2, pointA, pointB))
                         return true;
 
                     break;
                 }
             case 'Rectangle':
                 {
-                    if (Intersection.CircleRectangle(PointMouse, 2, this.Point, this.Height, this.Width))
+                    if (intersection.circleRectangle(pointMouse, 2, this.Point, this.Height, this.Width))
                         return true;
 
                     break;
                 }
             case 'Arc':
                 {
-                    if (Intersection.CircleArc(Point.Create(PointMouse.X, PointMouse.Y), 2, this.Point, this.Radius, this.StartAngle, this.EndAngle, this.ClockWise))
+                    if (intersection.circleArc(Point.create(pointMouse.X, pointMouse.Y), 2, this.Point, this.Radius, this.StartAngle, this.EndAngle, this.ClockWise))
                         return true;
 
                     break;
                 }
             case 'Circle':
                 {
-                    if (Intersection.CircleCircle(PointMouse = Point.Create(PointMouse.X, PointMouse.Y), 2, this.Point, this.Radius))
+                    if (intersection.circleCircle(pointMouse = Point.create(pointMouse.X, pointMouse.Y), 2, this.Point, this.Radius))
                         return true;
 
                     break;
                 }
             case 'Ellipse':
-                return (Intersection.CircleEllipse(PointMouse, 2, 2, this.Point, this.RadiusY, this.RadiusX))
+                return (intersection.circleEllipse(pointMouse, 2, 2, this.Point, this.RadiusY, this.RadiusX))
             case 'Polygon':
                 {
-                    var PointA = null,
-                        PointB = null;
+                    var pointA = null,
+                        pointB = null;
 
                     for (var i = 0; i < this.Points.length; i++) {
 
                         if (i + 1 == this.Points.length) {
-                            PointA = this.Points[i];
-                            PointB = this.Points[0];
+                            pointA = this.Points[i];
+                            pointB = this.Points[0];
                         } else {
-                            PointA = this.Points[i];
-                            PointB = this.Points[i + 1];
+                            pointA = this.Points[i];
+                            pointB = this.Points[i + 1];
                         }
 
-                        if (Intersection.CircleLine(PointMouse, 2, PointA, PointB))
+                        if (intersection.circleLine(pointMouse, 2, pointA, pointB))
                             return true;
                     }
                     break;
@@ -149,21 +149,21 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
             return false;
         },
-        Render: function (Context2D, Zoom) {
+        render: function (context2D, zoom) {
 
             if (this.Status == 'Over') {
-                Context2D.strokeStyle = 'rgb(61, 142, 193)';
+                context2D.strokeStyle = 'rgb(61, 142, 193)';
             }
 
             if (this.Status == 'Selected') {
 
-                Context2D.strokeStyle = 'rgb(68, 121, 154)';
+                context2D.strokeStyle = 'rgb(68, 121, 154)';
                 if (this.Point) {
-                    Context2D.strokeRect(this.Point.X - (Math.round(2 * Zoom) / 2), this.Point.Y - (Math.round(2 * Zoom) / 2), Math.round(2 * Zoom), Math.round(2 * Zoom));
+                    context2D.strokeRect(this.Point.X - (Math.round(2 * zoom) / 2), this.Point.Y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
                 }
                 if (this.Points) {
                     this.Points.forEach(function (Point) {
-                        Context2D.strokeRect(Point.X - (Math.round(2 * Zoom) / 2), Point.Y - (Math.round(2 * Zoom) / 2), Math.round(2 * Zoom), Math.round(2 * Zoom));
+                        context2D.strokeRect(Point.X - (Math.round(2 * zoom) / 2), Point.Y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
                     });
                 }
             }
@@ -171,22 +171,22 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             switch (this.Type) {
             case 'Arc':
                 {
-                    Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.arc(0, 0, this.Radius, (Math.PI / 180) * this.StartAngle, (Math.PI / 180) * this.EndAngle, this.ClockWise);
+                    context2D.translate(this.Point.X, this.Point.Y);
+                    context2D.arc(0, 0, this.Radius, (Math.PI / 180) * this.StartAngle, (Math.PI / 180) * this.EndAngle, this.ClockWise);
 
                     return true;
                 }
             case 'Circle':
                 {
-                    Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.arc(0, 0, this.Radius, 0, Math.PI * 2, true);
+                    context2D.translate(this.Point.X, this.Point.Y);
+                    context2D.arc(0, 0, this.Radius, 0, Math.PI * 2, true);
 
                     return true;
                 }
             case 'Ellipse':
                 {
-                    Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.ellipse(0, 0, this.RadiusX, this.RadiusY, 0, 0, Math.PI * 2)
+                    context2D.translate(this.Point.X, this.Point.Y);
+                    context2D.ellipse(0, 0, this.RadiusX, this.RadiusY, 0, 0, Math.PI * 2)
 
                     return true;
                 }
@@ -194,37 +194,37 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 {
                     // possivel personalização
                     if (this.Status != 'Over') {
-                        Context2D.lineWidth = (this.Style && this.Style.LineWidth) ? this.Style.LineWidth : Context2D.LineWidth;
-                        Context2D.strokeStyle = (this.Style && this.Style.LineColor) ? this.Style.LineColor : Context2D.strokeStyle;
+                        context2D.lineWidth = (this.Style && this.Style.LineWidth) ? this.Style.LineWidth : context2D.LineWidth;
+                        context2D.strokeStyle = (this.Style && this.Style.LineColor) ? this.Style.LineColor : context2D.strokeStyle;
                     }
 
-                    Context2D.moveTo(this.Points[0].X, this.Points[0].Y);
-                    Context2D.lineTo(this.Points[1].X, this.Points[1].Y);
+                    context2D.moveTo(this.Points[0].X, this.Points[0].Y);
+                    context2D.lineTo(this.Points[1].X, this.Points[1].Y);
 
                     return true;
                 }
             case 'Polygon':
                 {
-                    Context2D.moveTo(this.Points[0].X, this.Points[0].Y);
+                    context2D.moveTo(this.Points[0].X, this.Points[0].Y);
 
                     this.Points.forEach(function (Point) {
-                        Context2D.lineTo(Point.X, Point.Y);
+                        context2D.lineTo(Point.X, Point.Y);
                     });
-                    Context2D.closePath();
+                    context2D.closePath();
 
                     return true;
                 }
             case 'Rectangle':
                 {
-                    Context2D.translate(this.Point.X, this.Point.Y);
-                    Context2D.strokeRect(0, 0, this.Width, this.Height);
+                    context2D.translate(this.Point.X, this.Point.Y);
+                    context2D.strokeRect(0, 0, this.Width, this.Height);
 
                     return true;
                 }
             }
 
         },
-        ToObject: function () {
+        toObject: function () {
 
             switch (this.Type) {
             case 'Arc':
@@ -233,11 +233,11 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: Types.Math.ParseFloat(this.Point.X, 5),
-                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
-                    Radius: Types.Math.ParseFloat(this.Radius, 5),
-                    StartAngle: Types.Math.ParseFloat(this.StartAngle, 5),
-                    EndAngle: Types.Math.ParseFloat(this.EndAngle, 5),
+                    X: types.math.parseFloat(this.Point.X, 5),
+                    Y: types.math.parseFloat(this.Point.Y, 5),
+                    Radius: types.math.parseFloat(this.Radius, 5),
+                    StartAngle: types.math.parseFloat(this.StartAngle, 5),
+                    EndAngle: types.math.parseFloat(this.EndAngle, 5),
                     ClockWise: this.ClockWise
                 };
             case 'Circle':
@@ -246,9 +246,9 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: Types.Math.ParseFloat(this.Point.X, 5),
-                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
-                    Radius: Types.Math.ParseFloat(this.Radius, 5)
+                    X: types.math.parseFloat(this.Point.X, 5),
+                    Y: types.math.parseFloat(this.Point.Y, 5),
+                    Radius: types.math.parseFloat(this.Radius, 5)
                 };
             case 'Ellipse':
                 return {
@@ -256,10 +256,10 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: Types.Math.ParseFloat(this.Point.X, 5),
-                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
-                    RadiusX: Types.Math.ParseFloat(this.RadiusX, 5),
-                    RadiusY: Types.Math.ParseFloat(this.RadiusY, 5)
+                    X: types.math.parseFloat(this.Point.X, 5),
+                    Y: types.math.parseFloat(this.Point.Y, 5),
+                    RadiusX: types.math.parseFloat(this.RadiusX, 5),
+                    RadiusY: types.math.parseFloat(this.RadiusY, 5)
                 };
             case 'Line':
                 return {
@@ -267,8 +267,8 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: [Types.Math.ParseFloat(this.Points[0].X, 5), Types.Math.ParseFloat(this.Points[0].Y, 5)],
-                    Y: [Types.Math.ParseFloat(this.Points[1].X, 5), Types.Math.ParseFloat(this.Points[1].Y, 5)]
+                    X: [types.math.parseFloat(this.Points[0].X, 5), types.math.parseFloat(this.Points[0].Y, 5)],
+                    Y: [types.math.parseFloat(this.Points[1].X, 5), types.math.parseFloat(this.Points[1].Y, 5)]
                 };
             case 'Polygon':
                 return {
@@ -276,8 +276,8 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: Types.Math.ParseFloat(this.Point.X, 5),
-                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
+                    X: types.math.parseFloat(this.Point.X, 5),
+                    Y: types.math.parseFloat(this.Point.Y, 5),
                     Sides: this.Sides
                 };
             case 'Rectangle':
@@ -286,10 +286,10 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     Type: this.Type,
                     Name: this.Name,
                     Visible: this.Visible,
-                    X: Types.Math.ParseFloat(this.Point.X, 5),
-                    Y: Types.Math.ParseFloat(this.Point.Y, 5),
-                    Height: Types.Math.ParseFloat(this.Height, 5),
-                    Width: Types.Math.ParseFloat(this.Width, 5)
+                    X: types.math.parseFloat(this.Point.X, 5),
+                    Y: types.math.parseFloat(this.Point.Y, 5),
+                    Height: types.math.parseFloat(this.Height, 5),
+                    Width: types.math.parseFloat(this.Width, 5)
                 };
             }
 
@@ -297,140 +297,140 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     };
 
 
-    var Arc = Types.Function.Inherits(function Arc(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Arc = types.object.inherits(function Arc(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Arc';
-        this.Point = Attrs.Point;
-        this.Radius = Attrs.Radius;
-        this.StartAngle = Attrs.StartAngle;
-        this.EndAngle = Attrs.EndAngle;
-        this.ClockWise = Attrs.ClockWise;
+        this.Point = attrs.Point;
+        this.Radius = attrs.Radius;
+        this.StartAngle = attrs.StartAngle;
+        this.EndAngle = attrs.EndAngle;
+        this.ClockWise = attrs.ClockWise;
     }, Shape);
 
-    var Circle = Types.Function.Inherits(function Circle(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Circle = types.object.inherits(function Circle(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Circle';
-        this.Point = Attrs.Point;
-        this.Radius = Attrs.Radius;
+        this.Point = attrs.Point;
+        this.Radius = attrs.Radius;
     }, Shape);
 
-    var Ellipse = Types.Function.Inherits(function Ellipse(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Ellipse = types.object.inherits(function Ellipse(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Ellipse';
-        this.Point = Attrs.Point;
-        this.RadiusY = Attrs.RadiusY;
-        this.RadiusX = Attrs.RadiusX;
+        this.Point = attrs.Point;
+        this.RadiusY = attrs.RadiusY;
+        this.RadiusX = attrs.RadiusX;
     }, Shape);
 
-    var Line = Types.Function.Inherits(function Line(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Line = types.object.inherits(function Line(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Line';
-        this.Points = Attrs.Points;
-        this.Style = Attrs.Style;
+        this.Points = attrs.Points;
+        this.Style = attrs.Style;
     }, Shape);
 
-    var Polygon = Types.Function.Inherits(function Polygon(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Polygon = types.object.inherits(function Polygon(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Polygon';
-        this.Point = Attrs.Point;
-        this.Points = Attrs.Points;
-        this.Sides = Attrs.Sides;
+        this.Point = attrs.Point;
+        this.Points = attrs.Points;
+        this.Sides = attrs.Sides;
     }, Shape);
 
-    var Rectangle = Types.Function.Inherits(function Rectangle(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
-        this.Visible = Attrs.Visible;
-        this.Status = Attrs.Status;
+    var Rectangle = types.object.inherits(function Rectangle(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
+        this.Visible = attrs.Visible;
+        this.Status = attrs.Status;
 
         this.Type = 'Rectangle';
-        this.Point = Attrs.Point;
-        this.Height = Attrs.Height;
-        this.Width = Attrs.Width;
+        this.Point = attrs.Point;
+        this.Height = attrs.Height;
+        this.Width = attrs.Width;
     }, Shape);
 
 
-    function Create(Attrs) {
+    function create(attrs) {
 
-        var Uuid = Types.Math.Uuid(9, 16);
+        var Uuid = types.math.uuid(9, 16);
 
-        Attrs = Types.Object.Merge({
+        attrs = types.object.merge({
             Uuid: Uuid,
             Name: 'Shape '.concat(Uuid),
             Style: null,
             Visible: true,
             Status: null
-        }, Attrs);
+        }, attrs);
 
-        switch (Attrs.Type) {
+        switch (attrs.Type) {
         case 'Line':
             {
-                Attrs.Points = [Point.Create(Attrs.X[0], Attrs.X[1]), Point.Create(Attrs.Y[0], Attrs.Y[1])];
-                return new Line(Attrs);
+                attrs.Points = [Point.create(attrs.X[0], attrs.X[1]), Point.create(attrs.Y[0], attrs.Y[1])];
+                return new Line(attrs);
             }
         case 'Rectangle':
             {
-                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
-                Attrs.Height = Attrs.Height;
-                Attrs.Width = Attrs.Width;
-                return new Rectangle(Attrs);
+                attrs.Point = Point.create(attrs.X, attrs.Y);
+                attrs.Height = attrs.Height;
+                attrs.Width = attrs.Width;
+                return new Rectangle(attrs);
             }
         case 'Arc':
             {
-                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
-                Attrs.Radius = Attrs.Radius;
-                Attrs.StartAngle = Attrs.StartAngle;
-                Attrs.EndAngle = Attrs.EndAngle;
-                Attrs.ClockWise = Attrs.ClockWise;
-                return new Arc(Attrs);
+                attrs.Point = Point.create(attrs.X, attrs.Y);
+                attrs.Radius = attrs.Radius;
+                attrs.StartAngle = attrs.StartAngle;
+                attrs.EndAngle = attrs.EndAngle;
+                attrs.ClockWise = attrs.ClockWise;
+                return new Arc(attrs);
             }
         case 'Circle':
             {
-                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
-                Attrs.Radius = Attrs.Radius;
-                return new Circle(Attrs);
+                attrs.Point = Point.create(attrs.X, attrs.Y);
+                attrs.Radius = attrs.Radius;
+                return new Circle(attrs);
             }
         case 'Ellipse':
             {
-                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
-                Attrs.RadiusY = Attrs.RadiusY;
-                Attrs.RadiusX = Attrs.RadiusX;
-                return new Ellipse(Attrs);
+                attrs.Point = Point.create(attrs.X, attrs.Y);
+                attrs.RadiusY = attrs.RadiusY;
+                attrs.RadiusX = attrs.RadiusX;
+                return new Ellipse(attrs);
             }
         case 'Polygon':
             {
-                Attrs.Point = Point.Create(Attrs.X, Attrs.Y);
-                Attrs.Points = [];
+                attrs.Point = Point.create(attrs.X, attrs.Y);
+                attrs.Points = [];
 
-                for (var i = 0; i < Attrs.Sides; i++) {
+                for (var i = 0; i < attrs.Sides; i++) {
 
-                    var PointX = (Attrs.Radius * Math.cos(((Math.PI * 2) / Attrs.Sides) * i) + Attrs.Point.X),
-                        PointY = (Attrs.Radius * Math.sin(((Math.PI * 2) / Attrs.Sides) * i) + Attrs.Point.Y);
+                    var PointX = (attrs.Radius * Math.cos(((Math.PI * 2) / attrs.Sides) * i) + attrs.Point.X),
+                        PointY = (attrs.Radius * Math.sin(((Math.PI * 2) / attrs.Sides) * i) + attrs.Point.Y);
 
-                    Attrs['Points'].push(Point.Create(PointX, PointY));
+                    attrs['Points'].push(Point.create(PointX, PointY));
                 }
 
-                return new Polygon(Attrs);
+                return new Polygon(attrs);
             }
         default:
             break;
@@ -438,15 +438,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
     }
 
-    function Delete(value) {}
+    function remove(value) {}
 
-    function List() {}
+    function list() {}
 
-    function Find() {}
+    function find() {}
 
 
-    exports.Create = Create;
-    exports.Delete = Delete;
-    exports.List = List;
-    exports.Find = Find;
+    exports.create = create;
+    exports.remove = remove;
+    exports.list = list;
+    exports.find = find;
 });

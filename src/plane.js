@@ -1,411 +1,411 @@
 define("plane", ['require', 'exports'], function (require, exports) {
 
-    var Version = '3.0.0',
-        Authors = ['lilo@c37.co', 'ser@c37.co'];
+    var version = '3.0.0',
+        authors = ['lilo@c37.co', 'ser@c37.co'];
 
-    var Types = require('utility/types'),
-        Import = require('utility/import'),
-        Export = require('utility/export');
+    var types = require('utility/types'),
+        importer = require('utility/importer'),
+        exporter = require('utility/exporter');
 
-    var LayerManager = require('structure/layer'),
-        ShapeManager = require('geometric/shape'),
-        ToolManager = require('structure/tool');
+    var layerManager = require('structure/layer'),
+        shapeManager = require('geometric/shape'),
+        toolManager = require('structure/tool');
 
-    var LayerSystem = null,
-        ViewPort = null;
+    var layerSystem = null,
+        viewPort = null;
 
 
-    var Plane = Types.Object.Extend(Types.Object.Event.Create(), {
+    var plane = types.object.extend(types.object.event.create(), {
 
-        Initialize: function (Config) {
-            if (Config == null) {
-                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        initialize: function (config) {
+            if (config == null) {
+                throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
-            if (typeof Config == "function") {
-                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            if (typeof config == "function") {
+                throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
-            if (Config.ViewPort == null) {
-                throw new Error('Plane - Initialize - Config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            if (config.viewPort == null) {
+                throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
             }
 
-            ViewPort = Config.ViewPort;
+            viewPort = config.viewPort;
 
-            Plane.Settings = Config.Settings ? Config.Settings : Plane.Settings;
+            plane.settings = config.settings ? config.settings : plane.settings;
 
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, Plane.Zoom, Plane.Scroll);
+            gridDraw(viewPort.clientHeight, viewPort.clientWidth, plane.zoom, plane.scroll);
 
-            ToolManager.Event.Start({
-                ViewPort: ViewPort,
-                Update: Plane.Update
+            toolManager.event.start({
+                viewPort: viewPort,
+                update: plane.update
             });
 
             return true;
         },
-        Update: function (LayerSystem) {
+        update: function (layerSystem) {
 
-            var LayerStyle = LayerSystem ? LayerSystem.Style : LayerManager.Active().Style,
-                LayerShapes = LayerSystem ? LayerSystem.Shapes.List() : LayerManager.Active().Shapes.List(),
-                LayerRender = LayerSystem ? LayerSystem.Render : LayerManager.Active().Render,
-                Context2D = LayerRender.getContext('2d');
+            var layerStyle = layerSystem ? layerSystem.Style : layerManager.active().Style,
+                layerShapes = layerSystem ? layerSystem.shapes.list() : layerManager.active().shapes.list(),
+                layerRender = layerSystem ? layerSystem.render : layerManager.active().render,
+                context2D = layerRender.getContext('2d');
 
             // limpando o render
-            Context2D.clearRect(0, 0, ViewPort.clientWidth, ViewPort.clientHeight);
+            context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
 
             // style of layer
-            Context2D.lineCap = LayerStyle.LineCap;
-            Context2D.lineJoin = LayerStyle.LineJoin;
+            context2D.lineCap = layerStyle.LineCap;
+            context2D.lineJoin = layerStyle.LineJoin;
 
             // render para cada shape
-            LayerShapes.forEach(function (Shape) {
-                // save state of all Configuration
-                Context2D.save();
-                Context2D.beginPath();
+            layerShapes.forEach(function (shape) {
+                // save state of all configuration
+                context2D.save();
+                context2D.beginPath();
 
-                Shape.Render(Context2D, Plane.Zoom);
+                shape.render(context2D, plane.zoom);
 
-                Context2D.stroke();
-                // restore state of all Configuration
-                Context2D.restore();
+                context2D.stroke();
+                // restore state of all configuration
+                context2D.restore();
             });
 
             return true;
         },
-        Clear: function () {
+        clear: function () {
 
             // reset em scroll
-            if ((Plane.Scroll.X != 0) || (Plane.Scroll.Y != 0)) {
-                Plane.Scroll = {
+            if ((plane.scroll.X != 0) || (plane.scroll.Y != 0)) {
+                plane.scroll = {
                     X: 0,
                     Y: 0
                 }
             };
 
             // reset em zoom
-            if (Plane.Zoom != 1) {
-                Plane.Zoom = 1;
+            if (plane.zoom != 1) {
+                plane.zoom = 1;
             }
 
-            // delete em todas as layers
-            LayerManager.Delete();
+            // remove em todas as layers
+            layerManager.remove();
 
             return true;
         },
-        Layer: Types.Object.Extend(Types.Object.Event.Create(), {
-            Create: function (Attrs) {
-                if ((typeof Attrs == "function")) {
-                    throw new Error('Layer - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        layer: types.object.extend(types.object.event.create(), {
+            create: function (attrs) {
+                if ((typeof attrs == "function")) {
+                    throw new Error('Layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                Attrs = Types.Object.Union(Attrs, {
-                    ViewPort: ViewPort
+                attrs = types.object.union(attrs, {
+                    viewPort: viewPort
                 });
 
-                return LayerManager.Create(Attrs);
+                return layerManager.create(attrs);
             },
-            List: function (Selector) {
-                return Layer.List();
+            list: function (Selector) {
+                return Layer.list();
             },
-            Delete: function (Uuid) {
-                Layer.Delete(Uuid);
+            remove: function (Uuid) {
+                Layer.remove(Uuid);
             },
-            get Active() {
-                return LayerManager.Active();
+            get active() {
+                return layerManager.active();
             },
-            set Active(Value) {
-                this.Notify('onDeactive', {
+            set active(value) {
+                this.notify('onDeactive', {
                     Type: 'onDeactive',
-                    Layer: Layer.Active()
+                    Layer: Layer.active()
                 });
 
-                LayerManager.Active(Value);
+                layerManager.active(value);
 
-                this.Notify('onActive', {
+                this.notify('onActive', {
                     Type: 'onActive',
-                    Layer: Layer.Active()
+                    Layer: Layer.active()
                 });
             }
 
         }),
-        Shape: {
-            Create: function (Attrs) {
-                if ((typeof Attrs == "function") || (Attrs == null)) {
-                    throw new Error('Shape - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        shape: {
+            create: function (attrs) {
+                if ((typeof attrs == "function") || (attrs == null)) {
+                    throw new Error('Shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if (['Polygon', 'Rectangle', 'Line', 'Arc', 'Circle', 'Ellipse'].indexOf(Attrs.Type) == -1) {
-                    throw new Error('Shape - Create - Type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                if (['Polygon', 'Rectangle', 'Line', 'Arc', 'Circle', 'Ellipse'].indexOf(attrs.Type) == -1) {
+                    throw new Error('Shape - create - Type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if ((Attrs.X == undefined) || (Attrs.Y == undefined)) {
-                    throw new Error('Shape - Create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                if ((attrs.X == undefined) || (attrs.Y == undefined)) {
+                    throw new Error('Shape - create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                var Shape = ShapeManager.Create(Attrs);
+                var Shape = shapeManager.create(attrs);
 
-                LayerManager.Active().Shapes.Add(Shape.Uuid, Shape);
+                layerManager.active().shapes.Add(Shape.Uuid, Shape);
 
                 return true;
             }
         },
-        Tool: {
-            Create: function (Attrs) {
-                if (typeof Attrs == "function") {
-                    throw new Error('Tool - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        tool: {
+            create: function (attrs) {
+                if (typeof attrs == "function") {
+                    throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
-                return ToolManager.Create(Attrs);
+                return toolManager.create(attrs);
             }
         },
-        get Zoom() {
+        get zoom() {
             return this._zoom || 1;
         },
-        set Zoom(Value) {
+        set zoom(value) {
 
-            // Plane.Zoom /= .9;  - more
-            // Plane.Zoom *= .9; - less
+            // plane.zoom /= .9;  - more
+            // plane.zoom *= .9; - less
 
-            var LayerActive = LayerManager.Active(),
-                ZoomFactor = Value / Plane.Zoom;
+            var LayerActive = layerManager.active(),
+                zoomFactor = value / plane.zoom;
 
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, Value, this.Scroll);
+            gridDraw(viewPort.clientHeight, viewPort.clientWidth, value, this.scroll);
 
-            // Se não alguma Layer Ativa = Clear || Import
+            // Se não alguma Layer Ativa = clear || importer
             if (LayerActive) {
-                LayerManager.List().forEach(function (Layer) {
+                layerManager.list().forEach(function (Layer) {
 
-                    LayerManager.Active(Layer.Uuid);
+                    layerManager.active(Layer.Uuid);
 
-                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                        Shape.ScaleTo(ZoomFactor);
+                    layerManager.active().shapes.list().forEach(function (Shape) {
+                        Shape.scaleTo(zoomFactor);
                     });
 
-                    Plane.Update();
+                    plane.update();
                 });
-                LayerManager.Active(LayerActive.Uuid);
+                layerManager.active(LayerActive.Uuid);
             }
 
-            this._zoom = Value;
+            this._zoom = value;
         },
-        get Scroll() {
+        get scroll() {
             return this._scroll || {
                 X: 0,
                 Y: 0
             };
         },
-        set Scroll(Value) {
+        set scroll(value) {
 
-            var LayerActive = LayerManager.Active(),
+            var LayerActive = layerManager.active(),
                 MoveFactor = {
-                    X: Value.X + this.Scroll.X,
-                    Y: Value.Y + this.Scroll.Y
+                    X: value.X + this.scroll.X,
+                    Y: value.Y + this.scroll.Y
                 };
 
-            GridDraw(ViewPort.clientHeight, ViewPort.clientWidth, this.Zoom, MoveFactor);
+            gridDraw(viewPort.clientHeight, viewPort.clientWidth, this.zoom, MoveFactor);
 
-            // Se não alguma Layer Ativa = Clear || Import
+            // Se não alguma Layer Ativa = clear || importer
             if (LayerActive) {
-                Value.X = Value.X * this.Zoom;
-                Value.Y = Value.Y * this.Zoom;
+                value.X = value.X * this.zoom;
+                value.Y = value.Y * this.zoom;
 
-                LayerManager.List().forEach(function (Layer) {
+                layerManager.list().forEach(function (Layer) {
 
-                    LayerManager.Active(Layer.Uuid);
+                    layerManager.active(Layer.Uuid);
 
-                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                        Shape.MoveTo(Value);
+                    layerManager.active().shapes.list().forEach(function (Shape) {
+                        Shape.moveTo(value);
                     });
 
-                    Plane.Update();
+                    plane.update();
 
                 });
-                LayerManager.Active(LayerActive.Uuid);
+                layerManager.active(LayerActive.Uuid);
             }
 
             this._scroll = MoveFactor;
         },
-        get Settings() {
+        get settings() {
             return this._settings || {
-                MetricSystem: 'mm',
-                BackgroundColor: 'rgb(255, 255, 255)',
-                GridEnable: true,
-                GridColor: 'rgb(218, 222, 215)'
+                metricSystem: 'mm',
+                backgroundColor: 'rgb(255, 255, 255)',
+                gridEnable: true,
+                gridColor: 'rgb(218, 222, 215)'
             };
         },
-        set Settings(Value) {
-            this._settings = Value;
+        set settings(value) {
+            this._settings = value;
         },
-        Import: {
-            FromJson: function (StringJson) {
+        importer: {
+            fromJson: function (stringJson) {
 
-                var PlaneObject = JSON.parse(StringJson);
+                var planeObject = JSON.parse(stringJson);
 
-                Plane.Clear();
+                plane.clear();
 
-                Plane.Settings = PlaneObject.Settings;
-                Plane.Zoom = PlaneObject.Zoom;
-                Plane.Scroll = PlaneObject.Scroll;
+                plane.settings = planeObject.settings;
+                plane.zoom = planeObject.zoom;
+                plane.scroll = planeObject.scroll;
 
-                PlaneObject.Layers.forEach(function (LayerObject) {
+                planeObject.Layers.forEach(function (layerObject) {
 
-                    LayerManager.Create({
-                        Uuid: LayerObject.Uuid,
-                        Name: LayerObject.Name,
-                        Locked: LayerObject.Locked,
-                        Visible: LayerObject.Visible,
-                        Style: LayerObject.Style,
-                        ViewPort: ViewPort
+                    layerManager.create({
+                        Uuid: layerObject.Uuid,
+                        Name: layerObject.Name,
+                        Locked: layerObject.Locked,
+                        Visible: layerObject.Visible,
+                        Style: layerObject.Style,
+                        viewPort: viewPort
                     });
 
-                    LayerObject.Shapes.forEach(function (ShapeObject) {
-                        Plane.Shape.Create(ShapeObject)
+                    layerObject.shapes.forEach(function (shapeObject) {
+                        plane.Shape.create(shapeObject)
                     });
 
-                    Plane.Update();
+                    plane.update();
                 });
 
                 return true;
             },
-            FromSvg: null,
-            FromDxf: function (StringDxf) {
-                Plane.Clear();
+            fromSvg: null,
+            fromDxf: function (StringDxf) {
+                plane.clear();
 
-                var StringJson = Import.FromDxf(StringDxf);
+                var StringJson = importer.FromDxf(StringDxf);
                 var ObjectDxf = JSON.parse(StringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
 
                 if (StringJson) {
-                    Plane.Layer.Create();
+                    plane.Layer.create();
                     for (var prop in ObjectDxf) {
-                        Plane.Shape.Create(ObjectDxf[prop]);
+                        plane.Shape.create(ObjectDxf[prop]);
                     }
-                    Plane.Update();
+                    plane.update();
                 }
             },
-            FromDwg: null
+            fromDwg: null
         },
-        Export: {
-            ToJson: function () {
+        exporter: {
+            toJson: function () {
 
-                var PlaneExport = {
-                    Settings: Plane.Settings,
-                    Zoom: Types.Math.ParseFloat(Plane.Zoom, 5),
-                    Scroll: Plane.Scroll,
-                    Layers: LayerManager.List().map(function (LayerExport) {
-                        var LayerObject = LayerExport.ToObject();
+                var planeExport = {
+                    settings: plane.settings,
+                    zoom: types.math.parseFloat(plane.zoom, 5),
+                    scroll: plane.scroll,
+                    layers: layerManager.list().map(function (layerExport) {
+                        var layerObject = layerExport.toObject();
 
-                        LayerObject.Shapes = LayerObject.Shapes.map(function (ShapeExport) {
-                            return ShapeExport.ToObject();
+                        layerObject.shapes = layerObject.shapes.map(function (shapeExport) {
+                            return shapeExport.toObject();
                         });
 
-                        return LayerObject;
+                        return layerObject;
                     })
                 }
 
-                return JSON.stringify(PlaneExport);
+                return JSON.stringify(planeExport);
 
             }
         }
     });
 
 
-    function GridDraw(Height, Width, Zoom, Scroll) {
+    function gridDraw(height, Width, zoom, scroll) {
 
-        if (!Plane.Settings.GridEnable) return;
+        if (!plane.settings.gridEnable) return;
 
-        if (!LayerSystem) {
-            var Attrs = { // atributos para a layer do grid (sistema) 
-                ViewPort: ViewPort,
+        if (!layerSystem) {
+            var attrs = { // atributos para a layer do grid (sistema) 
+                viewPort: viewPort,
                 Name: 'Plane - System',
                 Status: 'System',
                 Style: {
-                    BackgroundColor: Plane.Settings.BackgroundColor
+                    backgroundColor: plane.settings.backgroundColor
                 }
             };
-            LayerSystem = LayerManager.Create(Attrs);
+            layerSystem = layerManager.create(attrs);
         } else {
-            LayerSystem.Shapes.Clear();
+            layerSystem.shapes.clear();
         }
 
-        // calculos para o Zoom
-        Width = Zoom > 1 ? Math.round(Width * Zoom) : Math.round(Width / Zoom);
-        Height = Zoom > 1 ? Math.round(Height * Zoom) : Math.round(Height / Zoom);
+        // calculos para o zoom
+        Width = zoom > 1 ? Math.round(Width * zoom) : Math.round(Width / zoom);
+        height = zoom > 1 ? Math.round(height * zoom) : Math.round(height / zoom);
 
-        var LineBold = 0;
-        if (Scroll.X > 0) {
-            for (var X = (Scroll.X * Zoom); X >= 0; X -= (10 * Zoom)) {
+        var lineBold = 0;
+        if (scroll.X > 0) {
+            for (var X = (scroll.X * zoom); X >= 0; X -= (10 * zoom)) {
 
-                var Shape = ShapeManager.Create({
-                    Uuid: Types.Math.Uuid(9, 16),
+                var shape = shapeManager.create({
+                    Uuid: types.math.uuid(9, 16),
                     Type: 'Line',
                     X: [X, 0],
-                    Y: [X, Height],
+                    Y: [X, height],
                     Style: {
-                        LineColor: Plane.Settings.GridColor,
-                        LineWidth: LineBold % 5 == 0 ? .8 : .3
+                        LineColor: plane.settings.gridColor,
+                        LineWidth: lineBold % 5 == 0 ? .8 : .3
                     }
                 });
 
-                LayerSystem.Shapes.Add(Shape.Uuid, Shape);
-                LineBold++;
+                layerSystem.shapes.Add(shape.Uuid, shape);
+                lineBold++;
             }
         }
 
-        LineBold = 0;
-        for (var X = (Scroll.X * Zoom); X <= Width; X += (10 * Zoom)) {
+        lineBold = 0;
+        for (var X = (scroll.X * zoom); X <= Width; X += (10 * zoom)) {
 
-            var Shape = ShapeManager.Create({
-                Uuid: Types.Math.Uuid(9, 16),
+            var shape = shapeManager.create({
+                Uuid: types.math.uuid(9, 16),
                 Type: 'Line',
                 X: [X, 0],
-                Y: [X, Height],
+                Y: [X, height],
                 Style: {
-                    LineColor: Plane.Settings.GridColor,
-                    LineWidth: LineBold % 5 == 0 ? .8 : .3
+                    LineColor: plane.settings.gridColor,
+                    LineWidth: lineBold % 5 == 0 ? .8 : .3
                 }
             });
 
-            LayerSystem.Shapes.Add(Shape.Uuid, Shape);
-            LineBold++;
+            layerSystem.shapes.Add(shape.Uuid, shape);
+            lineBold++;
         }
 
-        LineBold = 0;
-        if (Scroll.Y > 0) {
-            for (var Y = (Scroll.Y * Zoom); Y >= 0; Y -= (10 * Zoom)) {
+        lineBold = 0;
+        if (scroll.Y > 0) {
+            for (var Y = (scroll.Y * zoom); Y >= 0; Y -= (10 * zoom)) {
 
-                var Shape = ShapeManager.Create({
-                    Uuid: Types.Math.Uuid(9, 16),
+                var shape = shapeManager.create({
+                    Uuid: types.math.uuid(9, 16),
                     Type: 'Line',
                     X: [0, Y],
                     Y: [Width, Y],
                     Style: {
-                        LineColor: Plane.Settings.GridColor,
-                        LineWidth: LineBold % 5 == 0 ? .8 : .3
+                        LineColor: plane.settings.gridColor,
+                        LineWidth: lineBold % 5 == 0 ? .8 : .3
                     }
                 });
 
-                LayerSystem.Shapes.Add(Shape.Uuid, Shape);
-                LineBold++;
+                layerSystem.shapes.Add(shape.Uuid, shape);
+                lineBold++;
             }
         }
 
-        LineBold = 0;
-        for (var Y = (Scroll.Y * Zoom); Y <= Height; Y += (10 * Zoom)) {
+        lineBold = 0;
+        for (var Y = (scroll.Y * zoom); Y <= height; Y += (10 * zoom)) {
 
-            var Shape = ShapeManager.Create({
-                Uuid: Types.Math.Uuid(9, 16),
+            var shape = shapeManager.create({
+                Uuid: types.math.uuid(9, 16),
                 Type: 'Line',
                 X: [0, Y],
                 Y: [Width, Y],
                 Style: {
-                    LineColor: Plane.Settings.GridColor,
-                    LineWidth: LineBold % 5 == 0 ? .8 : .3
+                    LineColor: plane.settings.gridColor,
+                    LineWidth: lineBold % 5 == 0 ? .8 : .3
                 }
             });
 
-            LayerSystem.Shapes.Add(Shape.Uuid, Shape);
-            LineBold++;
+            layerSystem.shapes.Add(shape.Uuid, shape);
+            lineBold++;
         }
 
-        Plane.Update(LayerSystem);
+        plane.update(layerSystem);
     };
 
 
-    exports.Public = Plane;
+    exports.Public = plane;
 });

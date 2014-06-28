@@ -1,7 +1,7 @@
 define("utility/types", ['require', 'exports'], function (require, exports) {
 
-    var Maths = {
-        Uuid: function (length, radix) {
+    var math = {
+        uuid: function (length, radix) {
             // http://www.ietf.org/rfc/rfc4122.txt
             var chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'.split(''),
                 uuid = [],
@@ -26,28 +26,28 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
             return uuid.join('').toLowerCase();
         },
-        ParseFloat: function (float, decimal) {
+        parseFloat: function (float, decimal) {
             return Number(parseFloat(float).toFixed(decimal));
         }
     }
 
-    var String = {
+    var string = {
 
-        Format: function () {
+        format: function () {
             var args = arguments;
             return this.replace(/{(\d+)}/g, function (match, number) {
                 return typeof args[number] != 'undefined' ? args[number] : match;
             });
         },
-        Contains: function () {
+        contains: function () {
             return String.prototype.indexOf.apply(this, arguments) !== -1;
         }
 
     }
 
-    var Graphic = {
+    var graphic = {
 
-        MousePosition: function (Element, X, Y) {
+        mousePosition: function (Element, X, Y) {
             var bb = Element.getBoundingClientRect();
 
             X = (X - bb.left) * (Element.clientWidth / bb.width);
@@ -61,12 +61,12 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 Y: Y
             };
         }
-
+ 
     }
 
-    var Data = {
+    var data = {
 
-        Dictionary: (function () {
+        dictionary: (function () {
 
             function Dictionary() {
                 this.store = new Array();
@@ -79,16 +79,16 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 Find: function (key) {
                     return this.store[key];
                 },
-                Delete: function (key) {
+                remove: function (key) {
                     delete this.store[key];
                 },
                 Count: function () {
                     return Object.keys(this.store).length;
                 },
-                Clear: function(){
+                clear: function(){
                     return this.store = new Array();
                 },
-                List: function () {
+                list: function () {
                     var self = this;
                     return Object.keys(this.store).map(function (key) {
                         return self.store[key];
@@ -96,7 +96,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 }
             }
 
-            Dictionary.Create = function () {
+            Dictionary.create = function () {
                 return new Dictionary();
             }
 
@@ -105,20 +105,17 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     }
 
-    var Functions = {
-        Inherits: function (f, p) {
+    var object = {
+        inherits: function (f, p) {
             f.prototype = new p();
             return f;
-        }
-    }
-
-    var Objects = {
+        },
         /*
          * Copy the enumerable properties of p to o, and return o
          * If o and p have a property by the same name, o's property is overwritten
          * This function does not handle getters and setters or copy attributes
          */
-        Extend: function (o, p) {
+        extend: function (o, p) {
             for (var prop in p) { // For all props in p.
                 Object.defineProperty(o, prop, Object.getOwnPropertyDescriptor(p, prop)); // Add the property to o.
             }
@@ -129,7 +126,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          * If o and p have a property by the same name, o's property is left alone
          * This function does not handle getters and setters or copy attributes
          */
-        Merge: function (o, p) {
+        merge: function (o, p) {
             for (var prop in p) { // For all props in p
                 if (o.hasOwnProperty[prop]) continue; // Except those already in o
                 o[prop] = p[prop]; // Add the property to o
@@ -140,19 +137,19 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          * Remove properties from o if there is not a property with the same name in p
          * Return o
          */
-        Restrict: function (o, p) {
+        restrict: function (o, p) {
             for (var prop in o) { // For all props in o
-                if (!(prop in p)) delete o[prop]; // Delete if not in p
+                if (!(prop in p)) delete o[prop]; // remove if not in p
             }
             return o;
         },
         /*
-         * For each property of p, delete the property with the same name from o
+         * For each property of p, remove the property with the same name from o
          * Return o
          */
-        Subtract: function (o, p) {
+        subtract: function (o, p) {
             for (var prop in p) { // For all props in p
-                delete o[prop]; // Delete from o (deleting a nonexistent prop is harmless)
+                delete o[prop]; // remove from o (deleting a nonexistent prop is harmless)
             }
             return o;
         },
@@ -160,21 +157,21 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          * Return a new object that holds the properties of both o and p.
          * If o and p have properties by the same name, the values from o are used
          */
-        Union: function (o, p) {
-            return Objects.Extend(Objects.Extend({}, o), p);
+        union: function (o, p) {
+            return object.extend(object.extend({}, o), p);
         },
         /*
          * Return a new object that holds only the properties of o that also appear
          * in p. This is something like the intersection of o and p, but the values of
          * the properties in p are discarded
          */
-        Intersection: function (o, p) {
-            return Restrict(extend({}, o), p);
+        intersection: function (o, p) {
+            return object.restrict(object.extend({}, o), p);
         },
         /*
          * Return an array that holds the names of the enumerable own properties of o
          */
-        Keys: function (o) {
+        keys: function (o) {
             if (typeof o !== "object") throw TypeError(); // Object argument required
             var result = []; // The array we will return
             for (var prop in o) { // For all enumerable properties
@@ -183,20 +180,20 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             }
             return result; // Return the array.
         },
-        Event: (function () {
+        event: (function () {
 
             function Event() {
                 this.listeners = {};
             }
 
-            Event.prototype.Listen = function (event, handler) {
+            Event.prototype.listen = function (event, handler) {
                 if (this.listeners[event] === undefined) {
                     this.listeners[event] = [];
                 }
                 this.listeners[event].push(handler);
             };
 
-            Event.prototype.Notify = function (event, data) {
+            Event.prototype.notify = function (event, data) {
                 if (this.listeners[event] !== undefined) {
                     for (var callback in this.listeners[event]) {
                         this.listeners[event][callback].call(this, data);
@@ -204,7 +201,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 }
             };
 
-            Event.prototype.Unlisten = function (event, handler) {
+            Event.prototype.unListen = function (event, handler) {
                 if (this.listeners[event] !== undefined) {
                     var index = this.listeners[event].indexOf(handler);
                     if (index !== -1) {
@@ -213,7 +210,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 }
             };
 
-            Event.Create = function () {
+            Event.create = function () {
                 return new Event();
             }
 
@@ -222,10 +219,9 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         })()
     }
 
-    exports.Math = Maths;
-    exports.String = String;
-    exports.Graphic = Graphic;
-    exports.Data = Data;
-    exports.Object = Objects;
-    exports.Function = Functions;
+    exports.math = math;
+    exports.string = string;
+    exports.graphic = graphic;
+    exports.data = data;
+    exports.object = object;
 });

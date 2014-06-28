@@ -1,96 +1,96 @@
 define("structure/tool", ['require', 'exports'], function (require, exports) {
 
-    var Types = require('utility/types');
+    var types = require('utility/types');
 
-    var ToolStore = Types.Data.Dictionary.Create(),
-        ShapeSelected = Types.Data.Dictionary.Create();
+    var toolStore = types.data.dictionary.create(),
+        shapeSelected = types.data.dictionary.create();
 
-    var LayerManager = require('structure/layer');
+    var layerManager = require('structure/layer');
 
-    var ViewPort = null,
-        Update = null;
+    var viewPort = null,
+        update = null;
 
 
-    var Tool = Types.Function.Inherits(function Tool(Attrs) {
-        this.Uuid = Attrs.Uuid;
-        this.Name = Attrs.Name;
+    var Tool = types.object.inherits(function Tool(attrs) {
+        this.Uuid = attrs.Uuid;
+        this.Name = attrs.Name;
 
-        Object.defineProperty(this, 'Active', {
+        Object.defineProperty(this, 'active', {
             get: function () {
                 return this._active || false;
             },
-            set: function (Value) {
-                this.Notify(Value ? 'onActive' : 'onDeactive', {
-                    Type: Value ? 'onActive' : 'onDeactive',
+            set: function (value) {
+                this.notify(value ? 'onActive' : 'onDeactive', {
+                    Type: value ? 'onActive' : 'onDeactive',
                     Now: new Date().toISOString()
 
                 });
-                this._active = Value;
+                this._active = value;
             }
         });
-    }, Types.Object.Event);
+    }, types.object.event);
 
 
-    function Create(Attrs) {
+    function create(attrs) {
 
-        var Uuid = Types.Math.Uuid(9, 16);
+        var Uuid = types.math.uuid(9, 16);
 
-        Attrs = Types.Object.Merge({
+        attrs = types.object.merge({
             Uuid: Uuid,
             Name: 'Tool '.concat(Uuid)
-        }, Attrs);
+        }, attrs); 
 
         // nova tool
-        var tool = new Tool(Attrs)
+        var tool = new Tool(attrs)
 
-        ToolStore.Add(tool.Uuid, tool);
+        toolStore.Add(tool.Uuid, tool);
 
         return tool;
     }
 
 
-    var EventProxy = Types.Object.Extend(Types.Object.Event.Create(), {
+    var eventProxy = types.object.extend(types.object.event.create(), {
 
-        Start: function (Config) {
+        start: function (config) {
 
-            ViewPort = Config.ViewPort;
-            Update = Config.Update;
+            viewPort = config.viewPort;
+            update = config.update;
 
-            ViewPort.onmousemove = function (Event) {
+            viewPort.onmousemove = function (event) {
                 
-                if (LayerManager.Active()) {
-                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
+                if (layerManager.active()) {
+                    layerManager.active().shapes.list().forEach(function (Shape) {
                         if (Shape.Status != 'Selected') {
-                            Shape.Status = Shape.Contains(Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY)) ? 'Over' : 'Out';
+                            Shape.Status = Shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'Over' : 'Out';
                         }
                     });
-                    Update();
+                    update();
                 }
             }
 
-            ViewPort.onclick = function (Event) {
-                if (LayerManager.Active()) {
+            viewPort.onclick = function (event) {
+                if (layerManager.active()) {
                     
-                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
-                        if (Shape.Contains(Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY))) {
+                    layerManager.active().shapes.list().forEach(function (Shape) {
+                        if (Shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
 
                             Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over';
 
                             if (Shape.Status == 'Selected') {
-                                ShapeSelected.Add(Shape.Uuid, Shape);
+                                shapeSelected.Add(Shape.Uuid, Shape);
                             } else {
-                                ShapeSelected.Delete(Shape.Uuid);
+                                shapeSelected.remove(Shape.Uuid);
                             }
 
                         }
                     });
-                    Update();
+                    update();
 
-                    ToolStore.List().forEach(function (Tool) {
-                        if (Tool.Active) {
-                            Tool.Notify('onMouseClick', {
+                    toolStore.list().forEach(function (Tool) {
+                        if (Tool.active) {
+                            Tool.notify('onMouseClick', {
                                 Type: 'onMouseClick',
-                                Shapes: ShapeSelected.List()
+                                shapes: shapeSelected.list()
                             });
                         }
                     });
@@ -100,6 +100,6 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     })
 
-    exports.Event = EventProxy;
-    exports.Create = Create;
+    exports.event = eventProxy;
+    exports.create = create;
 });

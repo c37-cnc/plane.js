@@ -1,8 +1,8 @@
-define("utility/import", ['require', 'exports'], function (require, exports) {
+define("utility/importer", ['require', 'exports'], function (require, exports) {
 
-//    var Types = require('utility/types');
+//    var types = require('utility/types');
     
-    function FromDxf(stringDxf) {
+    function fromDxf(stringDxf) {
         
         
         if (!String.prototype.format) {
@@ -114,21 +114,21 @@ define("utility/import", ['require', 'exports'], function (require, exports) {
         return json += ']';
     }
 
-    function FromDwg(stringDwg) {
+    function fromDwg(stringDwg) {
         return true;
     }
 
-    function FromJson(stringJson) {
+    function fromJson(stringJson) {
         return true;
     }
 
-    function FromSvg(stringSvg) {
+    function fromSvg(stringSvg) {
         return true;
     }
 
-    exports.FromDxf = FromDxf;
-    exports.FromDwg = FromDwg;
-    exports.FromJson = FromJson;
-    exports.FromSvg = FromSvg;
+    exports.fromDxf = fromDxf;
+    exports.fromDwg = fromDwg;
+    exports.fromJson = fromJson;
+    exports.fromSvg = fromSvg;
 
 });

@@ -71,8 +71,7 @@ module.exports = function (grunt) {
                 src: ['<%= dirs.src %>/utility/module.js', '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'],
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js',
                 options: {
-                    barename: "plane",
-                    namespace: "Plane"
+                    namespace: "plane"
                 }
             }
         }
@@ -94,7 +93,7 @@ module.exports = function (grunt) {
             output.push('"use strict";');
             output.push.apply(output, f.src.map(grunt.file.read));
             output.push(grunt.template.process(
-                'window.<%= namespace %> = require("<%= barename %>").Public;', {
+                'window.<%= namespace %> = require("<%= namespace %>").Public;', {
                     data: {
                         namespace: options.namespace,
                         barename: options.barename

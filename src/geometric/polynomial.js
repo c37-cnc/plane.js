@@ -1,11 +1,6 @@
 define("geometric/polynomial", ['require', 'exports'], function (require, exports) {
 
     function Polynomial(coefs) {
-        this.init(arguments);
-    }
-
-    Polynomial.prototype.init = function (coefs) {
-
         this.coefs = new Array();
 
         for (var i = coefs.length - 1; i >= 0; i--)
@@ -13,7 +8,7 @@ define("geometric/polynomial", ['require', 'exports'], function (require, export
 
         this._variable = "t";
         this._s = 0;
-    };
+    }
 
     Polynomial.prototype.simplify = function () {
         for (var i = this.getDegree(); i >= 0; i--) {
@@ -133,7 +128,7 @@ define("geometric/polynomial", ['require', 'exports'], function (require, export
             var c1 = this.coefs[1] / c4;
             var c0 = this.coefs[0] / c4;
 
-            var resolveRoots = new Polynomial(
+            var resolveRoots = create(
                 1, -c2, c3 * c1 - 4 * c0, -c3 * c3 * c0 + 4 * c2 * c0 - c1 * c1
             ).getCubicRoots();
             var y = resolveRoots[0];
@@ -219,7 +214,13 @@ define("geometric/polynomial", ['require', 'exports'], function (require, export
 
         return result;
     };
+    
+    
+    function create() {
+        return new Polynomial(arguments);
+    }
 
-    exports.Polynomial = Polynomial;
+
+    exports.create = create;
 
 });
