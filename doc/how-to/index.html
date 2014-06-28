@@ -56,13 +56,13 @@
         }
         /* application structure */
         /* application components */
-        canvas[id="rullerY"] {
+        canvas[id="rullery"] {
             position: absolute;
             height: 100%;
             width: 15px;
             background-color: rgb(204, 139, 139);
         }
-        canvas[id="rullerX"] {
+        canvas[id="rullerx"] {
             position: absolute;
             bottom: 0px;
             height: 15px;
@@ -96,79 +96,79 @@
 plane.layer.create();
 
 plane.shape.create({
-    type: 'Polygon',
-    X: 150,
-    Y: 150,
+    type: 'polygon',
+    x: 150,
+    y: 150,
     radius: 70,
     sides: 5
 });
 plane.shape.create({
-    type: 'Rectangle',
-    X: 300,
-    Y: 10,
+    type: 'rectangle',
+    x: 300,
+    y: 10,
     width: 125,
     height: 100
 });
 plane.shape.create({
-    type: 'Line',
-    X: [350, 350],
-    Y: [600, 50]
+    type: 'line',
+    x: [350, 350],
+    y: [600, 50]
 });
 plane.shape.create({
-    type: 'Arc',
-    X: 800,
-    Y: 150,
+    type: 'arc',
+    x: 800,
+    y: 150,
     radius: 50,
     startAngle: 0,
     endAngle: 180,
     clockWise: true
 });
 plane.shape.create({
-    type: 'Arc',
-    X: 500,
-    Y: 250,
+    type: 'arc',
+    x: 500,
+    y: 250,
     radius: 50,
     startAngle: 90,
     endAngle: 180,
     clockWise: false
 });
 plane.shape.create({
-    type: 'Arc',
-    X: 700,
-    Y: 250,
+    type: 'arc',
+    x: 700,
+    y: 250,
     radius: 50,
     startAngle: 90,
     endAngle: 270,
     clockWise: false
 });
 plane.shape.create({
-    type: 'Arc',
-    X: 1000,
-    Y: 250,
+    type: 'arc',
+    x: 1000,
+    y: 250,
     radius: 50,
     startAngle: 90,
     endAngle: 270,
     clockWise: true
 });
 plane.shape.create({
-    type: 'Arc',
-    X: 50,
-    Y: 50,
+    type: 'arc',
+    x: 50,
+    y: 50,
     radius: 30,
     startAngle: 90,
     endAngle: 180,
     clockWise: true
 });
 plane.shape.create({
-    type: 'Circle',
-    X: 1200,
-    Y: 100,
+    type: 'circle',
+    x: 1200,
+    y: 100,
     radius: 50
 });
 plane.shape.create({
-    type: 'Ellipse',
-    X: 1000,
-    Y: 100,
+    type: 'ellipse',
+    x: 1000,
+    y: 100,
     radiusY: 25,
     radiusX: 45
 });
@@ -192,8 +192,8 @@ plane.update();
                         
                         shape.Points.forEach(function(Point){
                         
-                            Point.X += (10 * plane.Zoom);
-                            Point.Y += (10 * plane.Zoom);
+                            Point.x += (10 * plane.Zoom);
+                            Point.y += (10 * plane.Zoom);
                         
                         })
                     }
@@ -246,11 +246,11 @@ plane.update();
             });
 
             document.getElementById('scrollButton').addEventListener('click', function (event) {
-                var scrollInputX = document.getElementById('scrollInputX'),
-                    scrollInputY = document.getElementById('scrollInputY'),
+                var scrollInputx = document.getElementById('scrollInputx'),
+                    scrollInputy = document.getElementById('scrollInputy'),
                     scroll = {
-                        X: parseInt(scrollInputX.value),
-                        Y: parseInt(scrollInputY.value)
+                        x: parseInt(scrollInputx.value),
+                        y: parseInt(scrollInputy.value)
                     };
                 plane.scroll = scroll;
             });
@@ -285,10 +285,10 @@ plane.update();
             <button id="zoomLessButton">Zoom ---</button>
             <br>
             <br>
-            <label>X</label>
-            <input id="scrollInputX" type="text" style="width:60px" value="50">
-            <label>Y</label>
-            <input id="scrollInputY" type="text" style="width:60px" value="0">
+            <label>x</label>
+            <input id="scrollInputx" type="text" style="width:60px" value="5">
+            <label>y</label>
+            <input id="scrollInputy" type="text" style="width:60px" value="5">
             <button id="scrollButton">Scroll</button>
         </div>
         <ul id="shapesList">

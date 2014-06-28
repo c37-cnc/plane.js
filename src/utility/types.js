@@ -47,18 +47,18 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     var graphic = {
 
-        mousePosition: function (Element, X, Y) {
+        mousePosition: function (Element, x, y) {
             var bb = Element.getBoundingClientRect();
 
-            X = (X - bb.left) * (Element.clientWidth / bb.width);
-            Y = (Y - bb.top) * (Element.clientHeight / bb.height);
+            x = (x - bb.left) * (Element.clientWidth / bb.width);
+            y = (y - bb.top) * (Element.clientHeight / bb.height);
 
             // tradução para o sistema de coordenadas cartesiano
-            Y = (Y - Element.clientHeight) * -1;
+            y = (y - Element.clientHeight) * -1;
 
             return {
-                X: X,
-                Y: Y
+                x: x,
+                y: y
             };
         }
  
@@ -73,7 +73,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             }
 
             Dictionary.prototype = {
-                Add: function (key, value) {
+                add: function (key, value) {
                     this.store[key] = value;
                 },
                 Find: function (key) {
@@ -117,7 +117,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          */
         extend: function (o, p) {
             for (var prop in p) { // For all props in p.
-                Object.defineProperty(o, prop, Object.getOwnPropertyDescriptor(p, prop)); // Add the property to o.
+                Object.defineProperty(o, prop, Object.getOwnPropertyDescriptor(p, prop)); // add the property to o.
             }
             return o;
         },
@@ -129,7 +129,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         merge: function (o, p) {
             for (var prop in p) { // For all props in p
                 if (o.hasOwnProperty[prop]) continue; // Except those already in o
-                o[prop] = p[prop]; // Add the property to o
+                o[prop] = p[prop]; // add the property to o
             }
             return o;
         },

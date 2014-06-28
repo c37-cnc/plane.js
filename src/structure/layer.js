@@ -50,8 +50,8 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             uuid: uuid,
             name: 'New Layer '.concat(uuid),
             style: {
-                LineCap: 'butt',
-                LineJoin: 'miter',
+                lineCap: 'butt',
+                lineJoin: 'miter',
                 lineWidth: .7,
                 lineColor: 'rgb(0, 0, 0)',
             },
@@ -68,7 +68,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         attrs.viewPort.appendChild(layer.render);
 
         if (layer.status != 'System') {
-            LayerStore.Add(layer.uuid, layer);
+            LayerStore.add(layer.uuid, layer);
             this.active(layer.uuid);
             return true;
         } else {

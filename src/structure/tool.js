@@ -43,7 +43,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         // nova tool
         var tool = new Tool(attrs)
 
-        toolStore.Add(tool.uuid, tool);
+        toolStore.add(tool.uuid, tool);
 
         return tool;
     }
@@ -77,7 +77,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                             Shape.status = Shape.status != 'Selected' ? 'Selected' : 'Over';
 
                             if (Shape.status == 'Selected') {
-                                shapeSelected.Add(Shape.uuid, Shape);
+                                shapeSelected.add(Shape.uuid, Shape);
                             } else {
                                 shapeSelected.remove(Shape.uuid);
                             }

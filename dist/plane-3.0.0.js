@@ -1,5 +1,5 @@
 /*!
- * C37 in 28-06-2014 at 11:17:52 
+ * C37 in 28-06-2014 at 11:45:29 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -97,9 +97,9 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
     function circleLine(c, r, a1, a2) {
         var result,
-            a = (a2.X - a1.X) * (a2.X - a1.X) + (a2.Y - a1.Y) * (a2.Y - a1.Y),
-            b = 2 * ((a2.X - a1.X) * (a1.X - c.X) + (a2.Y - a1.Y) * (a1.Y - c.Y)),
-            cc = c.X * c.X + c.Y * c.Y + a1.X * a1.X + a1.Y * a1.Y - 2 * (c.X * a1.X + c.Y * a1.Y) - r * r,
+            a = (a2.x - a1.x) * (a2.x - a1.x) + (a2.y - a1.y) * (a2.y - a1.y),
+            b = 2 * ((a2.x - a1.x) * (a1.x - c.x) + (a2.y - a1.y) * (a1.y - c.y)),
+            cc = c.x * c.x + c.y * c.y + a1.x * a1.x + a1.y * a1.y - 2 * (c.x * a1.x + c.y * a1.y) - r * r,
             deter = b * b - 4 * a * cc;
 
         if (deter < 0) {
@@ -126,10 +126,10 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
     function circleRectangle(c, r, p, h, w) {
 
-        var rightBottom = point.create(p.X + w, p.Y),
-            rightTop = point.create(p.X + w, p.Y + h),
-            leftTop = point.create(p.X, p.Y + h),
-            leftBottom = point.create(p.X, p.Y);
+        var rightBottom = point.create(p.x + w, p.y),
+            rightTop = point.create(p.x + w, p.y + h),
+            leftTop = point.create(p.x, p.y + h),
+            leftBottom = point.create(p.x, p.y);
 
         var inter1 = circleLine(c, r, rightBottom, rightTop);
         var inter2 = circleLine(c, r, rightTop, leftTop);
@@ -163,8 +163,8 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
             var p = c1.interpolationLinear(c2, a / c_dist);
             var b = h / c_dist;
 
-            result.points.push(point.create(p.X - b * (c2.Y - c1.Y), p.Y + b * (c2.X - c1.X)));
-            result.points.push(point.create(p.X + b * (c2.Y - c1.Y), p.Y - b * (c2.X - c1.X)));
+            result.points.push(point.create(p.x - b * (c2.y - c1.y), p.y + b * (c2.x - c1.x)));
+            result.points.push(point.create(p.x + b * (c2.y - c1.y), p.y - b * (c2.x - c1.x)));
 
         }
 
@@ -181,9 +181,9 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
                 radianEnd = ae / 360 * 2 * Math.PI,
                 radianMid = radianStart > radianEnd ? (radianStart - radianEnd) / 2 : (radianEnd - radianStart) / 2;
 
-            var pointStart = point.create(ca.X + Math.cos(radianStart) * r2, ca.Y + Math.sin(radianStart) * r2),
-                pointEnd = point.create(ca.X + Math.cos(radianEnd) * r2, ca.Y + Math.sin(radianEnd) * r2),
-                pointMid = point.create(ca.X + Math.cos(radianMid) * r2, ck ? ca.Y - Math.sin(radianMid) * r2 : ca.Y + Math.sin(radianMid) * r2);
+            var pointStart = point.create(ca.x + Math.cos(radianStart) * r2, ca.y + Math.sin(radianStart) * r2),
+                pointEnd = point.create(ca.x + Math.cos(radianEnd) * r2, ca.y + Math.sin(radianEnd) * r2),
+                pointMid = point.create(ca.x + Math.cos(radianMid) * r2, ck ? ca.y - Math.sin(radianMid) * r2 : ca.y + Math.sin(radianMid) * r2);
 
             var twoPi = (Math.PI + Math.PI);
 
@@ -246,8 +246,8 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
     function circleEllipse(c1, ry1, rx1, c2, ry2, rx2) {
 
-        var a = [ry1 * ry1, 0, rx1 * rx1, -2 * ry1 * ry1 * c1.X, -2 * rx1 * rx1 * c1.Y, ry1 * ry1 * c1.X * c1.X + rx1 * rx1 * c1.Y * c1.Y - rx1 * rx1 * ry1 * ry1];
-        var b = [ry2 * ry2, 0, rx2 * rx2, -2 * ry2 * ry2 * c2.X, -2 * rx2 * rx2 * c2.Y, ry2 * ry2 * c2.X * c2.X + rx2 * rx2 * c2.Y * c2.Y - rx2 * rx2 * ry2 * ry2];
+        var a = [ry1 * ry1, 0, rx1 * rx1, -2 * ry1 * ry1 * c1.x, -2 * rx1 * rx1 * c1.y, ry1 * ry1 * c1.x * c1.x + rx1 * rx1 * c1.y * c1.y - rx1 * rx1 * ry1 * ry1];
+        var b = [ry2 * ry2, 0, rx2 * rx2, -2 * ry2 * ry2 * c2.x, -2 * rx2 * rx2 * c2.y, ry2 * ry2 * c2.x * c2.x + rx2 * rx2 * c2.y * c2.y - rx2 * rx2 * ry2 * ry2];
 
         var yPoly = Bezout(a, b);
         var yRoots = yPoly.getRoots();
@@ -255,22 +255,22 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         var norm0 = (a[0] * a[0] + 2 * a[1] * a[1] + a[2] * a[2]) * epsilon;
         var norm1 = (b[0] * b[0] + 2 * b[1] * b[1] + b[2] * b[2]) * epsilon;
 
-        for (var Y = 0; Y < yRoots.length; Y++) {
+        for (var y = 0; y < yRoots.length; y++) {
             var xPoly = polynomial.create(
                 a[0],
-                a[3] + yRoots[Y] * a[1],
-                a[5] + yRoots[Y] * (a[4] + yRoots[Y] * a[2])
+                a[3] + yRoots[y] * a[1],
+                a[5] + yRoots[y] * (a[4] + yRoots[y] * a[2])
             );
             var xRoots = xPoly.getRoots();
 
-            for (var X = 0; X < xRoots.length; X++) {
+            for (var x = 0; x < xRoots.length; x++) {
                 var test =
-                    (a[0] * xRoots[X] + a[1] * yRoots[Y] + a[3]) * xRoots[X] +
-                    (a[2] * yRoots[Y] + a[4]) * yRoots[Y] + a[5];
+                    (a[0] * xRoots[x] + a[1] * yRoots[y] + a[3]) * xRoots[x] +
+                    (a[2] * yRoots[y] + a[4]) * yRoots[y] + a[5];
                 if (Math.abs(test) < norm0) {
                     test =
-                        (b[0] * xRoots[X] + b[1] * yRoots[Y] + b[3]) * xRoots[X] +
-                        (b[2] * yRoots[Y] + b[4]) * yRoots[Y] + b[5];
+                        (b[0] * xRoots[x] + b[1] * yRoots[y] + b[3]) * xRoots[x] +
+                        (b[2] * yRoots[y] + b[4]) * yRoots[y] + b[5];
                     if (Math.abs(test) < norm1) {
                         return true;
                     }
@@ -288,43 +288,43 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 });
 define("geometric/point", ['require', 'exports'], function (require, exports) {
 
-    function Point(X, Y) {
-        this.X = X;
-        this.Y = Y;
+    function Point(x, y) {
+        this.x = x;
+        this.y = y;
     };
 
     Point.prototype = {
         sum: function (point) {
-            return new Point(this.X + point.X, this.Y + point.Y);
+            return new Point(this.x + point.x, this.y + point.y);
         },
         subtract: function (point) {
-            return new Point(this.X - point.X, this.Y - point.Y);
+            return new Point(this.x - point.x, this.y - point.y);
         },
         multiply: function (value) {
-            return new Point(this.X * value, this.Y * value);
+            return new Point(this.x * value, this.y * value);
         },
         distanceTo: function (point) {
-            var dx = this.X - point.X;
-            var dY = this.Y - point.Y;
+            var dx = this.x - point.x;
+            var dy = this.y - point.y;
 
-            return Math.sqrt(dx * dx + dY * dY);
+            return Math.sqrt(dx * dx + dy * dy);
         },
         midTo: function (point) {
-            return new Point(this.X + (point.X - this.X) / 2, this.Y + (point.Y - this.Y) / 2);
+            return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
         },
         angleTo: function (point) {
-            return Math.atan2(point.Y - this.Y, point.X - this.X);
+            return Math.atan2(point.y - this.y, point.x - this.x);
         },
         interpolationLinear: function (point, value) {
             return new Point(
-                this.X + (point.X - this.X) * value,
-                this.Y + (point.Y - this.Y) * value
+                this.x + (point.x - this.x) * value,
+                this.y + (point.y - this.y) * value
             );
         }
     };
 
-    function create(X, Y) {
-        return new Point(X, Y);
+    function create(x, y) {
+        return new Point(x, y);
     };
 
     exports.create = create;
@@ -572,56 +572,56 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         scaleTo: function (value) {
 
             switch (this.type) {
-            case 'Arc':
+            case 'arc':
                 {
-                    this.point.X *= value;
-                    this.point.Y *= value;
+                    this.point.x *= value;
+                    this.point.y *= value;
                     this.radius *= value;
 
                     break;
                 }
-            case 'Circle':
+            case 'circle':
                 {
-                    this.point.X *= value;
-                    this.point.Y *= value;
+                    this.point.x *= value;
+                    this.point.y *= value;
                     this.radius *= value;
 
                     break;
                 }
-            case 'Ellipse':
+            case 'ellipse':
                 {
-                    this.point.X *= value;
-                    this.point.Y *= value;
+                    this.point.x *= value;
+                    this.point.y *= value;
                     this.radiusX *= value;
                     this.radiusY *= value;
 
                     break;
                 }
-            case 'Line':
+            case 'line':
                 {
                     this.points.forEach(function (point) {
-                        point.X *= value;
-                        point.Y *= value;
+                        point.x *= value;
+                        point.y *= value;
                     });
 
                     break;
                 }
-            case 'Polygon':
+            case 'polygon':
                 {
-                    this.point.X *= value;
-                    this.point.Y *= value;
+                    this.point.x *= value;
+                    this.point.y *= value;
 
                     this.points.forEach(function (point) {
-                        point.X *= value;
-                        point.Y *= value;
+                        point.x *= value;
+                        point.y *= value;
                     });
 
                     break;
                 }
-            case 'Rectangle':
+            case 'rectangle':
                 {
-                    this.point.X *= value;
-                    this.point.Y *= value;
+                    this.point.x *= value;
+                    this.point.y *= value;
                     this.height *= value;
                     this.width *= value;
 
@@ -648,7 +648,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         contains: function (pointMouse) {
 
             switch (this.type) {
-            case 'Line':
+            case 'line':
                 {
                     var pointA = this.points[0],
                         pointB = this.points[1]
@@ -658,30 +658,30 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                     break;
                 }
-            case 'Rectangle':
+            case 'rectangle':
                 {
                     if (intersection.circleRectangle(pointMouse, 2, this.point, this.height, this.width))
                         return true;
 
                     break;
                 }
-            case 'Arc':
+            case 'arc':
                 {
-                    if (intersection.circleArc(point.create(pointMouse.X, pointMouse.Y), 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise))
+                    if (intersection.circleArc(point.create(pointMouse.x, pointMouse.y), 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise))
                         return true;
 
                     break;
                 }
-            case 'Circle':
+            case 'circle':
                 {
-                    if (intersection.circleCircle(pointMouse = point.create(pointMouse.X, pointMouse.Y), 2, this.point, this.radius))
+                    if (intersection.circleCircle(pointMouse = point.create(pointMouse.x, pointMouse.y), 2, this.point, this.radius))
                         return true;
 
                     break;
                 }
-            case 'Ellipse':
+            case 'ellipse':
                 return (intersection.circleEllipse(pointMouse, 2, 2, this.point, this.radiusY, this.radiusX))
-            case 'Polygon':
+            case 'polygon':
                 {
                     var pointA = null,
                         pointB = null;
@@ -717,38 +717,38 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                 context2D.strokeStyle = 'rgb(68, 121, 154)';
                 if (this.point) {
-                    context2D.strokeRect(this.point.X - (Math.round(2 * zoom) / 2), this.point.Y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
+                    context2D.strokeRect(this.point.x - (Math.round(2 * zoom) / 2), this.point.y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
                 }
                 if (this.points) {
                     this.points.forEach(function (point) {
-                        context2D.strokeRect(point.X - (Math.round(2 * zoom) / 2), point.Y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
+                        context2D.strokeRect(point.x - (Math.round(2 * zoom) / 2), point.y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
                     });
                 }
             }
 
             switch (this.type) {
-            case 'Arc':
+            case 'arc':
                 {
-                    context2D.translate(this.point.X, this.point.Y);
+                    context2D.translate(this.point.x, this.point.y);
                     context2D.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
 
                     return true;
                 }
-            case 'Circle':
+            case 'circle':
                 {
-                    context2D.translate(this.point.X, this.point.Y);
+                    context2D.translate(this.point.x, this.point.y);
                     context2D.arc(0, 0, this.radius, 0, Math.PI * 2, true);
 
                     return true;
                 }
-            case 'Ellipse':
+            case 'ellipse':
                 {
-                    context2D.translate(this.point.X, this.point.Y);
+                    context2D.translate(this.point.x, this.point.y);
                     context2D.ellipse(0, 0, this.radiusX, this.radiusY, 0, 0, Math.PI * 2)
 
                     return true;
                 }
-            case 'Line':
+            case 'line':
                 {
                     // possivel personalização
                     if (this.status != 'Over') {
@@ -756,25 +756,25 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                         context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
                     }
 
-                    context2D.moveTo(this.points[0].X, this.points[0].Y);
-                    context2D.lineTo(this.points[1].X, this.points[1].Y);
+                    context2D.moveTo(this.points[0].x, this.points[0].y);
+                    context2D.lineTo(this.points[1].x, this.points[1].y);
 
                     return true;
                 }
-            case 'Polygon':
+            case 'polygon':
                 {
-                    context2D.moveTo(this.points[0].X, this.points[0].Y);
+                    context2D.moveTo(this.points[0].x, this.points[0].y);
 
                     this.points.forEach(function (point) {
-                        context2D.lineTo(point.X, point.Y);
+                        context2D.lineTo(point.x, point.y);
                     });
                     context2D.closePath();
 
                     return true;
                 }
-            case 'Rectangle':
+            case 'rectangle':
                 {
-                    context2D.translate(this.point.X, this.point.Y);
+                    context2D.translate(this.point.x, this.point.y);
                     context2D.strokeRect(0, 0, this.width, this.height);
 
                     return true;
@@ -785,67 +785,67 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         toObject: function () {
 
             switch (this.type) {
-            case 'Arc':
+            case 'arc':
                 return {
                     uuid: this.uuid,
                     type: this.type,
                     name: this.name,
                     status: this.status,
-                    X: types.math.parseFloat(this.point.X, 5),
-                    Y: types.math.parseFloat(this.point.Y, 5),
+                    x: types.math.parseFloat(this.point.x, 5),
+                    y: types.math.parseFloat(this.point.y, 5),
                     radius: types.math.parseFloat(this.radius, 5),
                     startAngle: types.math.parseFloat(this.startAngle, 5),
                     endAngle: types.math.parseFloat(this.endAngle, 5),
                     clockWise: this.clockWise
                 };
-            case 'Circle':
+            case 'circle':
                 return {
                     uuid: this.uuid,
                     type: this.type,
                     name: this.name,
                     status: this.status,
-                    X: types.math.parseFloat(this.point.X, 5),
-                    Y: types.math.parseFloat(this.point.Y, 5),
+                    x: types.math.parseFloat(this.point.x, 5),
+                    y: types.math.parseFloat(this.point.y, 5),
                     radius: types.math.parseFloat(this.radius, 5)
                 };
-            case 'Ellipse':
+            case 'ellipse':
                 return {
                     uuid: this.uuid,
                     type: this.type,
                     name: this.name,
                     status: this.status,
-                    X: types.math.parseFloat(this.point.X, 5),
-                    Y: types.math.parseFloat(this.point.Y, 5),
+                    x: types.math.parseFloat(this.point.x, 5),
+                    y: types.math.parseFloat(this.point.y, 5),
                     radiusX: types.math.parseFloat(this.radiusX, 5),
                     radiusY: types.math.parseFloat(this.radiusY, 5)
                 };
-            case 'Line':
+            case 'line':
                 return {
                     uuid: this.uuid,
                     type: this.type,
                     name: this.name,
                     status: this.status,
-                    X: [types.math.parseFloat(this.points[0].X, 5), types.math.parseFloat(this.points[0].Y, 5)],
-                    Y: [types.math.parseFloat(this.points[1].X, 5), types.math.parseFloat(this.points[1].Y, 5)]
+                    x: [types.math.parseFloat(this.points[0].x, 5), types.math.parseFloat(this.points[0].y, 5)],
+                    y: [types.math.parseFloat(this.points[1].x, 5), types.math.parseFloat(this.points[1].y, 5)]
                 };
-            case 'Polygon':
+            case 'polygon':
                 return {
                     uuid: this.uuid,
                     type: this.type,
                     name: this.name,
                     status: this.status,
-                    X: types.math.parseFloat(this.point.X, 5),
-                    Y: types.math.parseFloat(this.point.Y, 5),
+                    x: types.math.parseFloat(this.point.x, 5),
+                    y: types.math.parseFloat(this.point.y, 5),
                     sides: this.sides
                 };
-            case 'Rectangle':
+            case 'rectangle':
                 return {
                     uuid: this.uuid,
                     type: this.type,
                     name: this.name,
                     status: this.status,
-                    X: types.math.parseFloat(this.point.X, 5),
-                    Y: types.math.parseFloat(this.point.Y, 5),
+                    x: types.math.parseFloat(this.point.x, 5),
+                    y: types.math.parseFloat(this.point.y, 5),
                     height: types.math.parseFloat(this.height, 5),
                     width: types.math.parseFloat(this.width, 5)
                 };
@@ -860,7 +860,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.name = attrs.name;
         this.status = attrs.status;
 
-        this.type = 'Arc';
+        this.type = 'arc';
         this.point = attrs.point;
         this.radius = attrs.radius;
         this.startAngle = attrs.startAngle;
@@ -873,7 +873,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.name = attrs.name;
         this.status = attrs.status;
 
-        this.type = 'Circle';
+        this.type = 'circle';
         this.point = attrs.point;
         this.radius = attrs.radius;
     }, Shape);
@@ -883,7 +883,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.name = attrs.name;
         this.status = attrs.status;
 
-        this.type = 'Ellipse';
+        this.type = 'ellipse';
         this.point = attrs.point;
         this.radiusY = attrs.radiusY;
         this.radiusX = attrs.radiusX;
@@ -894,7 +894,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.name = attrs.name;
         this.status = attrs.status;
 
-        this.type = 'Line';
+        this.type = 'line';
         this.points = attrs.points;
         this.style = attrs.style;
     }, Shape);
@@ -904,7 +904,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.name = attrs.name;
         this.status = attrs.status;
 
-        this.type = 'Polygon';
+        this.type = 'polygon';
         this.point = attrs.point;
         this.points = attrs.points;
         this.sides = attrs.sides;
@@ -915,7 +915,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.name = attrs.name;
         this.status = attrs.status;
 
-        this.type = 'Rectangle';
+        this.type = 'rectangle';
         this.point = attrs.point;
         this.height = attrs.height;
         this.width = attrs.width;
@@ -934,51 +934,51 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         }, attrs);
 
         switch (attrs.type) {
-        case 'Line':
+        case 'line':
             {
-                attrs.points = [point.create(attrs.X[0], attrs.X[1]), point.create(attrs.Y[0], attrs.Y[1])];
+                attrs.points = [point.create(attrs.x[0], attrs.x[1]), point.create(attrs.y[0], attrs.y[1])];
                 return new Line(attrs);
             }
-        case 'Rectangle':
+        case 'rectangle':
             {
-                attrs.point = point.create(attrs.X, attrs.Y);
+                attrs.point = point.create(attrs.x, attrs.y);
                 attrs.height = attrs.height;
                 attrs.width = attrs.width;
                 return new Rectangle(attrs);
             }
-        case 'Arc':
+        case 'arc':
             {
-                attrs.point = point.create(attrs.X, attrs.Y);
+                attrs.point = point.create(attrs.x, attrs.y);
                 attrs.radius = attrs.radius;
                 attrs.startAngle = attrs.startAngle;
                 attrs.endAngle = attrs.endAngle;
                 attrs.clockWise = attrs.clockWise;
                 return new Arc(attrs);
             }
-        case 'Circle':
+        case 'circle':
             {
-                attrs.point = point.create(attrs.X, attrs.Y);
+                attrs.point = point.create(attrs.x, attrs.y);
                 attrs.radius = attrs.radius;
                 return new Circle(attrs);
             }
-        case 'Ellipse':
+        case 'ellipse':
             {
-                attrs.point = point.create(attrs.X, attrs.Y);
+                attrs.point = point.create(attrs.x, attrs.y);
                 attrs.radiusY = attrs.radiusY;
                 attrs.radiusX = attrs.radiusX;
                 return new Ellipse(attrs);
             }
-        case 'Polygon':
+        case 'polygon':
             {
-                attrs.point = point.create(attrs.X, attrs.Y);
+                attrs.point = point.create(attrs.x, attrs.y);
                 attrs.points = [];
 
                 for (var i = 0; i < attrs.sides; i++) {
 
-                    var pointX = (attrs.radius * Math.cos(((Math.PI * 2) / attrs.sides) * i) + attrs.point.X),
-                        pointY = (attrs.radius * Math.sin(((Math.PI * 2) / attrs.sides) * i) + attrs.point.Y);
+                    var pointx = (attrs.radius * Math.cos(((Math.PI * 2) / attrs.sides) * i) + attrs.point.x),
+                        pointy = (attrs.radius * Math.sin(((Math.PI * 2) / attrs.sides) * i) + attrs.point.y);
 
-                    attrs['points'].push(point.create(pointX, pointY));
+                    attrs['points'].push(point.create(pointx, pointy));
                 }
 
                 return new Polygon(attrs);
@@ -1055,8 +1055,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
 
             // style of layer
-            context2D.lineCap = layerStyle.LineCap;
-            context2D.lineJoin = layerStyle.LineJoin;
+            context2D.lineCap = layerStyle.lineCap;
+            context2D.lineJoin = layerStyle.lineJoin;
 
             // render para cada shape
             layerShapes.forEach(function (shape) {
@@ -1076,10 +1076,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
         clear: function () {
 
             // reset em scroll
-            if ((plane.scroll.X != 0) || (plane.scroll.Y != 0)) {
+            if ((plane.scroll.x != 0) || (plane.scroll.y != 0)) {
                 plane.scroll = {
-                    X: 0,
-                    Y: 0
+                    x: 0,
+                    y: 0
                 }
             };
 
@@ -1134,16 +1134,16 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if ((typeof attrs == "function") || (attrs == null)) {
                     throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if (['Polygon', 'Rectangle', 'Line', 'Arc', 'Circle', 'Ellipse'].indexOf(attrs.type) == -1) {
+                if (['polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse'].indexOf(attrs.type) == -1) {
                     throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if ((attrs.X == undefined) || (attrs.Y == undefined)) {
-                    throw new Error('shape - create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                if ((attrs.x == undefined) || (attrs.y == undefined)) {
+                    throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
                 var shape = shapeManager.create(attrs);
 
-                layerManager.active().shapes.Add(shape.uuid, shape);
+                layerManager.active().shapes.add(shape.uuid, shape);
 
                 return true;
             }
@@ -1189,24 +1189,24 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         get scroll() {
             return this._scroll || {
-                X: 0,
-                Y: 0
+                x: 0,
+                y: 0
             };
         },
         set scroll(value) {
 
             var LayerActive = layerManager.active(),
                 MoveFactor = {
-                    X: value.X + this.scroll.X,
-                    Y: value.Y + this.scroll.Y
+                    x: value.x + this.scroll.x,
+                    y: value.y + this.scroll.y
                 };
 
             gridDraw(viewPort.clientHeight, viewPort.clientWidth, this.zoom, MoveFactor);
 
             // Se não alguma Layer Ativa = clear || importer
             if (LayerActive) {
-                value.X = value.X * this.zoom;
-                value.Y = value.Y * this.zoom;
+                value.x = value.x * this.zoom;
+                value.y = value.y * this.zoom;
 
                 layerManager.list().forEach(function (Layer) {
 
@@ -1331,78 +1331,78 @@ define("plane", ['require', 'exports'], function (require, exports) {
         height = zoom > 1 ? Math.round(height * zoom) : Math.round(height / zoom);
 
         var lineBold = 0;
-        if (scroll.X > 0) {
-            for (var X = (scroll.X * zoom); X >= 0; X -= (10 * zoom)) {
+        if (scroll.x > 0) {
+            for (var x = (scroll.x * zoom); x >= 0; x -= (10 * zoom)) {
 
                 var shape = shapeManager.create({
                     uuid: types.math.uuid(9, 16),
-                    type: 'Line',
-                    X: [X, 0],
-                    Y: [X, height],
-                    style: {
-                        lineColor: plane.settings.gridColor,
-                        linewidth: lineBold % 5 == 0 ? .8 : .3
-                    }
-                });
-
-                layerSystem.shapes.Add(shape.uuid, shape);
-                lineBold++;
-            }
-        }
-
-        lineBold = 0;
-        for (var X = (scroll.X * zoom); X <= width; X += (10 * zoom)) {
-
-            var shape = shapeManager.create({
-                uuid: types.math.uuid(9, 16),
-                type: 'Line',
-                X: [X, 0],
-                Y: [X, height],
-                style: {
-                    lineColor: plane.settings.gridColor,
-                    lineWidth: lineBold % 5 == 0 ? .8 : .3
-                }
-            });
-
-            layerSystem.shapes.Add(shape.uuid, shape);
-            lineBold++;
-        }
-
-        lineBold = 0;
-        if (scroll.Y > 0) {
-            for (var Y = (scroll.Y * zoom); Y >= 0; Y -= (10 * zoom)) {
-
-                var shape = shapeManager.create({
-                    uuid: types.math.uuid(9, 16),
-                    type: 'Line',
-                    X: [0, Y],
-                    Y: [width, Y],
+                    type: 'line',
+                    x: [x, 0],
+                    y: [x, height],
                     style: {
                         lineColor: plane.settings.gridColor,
                         lineWidth: lineBold % 5 == 0 ? .8 : .3
                     }
                 });
 
-                layerSystem.shapes.Add(shape.uuid, shape);
+                layerSystem.shapes.add(shape.uuid, shape);
                 lineBold++;
             }
         }
 
         lineBold = 0;
-        for (var Y = (scroll.Y * zoom); Y <= height; Y += (10 * zoom)) {
+        for (var x = (scroll.x * zoom); x <= width; x += (10 * zoom)) {
 
             var shape = shapeManager.create({
                 uuid: types.math.uuid(9, 16),
-                type: 'Line',
-                X: [0, Y],
-                Y: [width, Y],
+                type: 'line',
+                x: [x, 0],
+                y: [x, height],
                 style: {
                     lineColor: plane.settings.gridColor,
                     lineWidth: lineBold % 5 == 0 ? .8 : .3
                 }
             });
 
-            layerSystem.shapes.Add(shape.uuid, shape);
+            layerSystem.shapes.add(shape.uuid, shape);
+            lineBold++;
+        }
+
+        lineBold = 0;
+        if (scroll.y > 0) {
+            for (var y = (scroll.y * zoom); y >= 0; y -= (10 * zoom)) {
+
+                var shape = shapeManager.create({
+                    uuid: types.math.uuid(9, 16),
+                    type: 'line',
+                    x: [0, y],
+                    y: [width, y],
+                    style: {
+                        lineColor: plane.settings.gridColor,
+                        lineWidth: lineBold % 5 == 0 ? .8 : .3
+                    }
+                });
+
+                layerSystem.shapes.add(shape.uuid, shape);
+                lineBold++;
+            }
+        }
+
+        lineBold = 0;
+        for (var y = (scroll.y * zoom); y <= height; y += (10 * zoom)) {
+
+            var shape = shapeManager.create({
+                uuid: types.math.uuid(9, 16),
+                type: 'line',
+                x: [0, y],
+                y: [width, y],
+                style: {
+                    lineColor: plane.settings.gridColor,
+                    lineWidth: lineBold % 5 == 0 ? .8 : .3
+                }
+            });
+
+            layerSystem.shapes.add(shape.uuid, shape);
             lineBold++;
         }
 
@@ -1464,8 +1464,8 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             uuid: uuid,
             name: 'New Layer '.concat(uuid),
             style: {
-                LineCap: 'butt',
-                LineJoin: 'miter',
+                lineCap: 'butt',
+                lineJoin: 'miter',
                 lineWidth: .7,
                 lineColor: 'rgb(0, 0, 0)',
             },
@@ -1482,7 +1482,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         attrs.viewPort.appendChild(layer.render);
 
         if (layer.status != 'System') {
-            LayerStore.Add(layer.uuid, layer);
+            LayerStore.add(layer.uuid, layer);
             this.active(layer.uuid);
             return true;
         } else {
@@ -1560,7 +1560,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         // nova tool
         var tool = new Tool(attrs)
 
-        toolStore.Add(tool.uuid, tool);
+        toolStore.add(tool.uuid, tool);
 
         return tool;
     }
@@ -1594,7 +1594,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                             Shape.status = Shape.status != 'Selected' ? 'Selected' : 'Over';
 
                             if (Shape.status == 'Selected') {
-                                shapeSelected.Add(Shape.uuid, Shape);
+                                shapeSelected.add(Shape.uuid, Shape);
                             } else {
                                 shapeSelected.remove(Shape.uuid);
                             }
@@ -1680,22 +1680,22 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
             switch (dxfObject.type) {
             case 'LINE':
                 {
-                    var line = '{ "type": "Line", "X": [{0}, {1}], "Y": [{2}, {3}] }';
+                    var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] }';
                     return line.format(dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1);
                 }
             case 'CIRCLE':
                 {
-                    var circle = '{ "type": "Circle", "X": {0}, "Y": {1}, "radius": {2} }';
+                    var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} }';
                     return circle.format(dxfObject.x, dxfObject.y, dxfObject.r);
                 }
             case 'ARC':
                 {
-                    var arc = '{"type": "Arc", "X": {0}, "Y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} }';
+                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} }';
                     return arc.format(dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false);
                 }
             case 'ELLIPSE':
                 {
-                    var ellipse = '{"type": "Ellipse", "X": {0}, "Y": {1}, "radiusY": {2},"radiusX": {3} }',
+                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} }',
                         radiusX = Math.abs(dxfObject.x1),
                         radiusY = radiusX * dxfObject.r;
 
@@ -1833,18 +1833,18 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     var graphic = {
 
-        mousePosition: function (Element, X, Y) {
+        mousePosition: function (Element, x, y) {
             var bb = Element.getBoundingClientRect();
 
-            X = (X - bb.left) * (Element.clientWidth / bb.width);
-            Y = (Y - bb.top) * (Element.clientHeight / bb.height);
+            x = (x - bb.left) * (Element.clientWidth / bb.width);
+            y = (y - bb.top) * (Element.clientHeight / bb.height);
 
             // tradução para o sistema de coordenadas cartesiano
-            Y = (Y - Element.clientHeight) * -1;
+            y = (y - Element.clientHeight) * -1;
 
             return {
-                X: X,
-                Y: Y
+                x: x,
+                y: y
             };
         }
  
@@ -1859,7 +1859,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             }
 
             Dictionary.prototype = {
-                Add: function (key, value) {
+                add: function (key, value) {
                     this.store[key] = value;
                 },
                 Find: function (key) {
@@ -1903,7 +1903,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          */
         extend: function (o, p) {
             for (var prop in p) { // For all props in p.
-                Object.defineProperty(o, prop, Object.getOwnPropertyDescriptor(p, prop)); // Add the property to o.
+                Object.defineProperty(o, prop, Object.getOwnPropertyDescriptor(p, prop)); // add the property to o.
             }
             return o;
         },
@@ -1915,7 +1915,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         merge: function (o, p) {
             for (var prop in p) { // For all props in p
                 if (o.hasOwnProperty[prop]) continue; // Except those already in o
-                o[prop] = p[prop]; // Add the property to o
+                o[prop] = p[prop]; // add the property to o
             }
             return o;
         },

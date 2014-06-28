@@ -52,8 +52,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
 
             // style of layer
-            context2D.lineCap = layerStyle.LineCap;
-            context2D.lineJoin = layerStyle.LineJoin;
+            context2D.lineCap = layerStyle.lineCap;
+            context2D.lineJoin = layerStyle.lineJoin;
 
             // render para cada shape
             layerShapes.forEach(function (shape) {
@@ -73,10 +73,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
         clear: function () {
 
             // reset em scroll
-            if ((plane.scroll.X != 0) || (plane.scroll.Y != 0)) {
+            if ((plane.scroll.x != 0) || (plane.scroll.y != 0)) {
                 plane.scroll = {
-                    X: 0,
-                    Y: 0
+                    x: 0,
+                    y: 0
                 }
             };
 
@@ -131,16 +131,16 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if ((typeof attrs == "function") || (attrs == null)) {
                     throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if (['Polygon', 'Rectangle', 'Line', 'Arc', 'Circle', 'Ellipse'].indexOf(attrs.type) == -1) {
+                if (['polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse'].indexOf(attrs.type) == -1) {
                     throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if ((attrs.X == undefined) || (attrs.Y == undefined)) {
-                    throw new Error('shape - create - X and Y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                if ((attrs.x == undefined) || (attrs.y == undefined)) {
+                    throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
                 var shape = shapeManager.create(attrs);
 
-                layerManager.active().shapes.Add(shape.uuid, shape);
+                layerManager.active().shapes.add(shape.uuid, shape);
 
                 return true;
             }
@@ -186,24 +186,24 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         get scroll() {
             return this._scroll || {
-                X: 0,
-                Y: 0
+                x: 0,
+                y: 0
             };
         },
         set scroll(value) {
 
             var LayerActive = layerManager.active(),
                 MoveFactor = {
-                    X: value.X + this.scroll.X,
-                    Y: value.Y + this.scroll.Y
+                    x: value.x + this.scroll.x,
+                    y: value.y + this.scroll.y
                 };
 
             gridDraw(viewPort.clientHeight, viewPort.clientWidth, this.zoom, MoveFactor);
 
             // Se não alguma Layer Ativa = clear || importer
             if (LayerActive) {
-                value.X = value.X * this.zoom;
-                value.Y = value.Y * this.zoom;
+                value.x = value.x * this.zoom;
+                value.y = value.y * this.zoom;
 
                 layerManager.list().forEach(function (Layer) {
 
@@ -328,78 +328,78 @@ define("plane", ['require', 'exports'], function (require, exports) {
         height = zoom > 1 ? Math.round(height * zoom) : Math.round(height / zoom);
 
         var lineBold = 0;
-        if (scroll.X > 0) {
-            for (var X = (scroll.X * zoom); X >= 0; X -= (10 * zoom)) {
+        if (scroll.x > 0) {
+            for (var x = (scroll.x * zoom); x >= 0; x -= (10 * zoom)) {
 
                 var shape = shapeManager.create({
                     uuid: types.math.uuid(9, 16),
-                    type: 'Line',
-                    X: [X, 0],
-                    Y: [X, height],
-                    style: {
-                        lineColor: plane.settings.gridColor,
-                        linewidth: lineBold % 5 == 0 ? .8 : .3
-                    }
-                });
-
-                layerSystem.shapes.Add(shape.uuid, shape);
-                lineBold++;
-            }
-        }
-
-        lineBold = 0;
-        for (var X = (scroll.X * zoom); X <= width; X += (10 * zoom)) {
-
-            var shape = shapeManager.create({
-                uuid: types.math.uuid(9, 16),
-                type: 'Line',
-                X: [X, 0],
-                Y: [X, height],
-                style: {
-                    lineColor: plane.settings.gridColor,
-                    lineWidth: lineBold % 5 == 0 ? .8 : .3
-                }
-            });
-
-            layerSystem.shapes.Add(shape.uuid, shape);
-            lineBold++;
-        }
-
-        lineBold = 0;
-        if (scroll.Y > 0) {
-            for (var Y = (scroll.Y * zoom); Y >= 0; Y -= (10 * zoom)) {
-
-                var shape = shapeManager.create({
-                    uuid: types.math.uuid(9, 16),
-                    type: 'Line',
-                    X: [0, Y],
-                    Y: [width, Y],
+                    type: 'line',
+                    x: [x, 0],
+                    y: [x, height],
                     style: {
                         lineColor: plane.settings.gridColor,
                         lineWidth: lineBold % 5 == 0 ? .8 : .3
                     }
                 });
 
-                layerSystem.shapes.Add(shape.uuid, shape);
+                layerSystem.shapes.add(shape.uuid, shape);
                 lineBold++;
             }
         }
 
         lineBold = 0;
-        for (var Y = (scroll.Y * zoom); Y <= height; Y += (10 * zoom)) {
+        for (var x = (scroll.x * zoom); x <= width; x += (10 * zoom)) {
 
             var shape = shapeManager.create({
                 uuid: types.math.uuid(9, 16),
-                type: 'Line',
-                X: [0, Y],
-                Y: [width, Y],
+                type: 'line',
+                x: [x, 0],
+                y: [x, height],
                 style: {
                     lineColor: plane.settings.gridColor,
                     lineWidth: lineBold % 5 == 0 ? .8 : .3
                 }
             });
 
-            layerSystem.shapes.Add(shape.uuid, shape);
+            layerSystem.shapes.add(shape.uuid, shape);
+            lineBold++;
+        }
+
+        lineBold = 0;
+        if (scroll.y > 0) {
+            for (var y = (scroll.y * zoom); y >= 0; y -= (10 * zoom)) {
+
+                var shape = shapeManager.create({
+                    uuid: types.math.uuid(9, 16),
+                    type: 'line',
+                    x: [0, y],
+                    y: [width, y],
+                    style: {
+                        lineColor: plane.settings.gridColor,
+                        lineWidth: lineBold % 5 == 0 ? .8 : .3
+                    }
+                });
+
+                layerSystem.shapes.add(shape.uuid, shape);
+                lineBold++;
+            }
+        }
+
+        lineBold = 0;
+        for (var y = (scroll.y * zoom); y <= height; y += (10 * zoom)) {
+
+            var shape = shapeManager.create({
+                uuid: types.math.uuid(9, 16),
+                type: 'line',
+                x: [0, y],
+                y: [width, y],
+                style: {
+                    lineColor: plane.settings.gridColor,
+                    lineWidth: lineBold % 5 == 0 ? .8 : .3
+                }
+            });
+
+            layerSystem.shapes.add(shape.uuid, shape);
             lineBold++;
         }
 

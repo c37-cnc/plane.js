@@ -1,42 +1,42 @@
 define("geometric/point", ['require', 'exports'], function (require, exports) {
 
-    function Point(X, Y) {
-        this.X = X;
-        this.Y = Y;
+    function Point(x, y) {
+        this.x = x;
+        this.y = y;
     };
 
     Point.prototype = {
         sum: function (point) {
-            return new Point(this.X + point.X, this.Y + point.Y);
+            return new Point(this.x + point.x, this.y + point.y);
         },
         subtract: function (point) {
-            return new Point(this.X - point.X, this.Y - point.Y);
+            return new Point(this.x - point.x, this.y - point.y);
         },
         multiply: function (value) {
-            return new Point(this.X * value, this.Y * value);
+            return new Point(this.x * value, this.y * value);
         },
         distanceTo: function (point) {
-            var dx = this.X - point.X;
-            var dY = this.Y - point.Y;
+            var dx = this.x - point.x;
+            var dy = this.y - point.y;
 
-            return Math.sqrt(dx * dx + dY * dY);
+            return Math.sqrt(dx * dx + dy * dy);
         },
         midTo: function (point) {
-            return new Point(this.X + (point.X - this.X) / 2, this.Y + (point.Y - this.Y) / 2);
+            return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
         },
         angleTo: function (point) {
-            return Math.atan2(point.Y - this.Y, point.X - this.X);
+            return Math.atan2(point.y - this.y, point.x - this.x);
         },
         interpolationLinear: function (point, value) {
             return new Point(
-                this.X + (point.X - this.X) * value,
-                this.Y + (point.Y - this.Y) * value
+                this.x + (point.x - this.x) * value,
+                this.y + (point.y - this.y) * value
             );
         }
     };
 
-    function create(X, Y) {
-        return new Point(X, Y);
+    function create(x, y) {
+        return new Point(x, y);
     };
 
     exports.create = create;
