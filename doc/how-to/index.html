@@ -92,7 +92,7 @@
             });
             // plane - initialize
 
-
+            
             var Tool001 = Plane.Tool.Create();
             Tool001.Active = true;
 
@@ -103,13 +103,13 @@
                 console.log(Event);
 
                 Event.Shapes.forEach(function (Shape) {
-
+                    
                     if (Shape.Points) {
                         
                         Shape.Points.forEach(function(Point){
                         
-                            Point.X += 10;
-                            Point.Y += 10;
+                            Point.X += (10 * Plane.Zoom);
+                            Point.Y += (10 * Plane.Zoom);
                         
                         })
                     }

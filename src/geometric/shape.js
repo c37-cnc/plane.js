@@ -4,7 +4,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         Point = require('geometric/point'),
         Intersection = require('geometric/intersection');
 
-    
+
     function Shape() {};
 
     Shape.prototype = {
@@ -52,7 +52,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 {
                     this.Point.X *= Value;
                     this.Point.Y *= Value;
-                    
+
                     this.Points.forEach(function (Point) {
                         Point.X *= Value;
                         Point.Y *= Value;
@@ -71,8 +71,11 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             }
 
+            this.Scale = Value;
+
         },
         MoveTo: function (Value) {
+
             if (this.Point) {
                 this.Point = this.Point.Sum(Value);
             }
@@ -81,6 +84,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     this.Points[i] = this.Points[i].Sum(Value);
                 }
             }
+
             return true;
         },
         Contains: function (PointMouse) {

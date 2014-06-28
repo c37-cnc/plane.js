@@ -1,10 +1,11 @@
 define("geometric/polynomial", ['require', 'exports'], function (require, exports) {
 
-    function Polynomial() {
+    function Polynomial(coefs) {
         this.init(arguments);
     }
 
     Polynomial.prototype.init = function (coefs) {
+
         this.coefs = new Array();
 
         for (var i = coefs.length - 1; i >= 0; i--)

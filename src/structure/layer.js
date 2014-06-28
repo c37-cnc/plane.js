@@ -2,7 +2,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
 
-    var LayerStore = new Types.Data.Dictionary(),
+    var LayerStore = Types.Data.Dictionary.Create(),
         LayerActive = null;
 
     var Layer = Types.Function.Inherits(function Layer(Attrs) {
@@ -56,7 +56,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
                 LineColor: 'rgb(0, 0, 0)',
             },
             Status: 'Visible',
-            Shapes: new Types.Data.Dictionary(),
+            Shapes: Types.Data.Dictionary.Create(),
             Render: Render
         }, Attrs);
         // parametros para a nova Layer

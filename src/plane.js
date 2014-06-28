@@ -15,7 +15,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         ViewPort = null;
 
 
-    var Plane = Types.Object.Extend(new Types.Object.Event(), {
+    var Plane = Types.Object.Extend(Types.Object.Event.Create(), {
 
         Initialize: function (Config) {
             if (Config == null) {
@@ -90,7 +90,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             return true;
         },
-        Layer: Types.Object.Extend(new Types.Object.Event(), {
+        Layer: Types.Object.Extend(Types.Object.Event.Create(), {
             Create: function (Attrs) {
                 if ((typeof Attrs == "function")) {
                     throw new Error('Layer - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -320,7 +320,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             };
             LayerSystem = LayerManager.Create(Attrs);
         } else {
-            LayerSystem.Shapes = new Types.Data.Dictionary();
+            LayerSystem.Shapes.Clear();
         }
 
         // calculos para o Zoom

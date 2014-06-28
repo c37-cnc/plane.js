@@ -1,5 +1,5 @@
 /*!
- * C37 in 27-06-2014 at 17:49:42 
+ * C37 in 27-06-2014 at 21:51:06 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -332,11 +332,12 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
 });
 define("geometric/polynomial", ['require', 'exports'], function (require, exports) {
 
-    function Polynomial() {
+    function Polynomial(coefs) {
         this.init(arguments);
     }
 
     Polynomial.prototype.init = function (coefs) {
+
         this.coefs = new Array();
 
         for (var i = coefs.length - 1; i >= 0; i--)
@@ -560,7 +561,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         Point = require('geometric/point'),
         Intersection = require('geometric/intersection');
 
-    
+
     function Shape() {};
 
     Shape.prototype = {
@@ -608,7 +609,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 {
                     this.Point.X *= Value;
                     this.Point.Y *= Value;
-                    
+
                     this.Points.forEach(function (Point) {
                         Point.X *= Value;
                         Point.Y *= Value;
@@ -627,8 +628,11 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             }
 
+            this.Scale = Value;
+
         },
         MoveTo: function (Value) {
+
             if (this.Point) {
                 this.Point = this.Point.Sum(Value);
             }
@@ -637,6 +641,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     this.Points[i] = this.Points[i].Sum(Value);
                 }
             }
+
             return true;
         },
         Contains: function (PointMouse) {
@@ -1019,7 +1024,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         ViewPort = null;
 
 
-    var Plane = Types.Object.Extend(new Types.Object.Event(), {
+    var Plane = Types.Object.Extend(Types.Object.Event.Create(), {
 
         Initialize: function (Config) {
             if (Config == null) {
@@ -1094,7 +1099,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             return true;
         },
-        Layer: Types.Object.Extend(new Types.Object.Event(), {
+        Layer: Types.Object.Extend(Types.Object.Event.Create(), {
             Create: function (Attrs) {
                 if ((typeof Attrs == "function")) {
                     throw new Error('Layer - Create - Attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -1324,7 +1329,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             };
             LayerSystem = LayerManager.Create(Attrs);
         } else {
-            LayerSystem.Shapes = new Types.Data.Dictionary();
+            LayerSystem.Shapes.Clear();
         }
 
         // calculos para o Zoom
@@ -1417,7 +1422,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
 
-    var LayerStore = new Types.Data.Dictionary(),
+    var LayerStore = Types.Data.Dictionary.Create(),
         LayerActive = null;
 
     var Layer = Types.Function.Inherits(function Layer(Attrs) {
@@ -1471,7 +1476,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
                 LineColor: 'rgb(0, 0, 0)',
             },
             Status: 'Visible',
-            Shapes: new Types.Data.Dictionary(),
+            Shapes: Types.Data.Dictionary.Create(),
             Render: Render
         }, Attrs);
         // parametros para a nova Layer
@@ -1520,8 +1525,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     var Types = require('utility/types');
 
-    var ToolStore = new Types.Data.Dictionary(),
-        ShapeSelected = new Types.Data.Dictionary();
+    var ToolStore = Types.Data.Dictionary.Create(),
+        ShapeSelected = Types.Data.Dictionary.Create();
 
     var LayerManager = require('structure/layer');
 
@@ -1567,7 +1572,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
     }
 
 
-    var EventProxy = Types.Object.Extend(new Types.Object.Event(), {
+    var EventProxy = Types.Object.Extend(Types.Object.Event.Create(), {
 
         Start: function (Config) {
 
@@ -1575,6 +1580,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             Update = Config.Update;
 
             ViewPort.onmousemove = function (Event) {
+                
                 if (LayerManager.Active()) {
                     LayerManager.Active().Shapes.List().forEach(function (Shape) {
                         if (Shape.Status != 'Selected') {
@@ -1587,6 +1593,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
             ViewPort.onclick = function (Event) {
                 if (LayerManager.Active()) {
+                    
                     LayerManager.Active().Shapes.List().forEach(function (Shape) {
                         if (Shape.Contains(Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY))) {
 
@@ -1612,65 +1619,9 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                     });
                 }
             }
-
         }
 
     })
-
-
-    //                    LayerManager.Active().Shapes.List().forEach(function (Shape) {
-    //                        
-    //                        if (Shape.Contains(Types.Graphic.MousePosition(ViewPort, Event.clientX, Event.clientY))) {
-    //                            
-    //                            Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over';
-    //                            
-    //                            if (Shape.Status == 'Selected'){
-    //                                ShapeSelected.push(Shape);
-    //                            }
-    //                        }
-    //                    });
-
-
-
-    //    var EventProxy = new Types.Object.Event();
-
-    //    EventProxy.Listen('onMouseMove', function (Message) {
-    //
-    //        var ShapeSelected = [];
-    //
-    //        Message.Shapes.forEach(function (Shape) {
-    //            if (Shape.Status != 'Selected') {
-    //                Shape.Status = Shape.Contains(Message.Position) ? 'Over' : 'Out';
-    //            }
-    //        });
-    //        Message.Update();
-    //
-    //
-    //        var ToolActive = ToolStore.List().filter(function (Tool) {
-    //            return Tool.Active
-    //        });
-    //
-    //        ToolActive.forEach(function (Tool) {
-    //
-    //            Tool.Notify('onMouseMove', {
-    //                Type: 'onMouseMove',
-    //                Shape: ShapeSelected,
-    //                Now: new Date().toISOString()
-    //            });
-    //
-    //        });
-    //
-    //    });
-    //
-    //    EventProxy.Listen('onClick', function (Message) {
-    //        Message.Shapes.forEach(function (Shape) {
-    //            if (Shape.Contains(Message.Position)) {
-    //                Shape.Status = Shape.Status != 'Selected' ? 'Selected' : 'Over';
-    //            }
-    //        });
-    //        Message.Update();
-    //    });
-
 
     exports.Event = EventProxy;
     exports.Create = Create;
@@ -1867,7 +1818,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
             return uuid.join('').toLowerCase();
         },
-        ParseFloat: function(float, decimal) {
+        ParseFloat: function (float, decimal) {
             return Number(parseFloat(float).toFixed(decimal));
         }
     }
@@ -1926,12 +1877,19 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 Count: function () {
                     return Object.keys(this.store).length;
                 },
+                Clear: function(){
+                    return this.store = new Array();
+                },
                 List: function () {
                     var self = this;
                     return Object.keys(this.store).map(function (key) {
                         return self.store[key];
                     });
                 }
+            }
+
+            Dictionary.Create = function () {
+                return new Dictionary();
             }
 
             return Dictionary;
@@ -2046,6 +2004,10 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                     }
                 }
             };
+
+            Event.Create = function () {
+                return new Event();
+            }
 
             return Event;
 

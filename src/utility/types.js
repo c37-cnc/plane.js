@@ -26,7 +26,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
             return uuid.join('').toLowerCase();
         },
-        ParseFloat: function(float, decimal) {
+        ParseFloat: function (float, decimal) {
             return Number(parseFloat(float).toFixed(decimal));
         }
     }
@@ -85,12 +85,19 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 Count: function () {
                     return Object.keys(this.store).length;
                 },
+                Clear: function(){
+                    return this.store = new Array();
+                },
                 List: function () {
                     var self = this;
                     return Object.keys(this.store).map(function (key) {
                         return self.store[key];
                     });
                 }
+            }
+
+            Dictionary.Create = function () {
+                return new Dictionary();
             }
 
             return Dictionary;
@@ -205,6 +212,10 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                     }
                 }
             };
+
+            Event.Create = function () {
+                return new Event();
+            }
 
             return Event;
 
