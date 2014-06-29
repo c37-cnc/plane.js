@@ -243,19 +243,19 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 plane.zoom = planeObject.zoom;
                 plane.scroll = planeObject.scroll;
 
-                planeObject.Layers.forEach(function (layerObject) {
+                planeObject.layers.forEach(function (layerObject) {
 
                     layerManager.create({
                         uuid: layerObject.uuid,
                         name: layerObject.name,
-                        Locked: layerObject.Locked,
+                        locked: layerObject.locked,
                         Visible: layerObject.Visible,
                         style: layerObject.style,
                         viewPort: viewPort
                     });
 
                     layerObject.shapes.forEach(function (shapeObject) {
-                        plane.Shape.create(shapeObject)
+                        plane.shape.create(shapeObject)
                     });
 
                     plane.update();
@@ -264,16 +264,16 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 return true;
             },
             fromSvg: null,
-            fromDxf: function (StringDxf) {
+            fromDxf: function (stringDxf) {
                 plane.clear();
 
-                var StringJson = importer.FromDxf(StringDxf);
-                var ObjectDxf = JSON.parse(StringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
+                var stringJson = importer.fromDxf(stringDxf);
+                var objectDxf = JSON.parse(stringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
 
-                if (StringJson) {
-                    plane.Layer.create();
-                    for (var prop in ObjectDxf) {
-                        plane.Shape.create(ObjectDxf[prop]);
+                if (stringJson) {
+                    plane.layer.create();
+                    for (var prop in objectDxf) {
+                        plane.shape.create(objectDxf[prop]);
                     }
                     plane.update();
                 }

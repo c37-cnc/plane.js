@@ -178,29 +178,29 @@ plane.update();
             
             
             var Tool001 = plane.tool.create();
-            Tool001.Active = true;
+            Tool001.active = true;
 
             console.log(Tool001);
 
-            Tool001.listen('onMouseClick', function (Event) {
+            Tool001.listen('onMouseClick', function (event) {
 
-                console.log(Event);
+                console.log(event);
 
-                Event.Shapes.forEach(function (shape) {
+                event.shapes.forEach(function (shape) {
                     
-                    if (shape.Points) {
+                    if (shape.points) {
                         
-                        shape.Points.forEach(function(Point){
-                        
-                            Point.x += (10 * plane.Zoom);
-                            Point.y += (10 * plane.Zoom);
-                        
-                        })
+//                        shape.points.forEach(function(point){
+//                        
+//                            point.x += (10 * plane.zoom);
+//                            point.y += (10 * plane.zoom);
+//                        
+//                        })
                     }
 
                 })
 
-                plane.Update();
+                plane.update();
 
             });
 

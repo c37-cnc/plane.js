@@ -18,7 +18,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         return {
             uuid: this.uuid,
             name: this.name,
-            Locked: this.Locked,
+            locked: this.locked,
             Visible: this.Visible,
             style: this.style,
             shapes: this.shapes.list()

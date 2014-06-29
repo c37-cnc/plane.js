@@ -151,11 +151,11 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         },
         render: function (context2D, zoom) {
 
-            if (this.status == 'Over') {
+            if (this.status == 'over') {
                 context2D.strokeStyle = 'rgb(61, 142, 193)';
             }
 
-            if (this.status == 'Selected') {
+            if (this.status == 'selected') {
 
                 context2D.strokeStyle = 'rgb(68, 121, 154)';
                 if (this.point) {
@@ -417,10 +417,10 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                 for (var i = 0; i < attrs.sides; i++) {
 
-                    var pointx = (attrs.radius * Math.cos(((Math.PI * 2) / attrs.sides) * i) + attrs.point.x),
-                        pointy = (attrs.radius * Math.sin(((Math.PI * 2) / attrs.sides) * i) + attrs.point.y);
+                    var pointX = (attrs.radius * Math.cos(((Math.PI * 2) / attrs.sides) * i) + attrs.point.x),
+                        pointY = (attrs.radius * Math.sin(((Math.PI * 2) / attrs.sides) * i) + attrs.point.y);
 
-                    attrs['points'].push(point.create(pointx, pointy));
+                    attrs['points'].push(point.create(pointX, pointY));
                 }
 
                 return new Polygon(attrs);

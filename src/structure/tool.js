@@ -59,9 +59,9 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             viewPort.onmousemove = function (event) {
                 
                 if (layerManager.active()) {
-                    layerManager.active().shapes.list().forEach(function (Shape) {
-                        if (Shape.status != 'Selected') {
-                            Shape.status = Shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'Over' : 'Out';
+                    layerManager.active().shapes.list().forEach(function (shape) {
+                        if (shape.status != 'selected') {
+                            shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
                         }
                     });
                     update();
@@ -71,15 +71,15 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             viewPort.onclick = function (event) {
                 if (layerManager.active()) {
                     
-                    layerManager.active().shapes.list().forEach(function (Shape) {
-                        if (Shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
+                    layerManager.active().shapes.list().forEach(function (shape) {
+                        if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
 
-                            Shape.status = Shape.status != 'Selected' ? 'Selected' : 'Over';
+                            shape.status = shape.status != 'selected' ? 'selected' : 'over';
 
-                            if (Shape.status == 'Selected') {
-                                shapeSelected.add(Shape.uuid, Shape);
+                            if (shape.status == 'selected') {
+                                shapeSelected.add(shape.uuid, shape);
                             } else {
-                                shapeSelected.remove(Shape.uuid);
+                                shapeSelected.remove(shape.uuid);
                             }
 
                         }

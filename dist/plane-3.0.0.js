@@ -1,5 +1,5 @@
 /*!
- * C37 in 28-06-2014 at 11:45:29 
+ * C37 in 28-06-2014 at 21:14:33 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -709,11 +709,11 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         },
         render: function (context2D, zoom) {
 
-            if (this.status == 'Over') {
+            if (this.status == 'over') {
                 context2D.strokeStyle = 'rgb(61, 142, 193)';
             }
 
-            if (this.status == 'Selected') {
+            if (this.status == 'selected') {
 
                 context2D.strokeStyle = 'rgb(68, 121, 154)';
                 if (this.point) {
@@ -975,10 +975,10 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                 for (var i = 0; i < attrs.sides; i++) {
 
-                    var pointx = (attrs.radius * Math.cos(((Math.PI * 2) / attrs.sides) * i) + attrs.point.x),
-                        pointy = (attrs.radius * Math.sin(((Math.PI * 2) / attrs.sides) * i) + attrs.point.y);
+                    var pointX = (attrs.radius * Math.cos(((Math.PI * 2) / attrs.sides) * i) + attrs.point.x),
+                        pointY = (attrs.radius * Math.sin(((Math.PI * 2) / attrs.sides) * i) + attrs.point.y);
 
-                    attrs['points'].push(point.create(pointx, pointy));
+                    attrs['points'].push(point.create(pointX, pointY));
                 }
 
                 return new Polygon(attrs);
@@ -1246,19 +1246,19 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 plane.zoom = planeObject.zoom;
                 plane.scroll = planeObject.scroll;
 
-                planeObject.Layers.forEach(function (layerObject) {
+                planeObject.layers.forEach(function (layerObject) {
 
                     layerManager.create({
                         uuid: layerObject.uuid,
                         name: layerObject.name,
-                        Locked: layerObject.Locked,
+                        locked: layerObject.locked,
                         Visible: layerObject.Visible,
                         style: layerObject.style,
                         viewPort: viewPort
                     });
 
                     layerObject.shapes.forEach(function (shapeObject) {
-                        plane.Shape.create(shapeObject)
+                        plane.shape.create(shapeObject)
                     });
 
                     plane.update();
@@ -1267,16 +1267,16 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 return true;
             },
             fromSvg: null,
-            fromDxf: function (StringDxf) {
+            fromDxf: function (stringDxf) {
                 plane.clear();
 
-                var StringJson = importer.FromDxf(StringDxf);
-                var ObjectDxf = JSON.parse(StringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
+                var stringJson = importer.fromDxf(stringDxf);
+                var objectDxf = JSON.parse(stringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
 
-                if (StringJson) {
-                    plane.Layer.create();
-                    for (var prop in ObjectDxf) {
-                        plane.Shape.create(ObjectDxf[prop]);
+                if (stringJson) {
+                    plane.layer.create();
+                    for (var prop in objectDxf) {
+                        plane.shape.create(objectDxf[prop]);
                     }
                     plane.update();
                 }
@@ -1432,7 +1432,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         return {
             uuid: this.uuid,
             name: this.name,
-            Locked: this.Locked,
+            locked: this.locked,
             Visible: this.Visible,
             style: this.style,
             shapes: this.shapes.list()
@@ -1576,9 +1576,9 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             viewPort.onmousemove = function (event) {
                 
                 if (layerManager.active()) {
-                    layerManager.active().shapes.list().forEach(function (Shape) {
-                        if (Shape.status != 'Selected') {
-                            Shape.status = Shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'Over' : 'Out';
+                    layerManager.active().shapes.list().forEach(function (shape) {
+                        if (shape.status != 'selected') {
+                            shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
                         }
                     });
                     update();
@@ -1588,15 +1588,15 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             viewPort.onclick = function (event) {
                 if (layerManager.active()) {
                     
-                    layerManager.active().shapes.list().forEach(function (Shape) {
-                        if (Shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
+                    layerManager.active().shapes.list().forEach(function (shape) {
+                        if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
 
-                            Shape.status = Shape.status != 'Selected' ? 'Selected' : 'Over';
+                            shape.status = shape.status != 'selected' ? 'selected' : 'over';
 
-                            if (Shape.status == 'Selected') {
-                                shapeSelected.add(Shape.uuid, Shape);
+                            if (shape.status == 'selected') {
+                                shapeSelected.add(shape.uuid, shape);
                             } else {
-                                shapeSelected.remove(Shape.uuid);
+                                shapeSelected.remove(shape.uuid);
                             }
 
                         }
