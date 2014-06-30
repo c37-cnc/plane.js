@@ -93,7 +93,7 @@ module.exports = function (grunt) {
             output.push('"use strict";');
             output.push.apply(output, f.src.map(grunt.file.read));
             output.push(grunt.template.process(
-                'window.<%= namespace %> = require("<%= namespace %>").Public;', {
+                'window.<%= namespace %> = require("<%= namespace %>").public;', {
                     data: {
                         namespace: options.namespace,
                         barename: options.barename

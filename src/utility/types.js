@@ -187,10 +187,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             }
 
             Event.prototype.listen = function (event, handler) {
-                if (this.listeners[event] === undefined) {
-                    this.listeners[event] = [];
-                }
-                this.listeners[event].push(handler);
+                (this.listeners[event] = this.listeners[event] || []).push(handler);
             };
 
             Event.prototype.notify = function (event, data) {

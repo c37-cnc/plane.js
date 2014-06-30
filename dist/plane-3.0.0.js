@@ -1,5 +1,5 @@
 /*!
- * C37 in 28-06-2014 at 21:14:33 
+ * C37 in 29-06-2014 at 12:31:02 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1096,7 +1096,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         layer: types.object.extend(types.object.event.create(), {
             create: function (attrs) {
                 if ((typeof attrs == "function")) {
-                    throw new Error('Layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                    throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
                 attrs = types.object.union(attrs, {
@@ -1105,11 +1105,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                 return layerManager.create(attrs);
             },
-            list: function (Selector) {
-                return Layer.list();
+            list: function (selector) {
+                return layerManager.list();
             },
             remove: function (uuid) {
-                Layer.remove(uuid);
+                layerManager.remove(uuid);
             },
             get active() {
                 return layerManager.active();
@@ -1117,14 +1117,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
             set active(value) {
                 this.notify('onDeactive', {
                     type: 'onDeactive',
-                    Layer: Layer.active()
+                    Layer: layerManager.active()
                 });
 
                 layerManager.active(value);
 
                 this.notify('onActive', {
                     type: 'onActive',
-                    Layer: Layer.active()
+                    Layer: layerManager.active()
                 });
             }
 
@@ -1316,7 +1316,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             var attrs = { // atributos para a layer do grid (sistema) 
                 viewPort: viewPort,
                 name: 'Plane - System',
-                status: 'System',
+                status: 'system',
                 style: {
                     backgroundColor: plane.settings.backgroundColor
                 }
@@ -1410,14 +1410,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
     };
 
 
-    exports.Public = plane;
+    exports.public = plane;
 });
 define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
-    var LayerStore = types.data.dictionary.create(),
-        LayerActive = null;
+    var layerStore = types.data.dictionary.create(),
+        layerActive = null;
 
     var Layer = types.object.inherits(function Layer(attrs) {
         this.uuid = attrs.uuid;
@@ -1433,7 +1433,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             uuid: this.uuid,
             name: this.name,
             locked: this.locked,
-            Visible: this.Visible,
+            status: this.status,
             style: this.style,
             shapes: this.shapes.list()
         };
@@ -1452,10 +1452,11 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         render.height = attrs.viewPort.clientHeight;
 
         render.style.position = "absolute";
-        render.style.backgroundColor = (attrs.style && attrs.style.backgroundColor) ? attrs.style.backgroundColor : 'transparent';
+        render.style.backgroundColor = (attrs.status == 'system') ? attrs.style.backgroundColor : 'transparent';
 
-        // sistema cartesiano de coordenadas
         var context2D = render.getContext('2d');
+        
+        // sistema cartesiano de coordenadas
         context2D.translate(0, render.height);
         context2D.scale(1, -1);
 
@@ -1469,7 +1470,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
                 lineWidth: .7,
                 lineColor: 'rgb(0, 0, 0)',
             },
-            status: 'Visible',
+            status: 'visible',
             shapes: types.data.dictionary.create(),
             render: render
         }, attrs);
@@ -1481,8 +1482,8 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // add em viewPort
         attrs.viewPort.appendChild(layer.render);
 
-        if (layer.status != 'System') {
-            LayerStore.add(layer.uuid, layer);
+        if (layer.status != 'system') {
+            layerStore.add(layer.uuid, layer);
             this.active(layer.uuid);
             return true;
         } else {
@@ -1491,21 +1492,21 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     }
 
     function active(value) {
-        return value ? LayerActive = LayerStore.Find(value) : LayerActive;
+        return value ? layerActive = layerStore.Find(value) : layerActive;
     }
 
     function remove(value) {
-        LayerStore.list().forEach(function (Layer) {
-            var Element = document.getElementById(Layer.render.id);
-            if (Element && Element.parentNode) {
-                Element.parentNode.removeChild(Element);
+        layerStore.list().forEach(function (layer) {
+            var element = document.getElementById(layer.render.id);
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
             }
-            LayerStore.remove(Layer.uuid);
+            layerStore.remove(layer.uuid);
         });
     }
 
     function list() {
-        return LayerStore.list();
+        return layerStore.list();
     }
 
 
@@ -1973,10 +1974,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             }
 
             Event.prototype.listen = function (event, handler) {
-                if (this.listeners[event] === undefined) {
-                    this.listeners[event] = [];
-                }
-                this.listeners[event].push(handler);
+                (this.listeners[event] = this.listeners[event] || []).push(handler);
             };
 
             Event.prototype.notify = function (event, data) {
@@ -2011,5 +2009,5 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     exports.data = data;
     exports.object = object;
 });
-window.plane = require("plane").Public;
+window.plane = require("plane").public;
 })(window);

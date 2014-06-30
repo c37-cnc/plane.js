@@ -93,7 +93,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         layer: types.object.extend(types.object.event.create(), {
             create: function (attrs) {
                 if ((typeof attrs == "function")) {
-                    throw new Error('Layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+                    throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
                 attrs = types.object.union(attrs, {
@@ -102,11 +102,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                 return layerManager.create(attrs);
             },
-            list: function (Selector) {
-                return Layer.list();
+            list: function (selector) {
+                return layerManager.list();
             },
             remove: function (uuid) {
-                Layer.remove(uuid);
+                layerManager.remove(uuid);
             },
             get active() {
                 return layerManager.active();
@@ -114,14 +114,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
             set active(value) {
                 this.notify('onDeactive', {
                     type: 'onDeactive',
-                    Layer: Layer.active()
+                    Layer: layerManager.active()
                 });
 
                 layerManager.active(value);
 
                 this.notify('onActive', {
                     type: 'onActive',
-                    Layer: Layer.active()
+                    Layer: layerManager.active()
                 });
             }
 
@@ -313,7 +313,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             var attrs = { // atributos para a layer do grid (sistema) 
                 viewPort: viewPort,
                 name: 'Plane - System',
-                status: 'System',
+                status: 'system',
                 style: {
                     backgroundColor: plane.settings.backgroundColor
                 }
@@ -407,5 +407,5 @@ define("plane", ['require', 'exports'], function (require, exports) {
     };
 
 
-    exports.Public = plane;
+    exports.public = plane;
 });

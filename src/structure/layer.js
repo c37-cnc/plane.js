@@ -2,8 +2,8 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
-    var LayerStore = types.data.dictionary.create(),
-        LayerActive = null;
+    var layerStore = types.data.dictionary.create(),
+        layerActive = null;
 
     var Layer = types.object.inherits(function Layer(attrs) {
         this.uuid = attrs.uuid;
@@ -19,7 +19,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             uuid: this.uuid,
             name: this.name,
             locked: this.locked,
-            Visible: this.Visible,
+            status: this.status,
             style: this.style,
             shapes: this.shapes.list()
         };
@@ -38,10 +38,11 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         render.height = attrs.viewPort.clientHeight;
 
         render.style.position = "absolute";
-        render.style.backgroundColor = (attrs.style && attrs.style.backgroundColor) ? attrs.style.backgroundColor : 'transparent';
+        render.style.backgroundColor = (attrs.status == 'system') ? attrs.style.backgroundColor : 'transparent';
 
-        // sistema cartesiano de coordenadas
         var context2D = render.getContext('2d');
+        
+        // sistema cartesiano de coordenadas
         context2D.translate(0, render.height);
         context2D.scale(1, -1);
 
@@ -55,7 +56,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
                 lineWidth: .7,
                 lineColor: 'rgb(0, 0, 0)',
             },
-            status: 'Visible',
+            status: 'visible',
             shapes: types.data.dictionary.create(),
             render: render
         }, attrs);
@@ -67,8 +68,8 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // add em viewPort
         attrs.viewPort.appendChild(layer.render);
 
-        if (layer.status != 'System') {
-            LayerStore.add(layer.uuid, layer);
+        if (layer.status != 'system') {
+            layerStore.add(layer.uuid, layer);
             this.active(layer.uuid);
             return true;
         } else {
@@ -77,21 +78,21 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     }
 
     function active(value) {
-        return value ? LayerActive = LayerStore.Find(value) : LayerActive;
+        return value ? layerActive = layerStore.Find(value) : layerActive;
     }
 
     function remove(value) {
-        LayerStore.list().forEach(function (Layer) {
-            var Element = document.getElementById(Layer.render.id);
-            if (Element && Element.parentNode) {
-                Element.parentNode.removeChild(Element);
+        layerStore.list().forEach(function (layer) {
+            var element = document.getElementById(layer.render.id);
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
             }
-            LayerStore.remove(Layer.uuid);
+            layerStore.remove(layer.uuid);
         });
     }
 
     function list() {
-        return LayerStore.list();
+        return layerStore.list();
     }
 
 
