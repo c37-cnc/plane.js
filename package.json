@@ -30,7 +30,7 @@
     },
     "dependencies": {},
     "devDependencies": {
-        "grunt": "~0.4.1",
+        "grunt": "*",
         "grunt-contrib-watch": "*",
         "grunt-contrib-qunit": "*",
         "grunt-contrib-concat": "*",
