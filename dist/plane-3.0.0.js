@@ -1,5 +1,5 @@
 /*!
- * C37 in 29-06-2014 at 12:31:02 
+ * C37 in 02-07-2014 at 12:36:59 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1856,20 +1856,20 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         dictionary: (function () {
 
             function Dictionary() {
-                this.store = new Array();
+                this.store = [];
             }
 
             Dictionary.prototype = {
                 add: function (key, value) {
                     this.store[key] = value;
                 },
-                Find: function (key) {
+                find: function (key) {
                     return this.store[key];
                 },
                 remove: function (key) {
                     delete this.store[key];
                 },
-                Count: function () {
+                count: function () {
                     return Object.keys(this.store).length;
                 },
                 clear: function(){
