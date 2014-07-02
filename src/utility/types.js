@@ -69,20 +69,20 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         dictionary: (function () {
 
             function Dictionary() {
-                this.store = new Array();
+                this.store = [];
             }
 
             Dictionary.prototype = {
                 add: function (key, value) {
                     this.store[key] = value;
                 },
-                Find: function (key) {
+                find: function (key) {
                     return this.store[key];
                 },
                 remove: function (key) {
                     delete this.store[key];
                 },
-                Count: function () {
+                count: function () {
                     return Object.keys(this.store).length;
                 },
                 clear: function(){
