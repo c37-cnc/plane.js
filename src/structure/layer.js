@@ -78,7 +78,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     }
 
     function active(value) {
-        return value ? layerActive = layerStore.Find(value) : layerActive;
+        return value ? layerActive = layerStore.find(value) : layerActive;
     }
 
     function remove(value) {

@@ -1,5 +1,5 @@
 /*!
- * C37 in 02-07-2014 at 12:36:59 
+ * C37 in 02-07-2014 at 13:19:02 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1492,7 +1492,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     }
 
     function active(value) {
-        return value ? layerActive = layerStore.Find(value) : layerActive;
+        return value ? layerActive = layerStore.find(value) : layerActive;
     }
 
     function remove(value) {
@@ -1657,6 +1657,7 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
     
     function fromDxf(stringDxf) {
         
+        debugger;
         
         if (!String.prototype.format) {
             String.prototype.format = function () {
@@ -1676,31 +1677,31 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
         
         
 
-        function aaaa(dxfObject) {
+        function aaaa(objectDxf) {
 
-            switch (dxfObject.type) {
+            switch (objectDxf.type) {
             case 'LINE':
                 {
                     var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] }';
-                    return line.format(dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1);
+                    return line.format(objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1);
                 }
             case 'CIRCLE':
                 {
                     var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} }';
-                    return circle.format(dxfObject.x, dxfObject.y, dxfObject.r);
+                    return circle.format(objectDxf.x, objectDxf.y, objectDxf.r);
                 }
             case 'ARC':
                 {
                     var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} }';
-                    return arc.format(dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false);
+                    return arc.format(objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1, false);
                 }
             case 'ELLIPSE':
                 {
                     var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} }',
-                        radiusX = Math.abs(dxfObject.x1),
-                        radiusY = radiusX * dxfObject.r;
+                        radiusX = Math.abs(objectDxf.x1),
+                        radiusY = radiusX * objectDxf.r;
 
-                    return ellipse.format(dxfObject.x, dxfObject.y, radiusY, radiusX);
+                    return ellipse.format(objectDxf.x, objectDxf.y, radiusY, radiusX);
                 }
             }
 
