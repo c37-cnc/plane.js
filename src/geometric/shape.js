@@ -214,6 +214,8 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'ellipse':
                 {
+                    // http://gis.stackexchange.com/questions/49223/drawing-ellipse-with-openlayers
+                    // http://scienceprimer.com/draw-oval-html5-canvas
                     context2D.translate(this.point.x, this.point.y);
                     context2D.ellipse(0, 0, this.radiusX, this.radiusY, 0, 0, Math.PI * 2)
 
@@ -362,6 +364,16 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.clockWise = attrs.clockWise;
     }, Shape);
 
+    var Bezier = types.object.inherits(function Bezier(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.status = attrs.status;
+
+        this.type = 'bezier';
+        this.point = attrs.point;
+        this.points = attrs.points;
+    }, Shape);
+    
     var Circle = types.object.inherits(function Circle(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
