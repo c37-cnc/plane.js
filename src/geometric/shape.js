@@ -404,7 +404,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.sides = attrs.sides;
     }, Shape);
 
-    var Polyline = types.object.inherits(function Polygon(attrs) {
+    var Polyline = types.object.inherits(function Polyline(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.status = attrs.status;

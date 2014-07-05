@@ -1,5 +1,5 @@
 /*!
- * C37 in 05-07-2014 at 11:35:45 
+ * C37 in 05-07-2014 at 11:50:13 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -962,7 +962,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.sides = attrs.sides;
     }, Shape);
 
-    var Polyline = types.object.inherits(function Polygon(attrs) {
+    var Polyline = types.object.inherits(function Polyline(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.status = attrs.status;
