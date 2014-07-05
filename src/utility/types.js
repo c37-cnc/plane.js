@@ -33,9 +33,8 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     var string = {
 
-        format: function () {
-            var args = arguments;
-            return this.replace(/{(\d+)}/g, function (match, number) {
+        format: function (str, args) {
+            return str.replace(/{(\d+)}/g, function (match, number) {
                 return typeof args[number] != 'undefined' ? args[number] : match;
             });
         },
@@ -61,7 +60,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 y: y
             };
         }
- 
+
     }
 
     var data = {
@@ -85,7 +84,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 count: function () {
                     return Object.keys(this.store).length;
                 },
-                clear: function(){
+                clear: function () {
                     return this.store = new Array();
                 },
                 list: function () {

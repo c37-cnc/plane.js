@@ -1,45 +1,27 @@
 define("utility/importer", ['require', 'exports'], function (require, exports) {
 
-//    var types = require('utility/types');
-    
+    var types = require('utility/types');
+
     function fromDxf(stringDxf) {
-        
-        
-        if (!String.prototype.format) {
-            String.prototype.format = function () {
-                var args = arguments;
-                return this.replace(/{(\d+)}/g, function (match, number) {
-                    return typeof args[number] != 'undefined' ? args[number] : match;
-                });
-            };
-        }
 
-        if (!String.prototype.contains) {
-            String.prototype.contains = function () {
-                return String.prototype.indexOf.apply(this, arguments) !== -1;
-            };
-        }        
-        
-        
-        
 
-        function aaaa(dxfObject) {
+        function toJson(dxfObject) {
 
             switch (dxfObject.type) {
             case 'LINE':
                 {
                     var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] }';
-                    return line.format(dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1);
+                    return types.string.format(line, [dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1]);
                 }
             case 'CIRCLE':
                 {
                     var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} }';
-                    return circle.format(dxfObject.x, dxfObject.y, dxfObject.r);
+                    return types.string.format(circle, [dxfObject.x, dxfObject.y, dxfObject.r]);
                 }
             case 'ARC':
                 {
                     var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} }';
-                    return arc.format(dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false);
+                    return types.string.format(arc, [dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false]);
                 }
             case 'ELLIPSE':
                 {
@@ -47,7 +29,23 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                         radiusX = Math.abs(dxfObject.x1),
                         radiusY = radiusX * dxfObject.r;
 
-                    return ellipse.format(dxfObject.x, dxfObject.y, radiusY, radiusX);
+                    return types.string.format(ellipse, [dxfObject.x, dxfObject.y, radiusY, radiusX])
+                }
+            case 'LWPOLYLINE':
+                {
+                    if (dxfObject.vertices) {
+
+                        var polyline = '{"type": "polyline", "points": [{0}]}',
+                            points = '';
+
+                        for (var i = 0; i < dxfObject.vertices.length; i++) {
+
+                            var point = i == dxfObject.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
+                            points += types.string.format(point, [dxfObject.vertices[i].x, dxfObject.vertices[i].y]);
+
+                        }
+                        return types.string.format(polyline, [points]);
+                    }
                 }
             }
 
@@ -65,7 +63,7 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
             51: 'a1',
         };
 
-        var supportedEntities = ['LINE', 'CIRCLE', 'ARC', 'ELLIPSE'];
+        var supportedEntities = ['LINE', 'CIRCLE', 'ARC', 'ELLIPSE', 'LWPOLYLINE'];
 
         var counter = 0;
         var code = null;
@@ -94,7 +92,7 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                     if (groupCode === 'entitytype') { // New entity starts.
                         if (object.type) {
                             json += json.substring(json.length - 1, json.length) == '[' ? '' : ',';
-                            json += aaaa(object);
+                            json += toJson(object);
                         }
 
                         object = supportedEntities.indexOf(value) > -1 ? {
@@ -106,6 +104,16 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                         }
                     } else if (object.type && typeof groupCode !== 'undefined') { // Known entity property recognized.
                         object[groupCode] = parseFloat(value);
+
+                        if (object.type == 'LWPOLYLINE' && groupCode === 'y') {
+                            if (!object.vertices) {
+                                object.vertices = [];
+                            }
+                            object.vertices.push({
+                                x: object.x,
+                                y: object.y
+                            });
+                        }
                     }
                 }
             }

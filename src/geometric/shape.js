@@ -60,6 +60,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                     break;
                 }
+            case 'polyline':
+                {
+                    this.points.forEach(function (point) {
+                        point.x *= value;
+                        point.y *= value;
+                    });
+
+                    break;
+                }
             case 'rectangle':
                 {
                     this.point.x *= value;
@@ -124,6 +133,26 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             case 'ellipse':
                 return (intersection.circleEllipse(pointMouse, 2, 2, this.point, this.radiusY, this.radiusX))
             case 'polygon':
+                {
+                    var pointA = null,
+                        pointB = null;
+
+                    for (var i = 0; i < this.points.length; i++) {
+
+                        if (i + 1 == this.points.length) {
+                            pointA = this.points[i];
+                            pointB = this.points[0];
+                        } else {
+                            pointA = this.points[i];
+                            pointB = this.points[i + 1];
+                        }
+
+                        if (intersection.circleLine(pointMouse, 2, pointA, pointB))
+                            return true;
+                    }
+                    break;
+                }
+            case 'polyline':
                 {
                     var pointA = null,
                         pointB = null;
@@ -214,6 +243,16 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                     return true;
                 }
+            case 'polyline':
+                {
+                    context2D.moveTo(this.points[0].x, this.points[0].y);
+
+                    this.points.forEach(function (point) {
+                        context2D.lineTo(point.x, point.y);
+                    });
+
+                    return true;
+                }
             case 'rectangle':
                 {
                     context2D.translate(this.point.x, this.point.y);
@@ -279,6 +318,19 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     x: types.math.parseFloat(this.point.x, 5),
                     y: types.math.parseFloat(this.point.y, 5),
                     sides: this.sides
+                };
+            case 'polyline':
+                return {
+                    uuid: this.uuid,
+                    type: this.type,
+                    name: this.name,
+                    status: this.status,
+                    points: this.points.map(function (point) {
+                        return {
+                            x: types.math.parseFloat(point.x, 5),
+                            y: types.math.parseFloat(point.y, 5)
+                        }
+                    })
                 };
             case 'rectangle':
                 return {
@@ -350,6 +402,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.point = attrs.point;
         this.points = attrs.points;
         this.sides = attrs.sides;
+    }, Shape);
+
+    var Polyline = types.object.inherits(function Polygon(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.status = attrs.status;
+
+        this.type = 'polyline';
+        this.points = attrs.points;
     }, Shape);
 
     var Rectangle = types.object.inherits(function Rectangle(attrs) {
@@ -424,6 +485,13 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
 
                 return new Polygon(attrs);
+            }
+        case 'polyline':
+            {
+                for (var i = 0; i < attrs.points.length; i++) {
+                    attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
+                }
+                return new Polyline(attrs);
             }
         default:
             break;

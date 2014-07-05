@@ -1,5 +1,5 @@
 /*!
- * C37 in 02-07-2014 at 13:19:02 
+ * C37 in 05-07-2014 at 11:35:45 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -618,6 +618,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                     break;
                 }
+            case 'polyline':
+                {
+                    this.points.forEach(function (point) {
+                        point.x *= value;
+                        point.y *= value;
+                    });
+
+                    break;
+                }
             case 'rectangle':
                 {
                     this.point.x *= value;
@@ -682,6 +691,26 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             case 'ellipse':
                 return (intersection.circleEllipse(pointMouse, 2, 2, this.point, this.radiusY, this.radiusX))
             case 'polygon':
+                {
+                    var pointA = null,
+                        pointB = null;
+
+                    for (var i = 0; i < this.points.length; i++) {
+
+                        if (i + 1 == this.points.length) {
+                            pointA = this.points[i];
+                            pointB = this.points[0];
+                        } else {
+                            pointA = this.points[i];
+                            pointB = this.points[i + 1];
+                        }
+
+                        if (intersection.circleLine(pointMouse, 2, pointA, pointB))
+                            return true;
+                    }
+                    break;
+                }
+            case 'polyline':
                 {
                     var pointA = null,
                         pointB = null;
@@ -772,6 +801,16 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                     return true;
                 }
+            case 'polyline':
+                {
+                    context2D.moveTo(this.points[0].x, this.points[0].y);
+
+                    this.points.forEach(function (point) {
+                        context2D.lineTo(point.x, point.y);
+                    });
+
+                    return true;
+                }
             case 'rectangle':
                 {
                     context2D.translate(this.point.x, this.point.y);
@@ -837,6 +876,19 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     x: types.math.parseFloat(this.point.x, 5),
                     y: types.math.parseFloat(this.point.y, 5),
                     sides: this.sides
+                };
+            case 'polyline':
+                return {
+                    uuid: this.uuid,
+                    type: this.type,
+                    name: this.name,
+                    status: this.status,
+                    points: this.points.map(function (point) {
+                        return {
+                            x: types.math.parseFloat(point.x, 5),
+                            y: types.math.parseFloat(point.y, 5)
+                        }
+                    })
                 };
             case 'rectangle':
                 return {
@@ -908,6 +960,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.point = attrs.point;
         this.points = attrs.points;
         this.sides = attrs.sides;
+    }, Shape);
+
+    var Polyline = types.object.inherits(function Polygon(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.status = attrs.status;
+
+        this.type = 'polyline';
+        this.points = attrs.points;
     }, Shape);
 
     var Rectangle = types.object.inherits(function Rectangle(attrs) {
@@ -982,6 +1043,13 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
 
                 return new Polygon(attrs);
+            }
+        case 'polyline':
+            {
+                for (var i = 0; i < attrs.points.length; i++) {
+                    attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
+                }
+                return new Polyline(attrs);
             }
         default:
             break;
@@ -1134,10 +1202,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if ((typeof attrs == "function") || (attrs == null)) {
                     throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if (['polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse'].indexOf(attrs.type) == -1) {
+                if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse'].indexOf(attrs.type) == -1) {
                     throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if ((attrs.x == undefined) || (attrs.y == undefined)) {
+                if ((attrs.type != 'polyline') && ((attrs.x == undefined) || (attrs.y == undefined))) {
                     throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
@@ -1653,55 +1721,52 @@ define("utility/exporter", ['require', 'exports'], function (require, exports) {
 });
 define("utility/importer", ['require', 'exports'], function (require, exports) {
 
-//    var types = require('utility/types');
-    
+    var types = require('utility/types');
+
     function fromDxf(stringDxf) {
-        
-        debugger;
-        
-        if (!String.prototype.format) {
-            String.prototype.format = function () {
-                var args = arguments;
-                return this.replace(/{(\d+)}/g, function (match, number) {
-                    return typeof args[number] != 'undefined' ? args[number] : match;
-                });
-            };
-        }
 
-        if (!String.prototype.contains) {
-            String.prototype.contains = function () {
-                return String.prototype.indexOf.apply(this, arguments) !== -1;
-            };
-        }        
-        
-        
-        
 
-        function aaaa(objectDxf) {
+        function toJson(dxfObject) {
 
-            switch (objectDxf.type) {
+            switch (dxfObject.type) {
             case 'LINE':
                 {
                     var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] }';
-                    return line.format(objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1);
+                    return types.string.format(line, [dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1]);
                 }
             case 'CIRCLE':
                 {
                     var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} }';
-                    return circle.format(objectDxf.x, objectDxf.y, objectDxf.r);
+                    return types.string.format(circle, [dxfObject.x, dxfObject.y, dxfObject.r]);
                 }
             case 'ARC':
                 {
                     var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} }';
-                    return arc.format(objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1, false);
+                    return types.string.format(arc, [dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false]);
                 }
             case 'ELLIPSE':
                 {
                     var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} }',
-                        radiusX = Math.abs(objectDxf.x1),
-                        radiusY = radiusX * objectDxf.r;
+                        radiusX = Math.abs(dxfObject.x1),
+                        radiusY = radiusX * dxfObject.r;
 
-                    return ellipse.format(objectDxf.x, objectDxf.y, radiusY, radiusX);
+                    return types.string.format(ellipse, [dxfObject.x, dxfObject.y, radiusY, radiusX])
+                }
+            case 'LWPOLYLINE':
+                {
+                    if (dxfObject.vertices) {
+
+                        var polyline = '{"type": "polyline", "points": [{0}]}',
+                            points = '';
+
+                        for (var i = 0; i < dxfObject.vertices.length; i++) {
+
+                            var point = i == dxfObject.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
+                            points += types.string.format(point, [dxfObject.vertices[i].x, dxfObject.vertices[i].y]);
+
+                        }
+                        return types.string.format(polyline, [points]);
+                    }
                 }
             }
 
@@ -1719,7 +1784,7 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
             51: 'a1',
         };
 
-        var supportedEntities = ['LINE', 'CIRCLE', 'ARC', 'ELLIPSE'];
+        var supportedEntities = ['LINE', 'CIRCLE', 'ARC', 'ELLIPSE', 'LWPOLYLINE'];
 
         var counter = 0;
         var code = null;
@@ -1748,7 +1813,7 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                     if (groupCode === 'entitytype') { // New entity starts.
                         if (object.type) {
                             json += json.substring(json.length - 1, json.length) == '[' ? '' : ',';
-                            json += aaaa(object);
+                            json += toJson(object);
                         }
 
                         object = supportedEntities.indexOf(value) > -1 ? {
@@ -1760,6 +1825,16 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                         }
                     } else if (object.type && typeof groupCode !== 'undefined') { // Known entity property recognized.
                         object[groupCode] = parseFloat(value);
+
+                        if (object.type == 'LWPOLYLINE' && groupCode === 'y') {
+                            if (!object.vertices) {
+                                object.vertices = [];
+                            }
+                            object.vertices.push({
+                                x: object.x,
+                                y: object.y
+                            });
+                        }
                     }
                 }
             }
@@ -1821,9 +1896,8 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     var string = {
 
-        format: function () {
-            var args = arguments;
-            return this.replace(/{(\d+)}/g, function (match, number) {
+        format: function (str, args) {
+            return str.replace(/{(\d+)}/g, function (match, number) {
                 return typeof args[number] != 'undefined' ? args[number] : match;
             });
         },
@@ -1849,7 +1923,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 y: y
             };
         }
- 
+
     }
 
     var data = {
@@ -1873,7 +1947,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 count: function () {
                     return Object.keys(this.store).length;
                 },
-                clear: function(){
+                clear: function () {
                     return this.store = new Array();
                 },
                 list: function () {

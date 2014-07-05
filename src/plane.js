@@ -131,10 +131,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if ((typeof attrs == "function") || (attrs == null)) {
                     throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if (['polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse'].indexOf(attrs.type) == -1) {
+                if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse'].indexOf(attrs.type) == -1) {
                     throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if ((attrs.x == undefined) || (attrs.y == undefined)) {
+                if ((attrs.type != 'polyline') && ((attrs.x == undefined) || (attrs.y == undefined))) {
                     throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
