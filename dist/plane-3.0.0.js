@@ -1,5 +1,5 @@
 /*!
- * C37 in 05-07-2014 at 11:50:13 
+ * C37 in 07-07-2014 at 01:55:09 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -54,10 +54,6 @@ var define, require;
         return seen[name] = exports || value;
     };
 })();
-define("geometric/bézier", ['require', 'exports'], function (require, exports) {
-
-
-});
 define("geometric/group", ['require', 'exports'], function (require, exports) {
 
 
@@ -772,6 +768,8 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'ellipse':
                 {
+                    // http://gis.stackexchange.com/questions/49223/drawing-ellipse-with-openlayers
+                    // http://scienceprimer.com/draw-oval-html5-canvas
                     context2D.translate(this.point.x, this.point.y);
                     context2D.ellipse(0, 0, this.radiusX, this.radiusY, 0, 0, Math.PI * 2)
 
@@ -920,6 +918,16 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.clockWise = attrs.clockWise;
     }, Shape);
 
+    var Bezier = types.object.inherits(function Bezier(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.status = attrs.status;
+
+        this.type = 'bezier';
+        this.point = attrs.point;
+        this.points = attrs.points;
+    }, Shape);
+    
     var Circle = types.object.inherits(function Circle(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -1725,38 +1733,39 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
 
     function fromDxf(stringDxf) {
 
-
         function toJson(dxfObject) {
 
             switch (dxfObject.type) {
-            case 'LINE':
+            case 'line':
                 {
-                    var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] }';
-                    return types.string.format(line, [dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1]);
+                    if (dxfObject.x && dxfObject.y && dxfObject.x1 && dxfObject.y1) {
+                        var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] },';
+                        return types.string.format(line, [dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1]);
+                    }
+                    return '';
                 }
-            case 'CIRCLE':
+            case 'circle':
                 {
-                    var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} }';
+                    var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} },';
                     return types.string.format(circle, [dxfObject.x, dxfObject.y, dxfObject.r]);
                 }
-            case 'ARC':
+            case 'arc':
                 {
-                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} }';
+                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
                     return types.string.format(arc, [dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false]);
                 }
-            case 'ELLIPSE':
+            case 'ellipse':
                 {
-                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} }',
+                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} },',
                         radiusX = Math.abs(dxfObject.x1),
                         radiusY = radiusX * dxfObject.r;
 
                     return types.string.format(ellipse, [dxfObject.x, dxfObject.y, radiusY, radiusX])
                 }
-            case 'LWPOLYLINE':
+            case 'lwpolyline':
                 {
                     if (dxfObject.vertices) {
-
-                        var polyline = '{"type": "polyline", "points": [{0}]}',
+                        var polyline = '{"type": "polyline", "points": [{0}]},',
                             points = '';
 
                         for (var i = 0; i < dxfObject.vertices.length; i++) {
@@ -1767,80 +1776,142 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                         }
                         return types.string.format(polyline, [points]);
                     }
+                    return '';
+                }
+            case 'polyline':
+                {
+                    if (dxfObject.vertices) {
+                        var polyline = '{"type": "polyline", "points": [{0}]},',
+                            points = '';
+
+                        for (var i = 0; i < dxfObject.vertices.length; i++) {
+
+                            var point = i == dxfObject.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
+                            points += types.string.format(point, [dxfObject.vertices[i].x, dxfObject.vertices[i].y]);
+
+                        }
+                        return types.string.format(polyline, [points]);
+                    }
+                    return '';
                 }
             }
 
         }
 
-        var groupCodes = {
-            0: 'entitytype',
-            2: 'blockname',
-            10: 'x',
-            11: 'x1',
-            20: 'y',
-            21: 'y1',
-            40: 'r',
-            50: 'a0',
-            51: 'a1',
-        };
 
-        var supportedEntities = ['LINE', 'CIRCLE', 'ARC', 'ELLIPSE', 'LWPOLYLINE'];
+        // certificando que a linha irá ter o o caractere de nova linha
+        stringDxf = stringDxf.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
-        var counter = 0;
-        var code = null;
-        var isEntitiesSectionActive = false;
-        var object = {};
-        var svg = '',
-            json = '[';
+        // entidades suportadas na conversão
+        var entities = ['LINE'],
+            //        var entities = ['CIRCLE', 'ARC', 'LWPOLYLINE', 'POLYLINE'],
+            //        var entities = ['LINE', 'CIRCLE', 'ARC', 'LWPOLYLINE', 'POLYLINE'],
+            parseObj = null,
+            cursor = '',
+            stringJson = '[',
+            arrayDxf = stringDxf.split('\n');
 
-        // Normalize platform-specific newlines.
-        stringDxf = stringDxf.replace(/\r\n/g, '\n');
-        stringDxf = stringDxf.replace(/\r/g, '\n');
 
-        stringDxf.split('\n').forEach(function (line) {
+        for (var i = 0; i <= arrayDxf.length - 1; i++) {
+            
+            if (entities.indexOf(arrayDxf[i]) > -1) {
 
-            line = line.trim();
+                stringJson += parseObj ? toJson(parseObj) : '';
 
-            if (counter++ % 2 === 0) {
-                code = parseInt(line);
-            } else {
-                var value = line;
-                var groupCode = groupCodes[code];
-                if (groupCode === 'blockname' && value === 'ENTITIES') {
-                    isEntitiesSectionActive = true;
-                } else if (isEntitiesSectionActive) {
-
-                    if (groupCode === 'entitytype') { // New entity starts.
-                        if (object.type) {
-                            json += json.substring(json.length - 1, json.length) == '[' ? '' : ',';
-                            json += toJson(object);
-                        }
-
-                        object = supportedEntities.indexOf(value) > -1 ? {
-                            type: value
-                        } : {};
-
-                        if (value === 'ENDSEC') {
-                            isEntitiesSectionActive = false;
-                        }
-                    } else if (object.type && typeof groupCode !== 'undefined') { // Known entity property recognized.
-                        object[groupCode] = parseFloat(value);
-
-                        if (object.type == 'LWPOLYLINE' && groupCode === 'y') {
-                            if (!object.vertices) {
-                                object.vertices = [];
-                            }
-                            object.vertices.push({
-                                x: object.x,
-                                y: object.y
-                            });
-                        }
-                    }
-                }
+                parseObj = {
+                    type: arrayDxf[i].toLowerCase()
+                };
+                continue;
             }
-        });
 
-        return json += ']';
+            if (!parseObj) continue;
+
+
+            if (cursor == '10') {
+                //                if ((parseObj.type == 'lwpolyline' || parseObj.type == 'polyline') && (parseObj.y)) {
+                //
+                //                    parseObj.vertices = parseObj.vertices || [];
+                //                    parseObj.vertices.push({
+                //                        x: parseObj.x,
+                //                        y: parseObj.y
+                //                    });
+                //
+                //                }
+                parseObj.x = types.math.parseFloat(arrayDxf[i].trim(), 5);
+                cursor = '';
+                continue;
+            }
+            if (arrayDxf[i].trim() == '10') {
+                cursor = arrayDxf[i].trim();
+                continue;
+            }
+            if (cursor == '11') {
+                parseObj.x1 = types.math.parseFloat(arrayDxf[i].trim(), 5);
+                cursor = '';
+                continue;
+            }
+            if (arrayDxf[i].trim() == '11') {
+                cursor = arrayDxf[i].trim();
+                continue;
+            }
+
+
+            if (cursor == '20') {
+                parseObj.y = types.math.parseFloat(arrayDxf[i].trim(), 5);
+                cursor = '';
+                continue;
+            }
+            if (arrayDxf[i].trim() == '20') {
+                cursor = arrayDxf[i].trim();
+                continue;
+            }
+            if (cursor == '21') {
+                parseObj.y1 = types.math.parseFloat(arrayDxf[i].trim(), 5);
+                cursor = '';
+                continue;
+            }
+            if (arrayDxf[i].trim() == '21') {
+                cursor = arrayDxf[i].trim();
+                continue;
+            }
+            //
+            //
+            //            if (cursor == ' 40') {
+            //                parseObj.r = types.math.parseFloat(arrayDxf[i].trim(), 5);
+            //                cursor = '';
+            //                continue;
+            //            }
+            //            if (arrayDxf[i] == ' 40') {
+            //                cursor = arrayDxf[i];
+            //                continue;
+            //            }
+            //
+            //
+            //            if (cursor == ' 50') {
+            //                parseObj.a0 = types.math.parseFloat(arrayDxf[i].trim(), 5);
+            //                cursor = '';
+            //                continue;
+            //            }
+            //            if (arrayDxf[i] == ' 50') {
+            //                cursor = arrayDxf[i];
+            //                continue;
+            //            }
+            //            if (cursor == ' 51') {
+            //                parseObj.a1 = types.math.parseFloat(arrayDxf[i].trim(), 5);
+            //                cursor = '';
+            //                continue;
+            //            }
+            //            if (arrayDxf[i] == ' 51') {
+            //                cursor = arrayDxf[i];
+            //                continue;
+            //            }
+
+        }
+
+        stringJson = stringJson.substring(0, stringJson.length - 1);
+
+        return stringJson ? stringJson += ']' : '[]';
+
     }
 
     function fromDwg(stringDwg) {
