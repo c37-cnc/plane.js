@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-07-2014 at 02:47:11 
+ * C37 in 08-07-2014 at 12:38:48 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1741,6 +1741,11 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                     var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] },';
                     return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
                 }
+            case 'spline':
+                {
+                    var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] },';
+                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
+                }
             case 'circle':
                 {
                     var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} },';
@@ -1800,7 +1805,8 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
         stringDxf = stringDxf.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
         // entidades suportadas na conversão
-        var entitiesSupport = ['line', 'circle', 'arc', 'ellipse', 'lwpolyline', 'polyline'],
+                var entitiesSupport = ['spline'],
+//        var entitiesSupport = ['line', 'circle', 'arc', 'ellipse', 'lwpolyline', 'polyline', 'spline'],
             entitiesSection = false,
             objectParse = null,
             stringAux = '',
@@ -1813,7 +1819,6 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
             stringLine = arrayDxf[i].trim().toLowerCase();
 
             entitiesSection = entitiesSection ? entitiesSection : (stringLine == 'entities');
-
             if (!entitiesSection) continue;
 
             if (entitiesSupport.indexOf(stringLine) > -1) {
@@ -1827,7 +1832,12 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
 
 
             if (stringAux == '10') {
-                objectParse.x = types.math.parseFloat(stringLine, 5);
+                // verificação especifica para spline
+                if (objectParse.x) {
+                    objectParse.x1 = types.math.parseFloat(stringLine, 5);
+                } else {
+                    objectParse.x = types.math.parseFloat(stringLine, 5);
+                }
                 stringAux = '';
                 continue;
             }
@@ -1840,15 +1850,20 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                 stringAux = '';
                 continue;
             }
+
             if (stringLine == '11') {
                 stringAux = stringLine;
                 continue;
             }
 
-
             if (stringAux == '20') {
-                objectParse.y = types.math.parseFloat(stringLine, 5);
-
+                // verificação especifica para spline
+                if (objectParse.y) {
+                    objectParse.y1 = types.math.parseFloat(stringLine, 5);
+                } else {
+                    objectParse.y = types.math.parseFloat(stringLine, 5);
+                }
+                // verificação especifica para lwpolyline e polyline
                 if (objectParse.type == 'lwpolyline' || objectParse.type == 'polyline') {
                     if (objectParse.x && objectParse.y) {
                         objectParse.vertices = objectParse.vertices || [];
@@ -1858,7 +1873,6 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                         });
                     }
                 }
-
                 stringAux = '';
                 continue;
             }
