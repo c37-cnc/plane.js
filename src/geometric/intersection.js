@@ -217,12 +217,12 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
 
     function circleBezier(p1, p2, p3, p4, ec, rx, ry) {
-        
+
         debugger;
-        
+
         var a, b, c, d; // temporary variables
         var c3, c2, c1, c0; // coefficients of cubic
-//        var result = new Intersection("No Intersection");
+        //        var result = new Intersection("No Intersection");
 
         // Calculate the coefficients of cubic polynomial
         a = p1.multiply(-1);
@@ -259,31 +259,32 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
             c0.y * c0.y * rxrx + ec.x * ec.x * ryry + ec.y * ec.y * rxrx - rxrx * ryry
         );
         var roots = poly.getRootsInInterval(0, 1);
-        
-        return roots.length > 1;
-        
 
-//        for (var i = 0; i < roots.length; i++) {
-//            var t = roots[i];
-//
-//            result.points.push(
-//                c3.multiply(t * t * t).sum(c2.multiply(t * t).add(c1.multiply(t).add(c0)))
-//            );
-//        }
-//
-//        if (result.points.length > 0) result.status = "Intersection";
-//
-//        return result;
+        return roots.length > 1;
+
+
+        //        for (var i = 0; i < roots.length; i++) {
+        //            var t = roots[i];
+        //
+        //            result.points.push(
+        //                c3.multiply(t * t * t).sum(c2.multiply(t * t).add(c1.multiply(t).add(c0)))
+        //            );
+        //        }
+        //
+        //        if (result.points.length > 0) result.status = "Intersection";
+        //
+        //        return result;
     };
 
 
 
-//    function circleQuadratic(p1, p2, p3, c, r) {
+    //    function circleQuadratic(p1, p2, p3, c, r) {
     function circleQuadratic(p1, p2, p3, ec, rx, ry) {
-        
+
         var a, b; // temporary variables
         var c2, c1, c0; // coefficients of quadratic
-//        var result = new Intersection("No Intersection");
+        //        var result = new Intersection("No Intersection");
+        var result = {};
 
         a = p2.multiply(-2);
         c2 = p1.sum(a.sum(p3));
@@ -294,32 +295,65 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
         c0 = point.create(p1.x, p1.y);
 
+        // new 
+        //        c1 = point.create(p2.x, p2.y);
+        //        c2 = point.create(p3.x, p3.y);
+
         var rxrx = rx * rx;
         var ryry = ry * ry;
+
+        //        var rxrx = rx * rx;
+        //        var ryry = ry * ry;
+
+        //        var roots = polynomial.create(
+        //            ryry * c2.x * c2.x + rxrx * c2.y * c2.y,
+        //            2 * (ryry * c2.x * c1.x + rxrx * c2.y * c1.y),
+        //            ryry * (2 * c2.x * c0.x + c1.x * c1.x) + rxrx * (2 * c2.y * c0.y + c1.y * c1.y) - 2 * (ryry * ec.x * c2.x + rxrx * ec.y * c2.y),
+        //            2 * (ryry * c1.x * (c0.x - ec.x) + rxrx * c1.y * (c0.y - ec.y)),
+        //            ryry * (c0.x * c0.x + ec.x * ec.x) + rxrx * (c0.y * c0.y + ec.y * ec.y) - 2 * (ryry * ec.x * c0.x + rxrx * ec.y * c0.y) - rxrx * ryry
+        //        ).getRoots();
+
         var roots = polynomial.create(
             ryry * c2.x * c2.x + rxrx * c2.y * c2.y,
             2 * (ryry * c2.x * c1.x + rxrx * c2.y * c1.y),
-            ryry * (2 * c2.x * c0.x + c1.x * c1.x) + rxrx * (2 * c2.y * c0.y + c1.y * c1.y) -
-            2 * (ryry * ec.x * c2.x + rxrx * ec.y * c2.y),
+            ryry * (2 * c2.x * c0.x + c1.x * c1.x) + rxrx * (2 * c2.y * c0.y + c1.y * c1.y) - 2 * (ryry * ec.x * c2.x + rxrx * ec.y * c2.y),
             2 * (ryry * c1.x * (c0.x - ec.x) + rxrx * c1.y * (c0.y - ec.y)),
-            ryry * (c0.x * c0.x + ec.x * ec.x) + rxrx * (c0.y * c0.y + ec.y * ec.y) -
-            2 * (ryry * ec.x * c0.x + rxrx * ec.y * c0.y) - rxrx * ryry
+            ryry * (c0.x * c0.x + ec.x * ec.x) + rxrx * (c0.y * c0.y + ec.y * ec.y) - 2 * (ryry * ec.x * c0.x + rxrx * ec.y * c0.y) - rxrx * ryry
         ).getRoots();
-        
-        
-        return roots.length > 1;
-        
 
-//        for (var i = 0; i < roots.length; i++) {
-//            var t = roots[i];
-//
-//            if (0 <= t && t <= 1)
-//                result.points.push(c2.multiply(t * t).add(c1.multiply(t).add(c0)));
-//        }
-//
-//        if (result.points.length > 0) result.status = "Intersection";
-//
-//        return result;
+        //        for (var i = 0; i < roots.length; i++) {
+        //            var t = roots[i];
+        //
+        //            if (0 <= t && t <= 1)
+        //                result.points.push(c2.multiply(t * t).add(c1.multiply(t).add(c0)));
+        //        }
+        //
+        //        if (result.points.length > 0) result.status = "Intersection";
+        //
+        //        return result;
+
+
+        if (roots.length > 1) {
+            
+//            debugger;
+            
+            result.points = [];
+
+            for (var i = 0; i < roots.length; i++) {
+                var t = roots[i];
+
+                if (0 <= t && t <= 1)
+                    result.points.push(c2.multiply(t * t).sum(c1.multiply(t).sum(c0)));
+            }
+
+//            if (result.points.length > 0) result.status = "Intersection";
+
+            return (result.points.length > 0);
+
+
+        }
+
+        return false;
     };
 
 

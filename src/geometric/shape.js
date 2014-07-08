@@ -22,6 +22,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                     break;
                 }
+            case 'bezier':
+                {
+                    this.points.forEach(function (point) {
+                        point.a = point.a.multiply(value);
+                        point.b = point.b.multiply(value);
+                        point.c = point.c.multiply(value);
+                    });
+                    break;
+                }
             case 'circle':
                 {
                     this.point.x *= value;
@@ -112,7 +121,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             case 'bezier':
                 {
                     for (var i = 0; i < this.points.length; i++) {
-                        if (intersection.circleQuadratic(this.points[i].cp1, this.points[i].cp2, this.points[i].point, point.create(pointMouse.x, pointMouse.y), 2, 2))
+                        if (intersection.circleQuadratic(this.points[i].a, this.points[i].b, this.points[i].c, point.create(pointMouse.x, pointMouse.y), 2, 2))
                             return true;
                     }
                     break;
@@ -217,7 +226,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 {
                     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
                     this.points.forEach(function (point) {
-                        context2D.bezierCurveTo(point.cp1.x, point.cp1.y, point.cp2.x, point.cp2.y, point.point.x, point.point.y);
+                        context2D.bezierCurveTo(point.a.x, point.a.y, point.b.x, point.b.y, point.c.x, point.c.y);
                     });
 
                     return true;
@@ -297,6 +306,20 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     startAngle: types.math.parseFloat(this.startAngle, 5),
                     endAngle: types.math.parseFloat(this.endAngle, 5),
                     clockWise: this.clockWise
+                };
+            case 'bezier':
+                return {
+                    uuid: this.uuid,
+                    type: this.type,
+                    name: this.name,
+                    status: this.status,
+                    points: this.points.map(function (point) {
+                        return {
+                            a: [types.math.parseFloat(point.a.x, 5), types.math.parseFloat(point.a.y, 5)],
+                            b: [types.math.parseFloat(point.b.x, 5), types.math.parseFloat(point.b.y, 5)],
+                            c: [types.math.parseFloat(point.c.x, 5), types.math.parseFloat(point.c.y, 5)]
+                        }
+                    })
                 };
             case 'circle':
                 return {
@@ -497,9 +520,9 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             {
                 attrs.points = attrs.points.map(function (singlePoint) {
                     return {
-                        cp1: point.create(singlePoint.cp1[0], singlePoint.cp1[1]),
-                        cp2: point.create(singlePoint.cp2[0], singlePoint.cp2[1]),
-                        point: point.create(singlePoint.x, singlePoint.y)
+                        a: point.create(singlePoint.a[0], singlePoint.a[1]),
+                        b: point.create(singlePoint.b[0], singlePoint.b[1]),
+                        c: point.create(singlePoint.c[0], singlePoint.c[1])
                     };
                 });
                 return new Bezier(attrs);
