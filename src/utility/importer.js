@@ -4,45 +4,45 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
 
     function fromDxf(stringDxf) {
 
-        function toJson(dxfObject) {
+        function toJson(objectDxf) {
 
-            switch (dxfObject.type) {
+            switch (objectDxf.type) {
             case 'line':
                 {
-                    if (dxfObject.x && dxfObject.y && dxfObject.x1 && dxfObject.y1) {
+                    if (objectDxf.x && objectDxf.y && objectDxf.x1 && objectDxf.y1) {
                         var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] },';
-                        return types.string.format(line, [dxfObject.x, dxfObject.y, dxfObject.x1, dxfObject.y1]);
+                        return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
                     }
                     return '';
                 }
             case 'circle':
                 {
                     var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} },';
-                    return types.string.format(circle, [dxfObject.x, dxfObject.y, dxfObject.r]);
+                    return types.string.format(circle, [objectDxf.x, objectDxf.y, objectDxf.r]);
                 }
             case 'arc':
                 {
                     var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
-                    return types.string.format(arc, [dxfObject.x, dxfObject.y, dxfObject.r, dxfObject.a0, dxfObject.a1, false]);
+                    return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1, false]);
                 }
             case 'ellipse':
                 {
                     var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} },',
-                        radiusX = Math.abs(dxfObject.x1),
-                        radiusY = radiusX * dxfObject.r;
+                        radiusX = Math.abs(objectDxf.x1),
+                        radiusY = radiusX * objectDxf.r;
 
-                    return types.string.format(ellipse, [dxfObject.x, dxfObject.y, radiusY, radiusX])
+                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX])
                 }
             case 'lwpolyline':
                 {
-                    if (dxfObject.vertices) {
+                    if (objectDxf.vertices) {
                         var polyline = '{"type": "polyline", "points": [{0}]},',
                             points = '';
 
-                        for (var i = 0; i < dxfObject.vertices.length; i++) {
+                        for (var i = 0; i < objectDxf.vertices.length; i++) {
 
-                            var point = i == dxfObject.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [dxfObject.vertices[i].x, dxfObject.vertices[i].y]);
+                            var point = i == objectDxf.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
+                            points += types.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
 
                         }
                         return types.string.format(polyline, [points]);
@@ -51,14 +51,14 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                 }
             case 'polyline':
                 {
-                    if (dxfObject.vertices) {
+                    if (objectDxf.vertices) {
                         var polyline = '{"type": "polyline", "points": [{0}]},',
                             points = '';
 
-                        for (var i = 0; i < dxfObject.vertices.length; i++) {
+                        for (var i = 0; i < objectDxf.vertices.length; i++) {
 
-                            var point = i == dxfObject.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [dxfObject.vertices[i].x, dxfObject.vertices[i].y]);
+                            var point = i == objectDxf.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
+                            points += types.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
 
                         }
                         return types.string.format(polyline, [points]);
@@ -74,114 +74,147 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
         stringDxf = stringDxf.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
         // entidades suportadas na conversão
-        var entities = ['LINE'],
+        var entities = ['line'],
+            entitiesSection = false,
             //        var entities = ['CIRCLE', 'ARC', 'LWPOLYLINE', 'POLYLINE'],
             //        var entities = ['LINE', 'CIRCLE', 'ARC', 'LWPOLYLINE', 'POLYLINE'],
-            parseObj = null,
-            cursor = '',
-            stringJson = '[',
+            objectParse = null,
+            stringAux = '',
+            stringJson = '',
             arrayDxf = stringDxf.split('\n');
-
-
-        for (var i = 0; i <= arrayDxf.length - 1; i++) {
+        
+        
+        stringDxf.split('\n').forEach(function(line){
             
-            if (entities.indexOf(arrayDxf[i]) > -1) {
+            var lineContent = line.trim().toLowerCase();
+            
+            if (entities.indexOf(lineContent) > -1) {
+                
+                stringJson += objectParse ? toJson(objectParse) : '';
 
-                stringJson += parseObj ? toJson(parseObj) : '';
-
-                parseObj = {
-                    type: arrayDxf[i].toLowerCase()
+                objectParse = {
+                    type: lineContent
                 };
-                continue;
             }
-
-            if (!parseObj) continue;
-
-
-            if (cursor == '10') {
-                //                if ((parseObj.type == 'lwpolyline' || parseObj.type == 'polyline') && (parseObj.y)) {
+            
+            
+            if (stringAux == '10') {
+                //                if ((objectParse.type == 'lwpolyline' || objectParse.type == 'polyline') && (objectParse.y)) {
                 //
-                //                    parseObj.vertices = parseObj.vertices || [];
-                //                    parseObj.vertices.push({
-                //                        x: parseObj.x,
-                //                        y: parseObj.y
+                //                    objectParse.vertices = objectParse.vertices || [];
+                //                    objectParse.vertices.push({
+                //                        x: objectParse.x,
+                //                        y: objectParse.y
                 //                    });
                 //
                 //                }
-                parseObj.x = types.math.parseFloat(arrayDxf[i].trim(), 5);
-                cursor = '';
-                continue;
+                objectParse.x = types.math.parseFloat(lineContent, 5);
+                stringAux = '';
+                //                continue;
             }
-            if (arrayDxf[i].trim() == '10') {
-                cursor = arrayDxf[i].trim();
-                continue;
+            if ((objectParse) && (lineContent == '10')) {
+                stringAux = lineContent;
             }
-            if (cursor == '11') {
-                parseObj.x1 = types.math.parseFloat(arrayDxf[i].trim(), 5);
-                cursor = '';
-                continue;
+            if (stringAux == '11') {
+                objectParse.x1 = types.math.parseFloat(lineContent, 5);
+                stringAux = '';
             }
-            if (arrayDxf[i].trim() == '11') {
-                cursor = arrayDxf[i].trim();
-                continue;
+            if ((objectParse) && (lineContent == '11')) {
+                stringAux = lineContent;
             }
 
 
-            if (cursor == '20') {
-                parseObj.y = types.math.parseFloat(arrayDxf[i].trim(), 5);
-                cursor = '';
-                continue;
-            }
-            if (arrayDxf[i].trim() == '20') {
-                cursor = arrayDxf[i].trim();
-                continue;
-            }
-            if (cursor == '21') {
-                parseObj.y1 = types.math.parseFloat(arrayDxf[i].trim(), 5);
-                cursor = '';
-                continue;
-            }
-            if (arrayDxf[i].trim() == '21') {
-                cursor = arrayDxf[i].trim();
-                continue;
-            }
-            //
-            //
-            //            if (cursor == ' 40') {
-            //                parseObj.r = types.math.parseFloat(arrayDxf[i].trim(), 5);
-            //                cursor = '';
-            //                continue;
-            //            }
-            //            if (arrayDxf[i] == ' 40') {
-            //                cursor = arrayDxf[i];
-            //                continue;
-            //            }
-            //
-            //
-            //            if (cursor == ' 50') {
-            //                parseObj.a0 = types.math.parseFloat(arrayDxf[i].trim(), 5);
-            //                cursor = '';
-            //                continue;
-            //            }
-            //            if (arrayDxf[i] == ' 50') {
-            //                cursor = arrayDxf[i];
-            //                continue;
-            //            }
-            //            if (cursor == ' 51') {
-            //                parseObj.a1 = types.math.parseFloat(arrayDxf[i].trim(), 5);
-            //                cursor = '';
-            //                continue;
-            //            }
-            //            if (arrayDxf[i] == ' 51') {
-            //                cursor = arrayDxf[i];
-            //                continue;
-            //            }
 
-        }
+            if (stringAux == '20') {
+                objectParse.y = types.math.parseFloat(lineContent, 5);
+                stringAux = '';
+            }
+            if ((objectParse) && (lineContent == '20')) {
+                stringAux = lineContent;
+            }
+            if (stringAux == '21') {
+                objectParse.y1 = types.math.parseFloat(lineContent, 5);
+                stringAux = '';
+            }
+            if ((objectParse) && (lineContent == '21')) {
+                stringAux = lineContent;
+            }
+            
+            
+        });
+        
+
+
+//        for (var i = 0; i <= arrayDxf.length - 1; i++) {
+//
+//            var lineContent = arrayDxf[i].trim().toLowerCase();
+//
+//            entitiesSection = entitiesSection ? entitiesSection : (lineContent == 'entities');
+//            
+//            if (!entitiesSection) continue;
+//
+//            if (entities.indexOf(lineContent) > -1) {
+//                
+//                stringJson += objectParse ? toJson(objectParse) : '';
+//
+//                objectParse = {
+//                    type: lineContent
+//                };
+//            }
+//
+//            if (!objectParse) continue;
+//
+//
+//            if (stringAux == '10') {
+//                //                if ((objectParse.type == 'lwpolyline' || objectParse.type == 'polyline') && (objectParse.y)) {
+//                //
+//                //                    objectParse.vertices = objectParse.vertices || [];
+//                //                    objectParse.vertices.push({
+//                //                        x: objectParse.x,
+//                //                        y: objectParse.y
+//                //                    });
+//                //
+//                //                }
+//                objectParse.x = types.math.parseFloat(lineContent, 5);
+//                stringAux = '';
+//                //                continue;
+//            }
+//            if ((objectParse) && (lineContent == '10')) {
+//                stringAux = lineContent;
+//            }
+//            if (stringAux == '11') {
+//                objectParse.x1 = types.math.parseFloat(lineContent, 5);
+//                stringAux = '';
+//            }
+//            if ((objectParse) && (lineContent == '11')) {
+//                stringAux = lineContent;
+//            }
+//
+//
+//
+//            if (stringAux == '20') {
+//                objectParse.y = types.math.parseFloat(lineContent, 5);
+//                stringAux = '';
+//            }
+//            if ((objectParse) && (lineContent == '20')) {
+//                stringAux = lineContent;
+//            }
+//            if (stringAux == '21') {
+//                objectParse.y1 = types.math.parseFloat(lineContent, 5);
+//                stringAux = '';
+//            }
+//            if ((objectParse) && (lineContent == '21')) {
+//                stringAux = lineContent;
+//            }
+//
+//
+//        }
 
         stringJson = stringJson.substring(0, stringJson.length - 1);
 
-        return stringJson ? stringJson += ']' : '[]';
+        console.log(stringJson);
+
+        return stringJson ? '[' + stringJson + ']' : '[]';
 
     }
 
