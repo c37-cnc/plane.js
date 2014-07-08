@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-07-2014 at 12:38:48 
+ * C37 in 08-07-2014 at 12:49:44 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1805,8 +1805,8 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
         stringDxf = stringDxf.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
         // entidades suportadas na conversão
-                var entitiesSupport = ['spline'],
-//        var entitiesSupport = ['line', 'circle', 'arc', 'ellipse', 'lwpolyline', 'polyline', 'spline'],
+        //                var entitiesSupport = ['polyline'],
+        var entitiesSupport = ['line', 'circle', 'arc', 'ellipse', 'lwpolyline', 'polyline', 'spline'],
             entitiesSection = false,
             objectParse = null,
             stringAux = '',
@@ -1816,7 +1816,7 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
 
         for (var i = 0; i <= arrayDxf.length - 1; i++) {
 
-            stringLine = arrayDxf[i].trim().toLowerCase();
+            stringLine = arrayDxf[i].toLowerCase();
 
             entitiesSection = entitiesSection ? entitiesSection : (stringLine == 'entities');
             if (!entitiesSection) continue;
@@ -1831,9 +1831,9 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
             if (!objectParse) continue;
 
 
-            if (stringAux == '10') {
+            if (stringAux == ' 10') {
                 // verificação especifica para spline
-                if (objectParse.x) {
+                if (objectParse.type == 'spline' && objectParse.x) {
                     objectParse.x1 = types.math.parseFloat(stringLine, 5);
                 } else {
                     objectParse.x = types.math.parseFloat(stringLine, 5);
@@ -1841,24 +1841,24 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                 stringAux = '';
                 continue;
             }
-            if (stringLine == '10') {
+            if (stringLine == ' 10') {
                 stringAux = stringLine;
                 continue;
             }
-            if (stringAux == '11') {
+            if (stringAux == ' 11') {
                 objectParse.x1 = types.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
 
-            if (stringLine == '11') {
+            if (stringLine == ' 11') {
                 stringAux = stringLine;
                 continue;
             }
 
-            if (stringAux == '20') {
+            if (stringAux == ' 20') {
                 // verificação especifica para spline
-                if (objectParse.y) {
+                if (objectParse.type == 'spline' && objectParse.y) {
                     objectParse.y1 = types.math.parseFloat(stringLine, 5);
                 } else {
                     objectParse.y = types.math.parseFloat(stringLine, 5);
@@ -1876,47 +1876,47 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
                 stringAux = '';
                 continue;
             }
-            if (stringLine == '20') {
+            if (stringLine == ' 20') {
                 stringAux = stringLine;
                 continue;
             }
-            if (stringAux == '21') {
+            if (stringAux == ' 21') {
                 objectParse.y1 = types.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
-            if (stringLine == '21') {
+            if (stringLine == ' 21') {
                 stringAux = stringLine;
                 continue;
             }
 
 
-            if (stringAux == '40') {
+            if (stringAux == ' 40') {
                 objectParse.r = types.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
-            if (stringLine == '40') {
+            if (stringLine == ' 40') {
                 stringAux = stringLine;
                 continue;
             }
 
 
-            if (stringAux == '50') {
+            if (stringAux == ' 50') {
                 objectParse.a0 = types.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
-            if (stringLine == '50') {
+            if (stringLine == ' 50') {
                 stringAux = stringLine;
                 continue;
             }
-            if (stringAux == '51') {
+            if (stringAux == ' 51') {
                 objectParse.a1 = types.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
-            if (stringLine == '51') {
+            if (stringLine == ' 51') {
                 stringAux = stringLine;
                 continue;
             }
