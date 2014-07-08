@@ -9,12 +9,12 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
             switch (objectDxf.type) {
             case 'line':
                 {
-                    var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] },';
+                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
                     return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
                 }
             case 'spline':
                 {
-                    var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] },';
+                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
                     return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
                 }
             case 'circle':

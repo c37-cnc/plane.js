@@ -110,18 +110,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             switch (this.type) {
             case 'line':
                 {
-                    var pointA = this.points[0],
-                        pointB = this.points[1]
-
-                    if (intersection.circleLine(pointMouse, 2, pointA, pointB))
+                    if (intersection.circleLine(pointMouse, 2, this.points[0], this.points[1]))
                         return true;
 
                     break;
                 }
             case 'bezier':
-                {
+                { 
                     for (var i = 0; i < this.points.length; i++) {
-                        if (intersection.circleQuadratic(this.points[i].a, this.points[i].b, this.points[i].c, point.create(pointMouse.x, pointMouse.y), 2, 2))
+                        if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point.create(pointMouse.x, pointMouse.y), 2, 2))
                             return true;
                     }
                     break;
@@ -348,8 +345,8 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     type: this.type,
                     name: this.name,
                     status: this.status,
-                    x: [types.math.parseFloat(this.points[0].x, 5), types.math.parseFloat(this.points[0].y, 5)],
-                    y: [types.math.parseFloat(this.points[1].x, 5), types.math.parseFloat(this.points[1].y, 5)]
+                    a: [types.math.parseFloat(this.points[0].x, 5), types.math.parseFloat(this.points[0].y, 5)],
+                    b: [types.math.parseFloat(this.points[1].x, 5), types.math.parseFloat(this.points[1].y, 5)]
                 };
             case 'polygon':
                 return {
@@ -405,21 +402,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     }, Shape);
 
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-    var Quadratic = types.object.inherits(function Quadratic(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.status = attrs.status;
-
-        this.type = 'quadratic';
-        this.points = attrs.points;
-
-        //        this.points = [{
-        //            cp: point,
-        //            point: point
-        //        }]
-    }, Shape);
-
-    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
     var Bezier = types.object.inherits(function Bezier(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -427,13 +409,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
         this.type = 'bezier';
         this.points = attrs.points;
-
-        //        this.points = [{
-        //            cp1: point,
-        //            cp2: point,
-        //            point: point
-        //        }]
-
     }, Shape);
 
     var Circle = types.object.inherits(function Circle(attrs) {
@@ -513,7 +488,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         switch (attrs.type) {
         case 'line':
             {
-                attrs.points = [point.create(attrs.x[0], attrs.x[1]), point.create(attrs.y[0], attrs.y[1])];
+                attrs.points = [point.create(attrs.a[0], attrs.a[1]), point.create(attrs.b[0], attrs.b[1])];
                 return new Line(attrs);
             }
         case 'bezier':

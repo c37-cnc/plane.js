@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-07-2014 at 16:39:17 
+ * C37 in 08-07-2014 at 20:19:45 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -63,8 +63,7 @@ define("geometric/group", ['require', 'exports'], function (require, exports) {
 define("geometric/intersection", ['require', 'exports'], function (require, exports) {
 
     var polynomial = require('geometric/polynomial'),
-        point = require('geometric/point'),
-        vector = require('geometric/vector');
+        point = require('geometric/point');
 
 
     function Bezout(e1, e2) {
@@ -278,70 +277,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
     };
 
 
-    function circleBezier(p1, p2, p3, p4, ec, rx, ry) {
-
-        debugger;
-
-        var a, b, c, d; // temporary variables
-        var c3, c2, c1, c0; // coefficients of cubic
-        //        var result = new Intersection("No Intersection");
-
-        // Calculate the coefficients of cubic polynomial
-        a = p1.multiply(-1);
-        b = p2.multiply(3);
-        c = p3.multiply(-3);
-        d = a.sum(b.sum(c.sum(p4)));
-        c3 = vector.create(d.x, d.y);
-
-        a = p1.multiply(3);
-        b = p2.multiply(-6);
-        c = p3.multiply(3);
-        d = a.sum(b.sum(c));
-        c2 = vector.create(d.x, d.y);
-
-        a = p1.multiply(-3);
-        b = p2.multiply(3);
-        c = a.sum(b);
-        c1 = vector.create(c.x, c.y);
-
-        c0 = vector.create(p1.x, p1.y);
-
-        var rxrx = rx * rx;
-        var ryry = ry * ry;
-        var poly = polynomial.create(
-            c3.x * c3.x * ryry + c3.y * c3.y * rxrx,
-            2 * (c3.x * c2.x * ryry + c3.y * c2.y * rxrx),
-            2 * (c3.x * c1.x * ryry + c3.y * c1.y * rxrx) + c2.x * c2.x * ryry + c2.y * c2.y * rxrx,
-            2 * c3.x * ryry * (c0.x - ec.x) + 2 * c3.y * rxrx * (c0.y - ec.y) +
-            2 * (c2.x * c1.x * ryry + c2.y * c1.y * rxrx),
-            2 * c2.x * ryry * (c0.x - ec.x) + 2 * c2.y * rxrx * (c0.y - ec.y) +
-            c1.x * c1.x * ryry + c1.y * c1.y * rxrx,
-            2 * c1.x * ryry * (c0.x - ec.x) + 2 * c1.y * rxrx * (c0.y - ec.y),
-            c0.x * c0.x * ryry - 2 * c0.y * ec.y * rxrx - 2 * c0.x * ec.x * ryry +
-            c0.y * c0.y * rxrx + ec.x * ec.x * ryry + ec.y * ec.y * rxrx - rxrx * ryry
-        );
-        var roots = poly.getRootsInInterval(0, 1);
-
-        return roots.length > 1;
-
-
-        //        for (var i = 0; i < roots.length; i++) {
-        //            var t = roots[i];
-        //
-        //            result.points.push(
-        //                c3.multiply(t * t * t).sum(c2.multiply(t * t).add(c1.multiply(t).add(c0)))
-        //            );
-        //        }
-        //
-        //        if (result.points.length > 0) result.status = "Intersection";
-        //
-        //        return result;
-    };
-
-
-
-    //    function circleQuadratic(p1, p2, p3, c, r) {
-    function circleQuadratic(p1, p2, p3, ec, rx, ry) {
+    function circleBezier(p1, p2, p3, ec, rx, ry) {
 
         var a, b; // temporary variables
         var c2, c1, c0; // coefficients of quadratic
@@ -357,23 +293,8 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
 
         c0 = point.create(p1.x, p1.y);
 
-        // new 
-        //        c1 = point.create(p2.x, p2.y);
-        //        c2 = point.create(p3.x, p3.y);
-
-        var rxrx = rx * rx;
-        var ryry = ry * ry;
-
-        //        var rxrx = rx * rx;
-        //        var ryry = ry * ry;
-
-        //        var roots = polynomial.create(
-        //            ryry * c2.x * c2.x + rxrx * c2.y * c2.y,
-        //            2 * (ryry * c2.x * c1.x + rxrx * c2.y * c1.y),
-        //            ryry * (2 * c2.x * c0.x + c1.x * c1.x) + rxrx * (2 * c2.y * c0.y + c1.y * c1.y) - 2 * (ryry * ec.x * c2.x + rxrx * ec.y * c2.y),
-        //            2 * (ryry * c1.x * (c0.x - ec.x) + rxrx * c1.y * (c0.y - ec.y)),
-        //            ryry * (c0.x * c0.x + ec.x * ec.x) + rxrx * (c0.y * c0.y + ec.y * ec.y) - 2 * (ryry * ec.x * c0.x + rxrx * ec.y * c0.y) - rxrx * ryry
-        //        ).getRoots();
+        var rxrx = rx;
+        var ryry = ry;
 
         var roots = polynomial.create(
             ryry * c2.x * c2.x + rxrx * c2.y * c2.y,
@@ -383,36 +304,14 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
             ryry * (c0.x * c0.x + ec.x * ec.x) + rxrx * (c0.y * c0.y + ec.y * ec.y) - 2 * (ryry * ec.x * c0.x + rxrx * ec.y * c0.y) - rxrx * ryry
         ).getRoots();
 
-        //        for (var i = 0; i < roots.length; i++) {
-        //            var t = roots[i];
-        //
-        //            if (0 <= t && t <= 1)
-        //                result.points.push(c2.multiply(t * t).add(c1.multiply(t).add(c0)));
-        //        }
-        //
-        //        if (result.points.length > 0) result.status = "Intersection";
-        //
-        //        return result;
-
-
         if (roots.length > 1) {
-            
-//            debugger;
-            
             result.points = [];
-
             for (var i = 0; i < roots.length; i++) {
                 var t = roots[i];
-
                 if (0 <= t && t <= 1)
                     result.points.push(c2.multiply(t * t).sum(c1.multiply(t).sum(c0)));
             }
-
-//            if (result.points.length > 0) result.status = "Intersection";
-
             return (result.points.length > 0);
-
-
         }
 
         return false;
@@ -425,7 +324,6 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
     exports.circleArc = circleArc;
     exports.circleEllipse = circleEllipse;
     exports.circleBezier = circleBezier;
-    exports.circleQuadratic = circleQuadratic;
 });
 define("geometric/point", ['require', 'exports'], function (require, exports) {
 
@@ -809,18 +707,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             switch (this.type) {
             case 'line':
                 {
-                    var pointA = this.points[0],
-                        pointB = this.points[1]
-
-                    if (intersection.circleLine(pointMouse, 2, pointA, pointB))
+                    if (intersection.circleLine(pointMouse, 2, this.points[0], this.points[1]))
                         return true;
 
                     break;
                 }
             case 'bezier':
-                {
+                { 
                     for (var i = 0; i < this.points.length; i++) {
-                        if (intersection.circleQuadratic(this.points[i].a, this.points[i].b, this.points[i].c, point.create(pointMouse.x, pointMouse.y), 2, 2))
+                        if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point.create(pointMouse.x, pointMouse.y), 2, 2))
                             return true;
                     }
                     break;
@@ -1047,8 +942,8 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     type: this.type,
                     name: this.name,
                     status: this.status,
-                    x: [types.math.parseFloat(this.points[0].x, 5), types.math.parseFloat(this.points[0].y, 5)],
-                    y: [types.math.parseFloat(this.points[1].x, 5), types.math.parseFloat(this.points[1].y, 5)]
+                    a: [types.math.parseFloat(this.points[0].x, 5), types.math.parseFloat(this.points[0].y, 5)],
+                    b: [types.math.parseFloat(this.points[1].x, 5), types.math.parseFloat(this.points[1].y, 5)]
                 };
             case 'polygon':
                 return {
@@ -1104,21 +999,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     }, Shape);
 
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-    var Quadratic = types.object.inherits(function Quadratic(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.status = attrs.status;
-
-        this.type = 'quadratic';
-        this.points = attrs.points;
-
-        //        this.points = [{
-        //            cp: point,
-        //            point: point
-        //        }]
-    }, Shape);
-
-    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
     var Bezier = types.object.inherits(function Bezier(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -1126,13 +1006,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
         this.type = 'bezier';
         this.points = attrs.points;
-
-        //        this.points = [{
-        //            cp1: point,
-        //            cp2: point,
-        //            point: point
-        //        }]
-
     }, Shape);
 
     var Circle = types.object.inherits(function Circle(attrs) {
@@ -1212,7 +1085,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         switch (attrs.type) {
         case 'line':
             {
-                attrs.points = [point.create(attrs.x[0], attrs.x[1]), point.create(attrs.y[0], attrs.y[1])];
+                attrs.points = [point.create(attrs.a[0], attrs.a[1]), point.create(attrs.b[0], attrs.b[1])];
                 return new Line(attrs);
             }
         case 'bezier':
@@ -1294,225 +1167,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     exports.remove = remove;
     exports.list = list;
     exports.find = find;
-});
-define("geometric/vector", ['require', 'exports'], function (require, exports) {
-
-    
-    // https://github.com/lilo003/algorithm-003/blob/master/src/vector2d/Vector2D.js
-    
-    function Vector(x, y) {
-        if (arguments.length > 0) {
-            this.x = x;
-            this.y = y;
-        }
-    }
-
-
-    /*****
-     *
-     *   length
-     *
-     *****/
-    Vector.prototype.length = function () {
-        return Math.sqrt(this.x * this.x + this.y * this.y);
-    };
-
-
-    /*****
-     *
-     *   dot
-     *
-     *****/
-    Vector.prototype.dot = function (that) {
-        return this.x * that.x + this.y * that.y;
-    };
-
-
-    /*****
-     *
-     *   cross
-     *
-     *****/
-    Vector.prototype.cross = function (that) {
-        return this.x * that.y - this.y * that.x;
-    }
-
-
-    /*****
-     *
-     *   unit
-     *
-     *****/
-    Vector.prototype.unit = function () {
-        return this.divide(this.length());
-    };
-
-
-    /*****
-     *
-     *   unitEquals
-     *
-     *****/
-    Vector.prototype.unitEquals = function () {
-        this.divideEquals(this.length());
-
-        return this;
-    };
-
-
-    /*****
-     *
-     *   add
-     *
-     *****/
-    Vector.prototype.add = function (that) {
-        return new Vector(this.x + that.x, this.y + that.y);
-    };
-
-
-    /*****
-     *
-     *   addEquals
-     *
-     *****/
-    Vector.prototype.addEquals = function (that) {
-        this.x += that.x;
-        this.y += that.y;
-
-        return this;
-    };
-
-
-    /*****
-     *
-     *   subtract
-     *
-     *****/
-    Vector.prototype.subtract = function (that) {
-        return new Vector(this.x - that.x, this.y - that.y);
-    };
-
-
-    /*****
-     *
-     *   subtractEquals
-     *
-     *****/
-    Vector.prototype.subtractEquals = function (that) {
-        this.x -= that.x;
-        this.y -= that.y;
-
-        return this;
-    };
-
-
-    /*****
-     *
-     *   multiply
-     *
-     *****/
-    Vector.prototype.multiply = function (scalar) {
-        return new Vector(this.x * scalar, this.y * scalar);
-    };
-
-
-    /*****
-     *
-     *   multiplyEquals
-     *
-     *****/
-    Vector.prototype.multiplyEquals = function (scalar) {
-        this.x *= scalar;
-        this.y *= scalar;
-
-        return this;
-    };
-
-
-    /*****
-     *
-     *   divide
-     *
-     *****/
-    Vector.prototype.divide = function (scalar) {
-        return new Vector(this.x / scalar, this.y / scalar);
-    };
-
-
-    /*****
-     *
-     *   divideEquals
-     *
-     *****/
-    Vector.prototype.divideEquals = function (scalar) {
-        this.x /= scalar;
-        this.y /= scalar;
-
-        return this;
-    };
-
-
-    /*****
-     *
-     *   perp
-     *
-     *****/
-    Vector.prototype.perp = function () {
-        return new Vector(-this.y, this.x);
-    };
-
-
-    /*****
-     *
-     *   perpendicular
-     *
-     *****/
-    Vector.prototype.perpendicular = function (that) {
-        return this.subtract(this.project(that));
-    };
-
-
-    /*****
-     *
-     *   project
-     *
-     *****/
-    Vector.prototype.project = function (that) {
-        var percent = this.dot(that) / that.dot(that);
-
-        return that.multiply(percent);
-    };
-
-
-    /*****
-     *
-     *   toString
-     *
-     *****/
-    Vector.prototype.toString = function () {
-        return this.x + "," + this.y;
-    };
-
-
-    /*****
-     *
-     *   fromPoints
-     *
-     *****/
-    Vector.fromPoints = function (p1, p2) {
-        return new Vector(
-            p2.x - p1.x,
-            p2.y - p1.y
-        );
-    };
-
-
-    function create(x, y) {
-        return new Vector(x, y);
-    };
-    
-
-    exports.create = create;
 });
 define("plane", ['require', 'exports'], function (require, exports) {
 
@@ -1650,7 +1304,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier'].indexOf(attrs.type) == -1) {
                     throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if (((attrs.type != 'polyline') && (attrs.type != 'bezier')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
+                if (((attrs.type != 'polyline') && (attrs.type != 'bezier') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
                     throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
@@ -1784,7 +1438,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 plane.clear();
 
                 var stringJson = importer.fromDxf(stringDxf);
-                var objectDxf = JSON.parse(stringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
+                var objectDxf = JSON.parse(stringJson);
 
                 if (stringJson) {
                     plane.layer.create();
@@ -1850,8 +1504,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 var shape = shapeManager.create({
                     uuid: types.math.uuid(9, 16),
                     type: 'line',
-                    x: [x, 0],
-                    y: [x, height],
+                    a: [x, 0],
+                    b: [x, height],
                     style: {
                         lineColor: plane.settings.gridColor,
                         lineWidth: lineBold % 5 == 0 ? .8 : .3
@@ -1869,8 +1523,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             var shape = shapeManager.create({
                 uuid: types.math.uuid(9, 16),
                 type: 'line',
-                x: [x, 0],
-                y: [x, height],
+                a: [x, 0],
+                b: [x, height],
                 style: {
                     lineColor: plane.settings.gridColor,
                     lineWidth: lineBold % 5 == 0 ? .8 : .3
@@ -1888,8 +1542,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 var shape = shapeManager.create({
                     uuid: types.math.uuid(9, 16),
                     type: 'line',
-                    x: [0, y],
-                    y: [width, y],
+                    a: [0, y],
+                    b: [width, y],
                     style: {
                         lineColor: plane.settings.gridColor,
                         lineWidth: lineBold % 5 == 0 ? .8 : .3
@@ -1907,8 +1561,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             var shape = shapeManager.create({
                 uuid: types.math.uuid(9, 16),
                 type: 'line',
-                x: [0, y],
-                y: [width, y],
+                a: [0, y],
+                b: [width, y],
                 style: {
                     lineColor: plane.settings.gridColor,
                     lineWidth: lineBold % 5 == 0 ? .8 : .3
@@ -2175,12 +1829,12 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
             switch (objectDxf.type) {
             case 'line':
                 {
-                    var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] },';
+                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
                     return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
                 }
             case 'spline':
                 {
-                    var line = '{ "type": "line", "x": [{0}, {1}], "y": [{2}, {3}] },';
+                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
                     return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
                 }
             case 'circle':

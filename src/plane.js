@@ -134,7 +134,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier'].indexOf(attrs.type) == -1) {
                     throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
-                if (((attrs.type != 'polyline') && (attrs.type != 'bezier')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
+                if (((attrs.type != 'polyline') && (attrs.type != 'bezier') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
                     throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
                 }
 
@@ -268,7 +268,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 plane.clear();
 
                 var stringJson = importer.fromDxf(stringDxf);
-                var objectDxf = JSON.parse(stringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
+                var objectDxf = JSON.parse(stringJson);
 
                 if (stringJson) {
                     plane.layer.create();
@@ -334,8 +334,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 var shape = shapeManager.create({
                     uuid: types.math.uuid(9, 16),
                     type: 'line',
-                    x: [x, 0],
-                    y: [x, height],
+                    a: [x, 0],
+                    b: [x, height],
                     style: {
                         lineColor: plane.settings.gridColor,
                         lineWidth: lineBold % 5 == 0 ? .8 : .3
@@ -353,8 +353,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             var shape = shapeManager.create({
                 uuid: types.math.uuid(9, 16),
                 type: 'line',
-                x: [x, 0],
-                y: [x, height],
+                a: [x, 0],
+                b: [x, height],
                 style: {
                     lineColor: plane.settings.gridColor,
                     lineWidth: lineBold % 5 == 0 ? .8 : .3
@@ -372,8 +372,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 var shape = shapeManager.create({
                     uuid: types.math.uuid(9, 16),
                     type: 'line',
-                    x: [0, y],
-                    y: [width, y],
+                    a: [0, y],
+                    b: [width, y],
                     style: {
                         lineColor: plane.settings.gridColor,
                         lineWidth: lineBold % 5 == 0 ? .8 : .3
@@ -391,8 +391,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             var shape = shapeManager.create({
                 uuid: types.math.uuid(9, 16),
                 type: 'line',
-                x: [0, y],
-                y: [width, y],
+                a: [0, y],
+                b: [width, y],
                 style: {
                     lineColor: plane.settings.gridColor,
                     lineWidth: lineBold % 5 == 0 ? .8 : .3

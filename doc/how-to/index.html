@@ -75,7 +75,7 @@
             left: 0px;
             right: 0px;
             bottom: 0px;
-            background-color: rgb(68, 68, 68);
+            background-color: rgb(255, 255, 255);
         }
         /* application components */
     </style>
@@ -89,6 +89,9 @@
 
             plane.initialize({
                 viewPort: viewPort,
+//                settings: {
+//                    gridEnable: true
+//                }
             });
             // plane - initialize
 
@@ -96,11 +99,11 @@
             plane.layer.create();
 
 
-            //            plane.shape.create({
-            //                type: 'line',
-            //                x: [350, 350],
-            //                y: [600, 50]
-            //            });
+            plane.shape.create({
+                type: 'line',
+                a: [350, 350],
+                b: [600, 50]
+            });
 
 
             plane.shape.create({
