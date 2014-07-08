@@ -109,6 +109,14 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                     break;
                 }
+            case 'bezier':
+                {
+                    for (var i = 0; i < this.points.length; i++) {
+                        if (intersection.circleQuadratic(this.points[i].cp1, this.points[i].cp2, this.points[i].point, point.create(pointMouse.x, pointMouse.y), 2, 2))
+                            return true;
+                    }
+                    break;
+                }
             case 'rectangle':
                 {
                     if (intersection.circleRectangle(pointMouse, 2, this.point, this.height, this.width))
@@ -202,6 +210,15 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 {
                     context2D.translate(this.point.x, this.point.y);
                     context2D.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+
+                    return true;
+                }
+            case 'bezier':
+                {
+                    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
+                    this.points.forEach(function (point) {
+                        context2D.bezierCurveTo(point.cp1.x, point.cp1.y, point.cp2.x, point.cp2.y, point.point.x, point.point.y);
+                    });
 
                     return true;
                 }
@@ -364,16 +381,38 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         this.clockWise = attrs.clockWise;
     }, Shape);
 
+    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
+    var Quadratic = types.object.inherits(function Quadratic(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.status = attrs.status;
+
+        this.type = 'quadratic';
+        this.points = attrs.points;
+
+        //        this.points = [{
+        //            cp: point,
+        //            point: point
+        //        }]
+    }, Shape);
+
+    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
     var Bezier = types.object.inherits(function Bezier(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.status = attrs.status;
 
         this.type = 'bezier';
-        this.point = attrs.point;
         this.points = attrs.points;
+
+        //        this.points = [{
+        //            cp1: point,
+        //            cp2: point,
+        //            point: point
+        //        }]
+
     }, Shape);
-    
+
     var Circle = types.object.inherits(function Circle(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -453,6 +492,17 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             {
                 attrs.points = [point.create(attrs.x[0], attrs.x[1]), point.create(attrs.y[0], attrs.y[1])];
                 return new Line(attrs);
+            }
+        case 'bezier':
+            {
+                attrs.points = attrs.points.map(function (singlePoint) {
+                    return {
+                        cp1: point.create(singlePoint.cp1[0], singlePoint.cp1[1]),
+                        cp2: point.create(singlePoint.cp2[0], singlePoint.cp2[1]),
+                        point: point.create(singlePoint.x, singlePoint.y)
+                    };
+                });
+                return new Bezier(attrs);
             }
         case 'rectangle':
             {

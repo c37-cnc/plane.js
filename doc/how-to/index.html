@@ -92,91 +92,147 @@
             });
             // plane - initialize
 
-            
-//plane.layer.create();
-//
-//plane.shape.create({
-//    type: 'polygon',
-//    x: 150,
-//    y: 150,
-//    radius: 70,
-//    sides: 5
-//});
-//plane.shape.create({
-//    type: 'rectangle',
-//    x: 300,
-//    y: 10,
-//    width: 125,
-//    height: 100
-//});
-//plane.shape.create({
-//    type: 'line',
-//    x: [350, 350],
-//    y: [600, 50]
-//});
-//plane.shape.create({
-//    type: 'arc',
-//    x: 800,
-//    y: 150,
-//    radius: 50,
-//    startAngle: 0,
-//    endAngle: 180,
-//    clockWise: true
-//});
-//plane.shape.create({
-//    type: 'arc',
-//    x: 500,
-//    y: 250,
-//    radius: 50,
-//    startAngle: 90,
-//    endAngle: 180,
-//    clockWise: false
-//});
-//plane.shape.create({
-//    type: 'arc',
-//    x: 700,
-//    y: 250,
-//    radius: 50,
-//    startAngle: 90,
-//    endAngle: 270,
-//    clockWise: false
-//});
-//plane.shape.create({
-//    type: 'arc',
-//    x: 1000,
-//    y: 250,
-//    radius: 50,
-//    startAngle: 90,
-//    endAngle: 270,
-//    clockWise: true
-//});
-//plane.shape.create({
-//    type: 'arc',
-//    x: 50,
-//    y: 50,
-//    radius: 30,
-//    startAngle: 90,
-//    endAngle: 180,
-//    clockWise: true
-//});
-//plane.shape.create({
-//    type: 'circle',
-//    x: 1200,
-//    y: 100,
-//    radius: 50
-//});
-//plane.shape.create({
-//    type: 'ellipse',
-//    x: 1000,
-//    y: 100,
-//    radiusY: 25,
-//    radiusX: 45
-//});
-//
-//plane.update();
 
+            plane.layer.create();
+
+
+//            plane.shape.create({
+//                type: 'line',
+//                x: [350, 350],
+//                y: [600, 50]
+//            });
             
             
+            plane.shape.create({
+                type: 'bezier',
+                points: [{
+                    cp1: [75, 37],
+                    cp2: [70, 25],
+                    x: 50,
+                    y: 25
+                }]
+            });
+
+//            
+//            plane.shape.create({
+//                type: 'bezier',
+//                points: [{
+//                    cp1: [75, 37],
+//                    cp2: [70, 25],
+//                    x: 50,
+//                    y: 25
+//                },{
+//                    cp1: [20, 25],
+//                    cp2: [20, 62.5],
+//                    x: 20,
+//                    y: 62.5
+//                },{
+//                    cp1: [20, 80],
+//                    cp2: [40, 102],
+//                    x: 75,
+//                    y: 120
+//                },{
+//                    cp1: [110, 102],
+//                    cp2: [130, 80],
+//                    x: 130,
+//                    y: 62.5
+//                },{
+//                    cp1: [130, 62.5],
+//                    cp2: [130, 25],
+//                    x: 100,
+//                    y: 25
+//                },{
+//                    cp1: [85, 25],
+//                    cp2: [75, 37],
+//                    x: 75,
+//                    y: 40
+//                }]
+//            });
+//
+
+            //
+            //plane.shape.create({
+            //    type: 'polygon',
+            //    x: 150,
+            //    y: 150,
+            //    radius: 70,
+            //    sides: 5
+            //});
+            //plane.shape.create({
+            //    type: 'rectangle',
+            //    x: 300,
+            //    y: 10,
+            //    width: 125,
+            //    height: 100
+            //});
+            //plane.shape.create({
+            //    type: 'line',
+            //    x: [350, 350],
+            //    y: [600, 50]
+            //});
+            //plane.shape.create({
+            //    type: 'arc',
+            //    x: 800,
+            //    y: 150,
+            //    radius: 50,
+            //    startAngle: 0,
+            //    endAngle: 180,
+            //    clockWise: true
+            //});
+            //plane.shape.create({
+            //    type: 'arc',
+            //    x: 500,
+            //    y: 250,
+            //    radius: 50,
+            //    startAngle: 90,
+            //    endAngle: 180,
+            //    clockWise: false
+            //});
+            //plane.shape.create({
+            //    type: 'arc',
+            //    x: 700,
+            //    y: 250,
+            //    radius: 50,
+            //    startAngle: 90,
+            //    endAngle: 270,
+            //    clockWise: false
+            //});
+            //plane.shape.create({
+            //    type: 'arc',
+            //    x: 1000,
+            //    y: 250,
+            //    radius: 50,
+            //    startAngle: 90,
+            //    endAngle: 270,
+            //    clockWise: true
+            //});
+            //plane.shape.create({
+            //    type: 'arc',
+            //    x: 50,
+            //    y: 50,
+            //    radius: 30,
+            //    startAngle: 90,
+            //    endAngle: 180,
+            //    clockWise: true
+            //});
+            //plane.shape.create({
+            //    type: 'circle',
+            //    x: 1200,
+            //    y: 100,
+            //    radius: 50
+            //});
+            //plane.shape.create({
+            //    type: 'ellipse',
+            //    x: 1000,
+            //    y: 100,
+            //    radiusY: 25,
+            //    radiusX: 45
+            //});
+            //
+            plane.update();
+
+
+
             var Tool001 = plane.tool.create();
             Tool001.active = true;
 
@@ -187,15 +243,15 @@
                 console.log(event);
 
                 event.shapes.forEach(function (shape) {
-                    
+
                     if (shape.points) {
-                        
-//                        shape.points.forEach(function(point){
-//                        
-//                            point.x += (10 * plane.zoom);
-//                            point.y += (10 * plane.zoom);
-//                        
-//                        })
+
+                        //                        shape.points.forEach(function(point){
+                        //                        
+                        //                            point.x += (10 * plane.zoom);
+                        //                            point.y += (10 * plane.zoom);
+                        //                        
+                        //                        })
                     }
 
                 })
