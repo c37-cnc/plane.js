@@ -268,7 +268,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 plane.clear();
 
                 var stringJson = importer.fromDxf(stringDxf);
-                var objectDxf = JSON.parse(stringJson.replace(/u,/g, '').replace(/undefined,/g, ''));
+                var objectDxf = JSON.parse(stringJson);
 
                 if (stringJson) {
                     plane.layer.create();
