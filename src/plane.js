@@ -192,7 +192,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         set scroll(value) {
 
-            var LayerActive = layerManager.active(),
+            var layerActive = layerManager.active(),
                 MoveFactor = {
                     x: value.x + this.scroll.x,
                     y: value.y + this.scroll.y
@@ -201,7 +201,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             gridDraw(viewPort.clientHeight, viewPort.clientWidth, this.zoom, MoveFactor);
 
             // Se não alguma Layer Ativa = clear || importer
-            if (LayerActive) {
+            if (layerActive) {
                 value.x = value.x * this.zoom;
                 value.y = value.y * this.zoom;
 
@@ -216,7 +216,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     plane.update();
 
                 });
-                layerManager.active(LayerActive.uuid);
+                layerManager.active(layerActive.uuid);
             }
 
             this._scroll = MoveFactor;

@@ -194,12 +194,12 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
 
 
             // conversão para Json
-            if (objectParse && objectParse.type && (objectParse.type != 'polyline') && arrayDxf[i] == '  0') {
+            if (objectParse && objectParse.type && objectParse.type != 'polyline' && arrayDxf[i] == '  0') {
                 stringJson += toJson(objectParse);
                 objectParse = null;
             }
             // conversão para Json - verificação especifica para Polyline
-            if (objectParse && objectParse.type && (objectParse.type == 'polyline') && arrayDxf[i] == 'SEQEND') {
+            if (objectParse && objectParse.type && objectParse.type == 'polyline' && arrayDxf[i] == 'SEQEND') {
                 stringJson += toJson(objectParse);
                 objectParse = null;
             }

@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-07-2014 at 20:19:45 
+ * C37 in 12-07-2014 at 12:42:40 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1362,7 +1362,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         set scroll(value) {
 
-            var LayerActive = layerManager.active(),
+            var layerActive = layerManager.active(),
                 MoveFactor = {
                     x: value.x + this.scroll.x,
                     y: value.y + this.scroll.y
@@ -1371,7 +1371,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             gridDraw(viewPort.clientHeight, viewPort.clientWidth, this.zoom, MoveFactor);
 
             // Se não alguma Layer Ativa = clear || importer
-            if (LayerActive) {
+            if (layerActive) {
                 value.x = value.x * this.zoom;
                 value.y = value.y * this.zoom;
 
@@ -1386,7 +1386,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     plane.update();
 
                 });
-                layerManager.active(LayerActive.uuid);
+                layerManager.active(layerActive.uuid);
             }
 
             this._scroll = MoveFactor;
@@ -2014,12 +2014,12 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
 
 
             // conversão para Json
-            if (objectParse && objectParse.type && (objectParse.type != 'polyline') && arrayDxf[i] == '  0') {
+            if (objectParse && objectParse.type && objectParse.type != 'polyline' && arrayDxf[i] == '  0') {
                 stringJson += toJson(objectParse);
                 objectParse = null;
             }
             // conversão para Json - verificação especifica para Polyline
-            if (objectParse && objectParse.type && (objectParse.type == 'polyline') && arrayDxf[i] == 'SEQEND') {
+            if (objectParse && objectParse.type && objectParse.type == 'polyline' && arrayDxf[i] == 'SEQEND') {
                 stringJson += toJson(objectParse);
                 objectParse = null;
             }
