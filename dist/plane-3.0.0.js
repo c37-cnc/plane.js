@@ -1,5 +1,5 @@
 /*!
- * C37 in 12-07-2014 at 12:42:40 
+ * C37 in 16-07-2014 at 14:46:04 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -713,7 +713,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     break;
                 }
             case 'bezier':
-                { 
+                {
                     for (var i = 0; i < this.points.length; i++) {
                         if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point.create(pointMouse.x, pointMouse.y), 2, 2))
                             return true;
@@ -834,10 +834,21 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'ellipse':
                 {
-                    // http://gis.stackexchange.com/questions/49223/drawing-ellipse-with-openlayers
                     // http://scienceprimer.com/draw-oval-html5-canvas
                     context2D.translate(this.point.x, this.point.y);
-                    context2D.ellipse(0, 0, this.radiusX, this.radiusY, 0, 0, Math.PI * 2)
+
+                    // angle in radian
+                    var sss = 0;
+                    for (var i = 0 * Math.PI; i < 2 * Math.PI; i += 0.01) {
+                        var xPos = 0 - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss * Math.PI);
+                        var yPos = 0 + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
+
+                        if (i == 0) {
+                            context2D.moveTo(xPos, yPos);
+                        } else {
+                            context2D.lineTo(xPos, yPos);
+                        }
+                    }
 
                     return true;
                 }
