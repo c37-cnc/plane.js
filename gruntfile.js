@@ -71,7 +71,8 @@ module.exports = function (grunt) {
                 files: [
                     '<%= dirs.src %>/**'
                 ],
-                tasks: ['concat', 'browser', 'minify']
+                tasks: ['concat:browser', 'browser']
+//                tasks: ['concat', 'browser', 'minify']
             }
         },
         browser: {
@@ -101,7 +102,7 @@ module.exports = function (grunt) {
             output.push('"use strict";');
             output.push.apply(output, f.src.map(grunt.file.read));
             output.push(grunt.template.process(
-                'window.<%= namespace %> = require("<%= namespace %>").public;', {
+                'window.<%= namespace %> = require("<%= namespace %>");', {
                     data: {
                         namespace: options.namespace,
                         barename: options.barename

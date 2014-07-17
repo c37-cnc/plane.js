@@ -87,7 +87,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             var element = document.getElementById(layer.render.id);
             if (element && element.parentNode) {
                 element.parentNode.removeChild(element);
-            }
+            } 
             layerStore.remove(layer.uuid);
         });
     }

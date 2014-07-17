@@ -1,5 +1,5 @@
 /*!
- * C37 in 17-07-2014 at 11:44:16 
+ * C37 in 17-07-2014 at 19:30:24 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -694,9 +694,16 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             if (this.point) {
                 this.point = this.point.sum(value);
             }
-            if (this.points) {
+            if (this.points && this.type != 'bezier') {
                 for (var i = 0; i <= this.points.length - 1; i++) {
                     this.points[i] = this.points[i].sum(value);
+                }
+            }
+            if (this.points && this.type == 'bezier') {
+                for (var i = 0; i <= this.points.length - 1; i++) {
+                    this.points[i].a = this.points[i].a.sum(value);
+                    this.points[i].b = this.points[i].b.sum(value);
+                    this.points[i].c = this.points[i].c.sum(value);
                 }
             }
 
@@ -1195,175 +1202,84 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var layerSystem = null,
         viewPort = null;
 
-
-    var plane = types.object.extend(types.object.event.create(), {
-
-        initialize: function (config) {
-            if (config == null) {
-                throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-            if (typeof config == "function") {
-                throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-            if (config.viewPort == null) {
-                throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-
-            viewPort = config.viewPort;
-
-            plane.settings = config.settings ? config.settings : plane.settings;
-
-            gridDraw(viewPort.clientHeight, viewPort.clientWidth, plane.zoom, plane.scroll);
-
-            toolManager.event.start({
-                viewPort: viewPort
-            });
-
-            return true;
+    var _zoom = 1,
+        _scroll = {
+            x: 0,
+            y: 0
         },
-        clear: function () {
+        _settings = {
+            metricSystem: 'mm',
+            backgroundColor: 'rgb(255, 255, 255)',
+            gridEnable: true,
+            gridColor: 'rgb(218, 222, 215)'
+        };
 
-            // reset em scroll
-            if ((plane.scroll.x != 0) || (plane.scroll.y != 0)) {
-                plane.scroll = {
-                    x: 0,
-                    y: 0
-                }
-            };
 
-            // reset em zoom
-            if (plane.zoom != 1) {
-                plane.zoom = 1;
-            }
+    function initialize(config) {
+        if (config == null) {
+            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (typeof config == "function") {
+            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (config.viewPort == null) {
+            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
 
-            // remove em todas as layers
-            layerManager.remove();
+        viewPort = config.viewPort;
 
-            return true;
-        },
-        layer: types.object.extend(types.object.event.create(), {
-            create: function (attrs) {
-                if ((typeof attrs == "function")) {
-                    throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-                }
+        _settings = config.settings ? config.settings : _settings;
 
-                attrs = types.object.union(attrs, {
-                    viewPort: viewPort
-                });
+        gridDraw(viewPort.clientHeight, viewPort.clientWidth, _zoom, _scroll);
 
-                return layerManager.create(attrs);
-            },
-            list: function (selector) {
-                return layerManager.list();
-            },
-            remove: function (uuid) {
-                layerManager.remove(uuid);
-            },
-            get active() {
-                return layerManager.active();
-            },
-            set active(value) {
-                this.notify('onDeactive', {
-                    type: 'onDeactive',
-                    Layer: layerManager.active()
-                });
+        toolManager.event.start({
+            viewPort: viewPort
+        });
 
-                layerManager.active(value);
+        return true;
+    }
 
-                this.notify('onActive', {
-                    type: 'onActive',
-                    Layer: layerManager.active()
-                });
-            },
-            update: function () {
-                return layerManager.update();
-            }
-        }),
-        shape: {
-            create: function (attrs) {
-                if ((typeof attrs == "function") || (attrs == null)) {
-                    throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-                }
-                if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier'].indexOf(attrs.type) == -1) {
-                    throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-                }
-                if (((attrs.type != 'polyline') && (attrs.type != 'bezier') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
-                    throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-                }
-
-                var shape = shapeManager.create(attrs);
-
-                layerManager.active().shapes.add(shape.uuid, shape);
-
-                return true;
-            }
-        },
-        tool: {
-            create: function (attrs) {
-                if (typeof attrs == "function") {
-                    throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-                }
-
-                return toolManager.create(attrs);
-            }
-        },
-        get zoom() {
-            return this._zoom || 1;
-        },
-        set zoom(value) {
-
-            // plane.zoom /= .9;  - more
-            // plane.zoom *= .9; - less
-
-            var LayerActive = layerManager.active(),
-                zoomFactor = value / plane.zoom;
-
-            gridDraw(viewPort.clientHeight, viewPort.clientWidth, value, this.scroll);
-
-            // Se não alguma Layer Ativa = clear || importer
-            if (LayerActive) {
-                layerManager.list().forEach(function (Layer) {
-
-                    layerManager.active(Layer.uuid);
-
-                    layerManager.active().shapes.list().forEach(function (Shape) {
-                        Shape.scaleTo(zoomFactor);
-                    });
-
-                    layerManager.update();
-                });
-                layerManager.active(LayerActive.uuid);
-            }
-
-            this._zoom = value;
-        },
-        get scroll() {
-            return this._scroll || {
+    function clear() {
+        // reset em scroll
+        if ((scroll().x != 0) || (scroll().y != 0)) {
+            scroll({
                 x: 0,
                 y: 0
-            };
-        },
-        set scroll(value) {
+            });
+        };
 
+        // reset em zoom
+        if (zoom() != 1) {
+            zoom(1);
+        }
+
+        // remove em todas as layers
+        layerManager.remove();
+
+        return true;
+    }
+
+    function scroll(value) {
+        if (value) {
             var layerActive = layerManager.active(),
-                MoveFactor = {
-                    x: value.x + this.scroll.x,
-                    y: value.y + this.scroll.y
+                scrollFactor = {
+                    x: value.x + _scroll.x,
+                    y: value.y + _scroll.y
                 };
 
-            gridDraw(viewPort.clientHeight, viewPort.clientWidth, this.zoom, MoveFactor);
+            gridDraw(viewPort.clientHeight, viewPort.clientWidth, _zoom, scrollFactor);
 
             // Se não alguma Layer Ativa = clear || importer
             if (layerActive) {
-                value.x = value.x * this.zoom;
-                value.y = value.y * this.zoom;
+                value.x = value.x * _zoom;
+                value.y = value.y * _zoom;
 
-                layerManager.list().forEach(function (Layer) {
+                layerManager.list().forEach(function (layer) {
 
-                    layerManager.active(Layer.uuid);
+                    layerManager.active(layer.uuid);
 
-                    layerManager.active().shapes.list().forEach(function (Shape) {
-                        Shape.moveTo(value);
+                    layerManager.active().shapes.list().forEach(function (shape) {
+                        shape.moveTo(value);
                     });
 
                     layerManager.update();
@@ -1372,103 +1288,214 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 layerManager.active(layerActive.uuid);
             }
 
-            this._scroll = MoveFactor;
-        },
-        get settings() {
-            return this._settings || {
-                metricSystem: 'mm',
-                backgroundColor: 'rgb(255, 255, 255)',
-                gridEnable: true,
-                gridColor: 'rgb(218, 222, 215)'
-            };
-        },
-        set settings(value) {
-            this._settings = value;
-        },
-        importer: {
-            fromJson: function (stringJson) {
+            return _scroll = scrollFactor;
+        } else {
+            return _scroll;
+        }
+    }
 
-                var planeObject = JSON.parse(stringJson);
+    function zoom(value) {
+        if (value) {
+            // plane.zoom(plane.zoom() / .9);  - more
+            // plane.zoom(plane.zoom() * .9); - less
+            var LayerActive = layerManager.active(),
+                zoomFactor = value / _zoom;
 
-                plane.clear();
+            gridDraw(viewPort.clientHeight, viewPort.clientWidth, value, _scroll);
 
-                plane.settings = planeObject.settings;
-                plane.zoom = planeObject.zoom;
-                plane.scroll = planeObject.scroll;
+            // Se não alguma Layer Ativa = clear || importer
+            if (LayerActive) {
+                layerManager.list().forEach(function (layer) {
 
-                planeObject.layers.forEach(function (layerObject) {
+                    layerManager.active(layer.uuid);
 
-                    layerManager.create({
-                        uuid: layerObject.uuid,
-                        name: layerObject.name,
-                        locked: layerObject.locked,
-                        Visible: layerObject.Visible,
-                        style: layerObject.style,
-                        viewPort: viewPort
-                    });
-
-                    layerObject.shapes.forEach(function (shapeObject) {
-                        plane.shape.create(shapeObject)
+                    layerManager.active().shapes.list().forEach(function (shape) {
+                        shape.scaleTo(zoomFactor);
                     });
 
                     layerManager.update();
                 });
-
-                return true;
-            },
-            fromSvg: null,
-            fromDxf: function (stringDxf) {
-                plane.clear();
-
-                var stringJson = importer.fromDxf(stringDxf);
-                var objectDxf = JSON.parse(stringJson);
-
-                if (stringJson) {
-                    plane.layer.create();
-                    for (var prop in objectDxf) {
-                        plane.shape.create(objectDxf[prop]);
-                    }
-                    layerManager.update();
-                }
-            },
-            fromDwg: null
-        },
-        exporter: {
-            toJson: function () {
-
-                var planeExport = {
-                    settings: plane.settings,
-                    zoom: types.math.parseFloat(plane.zoom, 5),
-                    scroll: plane.scroll,
-                    layers: layerManager.list().map(function (layerExport) {
-                        var layerObject = layerExport.toObject();
-
-                        layerObject.shapes = layerObject.shapes.map(function (shapeExport) {
-                            return shapeExport.toObject();
-                        });
-
-                        return layerObject;
-                    })
-                }
-
-                return JSON.stringify(planeExport);
-
+                layerManager.active(LayerActive.uuid);
             }
+            return _zoom = value;
+        } else {
+            return _zoom;
+        }
+    }
+
+    function settings(value) {
+        if (value) {
+            return _settings = value;
+        } else {
+            return _settings;
+        }
+    }
+
+
+
+
+    var layer = types.object.extend(types.object.event.create(), {
+        create: function (attrs) {
+            if ((typeof attrs == "function")) {
+                throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
+
+            attrs = types.object.union(attrs, {
+                viewPort: viewPort
+            });
+
+            return layerManager.create(attrs);
+        },
+        list: function (selector) {
+            return layerManager.list();
+        },
+        remove: function (uuid) {
+            layerManager.remove(uuid);
+        },
+        get active() {
+            return layerManager.active();
+        },
+        set active(value) {
+            this.notify('onDeactive', {
+                type: 'onDeactive',
+                layer: layerManager.active()
+            });
+
+            layerManager.active(value);
+
+            this.notify('onActive', {
+                type: 'onActive',
+                layer: layerManager.active()
+            });
+        },
+        update: function () {
+            return layerManager.update();
         }
     });
 
+    var shape = {
+        create: function (attrs) {
+            if ((typeof attrs == "function") || (attrs == null)) {
+                throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
+            if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier'].indexOf(attrs.type) == -1) {
+                throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
+            if (((attrs.type != 'polyline') && (attrs.type != 'bezier') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
+                throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
+
+            var shape = shapeManager.create(attrs);
+
+            layerManager.active().shapes.add(shape.uuid, shape);
+
+            return true;
+        }
+    };
+
+    var tool = {
+        create: function (attrs) {
+            if (typeof attrs == "function") {
+                throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            }
+
+            return toolManager.create(attrs);
+        }
+    };
+
+    // importer
+    function fromJson(stringJson) {
+
+        var planeObject = JSON.parse(stringJson);
+
+        clear();
+
+        _settings = planeObject.settings;
+        _zoom = planeObject.zoom;
+        _scroll = planeObject.scroll;
+
+        planeObject.layers.forEach(function (layerObject) {
+
+            layerManager.create({
+                uuid: layerObject.uuid,
+                name: layerObject.name,
+                locked: layerObject.locked,
+                Visible: layerObject.Visible,
+                style: layerObject.style,
+                viewPort: viewPort
+            });
+
+            layerObject.shapes.forEach(function (shapeObject) {
+                shape.create(shapeObject)
+            });
+
+            layerManager.update();
+        });
+
+        return true;
+    };
+
+    function fromSvg(stringSvg) {
+        return true;
+    };
+
+    function fromDxf(stringDxf) {
+        clear();
+
+        var stringJson = importer.fromDxf(stringDxf);
+        var objectDxf = JSON.parse(stringJson);
+
+        if (stringJson) {
+            layer.create();
+            for (var prop in objectDxf) {
+                shape.create(objectDxf[prop]);
+            }
+            layer.update();
+        }
+    };
+
+    function fromDwg(stringDwg) {
+        return true;
+    }
+    // importer
+
+    // exporter
+    function toJson() {
+
+        var planeExport = {
+            settings: _settings,
+            zoom: types.math.parseFloat(_zoom, 5),
+            scroll: _scroll,
+            layers: layerManager.list().map(function (layer) {
+                var layerObject = layer.toObject();
+
+                layerObject.shapes = layerObject.shapes.map(function (shape) {
+                    return shape.toObject();
+                });
+
+                return layerObject;
+            })
+        }
+
+        return JSON.stringify(planeExport);
+    }
+
+    function toSvg() {
+        return true;
+    }
+    // exporter
+
 
     function gridDraw(height, width, zoom, scroll) {
+        if (!_settings.gridEnable) return;
 
-        if (!plane.settings.gridEnable) return;
-
-        if (!layerSystem) { 
+        if (!layerSystem) {
             var attrs = { // atributos para a layer do grid (sistema) 
                 viewPort: viewPort,
                 name: 'Plane - System',
                 status: 'system',
                 style: {
-                    backgroundColor: plane.settings.backgroundColor
+                    backgroundColor: _settings.backgroundColor
                 }
             };
             layerSystem = layerManager.create(attrs);
@@ -1490,7 +1517,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     a: [x, 0],
                     b: [x, height],
                     style: {
-                        lineColor: plane.settings.gridColor,
+                        lineColor: _settings.gridColor,
                         lineWidth: lineBold % 5 == 0 ? .8 : .3
                     }
                 });
@@ -1509,7 +1536,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 a: [x, 0],
                 b: [x, height],
                 style: {
-                    lineColor: plane.settings.gridColor,
+                    lineColor: _settings.gridColor,
                     lineWidth: lineBold % 5 == 0 ? .8 : .3
                 }
             });
@@ -1528,7 +1555,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     a: [0, y],
                     b: [width, y],
                     style: {
-                        lineColor: plane.settings.gridColor,
+                        lineColor: _settings.gridColor,
                         lineWidth: lineBold % 5 == 0 ? .8 : .3
                     }
                 });
@@ -1547,7 +1574,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 a: [0, y],
                 b: [width, y],
                 style: {
-                    lineColor: plane.settings.gridColor,
+                    lineColor: _settings.gridColor,
                     lineWidth: lineBold % 5 == 0 ? .8 : .3
                 }
             });
@@ -1555,12 +1582,33 @@ define("plane", ['require', 'exports'], function (require, exports) {
             layerSystem.shapes.add(shape.uuid, shape);
             lineBold++;
         }
-        
+
         layerManager.update(layerSystem);
     };
 
 
-    exports.public = plane;
+
+
+    exports.initialize = initialize;
+    exports.clear = clear;
+    exports.scroll = scroll;
+    exports.zoom = zoom;
+    exports.settings = settings;
+    
+    exports.layer = layer;
+    exports.shape = shape;
+    exports.tool = tool;
+    
+    exports.importer = {
+        fromJson: fromJson,
+        fromSvg: fromSvg,
+        fromDxf: fromDxf,
+        fromDwg: fromDwg
+    };
+    exports.exporter = {
+        toJson: toJson,
+        toSvg: toSvg
+    };
 });
 define("structure/layer", ['require', 'exports'], function (require, exports) {
 
@@ -1651,7 +1699,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             var element = document.getElementById(layer.render.id);
             if (element && element.parentNode) {
                 element.parentNode.removeChild(element);
-            }
+            } 
             layerStore.remove(layer.uuid);
         });
     }
@@ -1716,7 +1764,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         Object.defineProperty(this, 'active', {
             get: function () {
                 return this._active || false;
-            },
+            }, 
             set: function (value) {
                 this.notify(value ? 'onActive' : 'onDeactive', {
                     type: value ? 'onActive' : 'onDeactive',
@@ -2281,5 +2329,5 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     exports.data = data;
     exports.object = object;
 });
-window.plane = require("plane").public;
+window.plane = require("plane");
 })(window);

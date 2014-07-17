@@ -17,7 +17,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         Object.defineProperty(this, 'active', {
             get: function () {
                 return this._active || false;
-            },
+            }, 
             set: function (value) {
                 this.notify(value ? 'onActive' : 'onDeactive', {
                     type: value ? 'onActive' : 'onDeactive',

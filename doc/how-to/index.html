@@ -262,11 +262,11 @@
             });
 
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
-                plane.zoom /= .9;
+                plane.zoom(plane.zoom() / .9)
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
-                plane.zoom *= .9;
+                plane.zoom(plane.zoom() * .9)
             });
 
             document.getElementById('scrollButton').addEventListener('click', function (event) {
@@ -276,7 +276,7 @@
                         x: parseInt(scrollInputx.value),
                         y: parseInt(scrollInputy.value)
                     };
-                plane.scroll = scroll;
+                plane.scroll(scroll);
             });
 
         };

@@ -97,9 +97,16 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
             if (this.point) {
                 this.point = this.point.sum(value);
             }
-            if (this.points) {
+            if (this.points && this.type != 'bezier') {
                 for (var i = 0; i <= this.points.length - 1; i++) {
                     this.points[i] = this.points[i].sum(value);
+                }
+            }
+            if (this.points && this.type == 'bezier') {
+                for (var i = 0; i <= this.points.length - 1; i++) {
+                    this.points[i].a = this.points[i].a.sum(value);
+                    this.points[i].b = this.points[i].b.sum(value);
+                    this.points[i].c = this.points[i].c.sum(value);
                 }
             }
 
