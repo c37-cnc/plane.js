@@ -49,12 +49,12 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
     }
 
 
-    var eventProxy = types.object.extend(types.object.event.create(), {
+    var event = types.object.extend(types.object.event.create(), {
 
         start: function (config) {
 
             viewPort = config.viewPort;
-            update = config.update;
+            update = config.update; 
 
             viewPort.onmousemove = function (event) {
                 
@@ -100,6 +100,6 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     })
 
-    exports.event = eventProxy;
+    exports.event = event;
     exports.create = create;
 });

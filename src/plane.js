@@ -36,36 +36,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             toolManager.event.start({
                 viewPort: viewPort,
-                update: plane.update
-            });
-
-            return true;
-        },
-        update: function (layerSystem) {
-
-            var layerStyle = layerSystem ? layerSystem.style : layerManager.active().style,
-                layerShapes = layerSystem ? layerSystem.shapes.list() : layerManager.active().shapes.list(),
-                layerRender = layerSystem ? layerSystem.render : layerManager.active().render,
-                context2D = layerRender.getContext('2d');
-
-            // limpando o render
-            context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
-
-            // style of layer
-            context2D.lineCap = layerStyle.lineCap;
-            context2D.lineJoin = layerStyle.lineJoin;
-
-            // render para cada shape
-            layerShapes.forEach(function (shape) {
-                // save state of all configuration
-                context2D.save();
-                context2D.beginPath();
-
-                shape.render(context2D, plane.zoom);
-
-                context2D.stroke();
-                // restore state of all configuration
-                context2D.restore();
+                update: plane.layer.update
             });
 
             return true;
@@ -123,8 +94,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     type: 'onActive',
                     Layer: layerManager.active()
                 });
+            },
+            update: function () {
+                return layerManager.update();
             }
-
         }),
         shape: {
             create: function (attrs) {
@@ -402,8 +375,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             layerSystem.shapes.add(shape.uuid, shape);
             lineBold++;
         }
-
-        plane.update(layerSystem);
+        
+        layerManager.update(layerSystem);
     };
 
 

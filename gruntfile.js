@@ -27,9 +27,13 @@ module.exports = function (grunt) {
                 ' */'
         },
         concat: {
-            files: {
+            browser: {
                 src: ['<%= dirs.src %>/**/*.js', '!<%= dirs.src %>/utility/module.js'],
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'
+            },
+            amd: {
+                src: ['<%= dirs.src %>/**/*.js', '!<%= dirs.src %>/utility/module.js'],
+                dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.amd.js'
             }
         },
         uglify: {
@@ -37,9 +41,13 @@ module.exports = function (grunt) {
                 banner: '<%= meta.banner %>\n',
                 report: 'gzip'
             },
-            build: {
-                src: '<%= concat.files.dest %>',
+            browser: {
+                src: '<%= concat.browser.dest %>',
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.min.js'
+            },
+            amd: {
+                src: '<%= concat.amd.dest %>',
+                dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.amd.min.js'
             }
         },
         qunit: {
