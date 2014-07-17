@@ -281,7 +281,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         if (!plane.settings.gridEnable) return;
 
-        if (!layerSystem) {
+        if (!layerSystem) { 
             var attrs = { // atributos para a layer do grid (sistema) 
                 viewPort: viewPort,
                 name: 'Plane - System',
