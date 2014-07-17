@@ -35,37 +35,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             gridDraw(viewPort.clientHeight, viewPort.clientWidth, plane.zoom, plane.scroll);
 
             toolManager.event.start({
-                viewPort: viewPort,
-                update: plane.update
-            });
-
-            return true;
-        },
-        update: function (layerSystem) {
-
-            var layerStyle = layerSystem ? layerSystem.style : layerManager.active().style,
-                layerShapes = layerSystem ? layerSystem.shapes.list() : layerManager.active().shapes.list(),
-                layerRender = layerSystem ? layerSystem.render : layerManager.active().render,
-                context2D = layerRender.getContext('2d');
-
-            // limpando o render
-            context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
-
-            // style of layer
-            context2D.lineCap = layerStyle.lineCap;
-            context2D.lineJoin = layerStyle.lineJoin;
-
-            // render para cada shape
-            layerShapes.forEach(function (shape) {
-                // save state of all configuration
-                context2D.save();
-                context2D.beginPath();
-
-                shape.render(context2D, plane.zoom);
-
-                context2D.stroke();
-                // restore state of all configuration
-                context2D.restore();
+                viewPort: viewPort
             });
 
             return true;
@@ -123,8 +93,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     type: 'onActive',
                     Layer: layerManager.active()
                 });
+            },
+            update: function () {
+                return layerManager.update();
             }
-
         }),
         shape: {
             create: function (attrs) {
@@ -177,7 +149,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                         Shape.scaleTo(zoomFactor);
                     });
 
-                    plane.update();
+                    layerManager.update();
                 });
                 layerManager.active(LayerActive.uuid);
             }
@@ -213,7 +185,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                         Shape.moveTo(value);
                     });
 
-                    plane.update();
+                    layerManager.update();
 
                 });
                 layerManager.active(layerActive.uuid);
@@ -258,7 +230,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                         plane.shape.create(shapeObject)
                     });
 
-                    plane.update();
+                    layerManager.update();
                 });
 
                 return true;
@@ -275,7 +247,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     for (var prop in objectDxf) {
                         plane.shape.create(objectDxf[prop]);
                     }
-                    plane.update();
+                    layerManager.update();
                 }
             },
             fromDwg: null
@@ -402,8 +374,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             layerSystem.shapes.add(shape.uuid, shape);
             lineBold++;
         }
-
-        plane.update(layerSystem);
+        
+        layerManager.update(layerSystem);
     };
 
 

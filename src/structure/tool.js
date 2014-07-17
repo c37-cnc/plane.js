@@ -7,10 +7,9 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     var layerManager = require('structure/layer');
 
-    var viewPort = null,
-        update = null;
+    var viewPort = null;
 
-
+    
     var Tool = types.object.inherits(function Tool(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -49,12 +48,11 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
     }
 
 
-    var eventProxy = types.object.extend(types.object.event.create(), {
+    var event = types.object.extend(types.object.event.create(), {
 
         start: function (config) {
 
             viewPort = config.viewPort;
-            update = config.update;
 
             viewPort.onmousemove = function (event) {
                 
@@ -64,7 +62,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                             shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
                         }
                     });
-                    update();
+                    layerManager.update();
                 }
             }
 
@@ -84,7 +82,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
                         }
                     });
-                    update();
+                    layerManager.update();
 
                     toolStore.list().forEach(function (Tool) {
                         if (Tool.active) {
@@ -100,6 +98,6 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     })
 
-    exports.event = eventProxy;
+    exports.event = event;
     exports.create = create;
 });

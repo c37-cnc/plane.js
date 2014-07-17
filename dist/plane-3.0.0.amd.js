@@ -1,59 +1,3 @@
-/*!
- * C37 in 17-07-2014 at 11:37:27 
- *
- * plane version: 3.0.0
- * licensed by Creative Commons Attribution-ShareAlike 3.0
- *
- * Copyright - C37 http://c37.co - 2014
- */
-
-(function (window) {
-"use strict";
-var define, require;
-
-// http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
-(function () {
-    var registry = {},
-        seen = {};
-
-    define = function (name, deps, callback) {
-        registry[name] = {
-            deps: deps,
-            callback: callback
-        };
-    };
-
-    require = function (name) {
-
-        if (seen[name]) {
-            return seen[name];
-        }
-        seen[name] = {};
-
-        var mod = registry[name];
-        if (!mod) {
-            throw new Error("Module '" + name + "' not found.");
-        }
-
-        var deps = mod.deps,
-            callback = mod.callback,
-            reified = [],
-            exports;
-
-        for (var i = 0, l = deps.length; i < l; i++) {
-            if (deps[i] === 'require') {
-                reified.push(require);
-            } else if (deps[i] === 'exports') {
-                reified.push(exports = {});
-            } else {
-                reified.push(require(deps[i]));
-            }
-        }
-
-        var value = callback.apply(this, reified);
-        return seen[name] = exports || value;
-    };
-})();
 define("geometric/group", ['require', 'exports'], function (require, exports) {
 
 
@@ -2281,5 +2225,3 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     exports.data = data;
     exports.object = object;
 });
-window.plane = require("plane").public;
-})(window);

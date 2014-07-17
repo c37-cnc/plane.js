@@ -5,6 +5,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     var layerStore = types.data.dictionary.create(),
         layerActive = null;
 
+    
     var Layer = types.object.inherits(function Layer(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -41,7 +42,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         render.style.backgroundColor = (attrs.status == 'system') ? attrs.style.backgroundColor : 'transparent';
 
         var context2D = render.getContext('2d');
-        
+
         // sistema cartesiano de coordenadas
         context2D.translate(0, render.height);
         context2D.scale(1, -1);
@@ -95,10 +96,40 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         return layerStore.list();
     }
 
+    function update(layerSystem) {
+
+        var layerStyle = layerSystem ? layerSystem.style : layerActive.style,
+            layerShapes = layerSystem ? layerSystem.shapes.list() : layerActive.shapes.list(),
+            layerRender = layerSystem ? layerSystem.render : layerActive.render,
+            context2D = layerRender.getContext('2d');
+
+        // limpando o render
+        context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
+
+        // style of layer
+        context2D.lineCap = layerStyle.lineCap;
+        context2D.lineJoin = layerStyle.lineJoin;
+
+        // render para cada shape
+        layerShapes.forEach(function (shape) {
+            // save state of all configuration
+            context2D.save();
+            context2D.beginPath();
+
+            shape.render(context2D, plane.zoom);
+
+            context2D.stroke();
+            // restore state of all configuration
+            context2D.restore();
+        });
+
+        return true;
+    }
 
 
     exports.create = create;
     exports.active = active;
+    exports.update = update;
     exports.list = list;
     exports.remove = remove;
 });
