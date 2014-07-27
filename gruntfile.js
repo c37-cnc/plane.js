@@ -32,6 +32,9 @@ module.exports = function (grunt) {
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'
             },
             amd: {
+                options: {
+                    banner: '<%= meta.banner %>\n'
+                },
                 src: ['<%= dirs.src %>/**/*.js', '!<%= dirs.src %>/utility/module.js'],
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.amd.js'
             }
@@ -72,7 +75,7 @@ module.exports = function (grunt) {
                     '<%= dirs.src %>/**'
                 ],
                 tasks: ['concat:browser', 'browser']
-//                tasks: ['concat', 'browser', 'minify']
+                //                tasks: ['concat', 'browser', 'minify']
             }
         },
         browser: {

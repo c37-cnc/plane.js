@@ -105,7 +105,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
         // limpando o render
         context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
-
+        
         // style of layer
         context2D.lineCap = layerStyle.lineCap;
         context2D.lineJoin = layerStyle.lineJoin;
@@ -116,7 +116,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             context2D.save();
             context2D.beginPath();
 
-            shape.render(context2D, plane.zoom);
+            shape.render(context2D);
 
             context2D.stroke();
             // restore state of all configuration

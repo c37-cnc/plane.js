@@ -1,3 +1,11 @@
+/*!
+ * C37 in 27-07-2014 at 19:17:02 
+ *
+ * plane version: 3.0.0
+ * licensed by Creative Commons Attribution-ShareAlike 3.0
+ *
+ * Copyright - C37 http://c37.co - 2014
+ */
 define("geometric/group", ['require', 'exports'], function (require, exports) {
 
 
@@ -249,9 +257,17 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         ).getRoots();
 
         if (roots.length > 1) {
+
+            //            debugger;
+
             result.points = [];
             for (var i = 0; i < roots.length; i++) {
                 var t = roots[i];
+
+                //                if (t <= 0) {
+                //                    result.points.push(c2.multiply(t * t).sum(c1.multiply(t).sum(c0)));
+                //                }
+
                 if (0 <= t && t <= 1)
                     result.points.push(c2.multiply(t * t).sum(c1.multiply(t).sum(c0)));
             }
@@ -740,7 +756,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
             return false;
         },
-        render: function (context2D, zoom) {
+        render: function (context2D) {
 
             if (this.status == 'over') {
                 context2D.strokeStyle = 'rgb(61, 142, 193)';
@@ -750,11 +766,11 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                 context2D.strokeStyle = 'rgb(68, 121, 154)';
                 if (this.point) {
-                    context2D.strokeRect(this.point.x - (Math.round(2 * zoom) / 2), this.point.y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
+                    context2D.strokeRect(this.point.x - (Math.round(2) / 2), this.point.y - (Math.round(2) / 2), Math.round(2), Math.round(2));
                 }
                 if (this.points) {
                     this.points.forEach(function (point) {
-                        context2D.strokeRect(point.x - (Math.round(2 * zoom) / 2), point.y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
+                        context2D.strokeRect(point.x - (Math.round(2) / 2), point.y - (Math.round(2) / 2), Math.round(2), Math.round(2));
                     });
                 }
             }
@@ -1158,7 +1174,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             gridColor: 'rgb(218, 222, 215)'
         };
 
-    
+
     function initialize(config) {
         if (config == null) {
             throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -1182,7 +1198,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         return true;
     }
- 
+
     function clear() {
         // reset em scroll
         if ((scroll().x != 0) || (scroll().y != 0)) {
@@ -1197,12 +1213,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
             zoom(1);
         }
 
+        // remove em layer system
+        layerSystem = null;
+        
         // remove em todas as layers
         layerManager.remove();
 
         return true;
     }
-    
+
     function scroll(value) {
         if (value) {
             var layerActive = layerManager.active(),
@@ -1242,13 +1261,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (value) {
             // plane.zoom(plane.zoom() / .9);  - more
             // plane.zoom(plane.zoom() * .9); - less
-            var LayerActive = layerManager.active(),
+            var layerActive = layerManager.active(),
                 zoomFactor = value / _zoom;
 
             gridDraw(viewPort.clientHeight, viewPort.clientWidth, value, _scroll);
 
             // Se não alguma Layer Ativa = clear || importer
-            if (LayerActive) {
+            if (layerActive) {
                 layerManager.list().forEach(function (layer) {
 
                     layerManager.active(layer.uuid);
@@ -1259,7 +1278,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                     layerManager.update();
                 });
-                layerManager.active(LayerActive.uuid);
+                layerManager.active(layerActive.uuid);
             }
             return _zoom = value;
         } else {
@@ -1274,9 +1293,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return _settings;
         }
     }
-    
-    
-    
+
+
+
 
     var layer = types.object.extend(types.object.event.create(), {
         create: function (attrs) {
@@ -1302,14 +1321,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
         set active(value) {
             this.notify('onDeactive', {
                 type: 'onDeactive',
-                Layer: layerManager.active()
+                layer: layerManager.active()
             });
 
             layerManager.active(value);
 
             this.notify('onActive', {
                 type: 'onActive',
-                Layer: layerManager.active()
+                layer: layerManager.active()
             });
         },
         update: function () {
@@ -1370,7 +1389,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             });
 
             layerObject.shapes.forEach(function (shapeObject) {
-                plane.shape.create(shapeObject)
+                shape.create(shapeObject)
             });
 
             layerManager.update();
@@ -1424,8 +1443,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
         return JSON.stringify(planeExport);
     }
 
+    function toSvg() {
+        return true;
+    }
+    // exporter
 
-    
 
     function gridDraw(height, width, zoom, scroll) {
         if (!_settings.gridEnable) return;
@@ -1535,9 +1557,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
     exports.scroll = scroll;
     exports.zoom = zoom;
     exports.settings = settings;
+    
     exports.layer = layer;
     exports.shape = shape;
     exports.tool = tool;
+    
     exports.importer = {
         fromJson: fromJson,
         fromSvg: fromSvg,
@@ -1545,7 +1569,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
         fromDwg: fromDwg
     };
     exports.exporter = {
-        toJson: toJson
+        toJson: toJson,
+        toSvg: toSvg
     };
 });
 define("structure/layer", ['require', 'exports'], function (require, exports) {
@@ -1655,7 +1680,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
         // limpando o render
         context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
-
+        
         // style of layer
         context2D.lineCap = layerStyle.lineCap;
         context2D.lineJoin = layerStyle.lineJoin;
@@ -1666,7 +1691,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             context2D.save();
             context2D.beginPath();
 
-            shape.render(context2D, plane.zoom);
+            shape.render(context2D);
 
             context2D.stroke();
             // restore state of all configuration
@@ -1702,7 +1727,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         Object.defineProperty(this, 'active', {
             get: function () {
                 return this._active || false;
-            },
+            }, 
             set: function (value) {
                 this.notify(value ? 'onActive' : 'onDeactive', {
                     type: value ? 'onActive' : 'onDeactive',

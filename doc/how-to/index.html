@@ -126,6 +126,14 @@
                 }]
             });
             plane.shape.create({
+                type: 'bezier',
+                points: [{
+                    a: [20, 100],
+                    b: [200, 100],
+                    c: [200, 20]
+                }]
+            });
+            plane.shape.create({
                 type: 'polygon',
                 x: 300,
                 y: 500,

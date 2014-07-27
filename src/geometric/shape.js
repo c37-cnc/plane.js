@@ -199,7 +199,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
             return false;
         },
-        render: function (context2D, zoom) {
+        render: function (context2D) {
 
             if (this.status == 'over') {
                 context2D.strokeStyle = 'rgb(61, 142, 193)';
@@ -209,11 +209,11 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                 context2D.strokeStyle = 'rgb(68, 121, 154)';
                 if (this.point) {
-                    context2D.strokeRect(this.point.x - (Math.round(2 * zoom) / 2), this.point.y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
+                    context2D.strokeRect(this.point.x - (Math.round(2) / 2), this.point.y - (Math.round(2) / 2), Math.round(2), Math.round(2));
                 }
                 if (this.points) {
                     this.points.forEach(function (point) {
-                        context2D.strokeRect(point.x - (Math.round(2 * zoom) / 2), point.y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
+                        context2D.strokeRect(point.x - (Math.round(2) / 2), point.y - (Math.round(2) / 2), Math.round(2), Math.round(2));
                     });
                 }
             }

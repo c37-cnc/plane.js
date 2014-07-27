@@ -65,6 +65,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
             zoom(1);
         }
 
+        // remove em layer system
+        layerSystem = null;
+        
         // remove em todas as layers
         layerManager.remove();
 
@@ -110,13 +113,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (value) {
             // plane.zoom(plane.zoom() / .9);  - more
             // plane.zoom(plane.zoom() * .9); - less
-            var LayerActive = layerManager.active(),
+            var layerActive = layerManager.active(),
                 zoomFactor = value / _zoom;
 
             gridDraw(viewPort.clientHeight, viewPort.clientWidth, value, _scroll);
 
             // Se não alguma Layer Ativa = clear || importer
-            if (LayerActive) {
+            if (layerActive) {
                 layerManager.list().forEach(function (layer) {
 
                     layerManager.active(layer.uuid);
@@ -127,7 +130,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                     layerManager.update();
                 });
-                layerManager.active(LayerActive.uuid);
+                layerManager.active(layerActive.uuid);
             }
             return _zoom = value;
         } else {

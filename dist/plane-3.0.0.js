@@ -1,5 +1,5 @@
 /*!
- * C37 in 17-07-2014 at 19:30:24 
+ * C37 in 27-07-2014 at 19:17:02 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -305,9 +305,17 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         ).getRoots();
 
         if (roots.length > 1) {
+
+            //            debugger;
+
             result.points = [];
             for (var i = 0; i < roots.length; i++) {
                 var t = roots[i];
+
+                //                if (t <= 0) {
+                //                    result.points.push(c2.multiply(t * t).sum(c1.multiply(t).sum(c0)));
+                //                }
+
                 if (0 <= t && t <= 1)
                     result.points.push(c2.multiply(t * t).sum(c1.multiply(t).sum(c0)));
             }
@@ -796,7 +804,7 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
             return false;
         },
-        render: function (context2D, zoom) {
+        render: function (context2D) {
 
             if (this.status == 'over') {
                 context2D.strokeStyle = 'rgb(61, 142, 193)';
@@ -806,11 +814,11 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
                 context2D.strokeStyle = 'rgb(68, 121, 154)';
                 if (this.point) {
-                    context2D.strokeRect(this.point.x - (Math.round(2 * zoom) / 2), this.point.y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
+                    context2D.strokeRect(this.point.x - (Math.round(2) / 2), this.point.y - (Math.round(2) / 2), Math.round(2), Math.round(2));
                 }
                 if (this.points) {
                     this.points.forEach(function (point) {
-                        context2D.strokeRect(point.x - (Math.round(2 * zoom) / 2), point.y - (Math.round(2 * zoom) / 2), Math.round(2 * zoom), Math.round(2 * zoom));
+                        context2D.strokeRect(point.x - (Math.round(2) / 2), point.y - (Math.round(2) / 2), Math.round(2), Math.round(2));
                     });
                 }
             }
@@ -1253,6 +1261,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
             zoom(1);
         }
 
+        // remove em layer system
+        layerSystem = null;
+        
         // remove em todas as layers
         layerManager.remove();
 
@@ -1298,13 +1309,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (value) {
             // plane.zoom(plane.zoom() / .9);  - more
             // plane.zoom(plane.zoom() * .9); - less
-            var LayerActive = layerManager.active(),
+            var layerActive = layerManager.active(),
                 zoomFactor = value / _zoom;
 
             gridDraw(viewPort.clientHeight, viewPort.clientWidth, value, _scroll);
 
             // Se não alguma Layer Ativa = clear || importer
-            if (LayerActive) {
+            if (layerActive) {
                 layerManager.list().forEach(function (layer) {
 
                     layerManager.active(layer.uuid);
@@ -1315,7 +1326,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                     layerManager.update();
                 });
-                layerManager.active(LayerActive.uuid);
+                layerManager.active(layerActive.uuid);
             }
             return _zoom = value;
         } else {
@@ -1717,7 +1728,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
         // limpando o render
         context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
-
+        
         // style of layer
         context2D.lineCap = layerStyle.lineCap;
         context2D.lineJoin = layerStyle.lineJoin;
@@ -1728,7 +1739,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             context2D.save();
             context2D.beginPath();
 
-            shape.render(context2D, plane.zoom);
+            shape.render(context2D);
 
             context2D.stroke();
             // restore state of all configuration

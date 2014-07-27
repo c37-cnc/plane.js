@@ -243,9 +243,17 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
         ).getRoots();
 
         if (roots.length > 1) {
+
+            //            debugger;
+
             result.points = [];
             for (var i = 0; i < roots.length; i++) {
                 var t = roots[i];
+
+                //                if (t <= 0) {
+                //                    result.points.push(c2.multiply(t * t).sum(c1.multiply(t).sum(c0)));
+                //                }
+
                 if (0 <= t && t <= 1)
                     result.points.push(c2.multiply(t * t).sum(c1.multiply(t).sum(c0)));
             }
