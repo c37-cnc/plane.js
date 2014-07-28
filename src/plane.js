@@ -86,9 +86,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             // Se não alguma Layer Ativa = clear || importer
             if (layerActive) {
-                value.x = value.x * _zoom;
-                value.y = value.y * _zoom;
-
                 layerManager.list().forEach(function (layer) {
 
                     layerManager.active(layer.uuid);

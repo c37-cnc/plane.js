@@ -1,5 +1,5 @@
 /*!
- * C37 in 27-07-2014 at 19:17:02 
+ * C37 in 28-07-2014 at 12:45:49 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1282,8 +1282,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             // Se não alguma Layer Ativa = clear || importer
             if (layerActive) {
-                value.x = value.x * _zoom;
-                value.y = value.y * _zoom;
+//                value.x = value.x * _zoom;/
+//                value.y = value.y * _zoom;
 
                 layerManager.list().forEach(function (layer) {
 
