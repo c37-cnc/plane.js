@@ -67,7 +67,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         // remove em layer system
         layerSystem = null;
-        
+
         // remove em todas as layers
         layerManager.remove();
 
@@ -91,7 +91,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     layerManager.active(layer.uuid);
 
                     layerManager.active().shapes.list().forEach(function (shape) {
-                        shape.moveTo(value);
+                        shape.moveTo({
+                            x: value.x * _zoom,
+                            y: value.y * _zoom
+                        });
                     });
 
                     layerManager.update();
@@ -406,11 +409,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
     exports.scroll = scroll;
     exports.zoom = zoom;
     exports.settings = settings;
-    
+
     exports.layer = layer;
     exports.shape = shape;
     exports.tool = tool;
-    
+
     exports.importer = {
         fromJson: fromJson,
         fromSvg: fromSvg,
