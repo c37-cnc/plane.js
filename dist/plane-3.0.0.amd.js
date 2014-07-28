@@ -1,5 +1,5 @@
 /*!
- * C37 in 28-07-2014 at 12:54:34 
+ * C37 in 28-07-2014 at 13:35:51 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1213,9 +1213,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
             zoom(1);
         }
 
-        // remove em layer system
-        layerSystem = null;
-
         // remove em todas as layers
         layerManager.remove();
 
@@ -1234,9 +1231,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             // Se não alguma Layer Ativa = clear || importer
             if (layerActive) {
-//                value.x = value.x * _zoom;
-//                value.y = value.y * _zoom;
-
                 layerManager.list().forEach(function (layer) {
 
                     layerManager.active(layer.uuid);
@@ -1469,13 +1463,34 @@ define("plane", ['require', 'exports'], function (require, exports) {
             layerSystem.shapes.clear();
         }
 
-        // calculos para o zoom
+        // calculate for zoom
         width = zoom > 1 ? Math.round(width * zoom) : Math.round(width / zoom);
         height = zoom > 1 ? Math.round(height * zoom) : Math.round(height / zoom);
 
+        // range of intervals
+        var intervals = [];
+        for (var i = .1; i < 1E5; i *= 10) {
+            intervals.push(1 * i);
+            intervals.push(2 * i);
+            intervals.push(5 * i);
+        }
+
+        // calculate the main number interval
+        var numberUnit = 1 * zoom,
+            numberFactor = 10 / numberUnit,
+            interval = 1;
+        
+        for (var i = 0; i < intervals.length; i++) {
+            var number = intervals[i];
+            interval = number;
+            if (numberFactor <= number) {
+                break;
+            }
+        }
+
         var lineBold = 0;
         if (scroll.x > 0) {
-            for (var x = (scroll.x * zoom); x >= 0; x -= (10 * zoom)) {
+            for (var x = (scroll.x * zoom); x >= 0; x -= (interval * zoom)) {
 
                 var shape = shapeManager.create({
                     uuid: types.math.uuid(9, 16),
@@ -1494,7 +1509,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         }
 
         lineBold = 0;
-        for (var x = (scroll.x * zoom); x <= width; x += (10 * zoom)) {
+        for (var x = (scroll.x * zoom); x <= width; x += (interval * zoom)) {
 
             var shape = shapeManager.create({
                 uuid: types.math.uuid(9, 16),
@@ -1513,7 +1528,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         lineBold = 0;
         if (scroll.y > 0) {
-            for (var y = (scroll.y * zoom); y >= 0; y -= (10 * zoom)) {
+            for (var y = (scroll.y * zoom); y >= 0; y -= (interval * zoom)) {
 
                 var shape = shapeManager.create({
                     uuid: types.math.uuid(9, 16),
@@ -1532,7 +1547,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         }
 
         lineBold = 0;
-        for (var y = (scroll.y * zoom); y <= height; y += (10 * zoom)) {
+        for (var y = (scroll.y * zoom); y <= height; y += (interval * zoom)) {
 
             var shape = shapeManager.create({
                 uuid: types.math.uuid(9, 16),
