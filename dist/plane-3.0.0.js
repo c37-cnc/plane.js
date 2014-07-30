@@ -1,5 +1,5 @@
 /*!
- * C37 in 29-07-2014 at 20:59:03 
+ * C37 in 29-07-2014 at 22:39:46 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1316,18 +1316,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
             // plane.zoom(plane.zoom() * .9); - less
             var layerActive = layerManager.active(),
                 zoomFactor = value / _zoom;
-            
+
             debugger;
-            
+
             var scrollStart = {
-                    x: scroll().x * -1,
-                    y: scroll().y * -1
-                }
+                x: scroll().x * -1,
+                y: scroll().y * -1
+            }
             var scrollMiddle = {
-                    x: (viewPort.clientWidth - (viewPort.clientWidth * value)) / 2,
-                    y: (viewPort.clientHeight - (viewPort.clientHeight * value)) / 2,
-                };
-            
+                x: (viewPort.clientWidth - (viewPort.clientWidth * value)) / 2,
+                y: (viewPort.clientHeight - (viewPort.clientHeight * value)) / 2,
+            };
+
             // Se não alguma Layer Ativa = clear || importer
             if (layerActive) {
                 layerManager.list().forEach(function (layer) {
@@ -1345,9 +1345,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 layerManager.active(layerActive.uuid);
             }
 
+            gridDraw(viewPort.clientHeight, viewPort.clientWidth, value, scrollMiddle);
+
             _zoom = value;
             _scroll = scrollMiddle;
-            
+
+
             return true;
         } else {
             return _zoom;
@@ -1442,8 +1445,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
         clear();
 
         _settings = planeObject.settings;
-//        _zoom = planeObject.zoom;
-//        _scroll = planeObject.scroll;
+        _zoom = planeObject.zoom;
+        _scroll = planeObject.scroll;
+//        var __zoom = planeObject.zoom;
+//        var __scroll = planeObject.scroll;
+        
+        gridDraw(viewPort.clientHeight, viewPort.clientWidth, _zoom, _scroll);
+//        gridDraw(viewPort.clientHeight, viewPort.clientWidth, __zoom, __scroll);
 
         planeObject.layers.forEach(function (layerObject) {
 
@@ -1520,8 +1528,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
     function gridDraw(height, width, zoom, scroll) {
         if (!_settings.gridEnable) return;
 
-        return;
-
         if (!layerSystem) {
             var attrs = { // atributos para a layer do grid (sistema) 
                 viewPort: viewPort,
@@ -1561,7 +1567,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
         //            }
         //        }
 
-        var interval = 10;
+        var interval = 10,
+            lineBold = 0;
 
         if (scroll.x > 0) {
             //            for (var x = (scroll.x * zoom); x >= 0; x -= (interval * zoom)) {
@@ -1575,14 +1582,16 @@ define("plane", ['require', 'exports'], function (require, exports) {
                         b: [x, height],
                         style: {
                             lineColor: _settings.gridColor,
-                            lineWidth: position % 50 == 0 ? .8 : .3
+                            lineWidth: lineBold % 50 == 0 ? .8 : .3
                         }
                     });
 
                 layerSystem.shapes.add(shape.uuid, shape);
+                lineBold += 10;
             }
         }
 
+        lineBold = 0;
         //        for (var x = (scroll.x * zoom); x <= width; x += (interval * zoom)) {
         for (var x = scroll.x; x <= width; x += (interval * zoom)) {
 
@@ -1594,11 +1603,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     b: [x, height],
                     style: {
                         lineColor: _settings.gridColor,
-                        lineWidth: position % 50 == 0 ? .8 : .3
+                        lineWidth: lineBold % 50 == 0 ? .8 : .3
                     }
                 });
 
             layerSystem.shapes.add(shape.uuid, shape);
+            lineBold += 10;
         }
 
         if (scroll.y > 0) {
