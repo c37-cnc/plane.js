@@ -1,5 +1,5 @@
 /*!
- * C37 in 28-07-2014 at 13:35:51 
+ * C37 in 31-07-2014 at 18:50:08 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1162,10 +1162,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var layerSystem = null,
         viewPort = null;
 
-    var _zoom = 1,
-        _scroll = {
-            x: 0,
-            y: 0
+    var _center = {
+            zoom: 1,
+            position: {
+                x: 0,
+                y: 0
+            }
         },
         _settings = {
             metricSystem: 'mm',
@@ -1190,7 +1192,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         _settings = config.settings ? config.settings : _settings;
 
-        gridDraw(viewPort.clientHeight, viewPort.clientWidth, _zoom, _scroll);
+//        gridDraw(viewPort.clientHeight, viewPort.clientWidth, _center);
 
         toolManager.event.start({
             viewPort: viewPort
@@ -1200,18 +1202,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
     }
 
     function clear() {
-        // reset em scroll
-        if ((scroll().x != 0) || (scroll().y != 0)) {
-            scroll({
-                x: 0,
-                y: 0
-            });
-        };
-
-        // reset em zoom
-        if (zoom() != 1) {
-            zoom(1);
-        }
+        // reset em center
+        center({
+            factor: 1,
+            center: {
+                x: _center.position.x * -1,
+                y: _center.position.y * -1
+            }
+        });
 
         // remove em todas as layers
         layerManager.remove();
@@ -1219,49 +1217,32 @@ define("plane", ['require', 'exports'], function (require, exports) {
         return true;
     }
 
-    function scroll(value) {
+    // plane.position(plane.position() / .9);  - more
+    // plane.position(plane.position() * .9); - less
+    function center(value) {
         if (value) {
-            var layerActive = layerManager.active(),
-                scrollFactor = {
-                    x: value.x + _scroll.x,
-                    y: value.y + _scroll.y
-                };
-
-            gridDraw(viewPort.clientHeight, viewPort.clientWidth, _zoom, scrollFactor);
-
-            // Se não alguma Layer Ativa = clear || importer
-            if (layerActive) {
-                layerManager.list().forEach(function (layer) {
-
-                    layerManager.active(layer.uuid);
-
-                    layerManager.active().shapes.list().forEach(function (shape) {
-                        shape.moveTo({
-                            x: value.x * _zoom,
-                            y: value.y * _zoom
-                        });
-                    });
-
-                    layerManager.update();
-
-                });
-                layerManager.active(layerActive.uuid);
+            // validações para valores
+            value = {
+                zoom: parseFloat(value.zoom),
+                position: {
+                    x: parseFloat(value.position.x) * value.zoom,
+                    y: parseFloat(value.position.y) * value.zoom
+                }
             }
 
-            return _scroll = scrollFactor;
-        } else {
-            return _scroll;
-        }
-    }
-
-    function zoom(value) {
-        if (value) {
-            // plane.zoom(plane.zoom() / .9);  - more
-            // plane.zoom(plane.zoom() * .9); - less
             var layerActive = layerManager.active(),
-                zoomFactor = value / _zoom;
+                zoomFactor = value.zoom / _center.zoom;
 
-            gridDraw(viewPort.clientHeight, viewPort.clientWidth, value, _scroll);
+            // com o valor do center anterior para retroceder os valores sem perder a medida do centro
+            var middlePrevious = {
+                x: ((viewPort.clientWidth - (viewPort.clientWidth * _center.zoom)) / 2) * -1,
+                y: ((viewPort.clientHeight - (viewPort.clientHeight * _center.zoom)) / 2) * -1,
+            };
+
+            var middleCurrent = {
+                x: ((viewPort.clientWidth - (viewPort.clientWidth * value.zoom)) / 2) + value.position.x,
+                y: (viewPort.clientHeight - (viewPort.clientHeight * value.zoom)) / 2 + value.position.y,
+            };
 
             // Se não alguma Layer Ativa = clear || importer
             if (layerActive) {
@@ -1270,16 +1251,31 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     layerManager.active(layer.uuid);
 
                     layerManager.active().shapes.list().forEach(function (shape) {
+                        shape.moveTo(middlePrevious);
                         shape.scaleTo(zoomFactor);
+                        shape.moveTo(middleCurrent);
                     });
 
                     layerManager.update();
                 });
                 layerManager.active(layerActive.uuid);
             }
-            return _zoom = value;
+            
+//            debugger;
+//
+//            value = {
+//                zoom: value.zoom,
+//                position: {
+//                    x: _center.position.x + middleCurrent.x,
+//                    y: _center.position.y + middleCurrent.y
+//                }
+//            }
+
+//            gridDraw(viewPort.clientHeight, viewPort.clientWidth, value);
+
+            return _center = value;
         } else {
-            return _zoom;
+            return _center;
         }
     }
 
@@ -1371,8 +1367,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
         clear();
 
         _settings = planeObject.settings;
-        _zoom = planeObject.zoom;
-        _scroll = planeObject.scroll;
+        _center = planeObject.position;
+//        _center = planeObject.position;
+        //        var __center = planeObject.position;
+        //        var __center = planeObject.position;
+
+//        gridDraw(viewPort.clientHeight, viewPort.clientWidth, _center);
 
         planeObject.layers.forEach(function (layerObject) {
 
@@ -1424,8 +1424,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         var planeExport = {
             settings: _settings,
-            zoom: types.math.parseFloat(_zoom, 5),
-            scroll: _scroll,
+            //            center: types.math.parseFloat(_center, 5),
+            //            center: _center,
             layers: layerManager.list().map(function (layer) {
                 var layerObject = layer.toObject();
 
@@ -1446,9 +1446,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
     // exporter
 
 
-    function gridDraw(height, width, zoom, scroll) {
+    function gridDraw(height, width, center) {
         if (!_settings.gridEnable) return;
-
+        
         if (!layerSystem) {
             var attrs = { // atributos para a layer do grid (sistema) 
                 viewPort: viewPort,
@@ -1463,105 +1463,115 @@ define("plane", ['require', 'exports'], function (require, exports) {
             layerSystem.shapes.clear();
         }
 
-        // calculate for zoom
-        width = zoom > 1 ? Math.round(width * zoom) : Math.round(width / zoom);
-        height = zoom > 1 ? Math.round(height * zoom) : Math.round(height / zoom);
+        // calculate for center
+        width = center.zoom > 1 ? Math.round(width * center.zoom) : Math.round(width / center.zoom);
+        height = center.zoom > 1 ? Math.round(height * center.zoom) : Math.round(height / center.zoom);
 
-        // range of intervals
-        var intervals = [];
-        for (var i = .1; i < 1E5; i *= 10) {
-            intervals.push(1 * i);
-            intervals.push(2 * i);
-            intervals.push(5 * i);
-        }
+        //        // range of intervals
+        //        var intervals = [];
+        //        for (var i = .1; i < 1E5; i *= 10) {
+        //            intervals.push(1 * i);
+        //            intervals.push(2 * i);
+        //            intervals.push(5 * i);
+        //        }
+        //
+        //        // calculate the main number interval
+        //        var numberUnit = 1 * center,
+        //            numberFactor = 10 / numberUnit,
+        //            interval = 1;
+        //        
+        //        for (var i = 0; i < intervals.length; i++) {
+        //            var number = intervals[i];
+        //            interval = number;
+        //            if (numberFactor <= number) {
+        //                break;
+        //            }
+        //        }
 
-        // calculate the main number interval
-        var numberUnit = 1 * zoom,
-            numberFactor = 10 / numberUnit,
-            interval = 1;
-        
-        for (var i = 0; i < intervals.length; i++) {
-            var number = intervals[i];
-            interval = number;
-            if (numberFactor <= number) {
-                break;
-            }
-        }
+        var interval = 10,
+            lineBold = 0;
 
-        var lineBold = 0;
-        if (scroll.x > 0) {
-            for (var x = (scroll.x * zoom); x >= 0; x -= (interval * zoom)) {
+        if (center.position.x > 0) {
+            //            for (var x = (center.x * center); x >= 0; x -= (interval * center)) {
+            for (var x = center.position.x; x >= 0; x -= (interval * center.zoom)) {
 
-                var shape = shapeManager.create({
+                //                var position = Math.round((x / center) - center.x),
+                shape = shapeManager.create({
                     uuid: types.math.uuid(9, 16),
                     type: 'line',
                     a: [x, 0],
                     b: [x, height],
                     style: {
                         lineColor: _settings.gridColor,
-                        lineWidth: lineBold % 5 == 0 ? .8 : .3
+                        lineWidth: lineBold % 50 == 0 ? .8 : .3
                     }
                 });
 
                 layerSystem.shapes.add(shape.uuid, shape);
-                lineBold++;
+                lineBold += 10;
             }
         }
-
+        
         lineBold = 0;
-        for (var x = (scroll.x * zoom); x <= width; x += (interval * zoom)) {
+        //        for (var x = (center.x * center); x <= width; x += (interval * center)) {
+        for (var x = center.position.x; x <= width; x += (interval * center.zoom)) {
 
-            var shape = shapeManager.create({
+            //            var position = Math.round((x / center) - center.x),
+            shape = shapeManager.create({
                 uuid: types.math.uuid(9, 16),
                 type: 'line',
                 a: [x, 0],
                 b: [x, height],
                 style: {
                     lineColor: _settings.gridColor,
-                    lineWidth: lineBold % 5 == 0 ? .8 : .3
+                    lineWidth: lineBold % 50 == 0 ? .8 : .3
                 }
             });
 
             layerSystem.shapes.add(shape.uuid, shape);
-            lineBold++;
+            lineBold += 10;
         }
 
         lineBold = 0;
-        if (scroll.y > 0) {
-            for (var y = (scroll.y * zoom); y >= 0; y -= (interval * zoom)) {
+        if (center.position.y > 0) {
+            //            for (var y = (center.y * center); y >= 0; y -= (interval * center)) {
+            for (var y = center.position.y; y >= 0; y -= (interval * center.zoom)) {
 
-                var shape = shapeManager.create({
+                //                var position = Math.round((y / center) - center.y),
+                shape = shapeManager.create({
                     uuid: types.math.uuid(9, 16),
                     type: 'line',
                     a: [0, y],
                     b: [width, y],
                     style: {
                         lineColor: _settings.gridColor,
-                        lineWidth: lineBold % 5 == 0 ? .8 : .3
+                        lineWidth: lineBold % 50 == 0 ? .8 : .3
                     }
                 });
 
                 layerSystem.shapes.add(shape.uuid, shape);
-                lineBold++;
+                lineBold += 10;
             }
         }
 
         lineBold = 0;
-        for (var y = (scroll.y * zoom); y <= height; y += (interval * zoom)) {
+        //        for (var y = (center.y * center); y <= height; y += (interval * center)) {
+        for (var y = center.position.y; y <= height; y += (interval * center.zoom)) {
 
-            var shape = shapeManager.create({
+            //            var position = Math.round((y / center) - center.y),
+            shape = shapeManager.create({
                 uuid: types.math.uuid(9, 16),
                 type: 'line',
                 a: [0, y],
                 b: [width, y],
                 style: {
                     lineColor: _settings.gridColor,
-                    lineWidth: lineBold % 5 == 0 ? .8 : .3
+                    lineWidth: lineBold % 50 == 0 ? .8 : .3
                 }
             });
 
             layerSystem.shapes.add(shape.uuid, shape);
-            lineBold++;
+            lineBold += 10;
         }
 
         layerManager.update(layerSystem);
@@ -1572,8 +1582,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     exports.initialize = initialize;
     exports.clear = clear;
-    exports.scroll = scroll;
-    exports.zoom = zoom;
+    exports.center = center;
     exports.settings = settings;
 
     exports.layer = layer;

@@ -244,22 +244,36 @@
                 console.log(plane.exporter.toJson());
             });
 
+            
+            
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
-                plane.zoom(plane.zoom() / .95)
+                plane.center({
+                    zoom: plane.center().zoom / .95,
+                    position: {
+                        x: document.getElementById('zoomCenterInputX').value,
+                        y: document.getElementById('zoomCenterInputY').value
+                    }
+                })
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
-                plane.zoom(plane.zoom() * .95)
+                plane.center({
+                    zoom: plane.center().zoom * .95,
+                    position: {
+                        x: document.getElementById('zoomCenterInputX').value,
+                        y: document.getElementById('zoomCenterInputY').value
+                    }
+                })
             });
 
-            document.getElementById('scrollButton').addEventListener('click', function (event) {
-                var scrollInputx = document.getElementById('scrollInputx'),
-                    scrollInputy = document.getElementById('scrollInputy'),
-                    scroll = {
-                        x: parseInt(scrollInputx.value),
-                        y: parseInt(scrollInputy.value)
-                    };
-                plane.scroll(scroll);
+            document.getElementById('zoomCenterButton').addEventListener('click', function (event) {
+                plane.center({
+                    zoom: plane.center().zoom,
+                    position: {
+                        x: document.getElementById('zoomCenterInputX').value,
+                        y: document.getElementById('zoomCenterInputY').value
+                    }
+                })
             });
 
         };
@@ -288,15 +302,14 @@
             <button id="exportJsonButton">Export Json</button>
             <br>
             <br>
+            <label>x</label>
+            <input id="zoomCenterInputX" type="text" style="width:60px" value="0">
+            <label>y</label>
+            <input id="zoomCenterInputY" type="text" style="width:60px" value="0">
             <button id="zoomMoreButton">Zoom +++</button>
             <button id="zoomLessButton">Zoom ---</button>
-            <br>
-            <br>
-            <label>x</label>
-            <input id="scrollInputx" type="text" style="width:60px" value="5">
-            <label>y</label>
-            <input id="scrollInputy" type="text" style="width:60px" value="5">
-            <button id="scrollButton">Scroll</button>
+            <button id="zoomCenterButton">Center</button>
+        
         </div>
         <ul id="shapesList">
         </ul>
