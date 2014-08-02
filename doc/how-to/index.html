@@ -102,7 +102,6 @@
                 height: viewPort.clientHeight
             });
 
-
             plane.shape.create({
                 type: 'line',
                 a: [350, 350],
@@ -182,33 +181,17 @@
             });
 
             plane.layer.update();
-            
-            
+
+
             console.log(plane.view.center);
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
+
+
+
+
+
+
+
+
 
             var Tool001 = plane.tool.create();
             Tool001.active = true;
@@ -270,24 +253,24 @@
                 console.log(plane.exporter.toJson());
             });
 
-            
-            
+
+
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
                 plane.view.zoom /= .9;
+                console.log(plane.view.bounds);
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
                 plane.view.zoom *= .9;
+                console.log(plane.view.bounds);
             });
 
             document.getElementById('zoomCenterButton').addEventListener('click', function (event) {
-                plane.center({
-                    zoom: plane.center().zoom,
-                    position: {
-                        x: document.getElementById('zoomCenterInputX').value,
-                        y: document.getElementById('zoomCenterInputY').value
-                    }
-                })
+                plane.view.center = {
+                    x: plane.view.center.x + parseFloat(document.getElementById('zoomCenterInputX').value),
+                    y: plane.view.center.y + parseFloat(document.getElementById('zoomCenterInputY').value)
+                }
+                console.log(plane.view.bounds);
             });
 
         };
@@ -323,7 +306,7 @@
             <button id="zoomMoreButton">Zoom +++</button>
             <button id="zoomLessButton">Zoom ---</button>
             <button id="zoomCenterButton">Center</button>
-        
+
         </div>
         <ul id="shapesList">
         </ul>

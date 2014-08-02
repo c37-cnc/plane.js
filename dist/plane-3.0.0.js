@@ -1,5 +1,5 @@
 /*!
- * C37 in 01-08-2014 at 14:06:23 
+ * C37 in 02-08-2014 at 16:28:00 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1207,6 +1207,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
         shapeManager = require('geometric/shape'),
         toolManager = require('structure/tool');
 
+    var centerHistory = types.data.list.create();
+
     var viewPort = null,
         _view = {
             zoom: 1,
@@ -1267,70 +1269,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
         return true;
     }
 
-    // plane.position(plane.position() / .9);  - more
-    // plane.position(plane.position() * .9); - less
-    function center(value) {
-        if (value) {
-            // validações para valores
-            value = {
-                zoom: parseFloat(value.zoom),
-                position: {
-                    x: parseFloat(value.position.x) * value.zoom,
-                    y: parseFloat(value.position.y) * value.zoom
-                }
-            }
-
-            var layerActive = layerManager.active(),
-                zoomFactor = value.zoom / _center.zoom;
-
-            // com o valor do center anterior para retroceder os valores sem perder a medida do centro
-            var middlePrevious = {
-                x: ((viewPort.clientWidth - (viewPort.clientWidth * _center.zoom)) / 2) * -1,
-                y: ((viewPort.clientHeight - (viewPort.clientHeight * _center.zoom)) / 2) * -1,
-            };
-            // ATENÇÃO - os sinais!
-            _view.bounds = {
-                x: _view.bounds.x + middlePrevious.x,
-                y: _view.bounds.y + middlePrevious.y
-            }
-
-
-            var middleCurrent = {
-                x: ((viewPort.clientWidth - (viewPort.clientWidth * value.zoom)) / 2) + value.position.x,
-                y: (viewPort.clientHeight - (viewPort.clientHeight * value.zoom)) / 2 + value.position.y,
-            };
-            _view.bounds = {
-                x: _view.bounds.x + middleCurrent.x,
-                y: _view.bounds.y + middleCurrent.y
-            }
-
-
-            // Se não alguma Layer Ativa = clear || importer
-            if (layerActive) {
-                layerManager.list().forEach(function (layer) {
-
-                    layerManager.active(layer.uuid);
-
-                    layerManager.active().shapes.list().forEach(function (shape) {
-                        shape.moveTo(middlePrevious);
-                        shape.scaleTo(zoomFactor);
-                        shape.moveTo(middleCurrent);
-                    });
-
-                    layerManager.update();
-                });
-                layerManager.active(layerActive.uuid);
-            }
-
-            return _center = value;
-        } else {
-            return _center;
-        }
-    }
-
-
-
-
     // plane.view.zoom =/ .9;  - more
     // plane.view.zoom =* .9; - less
     var view = {
@@ -1342,28 +1280,37 @@ define("plane", ['require', 'exports'], function (require, exports) {
             var layerActive = layerManager.active(),
                 zoomFactor = value / _view.zoom;
 
-            //            layerManager.list().forEach(function (layer) {
-            //
-            //                layerManager.active(layer.uuid);
-            //
-            //                var context2D = layerManager.active().render.getContext('2d');
-            //
-            //                context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
-            //                context2D.translate(_view.center.x, _view.center.y);
-            //                context2D.scale(zoomFactor, zoomFactor);
-            //                context2D.translate(-_view.center.x, -_view.center.y);
-            //
-            //
-            //                layerManager.update();
-            //            });
-            //            layerManager.active(layerActive.uuid);
+
+            // com o valor do middle anterior para retroceder os valores sem perder a medida do centro
+            var middlePrevious = {
+                x: ((viewPort.clientWidth - (viewPort.clientWidth * _view.zoom)) / 2) * -1,
+                y: ((viewPort.clientHeight - (viewPort.clientHeight * _view.zoom)) / 2) * -1,
+            };
+            // ATENÇÃO - os sinais!
+            _view.bounds = {
+                x: _view.bounds.x + middlePrevious.x,
+                y: _view.bounds.y + middlePrevious.y
+            }
+
+            // com o meio atualizando pelo zoom
+            var middleCurrent = {
+                x: ((viewPort.clientWidth - (viewPort.clientWidth * value)) / 2),
+                y: (viewPort.clientHeight - (viewPort.clientHeight * value)) / 2,
+            };
+            _view.bounds = {
+                x: _view.bounds.x + middleCurrent.x,
+                y: _view.bounds.y + middleCurrent.y
+            }
+
 
             layerManager.list().forEach(function (layer) {
 
                 layerManager.active(layer.uuid);
 
                 layerManager.active().shapes.list().forEach(function (shape) {
+                    shape.moveTo(middlePrevious);
                     shape.scaleTo(zoomFactor);
+                    shape.moveTo(middleCurrent);
                 });
 
                 layerManager.update();
@@ -1376,10 +1323,40 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return _view.center;
         },
         set center(value) {
+            // verificamos se o novo status de centro é realmente diferente do atual
+            if (value && (value.x != 0 || value.y != 0) && (value.x != _view.center.x || value.y != _view.center.y)) {
+
+                debugger;
+
+                var layerActive = layerManager.active(),
+                    // fator de movimento - calculando e atualizando com o zoom atual
+                    moveFactor = {
+                        x: (value.x - _view.center.x) * _view.zoom,
+                        y: (value.y - _view.center.y) * _view.zoom
+                    }
+
+                // atualizando a posição dos limites
+                _view.bounds = {
+                    x: _view.bounds.x + moveFactor.x,
+                    y: _view.bounds.y + moveFactor.y
+                }
+
+                // movimentando todos os shapes de todas as layers
+                layerManager.list().forEach(function (layer) {
+
+                    layerManager.active(layer.uuid);
+
+                    layerManager.active().shapes.list().forEach(function (shape) {
+                        shape.moveTo(moveFactor);
+                    });
+
+                    layerManager.update();
+                });
+                layerManager.active(layerActive.uuid);
 
 
-
-            _view.center = value;
+                _view.center = value;
+            }
         },
         get bounds() {
             return _view.bounds;
@@ -2161,6 +2138,86 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             }
 
             return Dictionary;
+        })(),
+
+        list: (function () {
+
+            function List() {
+                this.store = [];
+                this.size = 0;
+                this.position = 0;
+            }
+
+            List.prototype = {
+                add: function (element) {
+                    this.store[this.size++] = element;
+                },
+                find: function (element) {
+                    for (var i = 0; i < this.store.length; ++i) {
+                        if (this.store[i] == element) {
+                            return i;
+                        }
+                    }
+                    return -1;
+                },
+                remove: function (element) {
+                    var foundAt = this.find(element);
+                    if (foundAt > -1) {
+                        this.store.splice(foundAt, 1);
+                        --this.size;
+                        return true;
+                    }
+                    return false;
+                },
+                contains: function (element) {
+                    for (var i = 0; i < this.store.length; ++i) {
+                        if (this.store[i] == element) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                length: function () {
+                    return this.size;
+                },
+                clear: function () {
+                    delete this.store;
+                    this.store = [];
+                    this.size = this.position = 0;
+                },
+                first: function () {
+                    this.position = 0;
+                },
+                last: function () {
+                    this.position = this.size - 1;
+                },
+                previous: function () {
+                    if (this.position > 0) {
+                        --this.position;
+                    }
+                },
+                next: function () {
+                    if (this.position < this.size - 1) {
+                        ++this.position;
+                    }
+                },
+                currentPosition: function () {
+                    return this.position;
+                },
+                moveTo: function (position) {
+                    this.position = position;
+                },
+                getElement: function(){
+                    return this.store[this.position];
+                }
+            }
+
+            List.create = function () {
+                return new List();
+            }
+
+            return List;
+
         })()
 
     }

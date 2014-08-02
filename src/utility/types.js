@@ -100,6 +100,86 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             }
 
             return Dictionary;
+        })(),
+
+        list: (function () {
+
+            function List() {
+                this.store = [];
+                this.size = 0;
+                this.position = 0;
+            }
+
+            List.prototype = {
+                add: function (element) {
+                    this.store[this.size++] = element;
+                },
+                find: function (element) {
+                    for (var i = 0; i < this.store.length; ++i) {
+                        if (this.store[i] == element) {
+                            return i;
+                        }
+                    }
+                    return -1;
+                },
+                remove: function (element) {
+                    var foundAt = this.find(element);
+                    if (foundAt > -1) {
+                        this.store.splice(foundAt, 1);
+                        --this.size;
+                        return true;
+                    }
+                    return false;
+                },
+                contains: function (element) {
+                    for (var i = 0; i < this.store.length; ++i) {
+                        if (this.store[i] == element) {
+                            return true;
+                        }
+                    }
+                    return false;
+                },
+                length: function () {
+                    return this.size;
+                },
+                clear: function () {
+                    delete this.store;
+                    this.store = [];
+                    this.size = this.position = 0;
+                },
+                first: function () {
+                    this.position = 0;
+                },
+                last: function () {
+                    this.position = this.size - 1;
+                },
+                previous: function () {
+                    if (this.position > 0) {
+                        --this.position;
+                    }
+                },
+                next: function () {
+                    if (this.position < this.size - 1) {
+                        ++this.position;
+                    }
+                },
+                currentPosition: function () {
+                    return this.position;
+                },
+                moveTo: function (position) {
+                    this.position = position;
+                },
+                getElement: function(){
+                    return this.store[this.position];
+                }
+            }
+
+            List.create = function () {
+                return new List();
+            }
+
+            return List;
+
         })()
 
     }
