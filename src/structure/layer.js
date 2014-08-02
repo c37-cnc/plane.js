@@ -5,7 +5,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     var layerStore = types.data.dictionary.create(),
         layerActive = null;
 
-    
+
     var Layer = types.object.inherits(function Layer(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -69,13 +69,17 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // add em viewPort
         attrs.viewPort.appendChild(layer.render);
 
-        if (layer.status != 'system') {
-            layerStore.add(layer.uuid, layer);
-            this.active(layer.uuid);
-            return true;
-        } else {
-            return layer;
-        }
+        //        if (layer.status != 'system') {
+        //            layerStore.add(layer.uuid, layer);
+        //            this.active(layer.uuid);
+        //            return true;
+        //        } else {
+        //            return layer;
+        //        }
+
+        layerStore.add(layer.uuid, layer);
+        return this.active(layer.uuid);
+
     }
 
     function active(value) {
@@ -87,7 +91,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             var element = document.getElementById(layer.render.id);
             if (element && element.parentNode) {
                 element.parentNode.removeChild(element);
-            } 
+            }
             layerStore.remove(layer.uuid);
         });
     }
@@ -96,11 +100,11 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         return layerStore.list();
     }
 
-    function update(layerSystem) {
+    function update() {
 
-        var layerStyle = layerSystem ? layerSystem.style : layerActive.style,
-            layerShapes = layerSystem ? layerSystem.shapes.list() : layerActive.shapes.list(),
-            layerRender = layerSystem ? layerSystem.render : layerActive.render,
+        var layerStyle = layerActive.style,
+            layerShapes = layerActive.shapes.list(),
+            layerRender = layerActive.render,
             context2D = layerRender.getContext('2d');
 
         // limpando o render
@@ -122,7 +126,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             // restore state of all configuration
             context2D.restore();
         });
-
+        
         return true;
     }
 

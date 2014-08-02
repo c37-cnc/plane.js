@@ -1,5 +1,5 @@
 /*!
- * C37 in 31-07-2014 at 18:50:08 
+ * C37 in 01-08-2014 at 10:56:55 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1169,6 +1169,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 y: 0
             }
         },
+        _view = {
+            bounds: {
+                x: 0,
+                y: 0
+            }
+        },
         _settings = {
             metricSystem: 'mm',
             backgroundColor: 'rgb(255, 255, 255)',
@@ -1192,7 +1198,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         _settings = config.settings ? config.settings : _settings;
 
-//        gridDraw(viewPort.clientHeight, viewPort.clientWidth, _center);
+        //        gridDraw(viewPort.clientHeight, viewPort.clientWidth, _center);
 
         toolManager.event.start({
             viewPort: viewPort
@@ -1238,12 +1244,23 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 x: ((viewPort.clientWidth - (viewPort.clientWidth * _center.zoom)) / 2) * -1,
                 y: ((viewPort.clientHeight - (viewPort.clientHeight * _center.zoom)) / 2) * -1,
             };
+            // ATENÇÃO - os sinais!
+            _view.bounds = {
+                x: _view.bounds.x + middlePrevious.x,
+                y: _view.bounds.y + middlePrevious.y
+            }
+            
 
             var middleCurrent = {
                 x: ((viewPort.clientWidth - (viewPort.clientWidth * value.zoom)) / 2) + value.position.x,
                 y: (viewPort.clientHeight - (viewPort.clientHeight * value.zoom)) / 2 + value.position.y,
             };
+            _view.bounds = {
+                x: _view.bounds.x + middleCurrent.x,
+                y: _view.bounds.y + middleCurrent.y
+            }
 
+            
             // Se não alguma Layer Ativa = clear || importer
             if (layerActive) {
                 layerManager.list().forEach(function (layer) {
@@ -1260,24 +1277,35 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 });
                 layerManager.active(layerActive.uuid);
             }
-            
-//            debugger;
-//
-//            value = {
-//                zoom: value.zoom,
-//                position: {
-//                    x: _center.position.x + middleCurrent.x,
-//                    y: _center.position.y + middleCurrent.y
-//                }
-//            }
 
-//            gridDraw(viewPort.clientHeight, viewPort.clientWidth, value);
+            //            debugger;
+            //
+            //            value = {
+            //                zoom: value.zoom,
+            //                position: {
+            //                    x: _center.position.x + middleCurrent.x,
+            //                    y: _center.position.y + middleCurrent.y
+            //                }
+            //            }
+
+            //            gridDraw(viewPort.clientHeight, viewPort.clientWidth, value);
 
             return _center = value;
         } else {
             return _center;
         }
     }
+
+
+
+    var view = {
+        get bounds() {
+            return _view.bounds;
+        }
+    }
+
+
+
 
     function settings(value) {
         if (value) {
@@ -1286,8 +1314,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return _settings;
         }
     }
-
-
 
 
     var layer = types.object.extend(types.object.event.create(), {
@@ -1368,11 +1394,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         _settings = planeObject.settings;
         _center = planeObject.position;
-//        _center = planeObject.position;
+        //        _center = planeObject.position;
         //        var __center = planeObject.position;
         //        var __center = planeObject.position;
 
-//        gridDraw(viewPort.clientHeight, viewPort.clientWidth, _center);
+        //        gridDraw(viewPort.clientHeight, viewPort.clientWidth, _center);
 
         planeObject.layers.forEach(function (layerObject) {
 
@@ -1448,7 +1474,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     function gridDraw(height, width, center) {
         if (!_settings.gridEnable) return;
-        
+
         if (!layerSystem) {
             var attrs = { // atributos para a layer do grid (sistema) 
                 viewPort: viewPort,
@@ -1511,7 +1537,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 lineBold += 10;
             }
         }
-        
+
         lineBold = 0;
         //        for (var x = (center.x * center); x <= width; x += (interval * center)) {
         for (var x = center.position.x; x <= width; x += (interval * center.zoom)) {
@@ -1580,9 +1606,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
 
 
+
+
     exports.initialize = initialize;
     exports.clear = clear;
     exports.center = center;
+    exports.view = view;
     exports.settings = settings;
 
     exports.layer = layer;
@@ -1607,7 +1636,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     var layerStore = types.data.dictionary.create(),
         layerActive = null;
 
-    
+
     var Layer = types.object.inherits(function Layer(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -1671,13 +1700,17 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // add em viewPort
         attrs.viewPort.appendChild(layer.render);
 
-        if (layer.status != 'system') {
-            layerStore.add(layer.uuid, layer);
-            this.active(layer.uuid);
-            return true;
-        } else {
-            return layer;
-        }
+        //        if (layer.status != 'system') {
+        //            layerStore.add(layer.uuid, layer);
+        //            this.active(layer.uuid);
+        //            return true;
+        //        } else {
+        //            return layer;
+        //        }
+
+        layerStore.add(layer.uuid, layer);
+        return this.active(layer.uuid);
+
     }
 
     function active(value) {
@@ -1689,7 +1722,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             var element = document.getElementById(layer.render.id);
             if (element && element.parentNode) {
                 element.parentNode.removeChild(element);
-            } 
+            }
             layerStore.remove(layer.uuid);
         });
     }
@@ -1707,7 +1740,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
         // limpando o render
         context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
-        
+
         // style of layer
         context2D.lineCap = layerStyle.lineCap;
         context2D.lineJoin = layerStyle.lineJoin;

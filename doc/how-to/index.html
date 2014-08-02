@@ -182,7 +182,33 @@
             });
 
             plane.layer.update();
-
+            
+            
+            console.log(plane.view.center);
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
 
             var Tool001 = plane.tool.create();
             Tool001.active = true;
@@ -247,23 +273,11 @@
             
             
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
-                plane.center({
-                    zoom: plane.center().zoom / .95,
-                    position: {
-                        x: document.getElementById('zoomCenterInputX').value,
-                        y: document.getElementById('zoomCenterInputY').value
-                    }
-                })
+                plane.view.zoom /= .9;
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
-                plane.center({
-                    zoom: plane.center().zoom * .95,
-                    position: {
-                        x: document.getElementById('zoomCenterInputX').value,
-                        y: document.getElementById('zoomCenterInputY').value
-                    }
-                })
+                plane.view.zoom *= .9;
             });
 
             document.getElementById('zoomCenterButton').addEventListener('click', function (event) {
