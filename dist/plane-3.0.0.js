@@ -1,5 +1,5 @@
 /*!
- * C37 in 02-08-2014 at 21:50:30 
+ * C37 in 02-08-2014 at 22:00:50 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1360,16 +1360,19 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 y: 0
             };
 
+            // calculando o centro através do histórico de movimentos
             centerHistory.list().forEach(function (itemHistory) {
                 boundsHistory.x = boundsHistory.x + itemHistory.x;
                 boundsHistory.y = boundsHistory.y + itemHistory.y;
             });
 
+            // aplicando o zoom atual na soma 
             boundsHistory = {
                 x: boundsHistory.x * _view.zoom,
                 y: boundsHistory.y * _view.zoom
             }
 
+            // somando aos movimentos de zoom
             return {
                 x: _view.bounds.x + boundsHistory.x,
                 y: _view.bounds.y + boundsHistory.y
