@@ -84,7 +84,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
             var layerActive = layerManager.active(),
                 zoomFactor = value / _view.zoom;
 
-
             // com o valor do middle anterior para retroceder os valores sem perder a medida do centro
             var middlePrevious = {
                 x: ((viewPort.clientWidth - (viewPort.clientWidth * _view.zoom)) / 2) * -1,
@@ -101,11 +100,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 x: ((viewPort.clientWidth - (viewPort.clientWidth * value)) / 2),
                 y: (viewPort.clientHeight - (viewPort.clientHeight * value)) / 2,
             };
+            // atualizando os limites
             _view.bounds = {
                 x: _view.bounds.x + middleCurrent.x,
                 y: _view.bounds.y + middleCurrent.y
             }
-
 
             layerManager.list().forEach(function (layer) {
 
@@ -130,8 +129,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
             // verificamos se o novo status de centro é realmente diferente do atual
             if (value && (value.x != 0 || value.y != 0) && (value.x != _view.center.x || value.y != _view.center.y)) {
 
-                debugger;
-
                 var layerActive = layerManager.active(),
                     // fator de movimento - calculando e atualizando com o zoom atual
                     moveFactor = {
@@ -139,11 +136,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
                         y: (value.y - _view.center.y) * _view.zoom
                     }
 
-                // atualizando a posição dos limites
-                _view.bounds = {
-                    x: _view.bounds.x + moveFactor.x,
-                    y: _view.bounds.y + moveFactor.y
-                }
+                // adicionado ao histórico dos movimentos de centro
+                centerHistory.add({
+                    x: value.x - _view.center.x,
+                    y: value.y - _view.center.y
+                });
 
                 // movimentando todos os shapes de todas as layers
                 layerManager.list().forEach(function (layer) {
@@ -158,15 +155,29 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 });
                 layerManager.active(layerActive.uuid);
 
-
                 _view.center = value;
             }
         },
         get bounds() {
-            return _view.bounds;
-        },
-        set bounds(value) {
-            _view.bounds = value;
+            var boundsHistory = {
+                x: 0,
+                y: 0
+            };
+
+            centerHistory.list().forEach(function (itemHistory) {
+                boundsHistory.x = boundsHistory.x + itemHistory.x;
+                boundsHistory.y = boundsHistory.y + itemHistory.y;
+            });
+
+            boundsHistory = {
+                x: boundsHistory.x * _view.zoom,
+                y: boundsHistory.y * _view.zoom
+            }
+
+            return {
+                x: _view.bounds.x + boundsHistory.x,
+                y: _view.bounds.y + boundsHistory.y
+            };
         },
     }
 

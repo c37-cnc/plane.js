@@ -147,6 +147,9 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                     this.store = [];
                     this.size = this.position = 0;
                 },
+                list: function () {
+                    return this.store;
+                },
                 first: function () {
                     this.position = 0;
                 },
@@ -169,7 +172,7 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 moveTo: function (position) {
                     this.position = position;
                 },
-                getElement: function(){
+                getElement: function () {
                     return this.store[this.position];
                 }
             }
