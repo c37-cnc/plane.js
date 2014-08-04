@@ -102,10 +102,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 y: ((viewPort.clientHeight - (viewPort.clientHeight * _view.zoom)) / 2) * -1,
             };
             // ATENÇÃO - os sinais!
-            _view.bounds = {
-                x: _view.bounds.x + middlePrevious.x,
-                y: _view.bounds.y + middlePrevious.y
-            }
+            _view.bounds.x = _view.bounds.x + middlePrevious.x;
+            _view.bounds.y = _view.bounds.y + middlePrevious.y;
 
             // com o meio atualizando pelo zoom
             var middleCurrent = {
@@ -113,10 +111,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 y: (viewPort.clientHeight - (viewPort.clientHeight * value)) / 2,
             };
             // atualizando os limites
-            _view.bounds = {
-                x: _view.bounds.x + middleCurrent.x,
-                y: _view.bounds.y + middleCurrent.y
-            }
+            _view.bounds.x = _view.bounds.x + middleCurrent.x;
+            _view.bounds.y = _view.bounds.y + middleCurrent.y;
 
             layerManager.list().forEach(function (layer) {
 
