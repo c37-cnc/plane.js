@@ -20,11 +20,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 x: 0,
                 y: 0
             },
+            size: {
+                height: 0,
+                width: 0
+            },
             bounds: {
                 x: 0,
                 y: 0,
-                width: 0,
-                height: 0
+                height: 0,
+                width: 0
             }
         }
 
@@ -43,11 +47,19 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         viewPort = config.viewPort;
 
+        // iniciando configurações para View
+
+        // o centro inicial
         _view.center.x = viewPort.clientWidth / 2;
         _view.center.y = viewPort.clientHeight / 2;
 
-        _view.bounds.width = viewPort.clientWidth;
+        // os limites de tamanho inicial
         _view.bounds.height = viewPort.clientHeight;
+        _view.bounds.width = viewPort.clientWidth;
+
+        // os tamanhos que são fixos
+        _view.size.height = viewPort.clientHeight;
+        _view.size.width = viewPort.clientWidth;
 
 
         toolManager.event.start({
@@ -177,11 +189,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
             }
 
             // somando aos movimentos de zoom
+            // calculando os limites
             return {
                 x: _view.bounds.x + boundsHistory.x,
-                y: _view.bounds.y + boundsHistory.y
+                y: _view.bounds.y + boundsHistory.y,
+                height: _view.bounds.height * _view.zoom,
+                width: _view.bounds.width * _view.zoom
             };
         },
+        get size() {
+            return _view.size;
+        }
     }
 
 
