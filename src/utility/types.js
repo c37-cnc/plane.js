@@ -199,7 +199,14 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          */
         extend: function (o, p) {
             for (var prop in p) { // For all props in p.
-                Object.defineProperty(o, prop, Object.getOwnPropertyDescriptor(p, prop)); // add the property to o.
+                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor
+                // 2014.08.08 11:00 - lilo - alteração para funcionar com propriedas e função "not own (prototype chain)" do objeto
+                var desc = Object.getOwnPropertyDescriptor(p, prop);
+                if (desc) {
+                    Object.defineProperty(o, prop, desc); // add the property to o.
+                } else {
+                    o[prop] = p[prop];
+                }
             }
             return o;
         },

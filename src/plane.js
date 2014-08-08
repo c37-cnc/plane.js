@@ -3,13 +3,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var version = '3.0.0',
         authors = ['lilo@c37.co', 'ser@c37.co'];
 
-    var types = require('utility/types'),
-        importer = require('utility/importer'),
-        exporter = require('utility/exporter');
-
-    var layerManager = require('structure/layer'),
-        shapeManager = require('geometric/shape'),
-        toolManager = require('structure/tool');
+    var types = require('utility/types');
+    
+    var layer = require('structure/layer'),
+        point = require('structure/point'),
+        shape = require('structure/shape'),
+        group = require('structure/group'),
+        tool = require('structure/tool');
+    
+    var importer = require('data/importer'),
+        exporter = require('data/exporter');
+    
 
     var centerHistory = types.data.list.create();
 
@@ -147,7 +151,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         _view.size.width = viewPort.clientWidth;
 
 
-        toolManager.event.start({
+        tool.event.start({
             viewPort: viewPort
         });
 
@@ -289,170 +293,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
 
 
-    var layer = types.object.extend(types.object.event.create(), {
-        create: function (attrs) {
-            if ((typeof attrs == "function")) {
-                throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-
-            attrs = types.object.union(attrs, {
-                viewPort: viewPort
-            });
-
-            return layerManager.create(attrs);
-        },
-        list: function (selector) {
-            return layerManager.list();
-        },
-        remove: function (uuid) {
-            layerManager.remove(uuid);
-        },
-        get active() {
-            return layerManager.active();
-        },
-        set active(value) {
-            this.notify('onDeactive', {
-                type: 'onDeactive',
-                layer: layerManager.active()
-            });
-
-            layerManager.active(value);
-
-            this.notify('onActive', {
-                type: 'onActive',
-                layer: layerManager.active()
-            });
-        },
-        update: function () {
-            return layerManager.update();
-        }
-    });
-
-    var shape = {
-        create: function (attrs) {
-            if ((typeof attrs == "function") || (attrs == null)) {
-                throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-            if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier'].indexOf(attrs.type) == -1) {
-                throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-            if (((attrs.type != 'polyline') && (attrs.type != 'bezier') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
-                throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-
-            var shape = shapeManager.create(attrs);
-
-            layerManager.active().shapes.add(shape.uuid, shape);
-
-            return true;
-        }
-    };
-
-    var tool = {
-        create: function (attrs) {
-            if (typeof attrs == "function") {
-                throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-
-            return toolManager.create(attrs);
-        }
-    };
-
-    // importer
-    function fromJson(stringJson) {
-
-        var planeObject = JSON.parse(stringJson);
-
-        clear();
-
-        //        _center = planeObject.position;
-
-        planeObject.layers.forEach(function (layerObject) {
-
-            layerManager.create({
-                uuid: layerObject.uuid,
-                name: layerObject.name,
-                locked: layerObject.locked,
-                Visible: layerObject.Visible,
-                style: layerObject.style,
-                viewPort: viewPort
-            });
-
-            layerObject.shapes.forEach(function (shapeObject) {
-                shape.create(shapeObject)
-            });
-
-            layerManager.update();
-        });
-
-        return true;
-    };
-
-    function fromSvg(stringSvg) {
-        return true;
-    };
-
-    function fromDxf(stringDxf) {
-        clear();
-
-        var stringJson = importer.fromDxf(stringDxf);
-        var objectDxf = JSON.parse(stringJson);
-
-        if (stringJson) {
-            layer.create();
-            for (var prop in objectDxf) {
-                shape.create(objectDxf[prop]);
-            }
-            layer.update();
-        }
-    };
-
-    function fromDwg(stringDwg) {
-        return true;
-    }
-    // importer
-
-    // exporter
-    function toJson() {
-
-        var planeExport = {
-            //            center: _center,
-            layers: layerManager.list().map(function (layer) {
-                var layerObject = layer.toObject();
-
-                layerObject.shapes = layerObject.shapes.map(function (shape) {
-                    return shape.toObject();
-                });
-
-                return layerObject;
-            })
-        }
-
-        return JSON.stringify(planeExport);
-    }
-
-    function toSvg() {
-        return true;
-    }
-    // exporter
 
 
     exports.initialize = initialize;
     exports.clear = clear;
     exports.view = view;
-
+    
     exports.layer = layer;
+    exports.point = point;
     exports.shape = shape;
+    exports.group = group;
     exports.tool = tool;
 
-    exports.importer = {
-        fromJson: fromJson,
-        fromSvg: fromSvg,
-        fromDxf: fromDxf,
-        fromDwg: fromDwg
-    };
-    exports.exporter = {
-        toJson: toJson,
-        toSvg: toSvg
-    };
+    exports.importer = importer;
+    exports.exporter = exporter;
 });

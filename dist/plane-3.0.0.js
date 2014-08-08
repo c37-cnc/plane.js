@@ -1,5 +1,5 @@
 /*!
- * C37 in 07-08-2014 at 08:08:57 
+ * C37 in 08-08-2014 at 17:03:23 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -14,56 +14,391 @@ var define, require;
 // http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
 (function () {
     var registry = {},
-        seen = {};
+        modules = {};
 
-    define = function (name, deps, callback) {
+    define = function (name, dependencies, callback) {
         registry[name] = {
-            deps: deps,
+            dependencies: dependencies,
             callback: callback
         };
     };
 
     require = function (name) {
 
-        if (seen[name]) {
-            return seen[name];
+        if (modules[name]) {
+            return modules[name];
         }
-        seen[name] = {};
+        modules[name] = {};
 
-        var mod = registry[name];
-        if (!mod) {
+        var module = registry[name];
+        if (!module) {
             throw new Error("Module '" + name + "' not found.");
         }
 
-        var deps = mod.deps,
-            callback = mod.callback,
-            reified = [],
-            exports;
+        var dependencies = module.dependencies,
+            callback = module.callback,
+            parameters = [],
+            exports = {};
 
-        for (var i = 0, l = deps.length; i < l; i++) {
-            if (deps[i] === 'require') {
-                reified.push(require);
-            } else if (deps[i] === 'exports') {
-                reified.push(exports = {});
+        for (var i = 0, l = dependencies.length; i < l; i++) {
+            if (dependencies[i] == 'require') {
+                parameters.push(require);
+            } else if (dependencies[i] == 'exports') {
+                parameters.push(exports);
             } else {
-                reified.push(require(deps[i]));
+                parameters.push(require(dependencies[i]));
             }
         }
 
-        var value = callback.apply(this, reified);
-        return seen[name] = exports || value;
+        var concrete = callback.apply(this, parameters);
+        return modules[name] = exports || concrete;
     };
 })();
-define("geometric/group", ['require', 'exports'], function (require, exports) {
+define("data/exporter", ['require', 'exports'], function (require, exports) {
+    
+//    function toJson (){
+//        return true;
+//    }
+//    
+//    function toSvg (){
+//        return true;
+//    }
+    
+    function toDxf (){
+        return true;
+    }
+    
+    function toPng (){
+        return true;
+    }
+    
+    function toPdf (){
+        return true;
+    }
+
+    // exporter
+    function toJson() {
+
+        var planeExport = {
+            //            center: _center,
+            layers: layerManager.list().map(function (layer) {
+                var layerObject = layer.toObject();
+
+                layerObject.shapes = layerObject.shapes.map(function (shape) {
+                    return shape.toObject();
+                });
+
+                return layerObject;
+            })
+        }
+
+        return JSON.stringify(planeExport);
+    }
+
+    function toSvg() {
+        return true;
+    }
+    // exporter    
+    
+    
+    
+    
+    exports.toJson = toJson;
+    exports.toSvg = toSvg;
+    exports.toDxf = toDxf;
+    exports.toPng = toPng;
+    exports.toPdf = toPdf;
+
+});
+define("data/importer", ['require', 'exports'], function (require, exports) {
+
+    var types = require('utility/types');
+
+    function fromDxf(stringDxf) {
+
+        function toJson(objectDxf) {
+
+            switch (objectDxf.type) {
+            case 'line':
+                {
+                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
+                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
+                }
+            case 'spline':
+                {
+                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
+                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
+                }
+            case 'circle':
+                {
+                    var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} },';
+                    return types.string.format(circle, [objectDxf.x, objectDxf.y, objectDxf.r]);
+                }
+            case 'arc':
+                {
+                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
+                    return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1, false]);
+                }
+            case 'ellipse':
+                {
+                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} },',
+                        radiusX = Math.abs(objectDxf.x1),
+                        radiusY = radiusX * objectDxf.r;
+
+                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX])
+                }
+            case 'lwpolyline':
+                {
+                    if (objectDxf.vertices) {
+                        var polyline = '{"type": "polyline", "points": [{0}]},',
+                            points = '';
+
+                        for (var i = 0; i < objectDxf.vertices.length; i++) {
+
+                            var point = i == objectDxf.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
+                            points += types.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
+
+                        }
+                        return types.string.format(polyline, [points]);
+                    }
+                    return '';
+                }
+            case 'polyline':
+                {
+                    if (objectDxf.vertices) {
+                        var polyline = '{"type": "polyline", "points": [{0}]},',
+                            points = '';
+
+                        for (var i = 0; i < objectDxf.vertices.length; i++) {
+
+                            var point = i == objectDxf.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
+                            points += types.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
+
+                        }
+                        return types.string.format(polyline, [points]);
+                    }
+                    return '';
+                }
+            }
+
+        }
 
 
+        // certificando que a linha irá terá o caractere de nova linha
+        stringDxf = stringDxf.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
 
+        // entidades suportadas na conversão
+        //                var entitiesSupport = ['polyline'],
+        var entitiesSupport = ['line', 'circle', 'arc', 'ellipse', 'lwpolyline', 'polyline', 'spline'],
+            entitiesSection = false,
+            objectParse = null,
+            stringAux = '',
+            stringJson = '',
+            stringLine = '',
+            arrayDxf = stringDxf.split('\n');
+
+        for (var i = 0; i <= arrayDxf.length - 1; i++) {
+
+            stringLine = arrayDxf[i].toLowerCase();
+
+            entitiesSection = entitiesSection ? entitiesSection : (stringLine == 'entities');
+            if (!entitiesSection) continue;
+
+            if (entitiesSupport.indexOf(stringLine) > -1) {
+                objectParse = {
+                    type: stringLine
+                };
+                continue;
+            }
+
+            if (!objectParse) continue;
+
+
+            if (stringAux == ' 10') {
+                // verificação especifica para spline
+                if (objectParse.type == 'spline' && objectParse.x) {
+                    objectParse.x1 = types.math.parseFloat(stringLine, 5);
+                } else {
+                    objectParse.x = types.math.parseFloat(stringLine, 5);
+                }
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 10') {
+                stringAux = stringLine;
+                continue;
+            }
+            if (stringAux == ' 11') {
+                objectParse.x1 = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+
+            if (stringLine == ' 11') {
+                stringAux = stringLine;
+                continue;
+            }
+
+            if (stringAux == ' 20') {
+                // verificação especifica para spline
+                if (objectParse.type == 'spline' && objectParse.y) {
+                    objectParse.y1 = types.math.parseFloat(stringLine, 5);
+                } else {
+                    objectParse.y = types.math.parseFloat(stringLine, 5);
+                }
+                // verificação especifica para lwpolyline e polyline
+                if (objectParse.type == 'lwpolyline' || objectParse.type == 'polyline') {
+                    if (objectParse.x && objectParse.y) {
+                        objectParse.vertices = objectParse.vertices || [];
+                        objectParse.vertices.push({
+                            x: objectParse.x,
+                            y: objectParse.y
+                        });
+                    }
+                }
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 20') {
+                stringAux = stringLine;
+                continue;
+            }
+            if (stringAux == ' 21') {
+                objectParse.y1 = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 21') {
+                stringAux = stringLine;
+                continue;
+            }
+
+
+            if (stringAux == ' 40') {
+                objectParse.r = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 40') {
+                stringAux = stringLine;
+                continue;
+            }
+
+
+            if (stringAux == ' 50') {
+                objectParse.a0 = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 50') {
+                stringAux = stringLine;
+                continue;
+            }
+            if (stringAux == ' 51') {
+                objectParse.a1 = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 51') {
+                stringAux = stringLine;
+                continue;
+            }
+
+
+            // conversão para Json
+            if (objectParse && objectParse.type && objectParse.type != 'polyline' && arrayDxf[i] == '  0') {
+                stringJson += toJson(objectParse);
+                objectParse = null;
+            }
+            // conversão para Json - verificação especifica para Polyline
+            if (objectParse && objectParse.type && objectParse.type == 'polyline' && arrayDxf[i] == 'SEQEND') {
+                stringJson += toJson(objectParse);
+                objectParse = null;
+            }
+        }
+
+        return stringJson ? '[' + stringJson.substring(0, stringJson.length - 1) + ']' : '[]';
+    }
+
+    function fromDwg(stringDwg) {
+        return true;
+    }
+
+    function fromJson(stringJson) {
+        return true;
+    }
+
+    function fromSvg(stringSvg) {
+        return true;
+    }
+    
+    
+//
+//    // importer
+//    function fromJson(stringJson) {
+//
+//        var planeObject = JSON.parse(stringJson);
+//
+//        clear();
+//
+//        //        _center = planeObject.position;
+//
+//        planeObject.layers.forEach(function (layerObject) {
+//
+//            layerManager.create({
+//                uuid: layerObject.uuid,
+//                name: layerObject.name,
+//                locked: layerObject.locked,
+//                Visible: layerObject.Visible,
+//                style: layerObject.style,
+//                viewPort: viewPort
+//            });
+//
+//            layerObject.shapes.forEach(function (shapeObject) {
+//                shape.create(shapeObject)
+//            });
+//
+//            layerManager.update();
+//        });
+//
+//        return true;
+//    };
+//
+//    function fromSvg(stringSvg) {
+//        return true;
+//    };
+//
+//    function fromDxf(stringDxf) {
+//        clear();
+//
+//        var stringJson = importer.fromDxf(stringDxf);
+//        var objectDxf = JSON.parse(stringJson);
+//
+//        if (stringJson) {
+//            layer.create();
+//            for (var prop in objectDxf) {
+//                shape.create(objectDxf[prop]);
+//            }
+//            layer.update();
+//        }
+//    };
+//
+//    function fromDwg(stringDwg) {
+//        return true;
+//    }
+//    // importer
+    
+
+    exports.fromDxf = fromDxf;
+    exports.fromDwg = fromDwg;
+    exports.fromJson = fromJson;
+    exports.fromSvg = fromSvg;
 
 });
 define("geometric/intersection", ['require', 'exports'], function (require, exports) {
 
     var polynomial = require('geometric/polynomial'),
-        point = require('geometric/point');
+        point = require('structure/point');
 
 
     function Bezout(e1, e2) {
@@ -333,46 +668,67 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
     exports.circleEllipse = circleEllipse;
     exports.circleBezier = circleBezier;
 });
+define("geometric/matrix", ['require', 'exports'], function (require, exports) {
+    
+    // http://www.senocular.com/flash/tutorials/transformmatrix/
+    // https://github.com/heygrady/transform/wiki/Calculating-2d-Matrices
 
-define("geometric/point", ['require', 'exports'], function (require, exports) {
+    // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js
+    // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js
+    // https://github.com/CreateJS/EaselJS/blob/master/src/easeljs/geom/Matrix2D.js
+    // http://eip.epitech.eu/2014/tumbleweed/api/classes/Math.Matrix2D.html
+    // https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/mat2.js
 
-    function Point(x, y) {
-        this.x = x;
-        this.y = y;
+    // https://github.com/kangax/fabric.js/blob/818ab118b30a9205a0e57620452b08bb8f5f18cc/src/static_canvas.class.js#L611
+    // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js
+
+    function Matrix(a, b, c, d, e, f) {
+        this.a = a; // X_scale
+        this.b = b; // X_skew
+        this.c = c; // Y_skew
+        this.d = d; // Y_scale
+        this.e = e; // X_translate
+        this.f = f; // Y_translate
     };
 
-    Point.prototype = {
-        sum: function (point) {
-            return new Point(this.x + point.x, this.y + point.y);
-        },
-        subtract: function (point) {
-            return new Point(this.x - point.x, this.y - point.y);
-        },
-        multiply: function (value) {
-            return new Point(this.x * value, this.y * value);
-        },
-        distanceTo: function (point) {
-            var dx = this.x - point.x;
-            var dy = this.y - point.y;
 
-            return Math.sqrt(dx * dx + dy * dy);
+    function getDeterminant() {};
+
+    function isIdentity() {};
+
+    Matrix.prototype = {
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L256
+        rotate: function () {},
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L218
+        scale: function () {}, // COM CENTER //
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L189
+        translate: function () {},
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L150
+        reset: function () {},
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L117
+        clone: function () {},
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L352
+        concate: function () {},
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L337
+        skew: function () {},
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L299
+        shear: function () {},
+        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L113
+        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/shapes/group.class.js#L459
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L565
+        inverse: function () {
+
         },
-        midTo: function (point) {
-            return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
-        },
-        angleTo: function (point) {
-            return Math.atan2(point.y - this.y, point.x - this.x);
-        },
-        interpolationLinear: function (point, value) {
-            return new Point(
-                this.x + (point.x - this.x) * value,
-                this.y + (point.y - this.y) * value
-            );
-        }
+        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L93
+        toPoint: function (point) {},
+        toCenter: function (point) {},
+
+
+
     };
 
     function create(x, y) {
-        return new Point(x, y);
+        return new Matrix(x, y);
     };
 
     exports.create = create;
@@ -604,11 +960,557 @@ define("geometric/polynomial", ['require', 'exports'], function (require, export
     exports.create = create;
 
 });
-define("geometric/shape", ['require', 'exports'], function (require, exports) {
+define("plane", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types'),
-        point = require('geometric/point'),
-        intersection = require('geometric/intersection');
+    var version = '3.0.0',
+        authors = ['lilo@c37.co', 'ser@c37.co'];
+
+    var types = require('utility/types');
+    
+    var layer = require('structure/layer'),
+        point = require('structure/point'),
+        shape = require('structure/shape'),
+        group = require('structure/group'),
+        tool = require('structure/tool');
+    
+    var importer = require('data/importer'),
+        exporter = require('data/exporter');
+    
+
+    var centerHistory = types.data.list.create();
+
+    var viewPort = null,
+        _view = {
+            zoom: 1,
+            center: {
+                x: 0,
+                y: 0,
+                reset: function () {
+
+                    var layerActive = layerManager.active(),
+                        centerInitial = {
+                            x: (_view.size.width * _view.zoom) / 2,
+                            y: (_view.size.height * _view.zoom) / 2
+                        };
+
+
+                    // utilizo o histórico de movimentação de centro 
+                    // para retornar ao inicio
+                    var moveFactor = {
+                        x: 0,
+                        y: 0
+                    };
+
+                    // calculando o centro através do histórico de movimentos
+                    centerHistory.list().forEach(function (itemHistory) {
+                        moveFactor.x += itemHistory.x;
+                        moveFactor.y += itemHistory.y;
+                    });
+
+                    // aplicando o zoom atual na soma 
+                    moveFactor.x *= _view.zoom;
+                    moveFactor.y *= _view.zoom;
+
+                    // negativo
+                    moveFactor.x *= -1;
+                    moveFactor.y *= -1;
+
+                    // limpando os históricos de centro
+                    centerHistory.clear();
+
+                    // limpando os limites
+                    _view.bounds.height = _view.size.height * _view.zoom;
+                    _view.bounds.width = _view.size.width * _view.zoom;
+                    _view.bounds.x = 0;
+                    _view.bounds.y = 0;
+
+
+                    _view.center.x += moveFactor.x;
+                    _view.center.y += moveFactor.y;
+
+                    // movimentando todos os shapes de todas as layers
+                    layerManager.list().forEach(function (layer) {
+
+                        layerManager.active(layer.uuid);
+
+                        layerManager.active().shapes.list().forEach(function (shape) {
+                            shape.moveTo(moveFactor);
+                        });
+
+                        layerManager.update();
+                    });
+                    layerManager.active(layerActive.uuid);
+
+                    return true;
+                },
+                add: function (moveFactor) {
+
+                    // adicionado ao histórico dos movimentos de centro
+                    centerHistory.add({
+                        x: moveFactor.x,
+                        y: moveFactor.y
+                    });
+
+                    _view.center.x += moveFactor.x;
+                    _view.center.y += moveFactor.y;
+
+                    var layerActive = layerManager.active();
+                    // movimentando todos os shapes de todas as layers
+                    layerManager.list().forEach(function (layer) {
+
+                        layerManager.active(layer.uuid);
+
+                        layerManager.active().shapes.list().forEach(function (shape) {
+                            shape.moveTo(moveFactor);
+                        });
+
+                        layerManager.update();
+                    });
+                    layerManager.active(layerActive.uuid);
+
+                    return true;
+                }
+            },
+            size: {
+                height: 0,
+                width: 0
+            },
+            bounds: {
+                x: 0,
+                y: 0,
+                height: 0,
+                width: 0
+            }
+        }
+
+
+    function initialize(config) {
+        if (config == null) {
+            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (typeof config == "function") {
+            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (config.viewPort == null) {
+            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+
+        viewPort = config.viewPort;
+
+        // iniciando configurações para View
+
+        // o centro inicial
+        _view.center.x = viewPort.clientWidth / 2;
+        _view.center.y = viewPort.clientHeight / 2;
+
+        // os limites de tamanho inicial
+        _view.bounds.height = viewPort.clientHeight;
+        _view.bounds.width = viewPort.clientWidth;
+
+        // os tamanhos que são fixos
+        _view.size.height = viewPort.clientHeight;
+        _view.size.width = viewPort.clientWidth;
+
+
+        tool.event.start({
+            viewPort: viewPort
+        });
+
+        return true;
+    }
+
+    function clear() {
+        // reset em center
+        //        center({
+        //            factor: 1,
+        //            center: {
+        //                x: _center.position.x * -1,
+        //                y: _center.position.y * -1
+        //            }
+        //        });
+
+        // remove em todas as layers
+        layerManager.remove();
+
+        return true;
+    }
+
+    // plane.view.zoom =/ .9;  - more
+    // plane.view.zoom =* .9; - less
+    var view = {
+        get zoom() {
+            return _view.zoom;
+        },
+        set zoom(value) {
+
+            var layerActive = layerManager.active(),
+                zoomFactor = value / _view.zoom;
+
+            // com o valor do middle anterior para retroceder os valores sem perder a medida do centro
+            var middlePrevious = {
+                x: ((viewPort.clientWidth - (viewPort.clientWidth * _view.zoom)) / 2) * -1,
+                y: ((viewPort.clientHeight - (viewPort.clientHeight * _view.zoom)) / 2) * -1,
+            };
+            // ATENÇÃO - os sinais!
+            _view.bounds.x += middlePrevious.x;
+            _view.bounds.y += middlePrevious.y;
+
+            _view.bounds.height *= _view.zoom;
+            _view.bounds.width *= _view.zoom;
+
+            // com o meio atualizando pelo zoom
+            var middleCurrent = {
+                x: ((viewPort.clientWidth - (viewPort.clientWidth * value)) / 2),
+                y: (viewPort.clientHeight - (viewPort.clientHeight * value)) / 2,
+            };
+            // atualizando os limites
+            _view.bounds.x += middleCurrent.x;
+            _view.bounds.y += middleCurrent.y;
+
+            layerManager.list().forEach(function (layer) {
+
+                layerManager.active(layer.uuid);
+
+                layerManager.active().shapes.list().forEach(function (shape) {
+                    shape.moveTo(middlePrevious);
+                    shape.scaleTo(zoomFactor);
+                    shape.moveTo(middleCurrent);
+                });
+
+                layerManager.update();
+            });
+            layerManager.active(layerActive.uuid);
+
+            _view.zoom = value;
+        },
+        get center() {
+            return _view.center;
+        },
+        set center(value) {
+            // verificamos se o novo status de centro é realmente diferente do atual
+            if (value && (value.x != 0 || value.y != 0) && (value.x != _view.center.x || value.y != _view.center.y)) {
+
+                var layerActive = layerManager.active(),
+                    // fator de movimento - calculando e atualizando com o zoom atual
+                    moveFactor = {
+                        x: (value.x - _view.center.x) * _view.zoom,
+                        y: (value.y - _view.center.y) * _view.zoom
+                    }
+
+                // adicionado ao histórico dos movimentos de centro
+                centerHistory.add({
+                    x: value.x - _view.center.x,
+                    y: value.y - _view.center.y
+                });
+
+                // movimentando todos os shapes de todas as layers
+                layerManager.list().forEach(function (layer) {
+
+                    layerManager.active(layer.uuid);
+
+                    layerManager.active().shapes.list().forEach(function (shape) {
+                        shape.moveTo(moveFactor);
+                    });
+
+                    layerManager.update();
+                });
+                layerManager.active(layerActive.uuid);
+
+                // atualizando os valores para o centro com seus movimentos
+                _view.center.x += (value.x - _view.center.x);
+                _view.center.y += (value.y - _view.center.y);
+            }
+        },
+        get bounds() {
+            var boundsHistory = {
+                x: 0,
+                y: 0
+            };
+
+            // calculando o centro através do histórico de movimentos
+            centerHistory.list().forEach(function (itemHistory) {
+                boundsHistory.x += itemHistory.x;
+                boundsHistory.y += itemHistory.y;
+            });
+
+            // aplicando o zoom atual na soma 
+            boundsHistory.x *= _view.zoom;
+            boundsHistory.y *= _view.zoom;
+
+            // somando aos movimentos de zoom
+            // calculando os limites
+            return {
+                x: _view.bounds.x + boundsHistory.x,
+                y: _view.bounds.y + boundsHistory.y,
+                height: _view.bounds.height,
+                width: _view.bounds.width
+            };
+        },
+        get size() {
+            return _view.size;
+        }
+    }
+
+
+
+
+
+
+    exports.initialize = initialize;
+    exports.clear = clear;
+    exports.view = view;
+    
+    exports.layer = layer;
+    exports.point = point;
+    exports.shape = shape;
+    exports.group = group;
+    exports.tool = tool;
+
+    exports.importer = importer;
+    exports.exporter = exporter;
+});
+define("structure/group", ['require', 'exports'], function (require, exports) {
+
+    function Group() {};
+
+    Group.prototype = {};
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Group();
+    };
+
+    exports.create = create;
+
+});
+define("structure/layer", ['require', 'exports'], function (require, exports) {
+
+    var types = require('utility/types');
+
+    var store = types.data.dictionary.create();
+
+
+    var Layer = types.object.inherits(function Layer(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.status = attrs.status;
+        this.style = attrs.style;
+        this.render = attrs.render;
+        this.shapes = attrs.shapes;
+    }, types.object.event);
+
+    Layer.prototype.toObject = function () {
+        return {
+            uuid: this.uuid,
+            name: this.name,
+            locked: this.locked,
+            status: this.status,
+            style: this.style,
+            shapes: this.shapes.list()
+        };
+    }
+
+
+    function create(attrs) {
+        if ((typeof attrs == "function")) {
+            throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        attrs = types.object.union(attrs, {
+            viewPort: viewPort
+        });
+
+        var uuid = types.math.uuid(9, 16);
+
+        // montando o render da Layer
+        var render = document.createElement('canvas');
+
+        render.id = types.math.uuid(9, 16);
+        render.width = attrs.viewPort.clientWidth;
+        render.height = attrs.viewPort.clientHeight;
+
+        render.style.position = "absolute";
+        render.style.backgroundColor = (attrs.status == 'system') ? attrs.style.backgroundColor : 'transparent';
+
+        var context2D = render.getContext('2d');
+
+        // sistema cartesiano de coordenadas
+        context2D.translate(0, render.height);
+        context2D.scale(1, -1);
+
+        // parametros para a nova Layer
+        attrs = types.object.merge({
+            uuid: uuid,
+            name: 'New Layer '.concat(uuid),
+            style: {
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                lineWidth: .7,
+                lineColor: 'rgb(0, 0, 0)',
+            },
+            status: 'visible',
+            shapes: types.data.dictionary.create(),
+            render: render
+        }, attrs);
+        // parametros para a nova Layer
+
+        // nova Layer
+        var layer = new Layer(attrs);
+
+        // add em viewPort
+        attrs.viewPort.appendChild(layer.render);
+
+
+        store.add(layer.uuid, layer);
+        return this.active = layer.uuid;
+    }
+
+
+    function remove(value) {
+        store.list().forEach(function (layer) {
+            var element = document.getElementById(layer.render.id);
+            if (element && element.parentNode) {
+                element.parentNode.removeChild(element);
+            }
+            store.remove(layer.uuid);
+        });
+    }
+
+    function list() {
+        return store.list();
+    }
+
+    function update() {
+
+        var style = this.active.style,
+            shapes = this.active.shapes.list(),
+            render = this.active.render,
+            context2D = render.getContext('2d');
+
+        // limpando o render
+        context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
+
+        // style of layer
+        context2D.lineCap = style.lineCap;
+        context2D.lineJoin = style.lineJoin;
+
+        // render para cada shape
+        shapes.forEach(function (shape) {
+            // save state of all configuration
+            context2D.save();
+            context2D.beginPath();
+
+            shape.render(context2D);
+
+            context2D.stroke();
+            // restore state of all configuration
+            context2D.restore();
+        });
+
+        return true;
+    }
+
+    var events = types.object.extend(types.object.event.create(), {
+
+
+
+    });
+
+
+    Object.defineProperty(exports, 'active', {
+        get: function () {
+            return this._active;
+        },
+        set: function (value) {
+            events.notify('onDeactivated', {
+                type: 'onDeactivated',
+                layer: this.active
+            });
+
+            this._active = store.find(value);
+
+            events.notify('onActivated', {
+                type: 'onActivated',
+                layer: this.active
+            });
+        },
+        enumerable: true
+    });
+
+    exports.create = create;
+    exports.update = update;
+    exports.list = list;
+    exports.remove = remove;
+    exports.events = events;
+});
+define("structure/point", ['require', 'exports'], function (require, exports) {
+
+    function Point(x, y) {
+        this.x = x;
+        this.y = y;
+    };
+
+    Point.prototype = {
+        sum: function (point) {
+            return new Point(this.x + point.x, this.y + point.y);
+        },
+        subtract: function (point) {
+            return new Point(this.x - point.x, this.y - point.y);
+        },
+        multiply: function (value) {
+            return new Point(this.x * value, this.y * value);
+        },
+        distanceTo: function (point) {
+            var dx = this.x - point.x;
+            var dy = this.y - point.y;
+
+            return Math.sqrt(dx * dx + dy * dy);
+        },
+        midTo: function (point) {
+            return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
+        },
+        angleTo: function (point) {
+            return Math.atan2(point.y - this.y, point.x - this.x);
+        },
+        interpolationLinear: function (point, value) {
+            return new Point(
+                this.x + (point.x - this.x) * value,
+                this.y + (point.y - this.y) * value
+            );
+        }
+    };
+
+    function create(x, y) {
+        if ((x == null || x == undefined) || (y == null || y == undefined)) {
+            throw new Error('Point - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+
+
+
+
+        return new Point(x, y);
+    };
+
+    exports.create = create;
+
+});
+define("structure/shape", ['require', 'exports'], function (require, exports) {
+
+    var types = require('utility/types');
+
+    var intersection = require('geometric/intersection');
+
+    var point = require('structure/point'),
+        layer = require('structure/layer');
+
 
 
     function Shape() {};
@@ -1099,9 +2001,20 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
 
     function create(attrs) {
+        if ((typeof attrs == "function") || (attrs == null)) {
+            throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier'].indexOf(attrs.type) == -1) {
+            throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (((attrs.type != 'polyline') && (attrs.type != 'bezier') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
+            throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
 
-        var uuid = types.math.uuid(9, 16);
+        var uuid = types.math.uuid(9, 16),
+            shape = null;
 
+        // atributos 
         attrs = types.object.merge({
             uuid: uuid,
             name: 'shape '.concat(uuid),
@@ -1113,25 +2026,34 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         case 'line':
             {
                 attrs.points = [point.create(attrs.a[0], attrs.a[1]), point.create(attrs.b[0], attrs.b[1])];
-                return new Line(attrs);
+                
+                shape = new Line(attrs);
+                
+                break;
             }
         case 'bezier':
             {
-                attrs.points = attrs.points.map(function (singlePoint) {
+                attrs.points = attrs.points.map(function (pointAttrs) {
                     return {
-                        a: point.create(singlePoint.a[0], singlePoint.a[1]),
-                        b: point.create(singlePoint.b[0], singlePoint.b[1]),
-                        c: point.create(singlePoint.c[0], singlePoint.c[1])
+                        a: point.create(pointAttrs.a[0], pointAttrs.a[1]),
+                        b: point.create(pointAttrs.b[0], pointAttrs.b[1]),
+                        c: point.create(pointAttrs.c[0], pointAttrs.c[1])
                     };
                 });
-                return new Bezier(attrs);
+                
+                shape = new Bezier(attrs);
+                
+                break;
             }
         case 'rectangle':
             {
                 attrs.point = point.create(attrs.x, attrs.y);
                 attrs.height = attrs.height;
                 attrs.width = attrs.width;
-                return new Rectangle(attrs);
+                
+                shape = new Rectangle(attrs);
+                
+                break;
             }
         case 'arc':
             {
@@ -1140,20 +2062,27 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 attrs.startAngle = attrs.startAngle;
                 attrs.endAngle = attrs.endAngle;
                 attrs.clockWise = attrs.clockWise;
-                return new Arc(attrs);
+                
+                shape = new Arc(attrs);
+                
+                break;
             }
         case 'circle':
             {
                 attrs.point = point.create(attrs.x, attrs.y);
                 attrs.radius = attrs.radius;
-                return new Circle(attrs);
+                
+                shape = new Circle(attrs);
             }
         case 'ellipse':
             {
                 attrs.point = point.create(attrs.x, attrs.y);
                 attrs.radiusY = attrs.radiusY;
                 attrs.radiusX = attrs.radiusX;
-                return new Ellipse(attrs);
+                
+                shape = new Ellipse(attrs);
+                
+                break;
             }
         case 'polygon':
             {
@@ -1168,19 +2097,26 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     attrs['points'].push(point.create(pointX, pointY));
                 }
 
-                return new Polygon(attrs);
+                shape = new Polygon(attrs);
+                
+                break;
             }
         case 'polyline':
             {
                 for (var i = 0; i < attrs.points.length; i++) {
                     attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
                 }
-                return new Polyline(attrs);
+                
+                shape = new Polyline(attrs);
+                
+                break;
             }
         default:
             break;
         }
-
+        
+        // adicionando o novo shape na layer ativa
+        return layer.active.shapes.add(shape.uuid, shape);
     }
 
     function remove(value) {}
@@ -1195,603 +2131,6 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
     exports.list = list;
     exports.find = find;
 });
-define("plane", ['require', 'exports'], function (require, exports) {
-
-    var version = '3.0.0',
-        authors = ['lilo@c37.co', 'ser@c37.co'];
-
-    var types = require('utility/types'),
-        importer = require('utility/importer'),
-        exporter = require('utility/exporter');
-
-    var layerManager = require('structure/layer'),
-        shapeManager = require('geometric/shape'),
-        toolManager = require('structure/tool');
-
-    var centerHistory = types.data.list.create();
-
-    var viewPort = null,
-        _view = {
-            zoom: 1,
-            center: {
-                x: 0,
-                y: 0,
-                reset: function () {
-
-                    var layerActive = layerManager.active(),
-                        centerInitial = {
-                            x: (_view.size.width * _view.zoom) / 2,
-                            y: (_view.size.height * _view.zoom) / 2
-                        };
-
-
-                    // utilizo o histórico de movimentação de centro 
-                    // para retornar ao inicio
-                    var moveFactor = {
-                        x: 0,
-                        y: 0
-                    };
-
-                    // calculando o centro através do histórico de movimentos
-                    centerHistory.list().forEach(function (itemHistory) {
-                        moveFactor.x += itemHistory.x;
-                        moveFactor.y += itemHistory.y;
-                    });
-
-                    // aplicando o zoom atual na soma 
-                    moveFactor.x *= _view.zoom;
-                    moveFactor.y *= _view.zoom;
-
-                    // negativo
-                    moveFactor.x *= -1;
-                    moveFactor.y *= -1;
-
-                    // limpando os históricos de centro
-                    centerHistory.clear();
-
-                    // limpando os limites
-                    _view.bounds.height = _view.size.height * _view.zoom;
-                    _view.bounds.width = _view.size.width * _view.zoom;
-                    _view.bounds.x = 0;
-                    _view.bounds.y = 0;
-
-
-                    _view.center.x += moveFactor.x;
-                    _view.center.y += moveFactor.y;
-
-                    // movimentando todos os shapes de todas as layers
-                    layerManager.list().forEach(function (layer) {
-
-                        layerManager.active(layer.uuid);
-
-                        layerManager.active().shapes.list().forEach(function (shape) {
-                            shape.moveTo(moveFactor);
-                        });
-
-                        layerManager.update();
-                    });
-                    layerManager.active(layerActive.uuid);
-
-                    return true;
-                },
-                add: function (moveFactor) {
-
-                    // adicionado ao histórico dos movimentos de centro
-                    centerHistory.add({
-                        x: moveFactor.x,
-                        y: moveFactor.y
-                    });
-
-                    _view.center.x += moveFactor.x;
-                    _view.center.y += moveFactor.y;
-
-                    var layerActive = layerManager.active();
-                    // movimentando todos os shapes de todas as layers
-                    layerManager.list().forEach(function (layer) {
-
-                        layerManager.active(layer.uuid);
-
-                        layerManager.active().shapes.list().forEach(function (shape) {
-                            shape.moveTo(moveFactor);
-                        });
-
-                        layerManager.update();
-                    });
-                    layerManager.active(layerActive.uuid);
-
-                    return true;
-                }
-            },
-            size: {
-                height: 0,
-                width: 0
-            },
-            bounds: {
-                x: 0,
-                y: 0,
-                height: 0,
-                width: 0
-            }
-        }
-
-
-    function initialize(config) {
-        if (config == null) {
-            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-        if (typeof config == "function") {
-            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-        if (config.viewPort == null) {
-            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-
-
-        viewPort = config.viewPort;
-
-        // iniciando configurações para View
-
-        // o centro inicial
-        _view.center.x = viewPort.clientWidth / 2;
-        _view.center.y = viewPort.clientHeight / 2;
-
-        // os limites de tamanho inicial
-        _view.bounds.height = viewPort.clientHeight;
-        _view.bounds.width = viewPort.clientWidth;
-
-        // os tamanhos que são fixos
-        _view.size.height = viewPort.clientHeight;
-        _view.size.width = viewPort.clientWidth;
-
-
-        toolManager.event.start({
-            viewPort: viewPort
-        });
-
-        return true;
-    }
-
-    function clear() {
-        // reset em center
-        //        center({
-        //            factor: 1,
-        //            center: {
-        //                x: _center.position.x * -1,
-        //                y: _center.position.y * -1
-        //            }
-        //        });
-
-        // remove em todas as layers
-        layerManager.remove();
-
-        return true;
-    }
-
-    // plane.view.zoom =/ .9;  - more
-    // plane.view.zoom =* .9; - less
-    var view = {
-        get zoom() {
-            return _view.zoom;
-        },
-        set zoom(value) {
-
-            var layerActive = layerManager.active(),
-                zoomFactor = value / _view.zoom;
-
-            // com o valor do middle anterior para retroceder os valores sem perder a medida do centro
-            var middlePrevious = {
-                x: ((viewPort.clientWidth - (viewPort.clientWidth * _view.zoom)) / 2) * -1,
-                y: ((viewPort.clientHeight - (viewPort.clientHeight * _view.zoom)) / 2) * -1,
-            };
-            // ATENÇÃO - os sinais!
-            _view.bounds.x += middlePrevious.x;
-            _view.bounds.y += middlePrevious.y;
-
-            _view.bounds.height *= _view.zoom;
-            _view.bounds.width *= _view.zoom;
-
-            // com o meio atualizando pelo zoom
-            var middleCurrent = {
-                x: ((viewPort.clientWidth - (viewPort.clientWidth * value)) / 2),
-                y: (viewPort.clientHeight - (viewPort.clientHeight * value)) / 2,
-            };
-            // atualizando os limites
-            _view.bounds.x += middleCurrent.x;
-            _view.bounds.y += middleCurrent.y;
-
-            layerManager.list().forEach(function (layer) {
-
-                layerManager.active(layer.uuid);
-
-                layerManager.active().shapes.list().forEach(function (shape) {
-                    shape.moveTo(middlePrevious);
-                    shape.scaleTo(zoomFactor);
-                    shape.moveTo(middleCurrent);
-                });
-
-                layerManager.update();
-            });
-            layerManager.active(layerActive.uuid);
-
-            _view.zoom = value;
-        },
-        get center() {
-            return _view.center;
-        },
-        set center(value) {
-            // verificamos se o novo status de centro é realmente diferente do atual
-            if (value && (value.x != 0 || value.y != 0) && (value.x != _view.center.x || value.y != _view.center.y)) {
-
-                var layerActive = layerManager.active(),
-                    // fator de movimento - calculando e atualizando com o zoom atual
-                    moveFactor = {
-                        x: (value.x - _view.center.x) * _view.zoom,
-                        y: (value.y - _view.center.y) * _view.zoom
-                    }
-
-                // adicionado ao histórico dos movimentos de centro
-                centerHistory.add({
-                    x: value.x - _view.center.x,
-                    y: value.y - _view.center.y
-                });
-
-                // movimentando todos os shapes de todas as layers
-                layerManager.list().forEach(function (layer) {
-
-                    layerManager.active(layer.uuid);
-
-                    layerManager.active().shapes.list().forEach(function (shape) {
-                        shape.moveTo(moveFactor);
-                    });
-
-                    layerManager.update();
-                });
-                layerManager.active(layerActive.uuid);
-
-                // atualizando os valores para o centro com seus movimentos
-                _view.center.x += (value.x - _view.center.x);
-                _view.center.y += (value.y - _view.center.y);
-            }
-        },
-        get bounds() {
-            var boundsHistory = {
-                x: 0,
-                y: 0
-            };
-
-            // calculando o centro através do histórico de movimentos
-            centerHistory.list().forEach(function (itemHistory) {
-                boundsHistory.x += itemHistory.x;
-                boundsHistory.y += itemHistory.y;
-            });
-
-            // aplicando o zoom atual na soma 
-            boundsHistory.x *= _view.zoom;
-            boundsHistory.y *= _view.zoom;
-
-            // somando aos movimentos de zoom
-            // calculando os limites
-            return {
-                x: _view.bounds.x + boundsHistory.x,
-                y: _view.bounds.y + boundsHistory.y,
-                height: _view.bounds.height,
-                width: _view.bounds.width
-            };
-        },
-        get size() {
-            return _view.size;
-        }
-    }
-
-
-
-
-    var layer = types.object.extend(types.object.event.create(), {
-        create: function (attrs) {
-            if ((typeof attrs == "function")) {
-                throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-
-            attrs = types.object.union(attrs, {
-                viewPort: viewPort
-            });
-
-            return layerManager.create(attrs);
-        },
-        list: function (selector) {
-            return layerManager.list();
-        },
-        remove: function (uuid) {
-            layerManager.remove(uuid);
-        },
-        get active() {
-            return layerManager.active();
-        },
-        set active(value) {
-            this.notify('onDeactive', {
-                type: 'onDeactive',
-                layer: layerManager.active()
-            });
-
-            layerManager.active(value);
-
-            this.notify('onActive', {
-                type: 'onActive',
-                layer: layerManager.active()
-            });
-        },
-        update: function () {
-            return layerManager.update();
-        }
-    });
-
-    var shape = {
-        create: function (attrs) {
-            if ((typeof attrs == "function") || (attrs == null)) {
-                throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-            if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier'].indexOf(attrs.type) == -1) {
-                throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-            if (((attrs.type != 'polyline') && (attrs.type != 'bezier') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
-                throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-
-            var shape = shapeManager.create(attrs);
-
-            layerManager.active().shapes.add(shape.uuid, shape);
-
-            return true;
-        }
-    };
-
-    var tool = {
-        create: function (attrs) {
-            if (typeof attrs == "function") {
-                throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-            }
-
-            return toolManager.create(attrs);
-        }
-    };
-
-    // importer
-    function fromJson(stringJson) {
-
-        var planeObject = JSON.parse(stringJson);
-
-        clear();
-
-        //        _center = planeObject.position;
-
-        planeObject.layers.forEach(function (layerObject) {
-
-            layerManager.create({
-                uuid: layerObject.uuid,
-                name: layerObject.name,
-                locked: layerObject.locked,
-                Visible: layerObject.Visible,
-                style: layerObject.style,
-                viewPort: viewPort
-            });
-
-            layerObject.shapes.forEach(function (shapeObject) {
-                shape.create(shapeObject)
-            });
-
-            layerManager.update();
-        });
-
-        return true;
-    };
-
-    function fromSvg(stringSvg) {
-        return true;
-    };
-
-    function fromDxf(stringDxf) {
-        clear();
-
-        var stringJson = importer.fromDxf(stringDxf);
-        var objectDxf = JSON.parse(stringJson);
-
-        if (stringJson) {
-            layer.create();
-            for (var prop in objectDxf) {
-                shape.create(objectDxf[prop]);
-            }
-            layer.update();
-        }
-    };
-
-    function fromDwg(stringDwg) {
-        return true;
-    }
-    // importer
-
-    // exporter
-    function toJson() {
-
-        var planeExport = {
-            //            center: _center,
-            layers: layerManager.list().map(function (layer) {
-                var layerObject = layer.toObject();
-
-                layerObject.shapes = layerObject.shapes.map(function (shape) {
-                    return shape.toObject();
-                });
-
-                return layerObject;
-            })
-        }
-
-        return JSON.stringify(planeExport);
-    }
-
-    function toSvg() {
-        return true;
-    }
-    // exporter
-
-
-    exports.initialize = initialize;
-    exports.clear = clear;
-    exports.view = view;
-
-    exports.layer = layer;
-    exports.shape = shape;
-    exports.tool = tool;
-
-    exports.importer = {
-        fromJson: fromJson,
-        fromSvg: fromSvg,
-        fromDxf: fromDxf,
-        fromDwg: fromDwg
-    };
-    exports.exporter = {
-        toJson: toJson,
-        toSvg: toSvg
-    };
-});
-define("structure/layer", ['require', 'exports'], function (require, exports) {
-
-    var types = require('utility/types');
-
-    var layerStore = types.data.dictionary.create(),
-        layerActive = null;
-
-
-    var Layer = types.object.inherits(function Layer(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.status = attrs.status;
-        this.style = attrs.style;
-        this.render = attrs.render;
-        this.shapes = attrs.shapes;
-    }, types.object.event);
-
-    Layer.prototype.toObject = function () {
-        return {
-            uuid: this.uuid,
-            name: this.name,
-            locked: this.locked,
-            status: this.status,
-            style: this.style,
-            shapes: this.shapes.list()
-        };
-    }
-
-
-    function create(attrs) {
-
-        var uuid = types.math.uuid(9, 16);
-
-        // montando o render da Layer
-        var render = document.createElement('canvas');
-
-        render.id = types.math.uuid(9, 16);
-        render.width = attrs.viewPort.clientWidth;
-        render.height = attrs.viewPort.clientHeight;
-
-        render.style.position = "absolute";
-        render.style.backgroundColor = (attrs.status == 'system') ? attrs.style.backgroundColor : 'transparent';
-
-        var context2D = render.getContext('2d');
-
-        // sistema cartesiano de coordenadas
-        context2D.translate(0, render.height);
-        context2D.scale(1, -1);
-
-        // parametros para a nova Layer
-        attrs = types.object.merge({
-            uuid: uuid,
-            name: 'New Layer '.concat(uuid),
-            style: {
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                lineWidth: .7,
-                lineColor: 'rgb(0, 0, 0)',
-            },
-            status: 'visible',
-            shapes: types.data.dictionary.create(),
-            render: render
-        }, attrs);
-        // parametros para a nova Layer
-
-        // nova Layer
-        var layer = new Layer(attrs);
-
-        // add em viewPort
-        attrs.viewPort.appendChild(layer.render);
-
-        //        if (layer.status != 'system') {
-        //            layerStore.add(layer.uuid, layer);
-        //            this.active(layer.uuid);
-        //            return true;
-        //        } else {
-        //            return layer;
-        //        }
-
-        layerStore.add(layer.uuid, layer);
-        return this.active(layer.uuid);
-
-    }
-
-    function active(value) {
-        return value ? layerActive = layerStore.find(value) : layerActive;
-    }
-
-    function remove(value) {
-        layerStore.list().forEach(function (layer) {
-            var element = document.getElementById(layer.render.id);
-            if (element && element.parentNode) {
-                element.parentNode.removeChild(element);
-            }
-            layerStore.remove(layer.uuid);
-        });
-    }
-
-    function list() {
-        return layerStore.list();
-    }
-
-    function update() {
-
-        var layerStyle = layerActive.style,
-            layerShapes = layerActive.shapes.list(),
-            layerRender = layerActive.render,
-            context2D = layerRender.getContext('2d');
-
-        // limpando o render
-        context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
-        
-        // style of layer
-        context2D.lineCap = layerStyle.lineCap;
-        context2D.lineJoin = layerStyle.lineJoin;
-
-        // render para cada shape
-        layerShapes.forEach(function (shape) {
-            // save state of all configuration
-            context2D.save();
-            context2D.beginPath();
-
-            shape.render(context2D);
-
-            context2D.stroke();
-            // restore state of all configuration
-            context2D.restore();
-        });
-        
-        return true;
-    }
-
-
-    exports.create = create;
-    exports.active = active;
-    exports.update = update;
-    exports.list = list;
-    exports.remove = remove;
-});
 define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
@@ -1799,11 +2138,11 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
     var toolStore = types.data.dictionary.create(),
         shapeSelected = types.data.dictionary.create();
 
-    var layerManager = require('structure/layer');
+    var layer = require('structure/layer');
 
     var viewPort = null;
 
-    
+
     var Tool = types.object.inherits(function Tool(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -1811,7 +2150,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         Object.defineProperty(this, 'active', {
             get: function () {
                 return this._active || false;
-            }, 
+            },
             set: function (value) {
                 this.notify(value ? 'onActive' : 'onDeactive', {
                     type: value ? 'onActive' : 'onDeactive',
@@ -1825,13 +2164,16 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
 
     function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
 
         var uuid = types.math.uuid(9, 16);
 
         attrs = types.object.merge({
             uuid: uuid,
             name: 'Tool '.concat(uuid)
-        }, attrs); 
+        }, attrs);
 
         // nova tool
         var tool = new Tool(attrs)
@@ -1849,21 +2191,21 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             viewPort = config.viewPort;
 
             viewPort.onmousemove = function (event) {
-                
-                if (layerManager.active()) {
-                    layerManager.active().shapes.list().forEach(function (shape) {
+
+                if (layer.active) {
+                    layer.active.shapes.list().forEach(function (shape) {
                         if (shape.status != 'selected') {
                             shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
                         }
                     });
-                    layerManager.update();
+                    layer.update();
                 }
             }
 
             viewPort.onclick = function (event) {
-                if (layerManager.active()) {
-                    
-                    layerManager.active().shapes.list().forEach(function (shape) {
+                if (layer.active) {
+
+                    layer.active.shapes.list().forEach(function (shape) {
                         if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
 
                             shape.status = shape.status != 'selected' ? 'selected' : 'over';
@@ -1876,7 +2218,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
                         }
                     });
-                    layerManager.update();
+                    layer.update();
 
                     toolStore.list().forEach(function (Tool) {
                         if (Tool.active) {
@@ -1894,264 +2236,6 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     exports.event = event;
     exports.create = create;
-});
-define("utility/exporter", ['require', 'exports'], function (require, exports) {
-    
-    function toJson (){
-        return true;
-    }
-    
-    function toSvg (){
-        return true;
-    }
-    
-    function toDxf (){
-        return true;
-    }
-    
-    function toPng (){
-        return true;
-    }
-    
-    function toPdf (){
-        return true;
-    }
-
-    
-    exports.toJson = toJson;
-    exports.toSvg = toSvg;
-    exports.toDxf = toDxf;
-    exports.toPng = toPng;
-    exports.toPdf = toPdf;
-
-});
-define("utility/importer", ['require', 'exports'], function (require, exports) {
-
-    var types = require('utility/types');
-
-    function fromDxf(stringDxf) {
-
-        function toJson(objectDxf) {
-
-            switch (objectDxf.type) {
-            case 'line':
-                {
-                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
-                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
-                }
-            case 'spline':
-                {
-                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
-                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
-                }
-            case 'circle':
-                {
-                    var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} },';
-                    return types.string.format(circle, [objectDxf.x, objectDxf.y, objectDxf.r]);
-                }
-            case 'arc':
-                {
-                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
-                    return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1, false]);
-                }
-            case 'ellipse':
-                {
-                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} },',
-                        radiusX = Math.abs(objectDxf.x1),
-                        radiusY = radiusX * objectDxf.r;
-
-                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX])
-                }
-            case 'lwpolyline':
-                {
-                    if (objectDxf.vertices) {
-                        var polyline = '{"type": "polyline", "points": [{0}]},',
-                            points = '';
-
-                        for (var i = 0; i < objectDxf.vertices.length; i++) {
-
-                            var point = i == objectDxf.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
-
-                        }
-                        return types.string.format(polyline, [points]);
-                    }
-                    return '';
-                }
-            case 'polyline':
-                {
-                    if (objectDxf.vertices) {
-                        var polyline = '{"type": "polyline", "points": [{0}]},',
-                            points = '';
-
-                        for (var i = 0; i < objectDxf.vertices.length; i++) {
-
-                            var point = i == objectDxf.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
-
-                        }
-                        return types.string.format(polyline, [points]);
-                    }
-                    return '';
-                }
-            }
-
-        }
-
-
-        // certificando que a linha irá terá o caractere de nova linha
-        stringDxf = stringDxf.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
-
-        // entidades suportadas na conversão
-        //                var entitiesSupport = ['polyline'],
-        var entitiesSupport = ['line', 'circle', 'arc', 'ellipse', 'lwpolyline', 'polyline', 'spline'],
-            entitiesSection = false,
-            objectParse = null,
-            stringAux = '',
-            stringJson = '',
-            stringLine = '',
-            arrayDxf = stringDxf.split('\n');
-
-        for (var i = 0; i <= arrayDxf.length - 1; i++) {
-
-            stringLine = arrayDxf[i].toLowerCase();
-
-            entitiesSection = entitiesSection ? entitiesSection : (stringLine == 'entities');
-            if (!entitiesSection) continue;
-
-            if (entitiesSupport.indexOf(stringLine) > -1) {
-                objectParse = {
-                    type: stringLine
-                };
-                continue;
-            }
-
-            if (!objectParse) continue;
-
-
-            if (stringAux == ' 10') {
-                // verificação especifica para spline
-                if (objectParse.type == 'spline' && objectParse.x) {
-                    objectParse.x1 = types.math.parseFloat(stringLine, 5);
-                } else {
-                    objectParse.x = types.math.parseFloat(stringLine, 5);
-                }
-                stringAux = '';
-                continue;
-            }
-            if (stringLine == ' 10') {
-                stringAux = stringLine;
-                continue;
-            }
-            if (stringAux == ' 11') {
-                objectParse.x1 = types.math.parseFloat(stringLine, 5);
-                stringAux = '';
-                continue;
-            }
-
-            if (stringLine == ' 11') {
-                stringAux = stringLine;
-                continue;
-            }
-
-            if (stringAux == ' 20') {
-                // verificação especifica para spline
-                if (objectParse.type == 'spline' && objectParse.y) {
-                    objectParse.y1 = types.math.parseFloat(stringLine, 5);
-                } else {
-                    objectParse.y = types.math.parseFloat(stringLine, 5);
-                }
-                // verificação especifica para lwpolyline e polyline
-                if (objectParse.type == 'lwpolyline' || objectParse.type == 'polyline') {
-                    if (objectParse.x && objectParse.y) {
-                        objectParse.vertices = objectParse.vertices || [];
-                        objectParse.vertices.push({
-                            x: objectParse.x,
-                            y: objectParse.y
-                        });
-                    }
-                }
-                stringAux = '';
-                continue;
-            }
-            if (stringLine == ' 20') {
-                stringAux = stringLine;
-                continue;
-            }
-            if (stringAux == ' 21') {
-                objectParse.y1 = types.math.parseFloat(stringLine, 5);
-                stringAux = '';
-                continue;
-            }
-            if (stringLine == ' 21') {
-                stringAux = stringLine;
-                continue;
-            }
-
-
-            if (stringAux == ' 40') {
-                objectParse.r = types.math.parseFloat(stringLine, 5);
-                stringAux = '';
-                continue;
-            }
-            if (stringLine == ' 40') {
-                stringAux = stringLine;
-                continue;
-            }
-
-
-            if (stringAux == ' 50') {
-                objectParse.a0 = types.math.parseFloat(stringLine, 5);
-                stringAux = '';
-                continue;
-            }
-            if (stringLine == ' 50') {
-                stringAux = stringLine;
-                continue;
-            }
-            if (stringAux == ' 51') {
-                objectParse.a1 = types.math.parseFloat(stringLine, 5);
-                stringAux = '';
-                continue;
-            }
-            if (stringLine == ' 51') {
-                stringAux = stringLine;
-                continue;
-            }
-
-
-            // conversão para Json
-            if (objectParse && objectParse.type && objectParse.type != 'polyline' && arrayDxf[i] == '  0') {
-                stringJson += toJson(objectParse);
-                objectParse = null;
-            }
-            // conversão para Json - verificação especifica para Polyline
-            if (objectParse && objectParse.type && objectParse.type == 'polyline' && arrayDxf[i] == 'SEQEND') {
-                stringJson += toJson(objectParse);
-                objectParse = null;
-            }
-        }
-
-        return stringJson ? '[' + stringJson.substring(0, stringJson.length - 1) + ']' : '[]';
-    }
-
-    function fromDwg(stringDwg) {
-        return true;
-    }
-
-    function fromJson(stringJson) {
-        return true;
-    }
-
-    function fromSvg(stringSvg) {
-        return true;
-    }
-
-    exports.fromDxf = fromDxf;
-    exports.fromDwg = fromDwg;
-    exports.fromJson = fromJson;
-    exports.fromSvg = fromSvg;
-
 });
 define("utility/types", ['require', 'exports'], function (require, exports) {
 
@@ -2354,7 +2438,14 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
          */
         extend: function (o, p) {
             for (var prop in p) { // For all props in p.
-                Object.defineProperty(o, prop, Object.getOwnPropertyDescriptor(p, prop)); // add the property to o.
+                // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptor
+                // 2014.08.08 11:00 - lilo - alteração para funcionar com propriedas e função "not own (prototype chain)" do objeto
+                var desc = Object.getOwnPropertyDescriptor(p, prop);
+                if (desc) {
+                    Object.defineProperty(o, prop, desc); // add the property to o.
+                } else {
+                    o[prop] = p[prop];
+                }
             }
             return o;
         },

@@ -5,11 +5,11 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
     var toolStore = types.data.dictionary.create(),
         shapeSelected = types.data.dictionary.create();
 
-    var layerManager = require('structure/layer');
+    var layer = require('structure/layer');
 
     var viewPort = null;
 
-    
+
     var Tool = types.object.inherits(function Tool(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -17,7 +17,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         Object.defineProperty(this, 'active', {
             get: function () {
                 return this._active || false;
-            }, 
+            },
             set: function (value) {
                 this.notify(value ? 'onActive' : 'onDeactive', {
                     type: value ? 'onActive' : 'onDeactive',
@@ -31,13 +31,16 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
 
     function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
 
         var uuid = types.math.uuid(9, 16);
 
         attrs = types.object.merge({
             uuid: uuid,
             name: 'Tool '.concat(uuid)
-        }, attrs); 
+        }, attrs);
 
         // nova tool
         var tool = new Tool(attrs)
@@ -55,21 +58,21 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             viewPort = config.viewPort;
 
             viewPort.onmousemove = function (event) {
-                
-                if (layerManager.active()) {
-                    layerManager.active().shapes.list().forEach(function (shape) {
+
+                if (layer.active) {
+                    layer.active.shapes.list().forEach(function (shape) {
                         if (shape.status != 'selected') {
                             shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
                         }
                     });
-                    layerManager.update();
+                    layer.update();
                 }
             }
 
             viewPort.onclick = function (event) {
-                if (layerManager.active()) {
-                    
-                    layerManager.active().shapes.list().forEach(function (shape) {
+                if (layer.active) {
+
+                    layer.active.shapes.list().forEach(function (shape) {
                         if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
 
                             shape.status = shape.status != 'selected' ? 'selected' : 'over';
@@ -82,7 +85,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
                         }
                     });
-                    layerManager.update();
+                    layer.update();
 
                     toolStore.list().forEach(function (Tool) {
                         if (Tool.active) {

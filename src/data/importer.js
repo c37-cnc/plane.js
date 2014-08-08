@@ -1,4 +1,4 @@
-define("utility/importer", ['require', 'exports'], function (require, exports) {
+define("data/importer", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
@@ -219,6 +219,63 @@ define("utility/importer", ['require', 'exports'], function (require, exports) {
     function fromSvg(stringSvg) {
         return true;
     }
+    
+    
+//
+//    // importer
+//    function fromJson(stringJson) {
+//
+//        var planeObject = JSON.parse(stringJson);
+//
+//        clear();
+//
+//        //        _center = planeObject.position;
+//
+//        planeObject.layers.forEach(function (layerObject) {
+//
+//            layerManager.create({
+//                uuid: layerObject.uuid,
+//                name: layerObject.name,
+//                locked: layerObject.locked,
+//                Visible: layerObject.Visible,
+//                style: layerObject.style,
+//                viewPort: viewPort
+//            });
+//
+//            layerObject.shapes.forEach(function (shapeObject) {
+//                shape.create(shapeObject)
+//            });
+//
+//            layerManager.update();
+//        });
+//
+//        return true;
+//    };
+//
+//    function fromSvg(stringSvg) {
+//        return true;
+//    };
+//
+//    function fromDxf(stringDxf) {
+//        clear();
+//
+//        var stringJson = importer.fromDxf(stringDxf);
+//        var objectDxf = JSON.parse(stringJson);
+//
+//        if (stringJson) {
+//            layer.create();
+//            for (var prop in objectDxf) {
+//                shape.create(objectDxf[prop]);
+//            }
+//            layer.update();
+//        }
+//    };
+//
+//    function fromDwg(stringDwg) {
+//        return true;
+//    }
+//    // importer
+    
 
     exports.fromDxf = fromDxf;
     exports.fromDwg = fromDwg;

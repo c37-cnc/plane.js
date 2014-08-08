@@ -3,43 +3,43 @@ var define, require;
 // http://wiki.commonjs.org/wiki/Modules/AsynchronousDefinition
 (function () {
     var registry = {},
-        seen = {};
+        modules = {};
 
-    define = function (name, deps, callback) {
+    define = function (name, dependencies, callback) {
         registry[name] = {
-            deps: deps,
+            dependencies: dependencies,
             callback: callback
         };
     };
 
     require = function (name) {
 
-        if (seen[name]) {
-            return seen[name];
+        if (modules[name]) {
+            return modules[name];
         }
-        seen[name] = {};
+        modules[name] = {};
 
-        var mod = registry[name];
-        if (!mod) {
+        var module = registry[name];
+        if (!module) {
             throw new Error("Module '" + name + "' not found.");
         }
 
-        var deps = mod.deps,
-            callback = mod.callback,
-            reified = [],
-            exports;
+        var dependencies = module.dependencies,
+            callback = module.callback,
+            parameters = [],
+            exports = {};
 
-        for (var i = 0, l = deps.length; i < l; i++) {
-            if (deps[i] === 'require') {
-                reified.push(require);
-            } else if (deps[i] === 'exports') {
-                reified.push(exports = {});
+        for (var i = 0, l = dependencies.length; i < l; i++) {
+            if (dependencies[i] == 'require') {
+                parameters.push(require);
+            } else if (dependencies[i] == 'exports') {
+                parameters.push(exports);
             } else {
-                reified.push(require(deps[i]));
+                parameters.push(require(dependencies[i]));
             }
         }
 
-        var value = callback.apply(this, reified);
-        return seen[name] = exports || value;
+        var concrete = callback.apply(this, parameters);
+        return modules[name] = exports || concrete;
     };
 })();

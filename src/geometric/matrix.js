@@ -1,7 +1,13 @@
 define("geometric/matrix", ['require', 'exports'], function (require, exports) {
+    
+    // http://www.senocular.com/flash/tutorials/transformmatrix/
+    // https://github.com/heygrady/transform/wiki/Calculating-2d-Matrices
 
     // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js
     // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js
+    // https://github.com/CreateJS/EaselJS/blob/master/src/easeljs/geom/Matrix2D.js
+    // http://eip.epitech.eu/2014/tumbleweed/api/classes/Math.Matrix2D.html
+    // https://github.com/toji/gl-matrix/blob/master/src/gl-matrix/mat2.js
 
     // https://github.com/kangax/fabric.js/blob/818ab118b30a9205a0e57620452b08bb8f5f18cc/src/static_canvas.class.js#L611
     // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js

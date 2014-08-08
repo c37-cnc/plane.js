@@ -1,7 +1,7 @@
 define("geometric/intersection", ['require', 'exports'], function (require, exports) {
 
     var polynomial = require('geometric/polynomial'),
-        point = require('geometric/point');
+        point = require('structure/point');
 
 
     function Bezout(e1, e2) {

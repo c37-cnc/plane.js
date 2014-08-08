@@ -1,4 +1,4 @@
-define("geometric/point", ['require', 'exports'], function (require, exports) {
+define("structure/point", ['require', 'exports'], function (require, exports) {
 
     function Point(x, y) {
         this.x = x;
@@ -36,6 +36,14 @@ define("geometric/point", ['require', 'exports'], function (require, exports) {
     };
 
     function create(x, y) {
+        if ((x == null || x == undefined) || (y == null || y == undefined)) {
+            throw new Error('Point - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+
+
+
+
         return new Point(x, y);
     };
 

@@ -2,8 +2,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
-    var layerStore = types.data.dictionary.create(),
-        layerActive = null;
+    var store = types.data.dictionary.create();
 
 
     var Layer = types.object.inherits(function Layer(attrs) {
@@ -28,6 +27,13 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
 
     function create(attrs) {
+        if ((typeof attrs == "function")) {
+            throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        attrs = types.object.union(attrs, {
+            viewPort: viewPort
+        });
 
         var uuid = types.math.uuid(9, 16);
 
@@ -69,53 +75,42 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         // add em viewPort
         attrs.viewPort.appendChild(layer.render);
 
-        //        if (layer.status != 'system') {
-        //            layerStore.add(layer.uuid, layer);
-        //            this.active(layer.uuid);
-        //            return true;
-        //        } else {
-        //            return layer;
-        //        }
 
-        layerStore.add(layer.uuid, layer);
-        return this.active(layer.uuid);
-
+        store.add(layer.uuid, layer);
+        return this.active = layer.uuid;
     }
 
-    function active(value) {
-        return value ? layerActive = layerStore.find(value) : layerActive;
-    }
 
     function remove(value) {
-        layerStore.list().forEach(function (layer) {
+        store.list().forEach(function (layer) {
             var element = document.getElementById(layer.render.id);
             if (element && element.parentNode) {
                 element.parentNode.removeChild(element);
             }
-            layerStore.remove(layer.uuid);
+            store.remove(layer.uuid);
         });
     }
 
     function list() {
-        return layerStore.list();
+        return store.list();
     }
 
     function update() {
 
-        var layerStyle = layerActive.style,
-            layerShapes = layerActive.shapes.list(),
-            layerRender = layerActive.render,
-            context2D = layerRender.getContext('2d');
+        var style = this.active.style,
+            shapes = this.active.shapes.list(),
+            render = this.active.render,
+            context2D = render.getContext('2d');
 
         // limpando o render
         context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
-        
+
         // style of layer
-        context2D.lineCap = layerStyle.lineCap;
-        context2D.lineJoin = layerStyle.lineJoin;
+        context2D.lineCap = style.lineCap;
+        context2D.lineJoin = style.lineJoin;
 
         // render para cada shape
-        layerShapes.forEach(function (shape) {
+        shapes.forEach(function (shape) {
             // save state of all configuration
             context2D.save();
             context2D.beginPath();
@@ -126,14 +121,40 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             // restore state of all configuration
             context2D.restore();
         });
-        
+
         return true;
     }
 
+    var events = types.object.extend(types.object.event.create(), {
+
+
+
+    });
+
+
+    Object.defineProperty(exports, 'active', {
+        get: function () {
+            return this._active;
+        },
+        set: function (value) {
+            events.notify('onDeactivated', {
+                type: 'onDeactivated',
+                layer: this.active
+            });
+
+            this._active = store.find(value);
+
+            events.notify('onActivated', {
+                type: 'onActivated',
+                layer: this.active
+            });
+        },
+        enumerable: true
+    });
 
     exports.create = create;
-    exports.active = active;
     exports.update = update;
     exports.list = list;
     exports.remove = remove;
+    exports.events = events;
 });

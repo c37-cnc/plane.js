@@ -1,8 +1,12 @@
-define("geometric/shape", ['require', 'exports'], function (require, exports) {
+define("structure/shape", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types'),
-        point = require('geometric/point'),
-        intersection = require('geometric/intersection');
+    var types = require('utility/types');
+
+    var intersection = require('geometric/intersection');
+
+    var point = require('structure/point'),
+        layer = require('structure/layer');
+
 
 
     function Shape() {};
@@ -493,9 +497,20 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
 
 
     function create(attrs) {
+        if ((typeof attrs == "function") || (attrs == null)) {
+            throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier'].indexOf(attrs.type) == -1) {
+            throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (((attrs.type != 'polyline') && (attrs.type != 'bezier') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
+            throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
 
-        var uuid = types.math.uuid(9, 16);
+        var uuid = types.math.uuid(9, 16),
+            shape = null;
 
+        // atributos 
         attrs = types.object.merge({
             uuid: uuid,
             name: 'shape '.concat(uuid),
@@ -507,25 +522,34 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
         case 'line':
             {
                 attrs.points = [point.create(attrs.a[0], attrs.a[1]), point.create(attrs.b[0], attrs.b[1])];
-                return new Line(attrs);
+                
+                shape = new Line(attrs);
+                
+                break;
             }
         case 'bezier':
             {
-                attrs.points = attrs.points.map(function (singlePoint) {
+                attrs.points = attrs.points.map(function (pointAttrs) {
                     return {
-                        a: point.create(singlePoint.a[0], singlePoint.a[1]),
-                        b: point.create(singlePoint.b[0], singlePoint.b[1]),
-                        c: point.create(singlePoint.c[0], singlePoint.c[1])
+                        a: point.create(pointAttrs.a[0], pointAttrs.a[1]),
+                        b: point.create(pointAttrs.b[0], pointAttrs.b[1]),
+                        c: point.create(pointAttrs.c[0], pointAttrs.c[1])
                     };
                 });
-                return new Bezier(attrs);
+                
+                shape = new Bezier(attrs);
+                
+                break;
             }
         case 'rectangle':
             {
                 attrs.point = point.create(attrs.x, attrs.y);
                 attrs.height = attrs.height;
                 attrs.width = attrs.width;
-                return new Rectangle(attrs);
+                
+                shape = new Rectangle(attrs);
+                
+                break;
             }
         case 'arc':
             {
@@ -534,20 +558,27 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                 attrs.startAngle = attrs.startAngle;
                 attrs.endAngle = attrs.endAngle;
                 attrs.clockWise = attrs.clockWise;
-                return new Arc(attrs);
+                
+                shape = new Arc(attrs);
+                
+                break;
             }
         case 'circle':
             {
                 attrs.point = point.create(attrs.x, attrs.y);
                 attrs.radius = attrs.radius;
-                return new Circle(attrs);
+                
+                shape = new Circle(attrs);
             }
         case 'ellipse':
             {
                 attrs.point = point.create(attrs.x, attrs.y);
                 attrs.radiusY = attrs.radiusY;
                 attrs.radiusX = attrs.radiusX;
-                return new Ellipse(attrs);
+                
+                shape = new Ellipse(attrs);
+                
+                break;
             }
         case 'polygon':
             {
@@ -562,19 +593,26 @@ define("geometric/shape", ['require', 'exports'], function (require, exports) {
                     attrs['points'].push(point.create(pointX, pointY));
                 }
 
-                return new Polygon(attrs);
+                shape = new Polygon(attrs);
+                
+                break;
             }
         case 'polyline':
             {
                 for (var i = 0; i < attrs.points.length; i++) {
                     attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
                 }
-                return new Polyline(attrs);
+                
+                shape = new Polyline(attrs);
+                
+                break;
             }
         default:
             break;
         }
-
+        
+        // adicionando o novo shape na layer ativa
+        return layer.active.shapes.add(shape.uuid, shape);
     }
 
     function remove(value) {}
