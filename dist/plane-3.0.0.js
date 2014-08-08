@@ -1,5 +1,5 @@
 /*!
- * C37 in 04-08-2014 at 18:39:22 
+ * C37 in 07-08-2014 at 08:08:57 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -333,6 +333,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
     exports.circleEllipse = circleEllipse;
     exports.circleBezier = circleBezier;
 });
+
 define("geometric/point", ['require', 'exports'], function (require, exports) {
 
     function Point(x, y) {
@@ -1214,7 +1215,92 @@ define("plane", ['require', 'exports'], function (require, exports) {
             zoom: 1,
             center: {
                 x: 0,
-                y: 0
+                y: 0,
+                reset: function () {
+
+                    var layerActive = layerManager.active(),
+                        centerInitial = {
+                            x: (_view.size.width * _view.zoom) / 2,
+                            y: (_view.size.height * _view.zoom) / 2
+                        };
+
+
+                    // utilizo o histórico de movimentação de centro 
+                    // para retornar ao inicio
+                    var moveFactor = {
+                        x: 0,
+                        y: 0
+                    };
+
+                    // calculando o centro através do histórico de movimentos
+                    centerHistory.list().forEach(function (itemHistory) {
+                        moveFactor.x += itemHistory.x;
+                        moveFactor.y += itemHistory.y;
+                    });
+
+                    // aplicando o zoom atual na soma 
+                    moveFactor.x *= _view.zoom;
+                    moveFactor.y *= _view.zoom;
+
+                    // negativo
+                    moveFactor.x *= -1;
+                    moveFactor.y *= -1;
+
+                    // limpando os históricos de centro
+                    centerHistory.clear();
+
+                    // limpando os limites
+                    _view.bounds.height = _view.size.height * _view.zoom;
+                    _view.bounds.width = _view.size.width * _view.zoom;
+                    _view.bounds.x = 0;
+                    _view.bounds.y = 0;
+
+
+                    _view.center.x += moveFactor.x;
+                    _view.center.y += moveFactor.y;
+
+                    // movimentando todos os shapes de todas as layers
+                    layerManager.list().forEach(function (layer) {
+
+                        layerManager.active(layer.uuid);
+
+                        layerManager.active().shapes.list().forEach(function (shape) {
+                            shape.moveTo(moveFactor);
+                        });
+
+                        layerManager.update();
+                    });
+                    layerManager.active(layerActive.uuid);
+
+                    return true;
+                },
+                add: function (moveFactor) {
+
+                    // adicionado ao histórico dos movimentos de centro
+                    centerHistory.add({
+                        x: moveFactor.x,
+                        y: moveFactor.y
+                    });
+
+                    _view.center.x += moveFactor.x;
+                    _view.center.y += moveFactor.y;
+
+                    var layerActive = layerManager.active();
+                    // movimentando todos os shapes de todas as layers
+                    layerManager.list().forEach(function (layer) {
+
+                        layerManager.active(layer.uuid);
+
+                        layerManager.active().shapes.list().forEach(function (shape) {
+                            shape.moveTo(moveFactor);
+                        });
+
+                        layerManager.update();
+                    });
+                    layerManager.active(layerActive.uuid);
+
+                    return true;
+                }
             },
             size: {
                 height: 0,
@@ -1267,13 +1353,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     function clear() {
         // reset em center
-        center({
-            factor: 1,
-            center: {
-                x: _center.position.x * -1,
-                y: _center.position.y * -1
-            }
-        });
+        //        center({
+        //            factor: 1,
+        //            center: {
+        //                x: _center.position.x * -1,
+        //                y: _center.position.y * -1
+        //            }
+        //        });
 
         // remove em todas as layers
         layerManager.remove();
@@ -1298,10 +1384,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 y: ((viewPort.clientHeight - (viewPort.clientHeight * _view.zoom)) / 2) * -1,
             };
             // ATENÇÃO - os sinais!
-            _view.bounds = {
-                x: _view.bounds.x + middlePrevious.x,
-                y: _view.bounds.y + middlePrevious.y
-            }
+            _view.bounds.x += middlePrevious.x;
+            _view.bounds.y += middlePrevious.y;
+
+            _view.bounds.height *= _view.zoom;
+            _view.bounds.width *= _view.zoom;
 
             // com o meio atualizando pelo zoom
             var middleCurrent = {
@@ -1309,10 +1396,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 y: (viewPort.clientHeight - (viewPort.clientHeight * value)) / 2,
             };
             // atualizando os limites
-            _view.bounds = {
-                x: _view.bounds.x + middleCurrent.x,
-                y: _view.bounds.y + middleCurrent.y
-            }
+            _view.bounds.x += middleCurrent.x;
+            _view.bounds.y += middleCurrent.y;
 
             layerManager.list().forEach(function (layer) {
 
@@ -1363,7 +1448,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 });
                 layerManager.active(layerActive.uuid);
 
-                _view.center = value;
+                // atualizando os valores para o centro com seus movimentos
+                _view.center.x += (value.x - _view.center.x);
+                _view.center.y += (value.y - _view.center.y);
             }
         },
         get bounds() {
@@ -1374,23 +1461,21 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             // calculando o centro através do histórico de movimentos
             centerHistory.list().forEach(function (itemHistory) {
-                boundsHistory.x = boundsHistory.x + itemHistory.x;
-                boundsHistory.y = boundsHistory.y + itemHistory.y;
+                boundsHistory.x += itemHistory.x;
+                boundsHistory.y += itemHistory.y;
             });
 
             // aplicando o zoom atual na soma 
-            boundsHistory = {
-                x: boundsHistory.x * _view.zoom,
-                y: boundsHistory.y * _view.zoom
-            }
+            boundsHistory.x *= _view.zoom;
+            boundsHistory.y *= _view.zoom;
 
             // somando aos movimentos de zoom
             // calculando os limites
             return {
                 x: _view.bounds.x + boundsHistory.x,
                 y: _view.bounds.y + boundsHistory.y,
-                height: _view.bounds.height * _view.zoom,
-                width: _view.bounds.width * _view.zoom
+                height: _view.bounds.height,
+                width: _view.bounds.width
             };
         },
         get size() {
