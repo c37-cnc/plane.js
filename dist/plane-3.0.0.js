@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-08-2014 at 17:03:23 
+ * C37 in 09-08-2014 at 00:51:34 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -669,7 +669,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
     exports.circleBezier = circleBezier;
 });
 define("geometric/matrix", ['require', 'exports'], function (require, exports) {
-    
+
     // http://www.senocular.com/flash/tutorials/transformmatrix/
     // https://github.com/heygrady/transform/wiki/Calculating-2d-Matrices
 
@@ -682,53 +682,169 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
     // https://github.com/kangax/fabric.js/blob/818ab118b30a9205a0e57620452b08bb8f5f18cc/src/static_canvas.class.js#L611
     // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js
 
-    function Matrix(a, b, c, d, e, f) {
-        this.a = a; // X_scale
-        this.b = b; // X_skew
-        this.c = c; // Y_skew
-        this.d = d; // Y_scale
-        this.e = e; // X_translate
-        this.f = f; // Y_translate
+    function Matrix(a, b, c, d, tx, ty) {
+        this.a = a || 1; // x scale
+        this.c = c || 0; // x inclinação 
+
+        this.b = b || 0; // y inclinação 
+        this.d = d || 1; // y scale
+
+        this.tx = tx || 0; // x translate
+        this.ty = ty || 0; // y translate
     };
 
 
-    function getDeterminant() {};
+    // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L558
+    // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js#L427
+    function getDeterminant() {
+        return this.a * this.d - this.b * this.c;
+    };
 
     function isIdentity() {};
 
     Matrix.prototype = {
         // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L256
-        rotate: function () {},
+        // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js#L560
+        rotate: function (angle, x, y) {
+            var cos = Math.cos(angle);
+            var sin = Math.sin(angle);
+            return this.transform(cos, sin, -sin, cos, x - x * cos + y * sin, y - x * sin - y * cos);
+        },
         // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L218
-        scale: function () {}, // COM CENTER //
+        scale: function (scale, center) {
+
+            if (center)
+                this.translate(center.x, center.y);
+
+            this._a *= scale.x;
+            this._c *= scale.x;
+            this._b *= scale.y;
+            this._d *= scale.y;
+
+            if (center)
+                this.translate(-center.x, -center.y);
+
+            return this;
+        },
         // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L189
-        translate: function () {},
-        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L150
-        reset: function () {},
-        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L117
-        clone: function () {},
-        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L352
-        concate: function () {},
-        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L337
-        skew: function () {},
-        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L299
-        shear: function () {},
-        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L113
-        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/shapes/group.class.js#L459
-        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L565
-        inverse: function () {
+        translate: function (x, y) {
+
+            this.tx += x * this.a + y * this.b;
+            this.ty += x * this.c + y * this.d;
+
+            return this;
 
         },
-        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L93
-        toPoint: function (point) {},
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L150
+        reset: function () {
+
+            this.a = this.d = 1;
+            this.c = this.b = this.tx = this.ty = 0;
+
+            return this;
+        },
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L117
+        clone: function () {
+            return new Matrix(this.a, this.b, this.c, this.d, this.tx, this.ty);
+        },
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L352
+        concate: function (matrix) {
+
+            var a1 = this.a,
+                b1 = this.b,
+                c1 = this.c,
+                d1 = this.d,
+                a2 = matrix.a,
+                b2 = matrix.b,
+                c2 = matrix.c,
+                d2 = matrix.d,
+                tx2 = matrix.tx,
+                ty2 = matrix.ty;
+
+            this.a = a2 * a1 + c2 * b1;
+            this.b = b2 * a1 + d2 * b1;
+            this.c = a2 * c1 + c2 * d1;
+            this.d = b2 * c1 + d2 * d1;
+            this.tx += tx2 * a1 + ty2 * b1;
+            this.ty += tx2 * c1 + ty2 * d1;
+
+            return this;
+
+        },
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L299
+        shear: function (shear, center) {
+
+            if (center)
+                this.translate(center.x, center.y);
+
+            var a = this.a,
+                c = this.c;
+
+            this.a += shear.y * this.b;
+            this.c += shear.y * this.d;
+            this.b += shear.x * a;
+            this.d += shear.x * c;
+
+            if (center)
+                this.translate(-center.x, -center.y);
+
+            return this;
+        },
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L337
+        skew: function (skew, center) {
+
+            var toRadians = Math.PI / 180,
+                shear = {
+                    x: Math.tan(skew.x * toRadians),
+                    y: Math.tan(skew.y * toRadians)
+                };
+
+            return this.shear(shear, center);
+
+        },
+        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L113
+        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/shapes/group.class.js#L459
+
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L565
+        // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js#L451
+        inverse: function () {
+
+
+
+        },
+        transform: function (a, b, c, d, tx, ty) {
+
+            this.a = a;
+            this.b = b;
+            this.c = c;
+            this.d = d;
+            this.tx = tx;
+            this.ty = ty;
+
+            return this;
+        },
         toCenter: function (point) {},
-
-
+        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L93
+        toPoint: function (point, transform, offSet) {
+            if (offSet) {
+                return {
+                    x: transform[0] * point.x + transform[1] * point.y,
+                    y: transform[2] * point.x + transform[3] * point.y
+                }
+            };
+            return {
+                x: transform[0] * point.x + transform[1] * point.y + transform[4],
+                y: transform[2] * point.x + transform[3] * point.y + transform[5]
+            };
+        },
+        toArray: function () {
+            return [this.a, this.b, this.c, this.d, this.tx, this.ty];
+        },
 
     };
 
-    function create(x, y) {
-        return new Matrix(x, y);
+    function create() {
+        return new Matrix();
     };
 
     exports.create = create;
@@ -966,122 +1082,19 @@ define("plane", ['require', 'exports'], function (require, exports) {
         authors = ['lilo@c37.co', 'ser@c37.co'];
 
     var types = require('utility/types');
-    
+
+    var matrix = require('geometric/matrix');
+
     var layer = require('structure/layer'),
         point = require('structure/point'),
         shape = require('structure/shape'),
         group = require('structure/group'),
         tool = require('structure/tool');
-    
+
     var importer = require('data/importer'),
         exporter = require('data/exporter');
-    
 
-    var centerHistory = types.data.list.create();
-
-    var viewPort = null,
-        _view = {
-            zoom: 1,
-            center: {
-                x: 0,
-                y: 0,
-                reset: function () {
-
-                    var layerActive = layerManager.active(),
-                        centerInitial = {
-                            x: (_view.size.width * _view.zoom) / 2,
-                            y: (_view.size.height * _view.zoom) / 2
-                        };
-
-
-                    // utilizo o histórico de movimentação de centro 
-                    // para retornar ao inicio
-                    var moveFactor = {
-                        x: 0,
-                        y: 0
-                    };
-
-                    // calculando o centro através do histórico de movimentos
-                    centerHistory.list().forEach(function (itemHistory) {
-                        moveFactor.x += itemHistory.x;
-                        moveFactor.y += itemHistory.y;
-                    });
-
-                    // aplicando o zoom atual na soma 
-                    moveFactor.x *= _view.zoom;
-                    moveFactor.y *= _view.zoom;
-
-                    // negativo
-                    moveFactor.x *= -1;
-                    moveFactor.y *= -1;
-
-                    // limpando os históricos de centro
-                    centerHistory.clear();
-
-                    // limpando os limites
-                    _view.bounds.height = _view.size.height * _view.zoom;
-                    _view.bounds.width = _view.size.width * _view.zoom;
-                    _view.bounds.x = 0;
-                    _view.bounds.y = 0;
-
-
-                    _view.center.x += moveFactor.x;
-                    _view.center.y += moveFactor.y;
-
-                    // movimentando todos os shapes de todas as layers
-                    layerManager.list().forEach(function (layer) {
-
-                        layerManager.active(layer.uuid);
-
-                        layerManager.active().shapes.list().forEach(function (shape) {
-                            shape.moveTo(moveFactor);
-                        });
-
-                        layerManager.update();
-                    });
-                    layerManager.active(layerActive.uuid);
-
-                    return true;
-                },
-                add: function (moveFactor) {
-
-                    // adicionado ao histórico dos movimentos de centro
-                    centerHistory.add({
-                        x: moveFactor.x,
-                        y: moveFactor.y
-                    });
-
-                    _view.center.x += moveFactor.x;
-                    _view.center.y += moveFactor.y;
-
-                    var layerActive = layerManager.active();
-                    // movimentando todos os shapes de todas as layers
-                    layerManager.list().forEach(function (layer) {
-
-                        layerManager.active(layer.uuid);
-
-                        layerManager.active().shapes.list().forEach(function (shape) {
-                            shape.moveTo(moveFactor);
-                        });
-
-                        layerManager.update();
-                    });
-                    layerManager.active(layerActive.uuid);
-
-                    return true;
-                }
-            },
-            size: {
-                height: 0,
-                width: 0
-            },
-            bounds: {
-                x: 0,
-                y: 0,
-                height: 0,
-                width: 0
-            }
-        }
+    var viewPort = null;
 
 
     function initialize(config) {
@@ -1095,25 +1108,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
             throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-
         viewPort = config.viewPort;
 
-        // iniciando configurações para View
-
-        // o centro inicial
-        _view.center.x = viewPort.clientWidth / 2;
-        _view.center.y = viewPort.clientHeight / 2;
-
-        // os limites de tamanho inicial
-        _view.bounds.height = viewPort.clientHeight;
-        _view.bounds.width = viewPort.clientWidth;
-
-        // os tamanhos que são fixos
-        _view.size.height = viewPort.clientHeight;
-        _view.size.width = viewPort.clientWidth;
-
-
-        tool.event.start({
+        view.initialize({
+            viewPort: viewPort
+        });
+        tool.initialize({
             viewPort: viewPort
         });
 
@@ -1121,14 +1121,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
     }
 
     function clear() {
-        // reset em center
-        //        center({
-        //            factor: 1,
-        //            center: {
-        //                x: _center.position.x * -1,
-        //                y: _center.position.y * -1
-        //            }
-        //        });
+
+        // reset all parameters in view
+        view.reset();
 
         // remove em todas as layers
         layerManager.remove();
@@ -1136,131 +1131,114 @@ define("plane", ['require', 'exports'], function (require, exports) {
         return true;
     }
 
-    // plane.view.zoom =/ .9;  - more
-    // plane.view.zoom =* .9; - less
-    var view = {
-        get zoom() {
-            return _view.zoom;
-        },
-        set zoom(value) {
 
-            var layerActive = layerManager.active(),
-                zoomFactor = value / _view.zoom;
+    var view = (function () {
 
-            // com o valor do middle anterior para retroceder os valores sem perder a medida do centro
-            var middlePrevious = {
-                x: ((viewPort.clientWidth - (viewPort.clientWidth * _view.zoom)) / 2) * -1,
-                y: ((viewPort.clientHeight - (viewPort.clientHeight * _view.zoom)) / 2) * -1,
-            };
-            // ATENÇÃO - os sinais!
-            _view.bounds.x += middlePrevious.x;
-            _view.bounds.y += middlePrevious.y;
-
-            _view.bounds.height *= _view.zoom;
-            _view.bounds.width *= _view.zoom;
-
-            // com o meio atualizando pelo zoom
-            var middleCurrent = {
-                x: ((viewPort.clientWidth - (viewPort.clientWidth * value)) / 2),
-                y: (viewPort.clientHeight - (viewPort.clientHeight * value)) / 2,
-            };
-            // atualizando os limites
-            _view.bounds.x += middleCurrent.x;
-            _view.bounds.y += middleCurrent.y;
-
-            layerManager.list().forEach(function (layer) {
-
-                layerManager.active(layer.uuid);
-
-                layerManager.active().shapes.list().forEach(function (shape) {
-                    shape.moveTo(middlePrevious);
-                    shape.scaleTo(zoomFactor);
-                    shape.moveTo(middleCurrent);
-                });
-
-                layerManager.update();
-            });
-            layerManager.active(layerActive.uuid);
-
-            _view.zoom = value;
-        },
-        get center() {
-            return _view.center;
-        },
-        set center(value) {
-            // verificamos se o novo status de centro é realmente diferente do atual
-            if (value && (value.x != 0 || value.y != 0) && (value.x != _view.center.x || value.y != _view.center.y)) {
-
-                var layerActive = layerManager.active(),
-                    // fator de movimento - calculando e atualizando com o zoom atual
-                    moveFactor = {
-                        x: (value.x - _view.center.x) * _view.zoom,
-                        y: (value.y - _view.center.y) * _view.zoom
-                    }
-
-                // adicionado ao histórico dos movimentos de centro
-                centerHistory.add({
-                    x: value.x - _view.center.x,
-                    y: value.y - _view.center.y
-                });
-
-                // movimentando todos os shapes de todas as layers
-                layerManager.list().forEach(function (layer) {
-
-                    layerManager.active(layer.uuid);
-
-                    layerManager.active().shapes.list().forEach(function (shape) {
-                        shape.moveTo(moveFactor);
-                    });
-
-                    layerManager.update();
-                });
-                layerManager.active(layerActive.uuid);
-
-                // atualizando os valores para o centro com seus movimentos
-                _view.center.x += (value.x - _view.center.x);
-                _view.center.y += (value.y - _view.center.y);
-            }
-        },
-        get bounds() {
-            var boundsHistory = {
+        var transform = matrix.create(),
+            viewPort = null,
+            zoom = 1,
+            center = {
                 x: 0,
                 y: 0
+            },
+            bounds = {
+                bottom: 0,
+                height: 0,
+                left: 0,
+                right: 0,
+                top: 0,
+                width: 0
+            },
+            size = {
+                height: 0,
+                width: 0
             };
 
-            // calculando o centro através do histórico de movimentos
-            centerHistory.list().forEach(function (itemHistory) {
-                boundsHistory.x += itemHistory.x;
-                boundsHistory.y += itemHistory.y;
-            });
 
-            // aplicando o zoom atual na soma 
-            boundsHistory.x *= _view.zoom;
-            boundsHistory.y *= _view.zoom;
+        return {
+            initialize: function (config) {
 
-            // somando aos movimentos de zoom
-            // calculando os limites
-            return {
-                x: _view.bounds.x + boundsHistory.x,
-                y: _view.bounds.y + boundsHistory.y,
-                height: _view.bounds.height,
-                width: _view.bounds.width
-            };
-        },
-        get size() {
-            return _view.size;
+                viewPort = config.viewPort;
+
+                bounds.height = viewPort.clientHeight;
+                bounds.width = viewPort.clientWidth;
+
+                center.x = viewPort.clientWidth / 2;
+                center.y = viewPort.clientHeight / 2;
+
+                size.height = viewPort.clientHeight;
+                size.width = viewPort.clientWidth;
+
+                return true;
+            },
+            get zoom() {
+                return zoom;
+            },
+            set zoom(value) {
+
+
+
+                return zoom = value;
+            },
+            zoomTo: function (zoom, center) {
+
+
+                return true;
+            },
+            moveTo: function (moveValue) {
+
+
+
+                return true;
+            },
+            center: {
+                get position() {
+                    return center;
+                },
+                add: function (moveValue) {
+
+                    return true;
+                },
+                reset: function () {
+
+                    return true;
+                }
+            },
+            get bounds() {
+                
+                
+                
+
+                return bounds;
+            },
+            get size() {
+                return size;
+            },
+            reset: function () {
+                
+                transform.reset();
+                
+                zoom = 1;
+                
+                bounds.height = viewPort.clientHeight;
+                bounds.width = viewPort.clientWidth;
+                
+                center.x = viewPort.clientWidth / 2;
+                center.y = viewPort.clientHeight / 2;
+                
+                size.height = viewPort.clientHeight;
+                size.width = viewPort.clientWidth;
+
+                return true;
+            }
         }
-    }
-
-
-
-
+    })();
 
 
     exports.initialize = initialize;
     exports.clear = clear;
     exports.view = view;
-    
+
     exports.layer = layer;
     exports.point = point;
     exports.shape = shape;
@@ -2184,57 +2162,111 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
     }
 
 
-    var event = types.object.extend(types.object.event.create(), {
+    function initialize(config) {
 
-        start: function (config) {
+        viewPort = config.viewPort;
 
-            viewPort = config.viewPort;
+        viewPort.onmousemove = function (event) {
 
-            viewPort.onmousemove = function (event) {
-
-                if (layer.active) {
-                    layer.active.shapes.list().forEach(function (shape) {
-                        if (shape.status != 'selected') {
-                            shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
-                        }
-                    });
-                    layer.update();
-                }
-            }
-
-            viewPort.onclick = function (event) {
-                if (layer.active) {
-
-                    layer.active.shapes.list().forEach(function (shape) {
-                        if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
-
-                            shape.status = shape.status != 'selected' ? 'selected' : 'over';
-
-                            if (shape.status == 'selected') {
-                                shapeSelected.add(shape.uuid, shape);
-                            } else {
-                                shapeSelected.remove(shape.uuid);
-                            }
-
-                        }
-                    });
-                    layer.update();
-
-                    toolStore.list().forEach(function (Tool) {
-                        if (Tool.active) {
-                            Tool.notify('onMouseClick', {
-                                type: 'onMouseClick',
-                                shapes: shapeSelected.list()
-                            });
-                        }
-                    });
-                }
+            if (layer.active) {
+                layer.active.shapes.list().forEach(function (shape) {
+                    if (shape.status != 'selected') {
+                        shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
+                    }
+                });
+                layer.update();
             }
         }
 
-    })
+        viewPort.onclick = function (event) {
+            if (layer.active) {
 
-    exports.event = event;
+                layer.active.shapes.list().forEach(function (shape) {
+                    if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
+
+                        shape.status = shape.status != 'selected' ? 'selected' : 'over';
+
+                        if (shape.status == 'selected') {
+                            shapeSelected.add(shape.uuid, shape);
+                        } else {
+                            shapeSelected.remove(shape.uuid);
+                        }
+
+                    }
+                });
+                layer.update();
+
+                toolStore.list().forEach(function (Tool) {
+                    if (Tool.active) {
+                        Tool.notify('onMouseClick', {
+                            type: 'onMouseClick',
+                            shapes: shapeSelected.list()
+                        });
+                    }
+                });
+            }
+        }
+
+        return true;
+    }
+
+
+
+
+
+
+//    var event = types.object.extend(types.object.event.create(), {
+//
+//        start: function (config) {
+//
+//            viewPort = config.viewPort;
+//
+//            viewPort.onmousemove = function (event) {
+//
+//                if (layer.active) {
+//                    layer.active.shapes.list().forEach(function (shape) {
+//                        if (shape.status != 'selected') {
+//                            shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
+//                        }
+//                    });
+//                    layer.update();
+//                }
+//            }
+//
+//            viewPort.onclick = function (event) {
+//                if (layer.active) {
+//
+//                    layer.active.shapes.list().forEach(function (shape) {
+//                        if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
+//
+//                            shape.status = shape.status != 'selected' ? 'selected' : 'over';
+//
+//                            if (shape.status == 'selected') {
+//                                shapeSelected.add(shape.uuid, shape);
+//                            } else {
+//                                shapeSelected.remove(shape.uuid);
+//                            }
+//
+//                        }
+//                    });
+//                    layer.update();
+//
+//                    toolStore.list().forEach(function (Tool) {
+//                        if (Tool.active) {
+//                            Tool.notify('onMouseClick', {
+//                                type: 'onMouseClick',
+//                                shapes: shapeSelected.list()
+//                            });
+//                        }
+//                    });
+//                }
+//            }
+//        }
+//    });
+    
+    
+
+    exports.initialize = initialize;
     exports.create = create;
 });
 define("utility/types", ['require', 'exports'], function (require, exports) {

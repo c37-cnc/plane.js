@@ -51,56 +51,110 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
     }
 
 
-    var event = types.object.extend(types.object.event.create(), {
+    function initialize(config) {
 
-        start: function (config) {
+        viewPort = config.viewPort;
 
-            viewPort = config.viewPort;
+        viewPort.onmousemove = function (event) {
 
-            viewPort.onmousemove = function (event) {
-
-                if (layer.active) {
-                    layer.active.shapes.list().forEach(function (shape) {
-                        if (shape.status != 'selected') {
-                            shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
-                        }
-                    });
-                    layer.update();
-                }
-            }
-
-            viewPort.onclick = function (event) {
-                if (layer.active) {
-
-                    layer.active.shapes.list().forEach(function (shape) {
-                        if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
-
-                            shape.status = shape.status != 'selected' ? 'selected' : 'over';
-
-                            if (shape.status == 'selected') {
-                                shapeSelected.add(shape.uuid, shape);
-                            } else {
-                                shapeSelected.remove(shape.uuid);
-                            }
-
-                        }
-                    });
-                    layer.update();
-
-                    toolStore.list().forEach(function (Tool) {
-                        if (Tool.active) {
-                            Tool.notify('onMouseClick', {
-                                type: 'onMouseClick',
-                                shapes: shapeSelected.list()
-                            });
-                        }
-                    });
-                }
+            if (layer.active) {
+                layer.active.shapes.list().forEach(function (shape) {
+                    if (shape.status != 'selected') {
+                        shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
+                    }
+                });
+                layer.update();
             }
         }
 
-    })
+        viewPort.onclick = function (event) {
+            if (layer.active) {
 
-    exports.event = event;
+                layer.active.shapes.list().forEach(function (shape) {
+                    if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
+
+                        shape.status = shape.status != 'selected' ? 'selected' : 'over';
+
+                        if (shape.status == 'selected') {
+                            shapeSelected.add(shape.uuid, shape);
+                        } else {
+                            shapeSelected.remove(shape.uuid);
+                        }
+
+                    }
+                });
+                layer.update();
+
+                toolStore.list().forEach(function (Tool) {
+                    if (Tool.active) {
+                        Tool.notify('onMouseClick', {
+                            type: 'onMouseClick',
+                            shapes: shapeSelected.list()
+                        });
+                    }
+                });
+            }
+        }
+
+        return true;
+    }
+
+
+
+
+
+
+//    var event = types.object.extend(types.object.event.create(), {
+//
+//        start: function (config) {
+//
+//            viewPort = config.viewPort;
+//
+//            viewPort.onmousemove = function (event) {
+//
+//                if (layer.active) {
+//                    layer.active.shapes.list().forEach(function (shape) {
+//                        if (shape.status != 'selected') {
+//                            shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
+//                        }
+//                    });
+//                    layer.update();
+//                }
+//            }
+//
+//            viewPort.onclick = function (event) {
+//                if (layer.active) {
+//
+//                    layer.active.shapes.list().forEach(function (shape) {
+//                        if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
+//
+//                            shape.status = shape.status != 'selected' ? 'selected' : 'over';
+//
+//                            if (shape.status == 'selected') {
+//                                shapeSelected.add(shape.uuid, shape);
+//                            } else {
+//                                shapeSelected.remove(shape.uuid);
+//                            }
+//
+//                        }
+//                    });
+//                    layer.update();
+//
+//                    toolStore.list().forEach(function (Tool) {
+//                        if (Tool.active) {
+//                            Tool.notify('onMouseClick', {
+//                                type: 'onMouseClick',
+//                                shapes: shapeSelected.list()
+//                            });
+//                        }
+//                    });
+//                }
+//            }
+//        }
+//    });
+    
+    
+
+    exports.initialize = initialize;
     exports.create = create;
 });
