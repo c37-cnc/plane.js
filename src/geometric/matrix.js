@@ -26,11 +26,32 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
 
     // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L558
     // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js#L427
-    function getDeterminant() {
-        return this.a * this.d - this.b * this.c;
+    function getDeterminant(transform) {
+        return transform.a * transform.d - transform.b * transform.c;
     };
 
     function isIdentity() {};
+
+    // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L93
+    function toPoint(point, transform, offSet) {
+        if (offSet) {
+            return {
+                x: (transform[0] * point.x) + (transform[1] * point.y),
+                y: (transform[2] * point.x) + (transform[3] * point.y)
+            }
+        };
+        return {
+            x: (transform[0] * point.x) + (transform[1] * point.y) + transform[4],
+            y: (transform[2] * point.x) + (transform[3] * point.y) + transform[5]
+        };
+    };
+
+    // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L113
+    function toInverse(transform) {
+
+
+        return transform;
+    }
 
     Matrix.prototype = {
         // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L256
@@ -139,8 +160,46 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
         // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js#L451
         inverse: function () {
 
+//            var r, t = this.toArray(),
+//                a = 1 / (t[0] * t[3] - t[1] * t[2]);
+//
+//            r = [a * t[3], -a * t[1], -a * t[2], a * t[0], 0, 0];
+//
+//            var o = toPoint({
+//                x: t[4],
+//                y: t[5]
+//            }, r);
+//            r[4] = -o.x;
+//            r[5] = -o.y;
+//            return r;
 
 
+                        var r = this.toArray(),
+                            a = 1 / (this.a * this.d - this.b * this.c);
+            
+                        r = [a * this.d, -a * this.b, -a * this.c, a * this.a, 0, 0];
+            
+                        var o = toPoint({
+                            x: this.tx,
+                            y: this.ty
+                        }, r);
+            
+                        r[4] = -o.x;
+                        r[5] = -o.y;
+
+            return r;
+
+        },
+        inversePoint: function (point) {
+            var det = getDeterminant(this);
+
+            var x = point.x - this.tx,
+                y = point.y - this.ty;
+
+            return {
+                x: (x * this.d - y * this.b) / det,
+                y: (y * this.a - x * this.c) / det
+            };
         },
         transform: function (a, b, c, d, tx, ty) {
 
@@ -154,19 +213,6 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
             return this;
         },
         toCenter: function (point) {},
-        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L93
-        toPoint: function (point, transform, offSet) {
-            if (offSet) {
-                return {
-                    x: transform[0] * point.x + transform[1] * point.y,
-                    y: transform[2] * point.x + transform[3] * point.y
-                }
-            };
-            return {
-                x: transform[0] * point.x + transform[1] * point.y + transform[4],
-                y: transform[2] * point.x + transform[3] * point.y + transform[5]
-            };
-        },
         toArray: function () {
             return [this.a, this.b, this.c, this.d, this.tx, this.ty];
         },
@@ -178,5 +224,5 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
     };
 
     exports.create = create;
-
+    exports.toPoint = toPoint;
 });

@@ -95,6 +95,10 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         return store.list();
     }
 
+    function find(value) {
+        return store.find(value);
+    }
+
     function update() {
 
         var style = this.active.style,
@@ -155,6 +159,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     exports.create = create;
     exports.update = update;
     exports.list = list;
+    exports.find = find;
     exports.remove = remove;
     exports.events = events;
 });

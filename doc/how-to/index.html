@@ -183,10 +183,6 @@
             plane.layer.update();
 
 
-            console.log(plane.view.bounds);
-            console.log(plane.view.center.position);
-
-
 
 
 
@@ -257,13 +253,17 @@
 
 
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
-                plane.view.zoom /= .9;
-                console.log(plane.view.bounds);
+                plane.view.zoom = 1.041666666666667;
+                //                plane.view.zoomTo(plane.view.zoom / .95, plane.view.center.position);
+                console.log(plane.view.zoom);
+                console.log(plane.view.center.position);
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
-                plane.view.zoom *= .9;
-                console.log(plane.view.bounds);
+                plane.view.zoom = .96;
+                //                plane.view.zoomTo(plane.view.zoom * .95, plane.view.center.position);
+                console.log(plane.view.zoom);
+                console.log(plane.view.center.position);
             });
 
             document.getElementById('zoomCenterButton').addEventListener('click', function (event) {
@@ -273,6 +273,33 @@
                 }
                 console.log(plane.view.bounds);
             });
+
+
+            function mousePosition(element, x, y) {
+                var bb = element.getBoundingClientRect();
+
+                x = (x - bb.left) * (element.clientWidth / bb.width);
+                y = (y - bb.top) * (element.clientHeight / bb.height);
+
+                // tradução para o sistema de coordenadas cartesiano
+                y = (y - element.clientHeight) * -1;
+
+                return {
+                    x: x,
+                    y: y
+                };
+            };
+
+
+            viewPort.addEventListener('mousewheel', function (event) {
+
+                var mousePos = mousePosition(viewPort, event.clientX, event.clientY),
+                    zoomNew = event.wheelDelta > 1 ? 1.0204081632 : .98;
+
+                plane.view.zoomTo(zoomNew, mousePos);
+
+            });
+
 
         };
     </script>

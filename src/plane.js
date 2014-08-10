@@ -54,6 +54,43 @@ define("plane", ['require', 'exports'], function (require, exports) {
     }
 
 
+
+
+
+    var selected = (function () {
+
+
+        return {
+            get layer() {
+                return this._layer;
+            },
+            set layer(value) {
+                this.events.notify('onDeactivated', {
+                    type: 'onDeactivated',
+                    layer: this.layer
+                });
+
+                this._layer = layer.find(value);
+
+                this.events.notify('onActivated', {
+                    type: 'onActivated',
+                    layer: this.layer
+                });
+            },
+            get shapes() {
+                return this._shapes;
+            },
+            set shapes(value) {},
+            get groups() {
+                return this._groups;
+            },
+            set groups(value) {},
+            events: types.object.event.create()
+        }
+    })();
+
+
+
     var view = (function () {
 
         var transform = matrix.create(),
@@ -76,7 +113,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 width: 0
             };
 
-
         return {
             initialize: function (config) {
 
@@ -93,21 +129,54 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                 return true;
             },
+            // zoom level
             get zoom() {
-                return zoom;
+                return Math.sqrt(transform.a * transform.d);
             },
             set zoom(value) {
 
-
-
-                return zoom = value;
+                this.zoomTo(value, {
+                    x: 0,
+                    y: 0
+                });
+                
+                transform.a = value;
+                transform.d = value;
+                
+                return true;
             },
-            zoomTo: function (zoom, center) {
+            zoomTo: function (value, point) {
 
+                debugger;
+
+                var origin = point;
+                var point = matrix.toPoint(point, transform.inverse());
+//                var point = transform.inversePoint(point);
+
+                transform.a = value;
+                transform.d = value;
+
+                var target = matrix.toPoint(point, transform.inverse());
+//                var target = transform.inversePoint(point);
+
+                transform.tx += target.x - origin.x;
+                transform.ty += target.y - origin.y;
+
+                // movimentando todos os shapes de todas as layers
+                layer.list().forEach(function (layer) {
+                    layer.shapes.list().forEach(function (shape) {
+                        shape.scaleTo(Math.sqrt(transform.a * transform.d));
+                        shape.moveTo({
+                            x: transform.tx,
+                            y: transform.ty
+                        });
+                    });
+                });
+                layer.update();
 
                 return true;
             },
-            moveTo: function (moveValue) {
+            moveTo: function (value) { // absolute
 
 
 
@@ -117,19 +186,21 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 get position() {
                     return center;
                 },
-                add: function (moveValue) {
+                add: function (value) { // relative
 
                     return true;
                 },
                 reset: function () {
 
+                    // goto center initial
+
                     return true;
                 }
             },
             get bounds() {
-                
-                
-                
+
+
+
 
                 return bounds;
             },
@@ -137,17 +208,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 return size;
             },
             reset: function () {
-                
+
                 transform.reset();
-                
+
                 zoom = 1;
-                
+
                 bounds.height = viewPort.clientHeight;
                 bounds.width = viewPort.clientWidth;
-                
+
                 center.x = viewPort.clientWidth / 2;
                 center.y = viewPort.clientHeight / 2;
-                
+
                 size.height = viewPort.clientHeight;
                 size.width = viewPort.clientWidth;
 
@@ -158,8 +229,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
 
     exports.initialize = initialize;
-    exports.clear = clear;
     exports.view = view;
+    exports.selected = selected;
+    exports.clear = clear;
 
     exports.layer = layer;
     exports.point = point;

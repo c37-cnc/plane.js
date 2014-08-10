@@ -54,6 +54,11 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'line':
                 {
+//                    this.points.forEach(function (point) {
+////                        debugger;
+//                        point = point.multiply(value);
+//                    });
+                    
                     this.points.forEach(function (point) {
                         point.x *= value;
                         point.y *= value;

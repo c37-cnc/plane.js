@@ -1,5 +1,5 @@
 /*!
- * C37 in 09-08-2014 at 00:51:34 
+ * C37 in 10-08-2014 at 03:55:22 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -696,11 +696,32 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
 
     // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L558
     // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js#L427
-    function getDeterminant() {
-        return this.a * this.d - this.b * this.c;
+    function getDeterminant(transform) {
+        return transform.a * transform.d - transform.b * transform.c;
     };
 
     function isIdentity() {};
+
+    // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L93
+    function toPoint(point, transform, offSet) {
+        if (offSet) {
+            return {
+                x: (transform[0] * point.x) + (transform[1] * point.y),
+                y: (transform[2] * point.x) + (transform[3] * point.y)
+            }
+        };
+        return {
+            x: (transform[0] * point.x) + (transform[1] * point.y) + transform[4],
+            y: (transform[2] * point.x) + (transform[3] * point.y) + transform[5]
+        };
+    };
+
+    // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L113
+    function toInverse(transform) {
+
+
+        return transform;
+    }
 
     Matrix.prototype = {
         // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L256
@@ -809,8 +830,46 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
         // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js#L451
         inverse: function () {
 
+//            var r, t = this.toArray(),
+//                a = 1 / (t[0] * t[3] - t[1] * t[2]);
+//
+//            r = [a * t[3], -a * t[1], -a * t[2], a * t[0], 0, 0];
+//
+//            var o = toPoint({
+//                x: t[4],
+//                y: t[5]
+//            }, r);
+//            r[4] = -o.x;
+//            r[5] = -o.y;
+//            return r;
 
 
+                        var r = this.toArray(),
+                            a = 1 / (this.a * this.d - this.b * this.c);
+            
+                        r = [a * this.d, -a * this.b, -a * this.c, a * this.a, 0, 0];
+            
+                        var o = toPoint({
+                            x: this.tx,
+                            y: this.ty
+                        }, r);
+            
+                        r[4] = -o.x;
+                        r[5] = -o.y;
+
+            return r;
+
+        },
+        inversePoint: function (point) {
+            var det = getDeterminant(this);
+
+            var x = point.x - this.tx,
+                y = point.y - this.ty;
+
+            return {
+                x: (x * this.d - y * this.b) / det,
+                y: (y * this.a - x * this.c) / det
+            };
         },
         transform: function (a, b, c, d, tx, ty) {
 
@@ -824,19 +883,6 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
             return this;
         },
         toCenter: function (point) {},
-        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L93
-        toPoint: function (point, transform, offSet) {
-            if (offSet) {
-                return {
-                    x: transform[0] * point.x + transform[1] * point.y,
-                    y: transform[2] * point.x + transform[3] * point.y
-                }
-            };
-            return {
-                x: transform[0] * point.x + transform[1] * point.y + transform[4],
-                y: transform[2] * point.x + transform[3] * point.y + transform[5]
-            };
-        },
         toArray: function () {
             return [this.a, this.b, this.c, this.d, this.tx, this.ty];
         },
@@ -848,7 +894,7 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
     };
 
     exports.create = create;
-
+    exports.toPoint = toPoint;
 });
 define("geometric/polynomial", ['require', 'exports'], function (require, exports) {
 
@@ -1132,6 +1178,43 @@ define("plane", ['require', 'exports'], function (require, exports) {
     }
 
 
+
+
+
+    var selected = (function () {
+
+
+        return {
+            get layer() {
+                return this._layer;
+            },
+            set layer(value) {
+                this.events.notify('onDeactivated', {
+                    type: 'onDeactivated',
+                    layer: this.layer
+                });
+
+                this._layer = layer.find(value);
+
+                this.events.notify('onActivated', {
+                    type: 'onActivated',
+                    layer: this.layer
+                });
+            },
+            get shapes() {
+                return this._shapes;
+            },
+            set shapes(value) {},
+            get groups() {
+                return this._groups;
+            },
+            set groups(value) {},
+            events: types.object.event.create()
+        }
+    })();
+
+
+
     var view = (function () {
 
         var transform = matrix.create(),
@@ -1154,7 +1237,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 width: 0
             };
 
-
         return {
             initialize: function (config) {
 
@@ -1171,21 +1253,54 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                 return true;
             },
+            // zoom level
             get zoom() {
-                return zoom;
+                return Math.sqrt(transform.a * transform.d);
             },
             set zoom(value) {
 
-
-
-                return zoom = value;
+                this.zoomTo(value, {
+                    x: 0,
+                    y: 0
+                });
+                
+                transform.a = value;
+                transform.d = value;
+                
+                return true;
             },
-            zoomTo: function (zoom, center) {
+            zoomTo: function (value, point) {
 
+                debugger;
+
+                var origin = point;
+                var point = matrix.toPoint(point, transform.inverse());
+//                var point = transform.inversePoint(point);
+
+                transform.a = value;
+                transform.d = value;
+
+                var target = matrix.toPoint(point, transform.inverse());
+//                var target = transform.inversePoint(point);
+
+                transform.tx += target.x - origin.x;
+                transform.ty += target.y - origin.y;
+
+                // movimentando todos os shapes de todas as layers
+                layer.list().forEach(function (layer) {
+                    layer.shapes.list().forEach(function (shape) {
+                        shape.scaleTo(Math.sqrt(transform.a * transform.d));
+                        shape.moveTo({
+                            x: transform.tx,
+                            y: transform.ty
+                        });
+                    });
+                });
+                layer.update();
 
                 return true;
             },
-            moveTo: function (moveValue) {
+            moveTo: function (value) { // absolute
 
 
 
@@ -1195,19 +1310,21 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 get position() {
                     return center;
                 },
-                add: function (moveValue) {
+                add: function (value) { // relative
 
                     return true;
                 },
                 reset: function () {
 
+                    // goto center initial
+
                     return true;
                 }
             },
             get bounds() {
-                
-                
-                
+
+
+
 
                 return bounds;
             },
@@ -1215,17 +1332,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 return size;
             },
             reset: function () {
-                
+
                 transform.reset();
-                
+
                 zoom = 1;
-                
+
                 bounds.height = viewPort.clientHeight;
                 bounds.width = viewPort.clientWidth;
-                
+
                 center.x = viewPort.clientWidth / 2;
                 center.y = viewPort.clientHeight / 2;
-                
+
                 size.height = viewPort.clientHeight;
                 size.width = viewPort.clientWidth;
 
@@ -1236,8 +1353,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
 
     exports.initialize = initialize;
-    exports.clear = clear;
     exports.view = view;
+    exports.selected = selected;
+    exports.clear = clear;
 
     exports.layer = layer;
     exports.point = point;
@@ -1365,6 +1483,10 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         return store.list();
     }
 
+    function find(value) {
+        return store.find(value);
+    }
+
     function update() {
 
         var style = this.active.style,
@@ -1425,6 +1547,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     exports.create = create;
     exports.update = update;
     exports.list = list;
+    exports.find = find;
     exports.remove = remove;
     exports.events = events;
 });
@@ -1536,6 +1659,11 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'line':
                 {
+//                    this.points.forEach(function (point) {
+////                        debugger;
+//                        point = point.multiply(value);
+//                    });
+                    
                     this.points.forEach(function (point) {
                         point.x *= value;
                         point.y *= value;
