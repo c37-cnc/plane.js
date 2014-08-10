@@ -250,22 +250,14 @@
                 console.log(plane.exporter.toJson());
             });
 
-
-
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
-                //                plane.view.zoom = 1.041666666666667;
-                                plane.view.zoomTo(1.041666666666667, plane.view.center.position);
-//                plane.view.zoomTo(plane.view.zoom / .96, plane.view.center.position);
-                console.log(plane.view.zoom);
-                console.log(plane.view.center.position);
+//                plane.view.zoom = 1.041666666666667;
+                plane.view.zoomTo(1.041666666666667, plane.view.center.position);
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
-                //                plane.view.zoom = .96;
-                                plane.view.zoomTo(.96, plane.view.center.position);
-//                plane.view.zoomTo(plane.view.zoom * .96, plane.view.center.position);
-                console.log(plane.view.zoom);
-                console.log(plane.view.center.position);
+//                plane.view.zoom = .96;
+                plane.view.zoomTo(.96, plane.view.center.position);
             });
 
             document.getElementById('zoomCenterButton').addEventListener('click', function (event) {
@@ -295,10 +287,10 @@
 
             viewPort.addEventListener('mousewheel', function (event) {
 
-                var mousePos = mousePosition(viewPort, event.clientX, event.clientY),
-                    zoomNew = event.wheelDelta > 1 ? 1.0204081632 : .98;
+                var viewPosition = mousePosition(viewPort, event.clientX, event.clientY),
+                    zoomNew = event.wheelDelta > 1 ? 1.041666666666667 : .96;
 
-                plane.view.zoomTo(zoomNew, mousePos);
+                plane.view.zoomTo(zoomNew, viewPosition);
 
             });
 

@@ -95,7 +95,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         var transform = matrix.create(),
             viewPort = null,
-            zoom = 1,
             center = {
                 x: 0,
                 y: 0
@@ -139,42 +138,52 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     x: 0,
                     y: 0
                 });
-                
-                transform.a = value;
-                transform.d = value;
-                
+
                 return true;
             },
             zoomTo: function (value, point) {
 
-//                debugger;
-                
-                var ttt = transform.scale({x: value, y: value}, point);
-                
+                //                                debugger;
 
-//                var origin = point;
-//                var point = matrix.toPoint(point, transform.inverse());
-////                var point = transform.inversePoint(point);
-//
-//                transform.a = value;
-//                transform.d = value;
-//
-//                var target = matrix.toPoint(point, transform.inverse());
-////                var target = transform.inversePoint(point);
-//
-//                transform.tx += target.x - origin.x;
-//                transform.ty += target.y - origin.y;
+                var zoomFactor = value / this.zoom;
+
+                var ttt = transform.scale({
+                    x: zoomFactor,
+                    y: zoomFactor
+                }, point);
+
+
+
+
+                // High Performance - JavaScript - Loops - Page 65
+                //                var layers = layer.list(),
+                //                    l = layer.list().length;
+                //                while (l--) {
+                //                    var shapes = layers[l].shapes.list(),
+                //                        s = shapes.length;
+                //                    while (s--) {
+                //                        shapes[s].scaleTo(this.zoom);
+                //                        shapes[s].moveTo({
+                //                            x: transform.tx,
+                //                            y: transform.ty
+                //                        });
+                //                    }
+                //                }
 
                 // movimentando todos os shapes de todas as layers
-                layer.list().forEach(function (layer) {
-                    layer.shapes.list().forEach(function (shape) {
-                        shape.scaleTo(Math.sqrt(transform.a * transform.d));
-                        shape.moveTo({
+                var layers = layer.list(),
+                    l = layer.list().length - 1;
+                do {
+                    var shapes = layers[l].shapes.list(),
+                        s = shapes.length - 1;
+                    do {
+                        shapes[s].scaleTo(this.zoom);
+                        shapes[s].moveTo({
                             x: transform.tx,
                             y: transform.ty
                         });
-                    });
-                });
+                    } while (s--);
+                } while (l--);
                 layer.update();
 
                 return true;
