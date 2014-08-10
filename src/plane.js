@@ -147,20 +147,23 @@ define("plane", ['require', 'exports'], function (require, exports) {
             },
             zoomTo: function (value, point) {
 
-                debugger;
+//                debugger;
+                
+                var ttt = transform.scale({x: value, y: value}, point);
+                
 
-                var origin = point;
-                var point = matrix.toPoint(point, transform.inverse());
-//                var point = transform.inversePoint(point);
-
-                transform.a = value;
-                transform.d = value;
-
-                var target = matrix.toPoint(point, transform.inverse());
-//                var target = transform.inversePoint(point);
-
-                transform.tx += target.x - origin.x;
-                transform.ty += target.y - origin.y;
+//                var origin = point;
+//                var point = matrix.toPoint(point, transform.inverse());
+////                var point = transform.inversePoint(point);
+//
+//                transform.a = value;
+//                transform.d = value;
+//
+//                var target = matrix.toPoint(point, transform.inverse());
+////                var target = transform.inversePoint(point);
+//
+//                transform.tx += target.x - origin.x;
+//                transform.ty += target.y - origin.y;
 
                 // movimentando todos os shapes de todas as layers
                 layer.list().forEach(function (layer) {

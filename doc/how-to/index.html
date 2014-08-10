@@ -253,15 +253,17 @@
 
 
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
-                plane.view.zoom = 1.041666666666667;
-                //                plane.view.zoomTo(plane.view.zoom / .95, plane.view.center.position);
+                //                plane.view.zoom = 1.041666666666667;
+                                plane.view.zoomTo(1.041666666666667, plane.view.center.position);
+//                plane.view.zoomTo(plane.view.zoom / .96, plane.view.center.position);
                 console.log(plane.view.zoom);
                 console.log(plane.view.center.position);
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
-                plane.view.zoom = .96;
-                //                plane.view.zoomTo(plane.view.zoom * .95, plane.view.center.position);
+                //                plane.view.zoom = .96;
+                                plane.view.zoomTo(.96, plane.view.center.position);
+//                plane.view.zoomTo(plane.view.zoom * .96, plane.view.center.position);
                 console.log(plane.view.zoom);
                 console.log(plane.view.center.position);
             });

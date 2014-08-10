@@ -67,10 +67,10 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
             if (center)
                 this.translate(center.x, center.y);
 
-            this._a *= scale.x;
-            this._c *= scale.x;
-            this._b *= scale.y;
-            this._d *= scale.y;
+            this.a *= scale.x;
+            this.c *= scale.x;
+            this.b *= scale.y;
+            this.d *= scale.y;
 
             if (center)
                 this.translate(-center.x, -center.y);

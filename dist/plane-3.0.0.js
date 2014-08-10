@@ -1,5 +1,5 @@
 /*!
- * C37 in 10-08-2014 at 03:55:22 
+ * C37 in 10-08-2014 at 04:14:06 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -737,10 +737,10 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
             if (center)
                 this.translate(center.x, center.y);
 
-            this._a *= scale.x;
-            this._c *= scale.x;
-            this._b *= scale.y;
-            this._d *= scale.y;
+            this.a *= scale.x;
+            this.c *= scale.x;
+            this.b *= scale.y;
+            this.d *= scale.y;
 
             if (center)
                 this.translate(-center.x, -center.y);
@@ -1271,20 +1271,23 @@ define("plane", ['require', 'exports'], function (require, exports) {
             },
             zoomTo: function (value, point) {
 
-                debugger;
+//                debugger;
+                
+                var ttt = transform.scale({x: value, y: value}, point);
+                
 
-                var origin = point;
-                var point = matrix.toPoint(point, transform.inverse());
-//                var point = transform.inversePoint(point);
-
-                transform.a = value;
-                transform.d = value;
-
-                var target = matrix.toPoint(point, transform.inverse());
-//                var target = transform.inversePoint(point);
-
-                transform.tx += target.x - origin.x;
-                transform.ty += target.y - origin.y;
+//                var origin = point;
+//                var point = matrix.toPoint(point, transform.inverse());
+////                var point = transform.inversePoint(point);
+//
+//                transform.a = value;
+//                transform.d = value;
+//
+//                var target = matrix.toPoint(point, transform.inverse());
+////                var target = transform.inversePoint(point);
+//
+//                transform.tx += target.x - origin.x;
+//                transform.ty += target.y - origin.y;
 
                 // movimentando todos os shapes de todas as layers
                 layer.list().forEach(function (layer) {
