@@ -46,6 +46,39 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
         };
     };
 
+
+
+
+    //    // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L513
+    //    var _transformCorners: function (rect) {
+    //        var x1 = rect.x,
+    //            y1 = rect.y,
+    //            x2 = x1 + rect.width,
+    //            y2 = y1 + rect.height,
+    //            coords = [x1, y1, x2, y1, x2, y2, x1, y2];
+    //        return this._transformCoordinates(coords, coords, 4);
+    //    };
+    //
+    //    // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L527
+    //    var _transformBounds: function (bounds, dest, _dontNotify) {
+    //        var coords = this._transformCorners(bounds),
+    //            min = coords.slice(0, 2),
+    //            max = coords.slice();
+    //        for (var i = 2; i < 8; i++) {
+    //            var val = coords[i],
+    //                j = i & 1;
+    //            if (val < min[j])
+    //                min[j] = val;
+    //            else if (val > max[j])
+    //                max[j] = val;
+    //        }
+    //        if (!dest)
+    //            dest = new Rectangle();
+    //        return dest.set(min[0], min[1], max[0] - min[0], max[1] - min[1],
+    //            _dontNotify);
+    //    };
+
+
     // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L113
     function toInverse(transform) {
 
@@ -160,35 +193,43 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
         // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js#L451
         inverse: function () {
 
-//            var r, t = this.toArray(),
-//                a = 1 / (t[0] * t[3] - t[1] * t[2]);
-//
-//            r = [a * t[3], -a * t[1], -a * t[2], a * t[0], 0, 0];
-//
-//            var o = toPoint({
-//                x: t[4],
-//                y: t[5]
-//            }, r);
-//            r[4] = -o.x;
-//            r[5] = -o.y;
-//            return r;
+            //            var r, t = this.toArray(),
+            //                a = 1 / (t[0] * t[3] - t[1] * t[2]);
+            //
+            //            r = [a * t[3], -a * t[1], -a * t[2], a * t[0], 0, 0];
+            //
+            //            var o = toPoint({
+            //                x: t[4],
+            //                y: t[5]
+            //            }, r);
+            //            r[4] = -o.x;
+            //            r[5] = -o.y;
+            //            return r;
 
 
-                        var r = this.toArray(),
-                            a = 1 / (this.a * this.d - this.b * this.c);
-            
-                        r = [a * this.d, -a * this.b, -a * this.c, a * this.a, 0, 0];
-            
-                        var o = toPoint({
-                            x: this.tx,
-                            y: this.ty
-                        }, r);
-            
-                        r[4] = -o.x;
-                        r[5] = -o.y;
+            var r = this.toArray(),
+                a = 1 / (this.a * this.d - this.b * this.c);
+
+            r = [a * this.d, -a * this.b, -a * this.c, a * this.a, 0, 0];
+
+            var o = toPoint({
+                x: this.tx,
+                y: this.ty
+            }, r);
+
+            r[4] = -o.x;
+            r[5] = -o.y;
 
             return r;
 
+        },
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L727
+        inverted: function () {
+            var det = getDeterminant(this);
+
+            return det && new Matrix(
+                this.d / det, -this.c / det, -this.b / det,
+                this.a / det, (this.b * this.ty - this.d * this.tx) / det, (this.c * this.tx - this.a * this.ty) / det);
         },
         inversePoint: function (point) {
             var det = getDeterminant(this);
@@ -216,6 +257,47 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
         toArray: function () {
             return [this.a, this.b, this.c, this.d, this.tx, this.ty];
         },
+        _transformCoordinates: function (src, dst, count) {
+            var i = 0,
+                j = 0,
+                max = 2 * count;
+            while (i < max) {
+                var x = src[i++],
+                    y = src[i++];
+                dst[j++] = x * this._a + y * this._b + this._tx;
+                dst[j++] = x * this._c + y * this._d + this._ty;
+            }
+            return dst;
+        },
+        _transformCorners: function (rect) {
+            var x1 = rect.x,
+                y1 = rect.y,
+                x2 = x1 + rect.width,
+                y2 = y1 + rect.height,
+                coords = [x1, y1, x2, y1, x2, y2, x1, y2];
+            return this._transformCoordinates(coords, coords, 4);
+        },
+        _transformBounds: function (bounds, dest, _dontNotify) {
+
+            debugger;
+
+            var coords = this._transformCorners(bounds),
+                min = coords.slice(0, 2),
+                max = coords.slice();
+            for (var i = 2; i < 8; i++) {
+                var val = coords[i],
+                    j = i & 1;
+                if (val < min[j])
+                    min[j] = val;
+                else if (val > max[j])
+                    max[j] = val;
+            }
+            if (!dest)
+                dest = new Rectangle();
+            return dest.set(min[0], min[1], max[0] - min[0], max[1] - min[1],
+                _dontNotify);
+        },
+
 
     };
 

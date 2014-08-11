@@ -31,6 +31,12 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         }
     }
 
+    /**
+     * Descrição para o objeto String no arquivo types.js
+     *
+     * @class String
+     * @static
+     */    
     var string = {
 
         format: function (str, args) {

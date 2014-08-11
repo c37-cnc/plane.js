@@ -7,8 +7,16 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     var point = require('structure/point'),
         layer = require('structure/layer');
 
-
-
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Structure
+     * @class Shape
+     * @constructor
+     */
     function Shape() {};
 
     Shape.prototype = {
@@ -407,8 +415,26 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
         }
     };
 
-
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Structure
+     * @extends Shape
+     * @class Arc
+     * @constructor
+     */
     var Arc = types.object.inherits(function Arc(attrs) {
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.status = attrs.status;
@@ -421,6 +447,17 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
         this.clockWise = attrs.clockWise;
     }, Shape);
 
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Structure
+     * @extends Shape
+     * @class Bezier
+     * @constructor
+     */
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
     var Bezier = types.object.inherits(function Bezier(attrs) {
         this.uuid = attrs.uuid;
@@ -431,6 +468,17 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
         this.points = attrs.points;
     }, Shape);
 
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Structure
+     * @extends Shape
+     * @class Circle
+     * @constructor
+     */
     var Circle = types.object.inherits(function Circle(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -441,6 +489,17 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
         this.radius = attrs.radius;
     }, Shape);
 
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Structure
+     * @extends Shape
+     * @class Ellipse
+     * @constructor
+     */
     var Ellipse = types.object.inherits(function Ellipse(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;

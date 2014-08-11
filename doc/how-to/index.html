@@ -251,13 +251,18 @@
             });
 
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
-//                plane.view.zoom = 1.041666666666667;
-                plane.view.zoomTo(1.041666666666667, plane.view.center.position);
+                                plane.view.zoom /= .96;
+                //                plane.view.zoom = 1;
+//                plane.view.zoomTo(1, plane.view.center.position);
+                //                plane.view.zoomTo(1.041666666666667, plane.view.center.position);
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
-//                plane.view.zoom = .96;
-                plane.view.zoomTo(.96, plane.view.center.position);
+                                plane.view.zoom *= .96;
+                //                plane.view.zoom = -1;
+//                plane.view.zoomTo(-1, plane.view.center.position);
+                console.log(plane.view.bounds)
+                //                plane.view.zoomTo(.96, plane.view.center.position);
             });
 
             document.getElementById('zoomCenterButton').addEventListener('click', function (event) {
@@ -287,8 +292,31 @@
 
             viewPort.addEventListener('mousewheel', function (event) {
 
+//                debugger;
+                
                 var viewPosition = mousePosition(viewPort, event.clientX, event.clientY),
-                    zoomNew = event.wheelDelta > 1 ? 1.041666666666667 : .96;
+                    zoomNew = event.wheelDelta > 1 ? 1 : -1,
+                    zoomFactor = plane.view.zoom / event.wheelDelta > 1 ? 1.041666666666667 : .96;
+
+                var centerFactor = {
+                    x: plane.view.center.position.x - viewPosition.x,
+                    y: plane.view.center.position.y - viewPosition.y
+                };
+
+                var postionMultiply = {
+                    x: centerFactor.x * zoomFactor,
+                    y: centerFactor.y * zoomFactor
+                };
+
+                var moveFactor = {
+                    x: plane.view.center.position.x - (postionMultiply.x - viewPosition.x),
+                    y: plane.view.center.position.y - (postionMultiply.y - viewPosition.y)
+                };
+//                var moveFactor = {
+//                    x: postionMultiply.x - viewPosition.x,
+//                    y: postionMultiply.y - viewPosition.y
+//                };
+
 
                 plane.view.zoomTo(zoomNew, viewPosition);
 

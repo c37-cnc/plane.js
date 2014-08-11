@@ -106,8 +106,8 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             render = this.active.render,
             context2D = render.getContext('2d');
 
-        // limpando o render
-        context2D.clearRect(0, 0, viewPort.clientWidth, viewPort.clientHeight);
+        // clear context, +1 is needed on some browsers to really clear the borders
+        context2D.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
 
         // style of layer
         context2D.lineCap = style.lineCap;

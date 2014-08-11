@@ -95,6 +95,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         var transform = matrix.create(),
             viewPort = null,
+            _zoom = 1,
             center = {
                 x: 0,
                 y: 0
@@ -130,6 +131,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
             },
             // zoom level
             get zoom() {
+
+                //                debugger;
+
+                // funcional
+                //                return _zoom;
                 return Math.sqrt(transform.a * transform.d);
             },
             set zoom(value) {
@@ -141,19 +147,48 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
                 return true;
             },
-            zoomTo: function (value, point) {
 
-                //                                debugger;
+            /**
+             * Descrição para o metodo zoomTo
+             *
+             * @method zoomTo
+             * @param factor {Number} fator de zoom aplicado
+             * @param point {Object} local onde o zoom será aplicado
+             * @return {Boolean} Copy of ...
+             */
+            zoomTo: function (factor, point) {
 
-                var zoomFactor = value / this.zoom;
-
-                var ttt = transform.scale({
-                    x: zoomFactor,
-                    y: zoomFactor
+                debugger;
+                
+                var zoom, motion;
+                
+                zoom = factor / Math.sqrt(transform.a * transform.d);
+                
+                transform.scale({
+                    x: zoom,
+                    y: zoom
                 }, point);
+                
+                motion = {
+                    x: transform.tx,
+                    y: transform.ty
+                }
 
 
+                //                var zoomFactor = zoom / _zoom;
+                //                transform.scale({
+                //                    x: zoomFactor,
+                //                    y: zoomFactor
+                //                }, point);
+                //                
+                //                _zoom = zoom;
 
+                // funcional
+                //                var zoom = value > 0 ? (1.041666666666667 / this.zoom) : (.96 / this.zoom);
+                //                transform.scale({
+                //                    x: zoom,
+                //                    y: zoom
+                //                }, point);
 
                 // High Performance - JavaScript - Loops - Page 65
                 //                var layers = layer.list(),
@@ -177,11 +212,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
                     var shapes = layers[l].shapes.list(),
                         s = shapes.length - 1;
                     do {
-                        shapes[s].scaleTo(this.zoom);
-                        shapes[s].moveTo({
-                            x: transform.tx,
-                            y: transform.ty
-                        });
+                        shapes[s].scaleTo(zoom);
+                        shapes[s].moveTo(motion);
                     } while (s--);
                 } while (l--);
                 layer.update();
@@ -211,7 +243,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
             },
             get bounds() {
 
+                //                debugger;                
 
+                //                var bound = this.size;
+                //                var iii = transform.inverted()._transformBounds(bound);
+                //                var fff = this.size;
 
 
                 return bounds;
