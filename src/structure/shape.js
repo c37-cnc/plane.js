@@ -2,7 +2,8 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
-    var intersection = require('geometric/intersection');
+    var intersection = require('geometric/intersection'),
+        matrix = require('geometric/matrix');
 
     var point = require('structure/point'),
         layer = require('structure/layer');
@@ -25,56 +26,71 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
         },
         scaleTo: function (value) {
 
+            var ccc = zoom / Math.sqrt(this.transform.a * this.transform.d);
+
+            this.transform.scale({
+                x: ccc,
+                y: ccc
+            }, {
+                x: 0,
+                y: 0
+            });
+
+            var factor = Math.sqrt(this.transform.a * this.transform.d);
+            
+//            var factor = value;
+
+
             switch (this.type) {
             case 'arc':
                 {
-                    this.point.x *= value;
-                    this.point.y *= value;
-                    this.radius *= value;
+                    this.point.x *= factor;
+                    this.point.y *= factor;
+                    this.radius *= factor;
 
                     break;
                 }
             case 'bezier':
                 {
                     this.points.forEach(function (point) {
-                        point.a = point.a.multiply(value);
-                        point.b = point.b.multiply(value);
-                        point.c = point.c.multiply(value);
+                        point.a = point.a.multiply(factor);
+                        point.b = point.b.multiply(factor);
+                        point.c = point.c.multiply(factor);
                     });
                     break;
                 }
             case 'circle':
                 {
-                    this.point.x *= value;
-                    this.point.y *= value;
-                    this.radius *= value;
+                    this.point.x *= factor;
+                    this.point.y *= factor;
+                    this.radius *= factor;
 
                     break;
                 }
             case 'ellipse':
                 {
-                    this.point.x *= value;
-                    this.point.y *= value;
-                    this.radiusX *= value;
-                    this.radiusY *= value;
+                    this.point.x *= factor;
+                    this.point.y *= factor;
+                    this.radiusX *= factor;
+                    this.radiusY *= factor;
 
                     break;
                 }
             case 'line':
                 {
                     for (var i = 0; i <= this.points.length - 1; i++) {
-                        this.points[i] = this.points[i].multiply(value);
+                        this.points[i] = this.points[i].multiply(factor);
                     };
                     break;
                 }
             case 'polygon':
                 {
-                    this.point.x *= value;
-                    this.point.y *= value;
+                    this.point.x *= factor;
+                    this.point.y *= factor;
 
                     this.points.forEach(function (point) {
-                        point.x *= value;
-                        point.y *= value;
+                        point.x *= factor;
+                        point.y *= factor;
                     });
 
                     break;
@@ -82,24 +98,24 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             case 'polyline':
                 {
                     this.points.forEach(function (point) {
-                        point.x *= value;
-                        point.y *= value;
+                        point.x *= factor;
+                        point.y *= factor;
                     });
 
                     break;
                 }
             case 'rectangle':
                 {
-                    this.point.x *= value;
-                    this.point.y *= value;
-                    this.height *= value;
-                    this.width *= value;
+                    this.point.x *= factor;
+                    this.point.y *= factor;
+                    this.height *= factor;
+                    this.width *= factor;
 
                     break;
                 }
             }
 
-            this.Scale = value;
+            this.scale = value;
 
         },
         moveTo: function (value) {
@@ -437,6 +453,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
          */
         this.uuid = attrs.uuid;
         this.name = attrs.name;
+        this.transform = attrs.transform;
         this.status = attrs.status;
 
         this.type = 'arc';
@@ -462,6 +479,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     var Bezier = types.object.inherits(function Bezier(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
+        this.transform = attrs.transform;
         this.status = attrs.status;
 
         this.type = 'bezier';
@@ -482,6 +500,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     var Circle = types.object.inherits(function Circle(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
+        this.transform = attrs.transform;
         this.status = attrs.status;
 
         this.type = 'circle';
@@ -503,6 +522,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     var Ellipse = types.object.inherits(function Ellipse(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
+        this.transform = attrs.transform;
         this.status = attrs.status;
 
         this.type = 'ellipse';
@@ -514,6 +534,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     var Line = types.object.inherits(function Line(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
+        this.transform = attrs.transform;
         this.status = attrs.status;
 
         this.type = 'line';
@@ -524,6 +545,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     var Polygon = types.object.inherits(function Polygon(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
+        this.transform = attrs.transform;
         this.status = attrs.status;
 
         this.type = 'polygon';
@@ -535,6 +557,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     var Polyline = types.object.inherits(function Polyline(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
+        this.transform = attrs.transform;
         this.status = attrs.status;
 
         this.type = 'polyline';
@@ -544,6 +567,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     var Rectangle = types.object.inherits(function Rectangle(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
+        this.transform = attrs.transform;
         this.status = attrs.status;
 
         this.type = 'rectangle';
@@ -572,6 +596,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             uuid: uuid,
             name: 'shape '.concat(uuid),
             style: null,
+            transform: matrix.create(),
             status: null
         }, attrs);
 

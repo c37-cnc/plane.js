@@ -131,12 +131,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             },
             // zoom level
             get zoom() {
-
-                //                debugger;
-
-                // funcional
-                //                return _zoom;
-                return Math.sqrt(transform.a * transform.d);
+                return _zoom;
+                //                return Math.sqrt(transform.a * transform.d);
             },
             set zoom(value) {
 
@@ -156,39 +152,44 @@ define("plane", ['require', 'exports'], function (require, exports) {
              * @param point {Object} local onde o zoom será aplicado
              * @return {Boolean} Copy of ...
              */
-            zoomTo: function (factor, point) {
+            //            zoomTo: function (factor, point) {
+            zoomTo: function (zoom, point) {
 
-                debugger;
-                
-                var zoom, motion;
-                
-                zoom = factor / Math.sqrt(transform.a * transform.d);
-                
+//                                debugger;
+
+                var factor, motion;
+
+                factor = zoom / _zoom;
+
                 transform.scale({
-                    x: zoom,
-                    y: zoom
+                    x: factor,
+                    y: factor
                 }, point);
-                
+
                 motion = {
                     x: transform.tx,
                     y: transform.ty
                 }
+                
+                _zoom = zoom;
 
 
-                //                var zoomFactor = zoom / _zoom;
-                //                transform.scale({
-                //                    x: zoomFactor,
-                //                    y: zoomFactor
-                //                }, point);
-                //                
-                //                _zoom = zoom;
-
-                // funcional
-                //                var zoom = value > 0 ? (1.041666666666667 / this.zoom) : (.96 / this.zoom);
+                //                var zoom, motion;
+                //
+                //                zoom = factor > 0 ? (1.041666666666667 / Math.sqrt(transform.a * transform.d)) : (.96 / Math.sqrt(transform.a * transform.d));
+                //
                 //                transform.scale({
                 //                    x: zoom,
                 //                    y: zoom
                 //                }, point);
+                //
+                //                motion = {
+                //                    x: transform.tx,
+                //                    y: transform.ty
+                //                }
+
+
+
 
                 // High Performance - JavaScript - Loops - Page 65
                 //                var layers = layer.list(),
@@ -278,7 +279,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     exports.initialize = initialize;
     exports.view = view;
-    exports.selected = selected;
     exports.clear = clear;
 
     exports.layer = layer;
