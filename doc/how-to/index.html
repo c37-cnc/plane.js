@@ -183,12 +183,6 @@
             plane.update();
 
 
-//            plane.update();
-//            
-//            plane.select.layer
-//            plane.select.shapes
-//            plane.select.groups
-            
 
 
 
@@ -196,18 +190,27 @@
 
 
 
-            var tool001 = plane.tool.create();
-            tool001.active = true;
-
-            console.log(tool001);
-
-            tool001.events.listen('onMouseWheel', function (event) {
-                console.log(event);
+            var toolZoomWheel = plane.tool.create({
+                active: true
             });
 
-//            tool001.events.listen('onMouseMove', function (event) {
-//                console.log(event);
-//            });
+            console.log(toolZoomWheel);
+
+            toolZoomWheel.events.listen('onMouseWheel', function (event) {
+
+                var position = event.point,
+                    zoomNew = event.delta < 0 ? plane.view.zoom / .93 : plane.view.zoom * .93,
+                    zoomFactor = plane.view.zoom / zoomNew;
+
+                debugger;
+                
+                var centerFactor = position.subtract(plane.view.center);
+                var centerSum =  position.subtract(centerFactor.multiply(zoomFactor)).subtract(plane.view.center);
+                var centerNew = plane.view.center.sum(centerSum);
+
+                plane.view.zoom = zoomNew;
+                plane.view.center = centerNew;
+            });
 
 
             document.getElementById('fileImport').addEventListener('change', function () {
@@ -243,18 +246,11 @@
             });
 
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
-                plane.view.zoom /= .97;
-                
-                // plane.view.zoom(plane.view.zoom() / .97);
-                
-                // plane.view.zoomTo(plane.view.zoom / .97, plane.view.center.position);
-                // plane.view.zoomTo(1, plane.view.center.position);
+                plane.view.zoom /= .93;
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
-                plane.view.zoom *= .97;
-                // plane.view.zoomTo(plane.view.zoom * .97, plane.view.center.position);
-                // plane.view.zoomTo(-1, plane.view.center.position);
+                plane.view.zoom *= .93;
             });
 
             document.getElementById('zoomCenterButton').addEventListener('click', function (event) {
@@ -265,59 +261,6 @@
                 console.log(plane.view.bounds);
             });
 
-
-            function mousePosition(element, x, y) {
-                var bb = element.getBoundingClientRect();
-
-                x = (x - bb.left) * (element.clientWidth / bb.width);
-                y = (y - bb.top) * (element.clientHeight / bb.height);
-
-                // tradução para o sistema de coordenadas cartesiano
-                y = (y - element.clientHeight) * -1;
-
-                return {
-                    x: x,
-                    y: y
-                };
-            };
-
-
-            viewPort.addEventListener('msousewheel', function (event) {
-
-  //              debugger;
-
-//                                var viewPosition = mousePosition(viewPort, event.clientX, event.clientY),
-//                                    zoomNew = event.wheelDelta > 1 ? 1 : -1,
-//                                    zoomFactor = plane.view.zoom / event.wheelDelta < 1 ? 1.041666666666667 : .96;
-
-                var viewPosition = mousePosition(viewPort, event.clientX, event.clientY),
-                    zoomNew = event.wheelDelta > 1 ? plane.view.zoom / .97 : plane.view.zoom * .97,
-                    zoomFactor = plane.view.zoom / zoomNew;
-
-                var centerFactor = {
-                    x: viewPosition.x - plane.view.center.position.x,
-                    y: viewPosition.y - plane.view.center.position.y
-                };
-
-                var postionMultiply = {
-                    x: centerFactor.x * zoomFactor,
-                    y: centerFactor.y * zoomFactor
-                };
-
-                var moveFactor = {
-                    x: (viewPosition.x - postionMultiply.x) - plane.view.center.position.x,
-                    y: (viewPosition.y - postionMultiply.y) - plane.view.center.position.y
-                };
-                //                var moveFactor = {
-                //                    x: postionMultiply.x - viewPosition.x,
-                //                    y: postionMultiply.y - viewPosition.y
-                //                };
-
-
-                                plane.view.zoomTo(zoomNew, moveFactor);
-//                plane.view.zoomTo(zoomNew, viewPosition);
-
-            });
 
 
         };

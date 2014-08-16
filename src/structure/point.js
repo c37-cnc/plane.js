@@ -12,6 +12,9 @@ define("structure/point", ['require', 'exports'], function (require, exports) {
         subtract: function (point) {
             return new Point(this.x - point.x, this.y - point.y);
         },
+        negate: function () {
+            return new Point(-this.x, -this.y);
+        },
         multiply: function (value) {
             return new Point(this.x * value, this.y * value);
         },
@@ -35,16 +38,16 @@ define("structure/point", ['require', 'exports'], function (require, exports) {
         }
     };
 
-    function create(x, y) {
-        if ((x == null || x == undefined) || (y == null || y == undefined)) {
-            throw new Error('Point - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+    function create() {
+
+        if (arguments.length == 2 && (arguments[0] != null && arguments[1] != null)) {
+            return new Point(arguments[0], arguments[1]);
+        } else if (arguments.length == 1 && typeof arguments == 'object' && (arguments[0].x && arguments[0].y)) {
+            return new Point(arguments[0].x, arguments[0].y);
         }
 
+        throw new Error('Point - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
 
-
-
-
-        return new Point(x, y);
     };
 
     exports.create = create;

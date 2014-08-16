@@ -2,7 +2,7 @@ define("data/importer", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
-    function fromDxf(stringDxf) {
+    function parseDxf(stringDxf) {
 
         function toJson(objectDxf) {
 
@@ -256,20 +256,6 @@ define("data/importer", ['require', 'exports'], function (require, exports) {
 //        return true;
 //    };
 //
-//    function fromDxf(stringDxf) {
-//        clear();
-//
-//        var stringJson = importer.fromDxf(stringDxf);
-//        var objectDxf = JSON.parse(stringJson);
-//
-//        if (stringJson) {
-//            layer.create();
-//            for (var prop in objectDxf) {
-//                shape.create(objectDxf[prop]);
-//            }
-//            layer.update();
-//        }
-//    };
 //
 //    function fromDwg(stringDwg) {
 //        return true;
@@ -277,7 +263,7 @@ define("data/importer", ['require', 'exports'], function (require, exports) {
 //    // importer
     
 
-    exports.fromDxf = fromDxf;
+    exports.parseDxf = parseDxf;
     exports.fromDwg = fromDwg;
     exports.fromJson = fromJson;
     exports.fromSvg = fromSvg;

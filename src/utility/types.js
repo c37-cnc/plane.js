@@ -52,14 +52,14 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     var graphic = {
 
-        mousePosition: function (Element, x, y) {
-            var bb = Element.getBoundingClientRect();
+        mousePosition: function (element, x, y) {
+            var bb = element.getBoundingClientRect();
 
-            x = (x - bb.left) * (Element.clientWidth / bb.width);
-            y = (y - bb.top) * (Element.clientHeight / bb.height);
+            x = (x - bb.left) * (element.clientWidth / bb.width);
+            y = (y - bb.top) * (element.clientHeight / bb.height);
 
             // tradução para o sistema de coordenadas cartesiano
-            y = (y - Element.clientHeight) * -1;
+//            y = (y - element.clientHeight) * -1;
 
             return {
                 x: x,

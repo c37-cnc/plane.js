@@ -29,6 +29,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 this._active = value;
             }
         });
+        
+        this.active = attrs.active;
     };
 
 
@@ -100,14 +102,20 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         }
 
         function onMouseWheel(event) {
+            
+            debugger;
+            
+//            var lll = point.create(types.graphic.mousePosition(viewPort, event.x, event.y));
+            var lll = types.graphic.mousePosition(viewPort, event.x, event.y);
+            var fff = view.transform.inverseTransform(lll);
+            
+            
+            
             // customized event
             event = {
                 delta: event.deltaY,
-                positionInView: {
-                    x: 0,
-                    y: 0
-                },
-                Now: new Date().toISOString()
+                point: point.create(fff),
+                now: new Date().toISOString()
             };
 
             var tools = store.list(),
@@ -139,7 +147,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         attrs = types.object.merge({
             uuid: uuid,
             name: 'Tool '.concat(uuid),
-            events: types.object.event.create()
+            events: types.object.event.create(),
+            active: false
         }, attrs);
 
         // nova tool

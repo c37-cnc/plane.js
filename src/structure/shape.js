@@ -228,136 +228,13 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             return false;
         },
-        render: function (context2D) {
-
-            if (this.status == 'over') {
-                context2D.strokeStyle = 'rgb(61, 142, 193)';
-            }
-
-            if (this.status == 'selected') {
-
-                context2D.strokeStyle = 'rgb(68, 121, 154)';
-                if (this.point) {
-                    context2D.strokeRect(this.point.x - (Math.round(2) / 2), this.point.y - (Math.round(2) / 2), Math.round(2), Math.round(2));
-                }
-                if (this.points) {
-                    this.points.forEach(function (point) {
-                        context2D.strokeRect(point.x - (Math.round(2) / 2), point.y - (Math.round(2) / 2), Math.round(2), Math.round(2));
-                    });
-                }
-            }
-
-
-            //            debugger;
-
-            //            var path2 = new Path2D();
-            //            path2.arc(50, 50, 45, Math.PI / 2, Math.PI * 1.5, false);
-            //            path2.lineTo(200, 5);
-            //            path2.arc(200, 50, 45, Math.PI * 1.5, Math.PI / 2, false);
-            //            path2.closePath();
-            //            
-            //            context2D.fill(path2);
-
-
-            //
-            //
-            //            var scale = Math.sqrt(this.transform.a * this.transform.d);
-            //
-            //            switch (this.type) {
-            //            case 'arc':
-            //                {
-            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
-            //                    context2D.arc(0, 0, this.radius * scale, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
-            //                    //                    context2D.arc(0, 0, this.radius * scale, (Math.PI / 180) * (this.startAngle * scale), (Math.PI / 180) * (this.endAngle * scale), this.clockWise);
-            //
-            //                    return true;
-            //                }
-            //            case 'bezier':
-            //                {
-            //                    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-            //                    this.points.forEach(function (point) {
-            //                        context2D.bezierCurveTo(point.a.x, point.a.y, point.b.x, point.b.y, point.c.x, point.c.y);
-            //                    });
-            //
-            //                    return true;
-            //                }
-            //            case 'circle':
-            //                {
-            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
-            //                    context2D.arc(0, 0, this.radius * scale, 0, Math.PI * 2, true);
-            //
-            //                    return true;
-            //                }
-            //            case 'ellipse':
-            //                {
-            //                    // http://scienceprimer.com/draw-oval-html5-canvas
-            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
-            //
-            //                    // angle in radian
-            //                    var sss = 0;
-            //                    for (var i = 0 * Math.PI; i < 2 * Math.PI; i += 0.01) {
-            //                        var xPos = 0 - ((this.radiusY * scale) * Math.sin(i)) * Math.sin(sss * Math.PI) + ((this.radiusX * scale) * Math.cos(i)) * Math.cos(sss * Math.PI);
-            //                        var yPos = 0 + ((this.radiusX * scale) * Math.cos(i)) * Math.sin(sss * Math.PI) + ((this.radiusY * scale) * Math.sin(i)) * Math.cos(sss * Math.PI);
-            //
-            //                        if (i == 0) {
-            //                            context2D.moveTo(xPos, yPos);
-            //                        } else {
-            //                            context2D.lineTo(xPos, yPos);
-            //                        }
-            //                    }
-            //
-            //                    return true;
-            //                }
-            //            case 'line':
-            //                {
-            //                    // possivel personalização
-            //                    if (this.status != 'Over') {
-            //                        context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
-            //                        context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
-            //                    }
-            //
-            //                    context2D.moveTo(this.points[0].x * scale, this.points[0].y * scale);
-            //                    context2D.lineTo(this.points[1].x * scale, this.points[1].y * scale);
-            //
-            //                    return true;
-            //                }
-            //            case 'polygon':
-            //                {
-            //                    context2D.moveTo(this.points[0].x * scale, this.points[0].y * scale);
-            //
-            //                    this.points.forEach(function (point) {
-            //                        context2D.lineTo(point.x * scale, point.y * scale);
-            //                    });
-            //                    context2D.closePath();
-            //
-            //                    return true;
-            //                }
-            //            case 'polyline':
-            //                {
-            //                    context2D.moveTo(this.points[0].x * scale, this.points[0].y * scale);
-            //
-            //                    this.points.forEach(function (point) {
-            //                        context2D.lineTo(point.x * scale, point.y * scale);
-            //                    });
-            //
-            //                    return true;
-            //                }
-            //            case 'rectangle':
-            //                {
-            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
-            //                    context2D.strokeRect(0, 0, this.width * scale, this.height * scale);
-            //
-            //                    return true;
-            //                }
-            //            }
-            //            
-            //            
+        render: function (context) {
 
             switch (this.type) {
             case 'arc':
                 {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                    context.translate(this.point.x, this.point.y);
+                    context.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
 
                     return true;
                 }
@@ -365,22 +242,22 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 {
                     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
                     this.points.forEach(function (point) {
-                        context2D.bezierCurveTo(point.a.x, point.a.y, point.b.x, point.b.y, point.c.x, point.c.y);
+                        context.bezierCurveTo(point.a.x, point.a.y, point.b.x, point.b.y, point.c.x, point.c.y);
                     });
 
                     return true;
                 }
             case 'circle':
                 {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+                    context.translate(this.point.x, this.point.y);
+                    context.arc(0, 0, this.radius, 0, Math.PI * 2, true);
 
                     return true;
                 }
             case 'ellipse':
                 {
                     // http://scienceprimer.com/draw-oval-html5-canvas
-                    context2D.translate(this.point.x, this.point.y);
+                    context.translate(this.point.x, this.point.y);
 
                     // angle in radian
                     var sss = 0;
@@ -389,9 +266,9 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         var yPos = 0 + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
 
                         if (i == 0) {
-                            context2D.moveTo(xPos, yPos);
+                            context.moveTo(xPos, yPos);
                         } else {
-                            context2D.lineTo(xPos, yPos);
+                            context.lineTo(xPos, yPos);
                         }
                     }
 
@@ -401,40 +278,40 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 {
                     // possivel personalização
                     if (this.status != 'Over') {
-                        context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
-                        context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
+                        context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
+                        context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
                     }
 
-                    context2D.moveTo(this.points[0].x, this.points[0].y);
-                    context2D.lineTo(this.points[1].x, this.points[1].y);
+                    context.moveTo(this.points[0].x, this.points[0].y);
+                    context.lineTo(this.points[1].x, this.points[1].y);
 
                     return true;
                 }
             case 'polygon':
                 {
-                    context2D.moveTo(this.points[0].x, this.points[0].y);
+                    context.moveTo(this.points[0].x, this.points[0].y);
 
                     this.points.forEach(function (point) {
-                        context2D.lineTo(point.x, point.y);
+                        context.lineTo(point.x, point.y);
                     });
-                    context2D.closePath();
+                    context.closePath();
 
                     return true;
                 }
             case 'polyline':
                 {
-                    context2D.moveTo(this.points[0].x, this.points[0].y);
+                    context.moveTo(this.points[0].x, this.points[0].y);
 
                     this.points.forEach(function (point) {
-                        context2D.lineTo(point.x, point.y);
+                        context.lineTo(point.x, point.y);
                     });
 
                     return true;
                 }
             case 'rectangle':
                 {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.strokeRect(0, 0, this.width, this.height);
+                    context.translate(this.point.x, this.point.y);
+                    context.strokeRect(0, 0, this.width, this.height);
 
                     return true;
                 }

@@ -1,5 +1,5 @@
 /*!
- * C37 in 16-08-2014 at 02:43:11 
+ * C37 in 16-08-2014 at 18:46:41 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -114,7 +114,7 @@ define("data/importer", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
-    function fromDxf(stringDxf) {
+    function parseDxf(stringDxf) {
 
         function toJson(objectDxf) {
 
@@ -368,20 +368,6 @@ define("data/importer", ['require', 'exports'], function (require, exports) {
 //        return true;
 //    };
 //
-//    function fromDxf(stringDxf) {
-//        clear();
-//
-//        var stringJson = importer.fromDxf(stringDxf);
-//        var objectDxf = JSON.parse(stringJson);
-//
-//        if (stringJson) {
-//            layer.create();
-//            for (var prop in objectDxf) {
-//                shape.create(objectDxf[prop]);
-//            }
-//            layer.update();
-//        }
-//    };
 //
 //    function fromDwg(stringDwg) {
 //        return true;
@@ -389,7 +375,7 @@ define("data/importer", ['require', 'exports'], function (require, exports) {
 //    // importer
     
 
-    exports.fromDxf = fromDxf;
+    exports.parseDxf = parseDxf;
     exports.fromDwg = fromDwg;
     exports.fromJson = fromJson;
     exports.fromSvg = fromSvg;
@@ -914,7 +900,7 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
                 this.d / det, -this.c / det, -this.b / det,
                 this.a / det, (this.b * this.ty - this.d * this.tx) / det, (this.c * this.tx - this.a * this.ty) / det);
         },
-        inversePoint: function (point) {
+        inverseTransform: function (point) {
             var det = getDeterminant(this);
 
             var x = point.x - this.tx,
@@ -1249,6 +1235,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
+        // save in variable viewPort
         viewPort = config.viewPort;
 
 
@@ -1262,12 +1249,23 @@ define("plane", ['require', 'exports'], function (require, exports) {
         render.style.position = "absolute";
         render.style.backgroundColor = 'transparent';
 
-        // add em viewPort
+        // add em viewPort HTMLElement
         viewPort.appendChild(render);
 
-        // add to view
-        view.context = render.getContext('2d');
-        view.transform = matrix.create();
+        // initialize view
+
+        // add to private view
+        _view.context = render.getContext('2d');
+        _view.transform = matrix.create();
+
+        
+        // o centro inicial
+        _view.center  = _view.center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
+        
+        // os tamanhos que são fixos
+        _view.size.height = viewPort.clientHeight;
+        _view.size.width = viewPort.clientWidth;
+
 
 
         // initialize structure
@@ -1280,7 +1278,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         tool.initialize({
             viewPort: viewPort,
             select: select,
-            view: view
+            view: _view
         });
 
         return true;
@@ -1289,7 +1287,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     function clear() {
 
         // reset all parameters in view
-        view.reset();
+        _view.reset();
 
         // remove em todas as layers
         layer.remove();
@@ -1299,17 +1297,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     function update() {
 
-        var context = view.context,
-            transform = view.transform;
+        var context = _view.context,
+            transform = _view.transform;
 
         // reset context
         context.resetTransform();
-        
+
         // clear context, +1 is needed on some browsers to really clear the borders
         context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
 
         // transform da view
-        context.setTransform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
+        context.transform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
 
         // sistema cartesiano de coordenadas
         context.translate(0, viewPort.clientHeight);
@@ -1341,47 +1339,71 @@ define("plane", ['require', 'exports'], function (require, exports) {
         return this;
     }
 
-    var view = {
+    // private view
+    var _view = {
         context: null,
         transform: null,
+        zoom: 1,
+        center: point.create(0, 0),
+        size: {
+            height: 0,
+            width: 0
+        },
+        bounds: {
+            x: 0,
+            y: 0,
+            height: 0,
+            width: 0
+        },
         reset: function () {
 
-        },
+        }
+    };
+
+    // public view
+    var view = {
         get zoom() {
-            return this._zoom || 1;
-            //                return Math.sqrt(transform.a * transform.d);
+            return _view.zoom;
         },
-        set zoom(value) {
-
-            this.zoomTo(value, {
-                x: 500,
-                y: 0
-            });
-
-            return true;
-        },
-        zoomTo: function (zoom, point) {
-
-            debugger;
+        set zoom(zoom) {
 
             var factor, motion;
 
-            factor = zoom / this.zoom;
+            factor = zoom / _view.zoom;
 
-            this.transform.scale({
+            _view.transform.scale({
                 x: factor,
                 y: factor
-            }, point);
+            }, _view.center);
 
-            this._zoom = zoom;
+            _view.zoom = zoom;
 
+            
             update();
-
-
 
             return true;
         },
-
+        get center() {
+            return _view.center;
+        },
+        set center(center){
+            
+            debugger;
+            
+            var centerSubtract = center.subtract(_view.center);
+            centerSubtract = centerSubtract.negate();
+            
+            var xxx = matrix.create();
+            xxx.translate(centerSubtract.x, centerSubtract.y);
+            
+            _view.transform.concate(xxx);
+            
+            _view.center = center;
+            
+            update();
+            
+            return true;
+        }
     };
 
 
@@ -1428,6 +1450,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     })();
 
 
+
     exports.initialize = initialize;
     exports.update = update;
     exports.clear = clear;
@@ -1451,7 +1474,25 @@ define("plane", ['require', 'exports'], function (require, exports) {
         remove: tool.remove
     };
 
-    exports.importer = importer;
+    exports.importer = {
+        fromDxf: function (stringDxf) {
+            // clear Plane
+            clear();
+
+            var stringJson = importer.parseDxf(stringDxf);
+            var objectDxf = JSON.parse(stringJson);
+
+            if (stringJson) {
+                layer.create();
+                for (var prop in objectDxf) {
+                    shape.create(objectDxf[prop]);
+                }
+                update();
+            }
+        }
+    };
+    
+    
     exports.exporter = exporter;
 });
 define("structure/group", ['require', 'exports'], function (require, exports) {
@@ -1584,6 +1625,9 @@ define("structure/point", ['require', 'exports'], function (require, exports) {
         subtract: function (point) {
             return new Point(this.x - point.x, this.y - point.y);
         },
+        negate: function () {
+            return new Point(-this.x, -this.y);
+        },
         multiply: function (value) {
             return new Point(this.x * value, this.y * value);
         },
@@ -1607,16 +1651,16 @@ define("structure/point", ['require', 'exports'], function (require, exports) {
         }
     };
 
-    function create(x, y) {
-        if ((x == null || x == undefined) || (y == null || y == undefined)) {
-            throw new Error('Point - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+    function create() {
+
+        if (arguments.length == 2 && (arguments[0] != null && arguments[1] != null)) {
+            return new Point(arguments[0], arguments[1]);
+        } else if (arguments.length == 1 && typeof arguments == 'object' && (arguments[0].x && arguments[0].y)) {
+            return new Point(arguments[0].x, arguments[0].y);
         }
 
+        throw new Error('Point - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
 
-
-
-
-        return new Point(x, y);
     };
 
     exports.create = create;
@@ -1852,136 +1896,13 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             return false;
         },
-        render: function (context2D) {
-
-            if (this.status == 'over') {
-                context2D.strokeStyle = 'rgb(61, 142, 193)';
-            }
-
-            if (this.status == 'selected') {
-
-                context2D.strokeStyle = 'rgb(68, 121, 154)';
-                if (this.point) {
-                    context2D.strokeRect(this.point.x - (Math.round(2) / 2), this.point.y - (Math.round(2) / 2), Math.round(2), Math.round(2));
-                }
-                if (this.points) {
-                    this.points.forEach(function (point) {
-                        context2D.strokeRect(point.x - (Math.round(2) / 2), point.y - (Math.round(2) / 2), Math.round(2), Math.round(2));
-                    });
-                }
-            }
-
-
-            //            debugger;
-
-            //            var path2 = new Path2D();
-            //            path2.arc(50, 50, 45, Math.PI / 2, Math.PI * 1.5, false);
-            //            path2.lineTo(200, 5);
-            //            path2.arc(200, 50, 45, Math.PI * 1.5, Math.PI / 2, false);
-            //            path2.closePath();
-            //            
-            //            context2D.fill(path2);
-
-
-            //
-            //
-            //            var scale = Math.sqrt(this.transform.a * this.transform.d);
-            //
-            //            switch (this.type) {
-            //            case 'arc':
-            //                {
-            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
-            //                    context2D.arc(0, 0, this.radius * scale, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
-            //                    //                    context2D.arc(0, 0, this.radius * scale, (Math.PI / 180) * (this.startAngle * scale), (Math.PI / 180) * (this.endAngle * scale), this.clockWise);
-            //
-            //                    return true;
-            //                }
-            //            case 'bezier':
-            //                {
-            //                    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-            //                    this.points.forEach(function (point) {
-            //                        context2D.bezierCurveTo(point.a.x, point.a.y, point.b.x, point.b.y, point.c.x, point.c.y);
-            //                    });
-            //
-            //                    return true;
-            //                }
-            //            case 'circle':
-            //                {
-            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
-            //                    context2D.arc(0, 0, this.radius * scale, 0, Math.PI * 2, true);
-            //
-            //                    return true;
-            //                }
-            //            case 'ellipse':
-            //                {
-            //                    // http://scienceprimer.com/draw-oval-html5-canvas
-            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
-            //
-            //                    // angle in radian
-            //                    var sss = 0;
-            //                    for (var i = 0 * Math.PI; i < 2 * Math.PI; i += 0.01) {
-            //                        var xPos = 0 - ((this.radiusY * scale) * Math.sin(i)) * Math.sin(sss * Math.PI) + ((this.radiusX * scale) * Math.cos(i)) * Math.cos(sss * Math.PI);
-            //                        var yPos = 0 + ((this.radiusX * scale) * Math.cos(i)) * Math.sin(sss * Math.PI) + ((this.radiusY * scale) * Math.sin(i)) * Math.cos(sss * Math.PI);
-            //
-            //                        if (i == 0) {
-            //                            context2D.moveTo(xPos, yPos);
-            //                        } else {
-            //                            context2D.lineTo(xPos, yPos);
-            //                        }
-            //                    }
-            //
-            //                    return true;
-            //                }
-            //            case 'line':
-            //                {
-            //                    // possivel personalização
-            //                    if (this.status != 'Over') {
-            //                        context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
-            //                        context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
-            //                    }
-            //
-            //                    context2D.moveTo(this.points[0].x * scale, this.points[0].y * scale);
-            //                    context2D.lineTo(this.points[1].x * scale, this.points[1].y * scale);
-            //
-            //                    return true;
-            //                }
-            //            case 'polygon':
-            //                {
-            //                    context2D.moveTo(this.points[0].x * scale, this.points[0].y * scale);
-            //
-            //                    this.points.forEach(function (point) {
-            //                        context2D.lineTo(point.x * scale, point.y * scale);
-            //                    });
-            //                    context2D.closePath();
-            //
-            //                    return true;
-            //                }
-            //            case 'polyline':
-            //                {
-            //                    context2D.moveTo(this.points[0].x * scale, this.points[0].y * scale);
-            //
-            //                    this.points.forEach(function (point) {
-            //                        context2D.lineTo(point.x * scale, point.y * scale);
-            //                    });
-            //
-            //                    return true;
-            //                }
-            //            case 'rectangle':
-            //                {
-            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
-            //                    context2D.strokeRect(0, 0, this.width * scale, this.height * scale);
-            //
-            //                    return true;
-            //                }
-            //            }
-            //            
-            //            
+        render: function (context) {
 
             switch (this.type) {
             case 'arc':
                 {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                    context.translate(this.point.x, this.point.y);
+                    context.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
 
                     return true;
                 }
@@ -1989,22 +1910,22 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 {
                     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
                     this.points.forEach(function (point) {
-                        context2D.bezierCurveTo(point.a.x, point.a.y, point.b.x, point.b.y, point.c.x, point.c.y);
+                        context.bezierCurveTo(point.a.x, point.a.y, point.b.x, point.b.y, point.c.x, point.c.y);
                     });
 
                     return true;
                 }
             case 'circle':
                 {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+                    context.translate(this.point.x, this.point.y);
+                    context.arc(0, 0, this.radius, 0, Math.PI * 2, true);
 
                     return true;
                 }
             case 'ellipse':
                 {
                     // http://scienceprimer.com/draw-oval-html5-canvas
-                    context2D.translate(this.point.x, this.point.y);
+                    context.translate(this.point.x, this.point.y);
 
                     // angle in radian
                     var sss = 0;
@@ -2013,9 +1934,9 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         var yPos = 0 + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
 
                         if (i == 0) {
-                            context2D.moveTo(xPos, yPos);
+                            context.moveTo(xPos, yPos);
                         } else {
-                            context2D.lineTo(xPos, yPos);
+                            context.lineTo(xPos, yPos);
                         }
                     }
 
@@ -2025,40 +1946,40 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 {
                     // possivel personalização
                     if (this.status != 'Over') {
-                        context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
-                        context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
+                        context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
+                        context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
                     }
 
-                    context2D.moveTo(this.points[0].x, this.points[0].y);
-                    context2D.lineTo(this.points[1].x, this.points[1].y);
+                    context.moveTo(this.points[0].x, this.points[0].y);
+                    context.lineTo(this.points[1].x, this.points[1].y);
 
                     return true;
                 }
             case 'polygon':
                 {
-                    context2D.moveTo(this.points[0].x, this.points[0].y);
+                    context.moveTo(this.points[0].x, this.points[0].y);
 
                     this.points.forEach(function (point) {
-                        context2D.lineTo(point.x, point.y);
+                        context.lineTo(point.x, point.y);
                     });
-                    context2D.closePath();
+                    context.closePath();
 
                     return true;
                 }
             case 'polyline':
                 {
-                    context2D.moveTo(this.points[0].x, this.points[0].y);
+                    context.moveTo(this.points[0].x, this.points[0].y);
 
                     this.points.forEach(function (point) {
-                        context2D.lineTo(point.x, point.y);
+                        context.lineTo(point.x, point.y);
                     });
 
                     return true;
                 }
             case 'rectangle':
                 {
-                    context2D.translate(this.point.x, this.point.y);
-                    context2D.strokeRect(0, 0, this.width, this.height);
+                    context.translate(this.point.x, this.point.y);
+                    context.strokeRect(0, 0, this.width, this.height);
 
                     return true;
                 }
@@ -2488,6 +2409,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 this._active = value;
             }
         });
+        
+        this.active = attrs.active;
     };
 
 
@@ -2559,14 +2482,20 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         }
 
         function onMouseWheel(event) {
+            
+            debugger;
+            
+//            var lll = point.create(types.graphic.mousePosition(viewPort, event.x, event.y));
+            var lll = types.graphic.mousePosition(viewPort, event.x, event.y);
+            var fff = view.transform.inverseTransform(lll);
+            
+            
+            
             // customized event
             event = {
                 delta: event.deltaY,
-                positionInView: {
-                    x: 0,
-                    y: 0
-                },
-                Now: new Date().toISOString()
+                point: point.create(fff),
+                now: new Date().toISOString()
             };
 
             var tools = store.list(),
@@ -2598,7 +2527,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         attrs = types.object.merge({
             uuid: uuid,
             name: 'Tool '.concat(uuid),
-            events: types.object.event.create()
+            events: types.object.event.create(),
+            active: false
         }, attrs);
 
         // nova tool
@@ -2912,14 +2842,14 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
 
     var graphic = {
 
-        mousePosition: function (Element, x, y) {
-            var bb = Element.getBoundingClientRect();
+        mousePosition: function (element, x, y) {
+            var bb = element.getBoundingClientRect();
 
-            x = (x - bb.left) * (Element.clientWidth / bb.width);
-            y = (y - bb.top) * (Element.clientHeight / bb.height);
+            x = (x - bb.left) * (element.clientWidth / bb.width);
+            y = (y - bb.top) * (element.clientHeight / bb.height);
 
             // tradução para o sistema de coordenadas cartesiano
-            y = (y - Element.clientHeight) * -1;
+//            y = (y - element.clientHeight) * -1;
 
             return {
                 x: x,
