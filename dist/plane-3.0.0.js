@@ -1,5 +1,5 @@
 /*!
- * C37 in 14-08-2014 at 21:25:22 
+ * C37 in 15-08-2014 at 22:32:18 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1224,13 +1224,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
-    var matrix = require('geometric/matrix');
-
     var layer = require('structure/layer'),
         point = require('structure/point'),
         shape = require('structure/shape'),
         group = require('structure/group'),
-        tool = require('structure/tool');
+        tool = require('structure/tool'),
+        view = require('structure/view');
 
     var importer = require('data/importer'),
         exporter = require('data/exporter');
@@ -1252,10 +1251,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
         viewPort = config.viewPort;
 
         view.initialize({
-            viewPort: viewPort
+            viewPort: viewPort,
+            select: select
+        });
+        layer.initialize({
+            select: select
         });
         tool.initialize({
-            viewPort: viewPort
+            viewPort: viewPort,
+            select: select
         });
 
         return true;
@@ -1267,238 +1271,69 @@ define("plane", ['require', 'exports'], function (require, exports) {
         view.reset();
 
         // remove em todas as layers
-        layerManager.remove();
+        layer.remove();
 
         return true;
     }
 
+    function update() {
 
 
+        return true;
+    }
 
+    var select = (function () {
 
-    var selected = (function () {
-
+        var _layer = null,
+            _shapes = types.data.dictionary.create(),
+            _groups = types.data.dictionary.create();
 
         return {
             get layer() {
-                return this._layer;
+                return _layer;
             },
-            set layer(value) {
+            set layer(uuid) {
                 this.events.notify('onDeactivated', {
                     type: 'onDeactivated',
-                    layer: this.layer
+                    layer: _layer
                 });
 
-                this._layer = layer.find(value);
+                _layer = layer.find(uuid);
+                _shapes.clear();
+                _groups.clear();
 
                 this.events.notify('onActivated', {
                     type: 'onActivated',
-                    layer: this.layer
+                    layer: _layer
                 });
             },
             get shapes() {
-                return this._shapes;
+                return _shapes.list();
             },
-            set shapes(value) {},
+            set shapes(shape) {
+                return _shapes.add(shape.uuid, shape);
+            },
             get groups() {
-                return this._groups;
+                return _groups.list();
             },
-            set groups(value) {},
+            set groups(group) {
+                return _groups.add(group.uuid, group);
+            },
             events: types.object.event.create()
         }
     })();
 
 
 
-    var view = (function () {
 
-        var transform = matrix.create(),
-            viewPort = null,
-            _zoom = 1,
-            center = {
-                x: 0,
-                y: 0
-            },
-            bounds = {
-                bottom: 0,
-                height: 0,
-                left: 0,
-                right: 0,
-                top: 0,
-                width: 0
-            },
-            size = {
-                height: 0,
-                width: 0
-            };
-
-        return {
-            initialize: function (config) {
-
-                viewPort = config.viewPort;
-
-                bounds.height = viewPort.clientHeight;
-                bounds.width = viewPort.clientWidth;
-
-                center.x = viewPort.clientWidth / 2;
-                center.y = viewPort.clientHeight / 2;
-
-                size.height = viewPort.clientHeight;
-                size.width = viewPort.clientWidth;
-
-                return true;
-            },
-            // zoom level
-            get zoom() {
-                return _zoom;
-                //                return Math.sqrt(transform.a * transform.d);
-            },
-            set zoom(value) {
-
-                this.zoomTo(value, {
-                    x: 0,
-                    y: 0
-                });
-
-                return true;
-            },
-
-            /**
-             * Descrição para o metodo zoomTo
-             *
-             * @method zoomTo
-             * @param factor {Number} fator de zoom aplicado
-             * @param point {Object} local onde o zoom será aplicado
-             * @return {Boolean} Copy of ...
-             */
-            //            zoomTo: function (factor, point) {
-            zoomTo: function (zoom, point) {
-
-//                                debugger;
-
-                var factor, motion;
-
-                factor = zoom / _zoom;
-
-                transform.scale({
-                    x: factor,
-                    y: factor
-                }, point);
-
-                motion = {
-                    x: transform.tx,
-                    y: transform.ty
-                }
-                
-                _zoom = zoom;
-
-
-                //                var zoom, motion;
-                //
-                //                zoom = factor > 0 ? (1.041666666666667 / Math.sqrt(transform.a * transform.d)) : (.96 / Math.sqrt(transform.a * transform.d));
-                //
-                //                transform.scale({
-                //                    x: zoom,
-                //                    y: zoom
-                //                }, point);
-                //
-                //                motion = {
-                //                    x: transform.tx,
-                //                    y: transform.ty
-                //                }
-
-
-
-
-                // High Performance - JavaScript - Loops - Page 65
-                //                var layers = layer.list(),
-                //                    l = layer.list().length;
-                //                while (l--) {
-                //                    var shapes = layers[l].shapes.list(),
-                //                        s = shapes.length;
-                //                    while (s--) {
-                //                        shapes[s].scaleTo(this.zoom);
-                //                        shapes[s].moveTo({
-                //                            x: transform.tx,
-                //                            y: transform.ty
-                //                        });
-                //                    }
-                //                }
-
-                // movimentando todos os shapes de todas as layers
-                var layers = layer.list(),
-                    l = layer.list().length - 1;
-                do {
-                    var shapes = layers[l].shapes.list(),
-                        s = shapes.length - 1;
-                    do {
-                        shapes[s].scaleTo(zoom);
-                        shapes[s].moveTo(motion);
-                    } while (s--);
-                } while (l--);
-                layer.update();
-
-                return true;
-            },
-            moveTo: function (value) { // absolute
-
-
-
-                return true;
-            },
-            center: {
-                get position() {
-                    return center;
-                },
-                add: function (value) { // relative
-
-                    return true;
-                },
-                reset: function () {
-
-                    // goto center initial
-
-                    return true;
-                }
-            },
-            get bounds() {
-
-                //                debugger;                
-
-                //                var bound = this.size;
-                //                var iii = transform.inverted()._transformBounds(bound);
-                //                var fff = this.size;
-
-
-                return bounds;
-            },
-            get size() {
-                return size;
-            },
-            reset: function () {
-
-                transform.reset();
-
-                zoom = 1;
-
-                bounds.height = viewPort.clientHeight;
-                bounds.width = viewPort.clientWidth;
-
-                center.x = viewPort.clientWidth / 2;
-                center.y = viewPort.clientHeight / 2;
-
-                size.height = viewPort.clientHeight;
-                size.width = viewPort.clientWidth;
-
-                return true;
-            }
-        }
-    })();
 
 
     exports.initialize = initialize;
-    exports.view = view;
+    exports.update = update;
     exports.clear = clear;
+
+    exports.view = view;
+    exports.select = select;
 
     exports.layer = layer;
     exports.point = point;
@@ -1562,10 +1397,14 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
+        debugger;
+        
+        
         attrs = types.object.union(attrs, {
             viewPort: viewPort
         });
 
+        
         var uuid = types.math.uuid(9, 16);
 
         // montando o render da Layer
@@ -1630,15 +1469,23 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         return store.find(value);
     }
 
-    function update() {
+    function update(transform) {
 
         var style = this.active.style,
             shapes = this.active.shapes.list(),
             render = this.active.render,
             context2D = render.getContext('2d');
 
+//        debugger;
+        
         // clear context, +1 is needed on some browsers to really clear the borders
-        context2D.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
+        context2D.clearRect(-3, -3, viewPort.clientWidth + 6, viewPort.clientHeight + 6);
+
+//        if (transform) {
+//            context2D.setTransform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
+//            context2D.translate(0, render.height);
+//            context2D.scale(1, -1);
+//        }
 
         // style of layer
         context2D.lineCap = style.lineCap;
@@ -1686,6 +1533,10 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         },
         enumerable: true
     });
+    
+    function initialize(){};
+    
+    exports.initialize = initialize;
 
     exports.create = create;
     exports.update = update;
@@ -1774,19 +1625,19 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
         },
         scaleTo: function (value) {
 
-            var ccc = zoom / Math.sqrt(this.transform.a * this.transform.d);
-
-            this.transform.scale({
-                x: ccc,
-                y: ccc
-            }, {
-                x: 0,
-                y: 0
-            });
-
-            var factor = Math.sqrt(this.transform.a * this.transform.d);
-            
-//            var factor = value;
+            //            var ccc = value / Math.sqrt(this.transform.a * this.transform.d);
+            //
+            //            this.transform.scale({
+            //                x: ccc,
+            //                y: ccc
+            //            }, {
+            //                x: 0,
+            //                y: 0
+            //            });
+            //
+            //            //            var factor = ccc;
+            //
+            var factor = value;
 
 
             switch (this.type) {
@@ -1992,6 +1843,112 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 }
             }
 
+
+            //            debugger;
+
+            //            var path2 = new Path2D();
+            //            path2.arc(50, 50, 45, Math.PI / 2, Math.PI * 1.5, false);
+            //            path2.lineTo(200, 5);
+            //            path2.arc(200, 50, 45, Math.PI * 1.5, Math.PI / 2, false);
+            //            path2.closePath();
+            //            
+            //            context2D.fill(path2);
+
+
+            //
+            //
+            //            var scale = Math.sqrt(this.transform.a * this.transform.d);
+            //
+            //            switch (this.type) {
+            //            case 'arc':
+            //                {
+            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
+            //                    context2D.arc(0, 0, this.radius * scale, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+            //                    //                    context2D.arc(0, 0, this.radius * scale, (Math.PI / 180) * (this.startAngle * scale), (Math.PI / 180) * (this.endAngle * scale), this.clockWise);
+            //
+            //                    return true;
+            //                }
+            //            case 'bezier':
+            //                {
+            //                    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
+            //                    this.points.forEach(function (point) {
+            //                        context2D.bezierCurveTo(point.a.x, point.a.y, point.b.x, point.b.y, point.c.x, point.c.y);
+            //                    });
+            //
+            //                    return true;
+            //                }
+            //            case 'circle':
+            //                {
+            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
+            //                    context2D.arc(0, 0, this.radius * scale, 0, Math.PI * 2, true);
+            //
+            //                    return true;
+            //                }
+            //            case 'ellipse':
+            //                {
+            //                    // http://scienceprimer.com/draw-oval-html5-canvas
+            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
+            //
+            //                    // angle in radian
+            //                    var sss = 0;
+            //                    for (var i = 0 * Math.PI; i < 2 * Math.PI; i += 0.01) {
+            //                        var xPos = 0 - ((this.radiusY * scale) * Math.sin(i)) * Math.sin(sss * Math.PI) + ((this.radiusX * scale) * Math.cos(i)) * Math.cos(sss * Math.PI);
+            //                        var yPos = 0 + ((this.radiusX * scale) * Math.cos(i)) * Math.sin(sss * Math.PI) + ((this.radiusY * scale) * Math.sin(i)) * Math.cos(sss * Math.PI);
+            //
+            //                        if (i == 0) {
+            //                            context2D.moveTo(xPos, yPos);
+            //                        } else {
+            //                            context2D.lineTo(xPos, yPos);
+            //                        }
+            //                    }
+            //
+            //                    return true;
+            //                }
+            //            case 'line':
+            //                {
+            //                    // possivel personalização
+            //                    if (this.status != 'Over') {
+            //                        context2D.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context2D.lineWidth;
+            //                        context2D.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context2D.strokeStyle;
+            //                    }
+            //
+            //                    context2D.moveTo(this.points[0].x * scale, this.points[0].y * scale);
+            //                    context2D.lineTo(this.points[1].x * scale, this.points[1].y * scale);
+            //
+            //                    return true;
+            //                }
+            //            case 'polygon':
+            //                {
+            //                    context2D.moveTo(this.points[0].x * scale, this.points[0].y * scale);
+            //
+            //                    this.points.forEach(function (point) {
+            //                        context2D.lineTo(point.x * scale, point.y * scale);
+            //                    });
+            //                    context2D.closePath();
+            //
+            //                    return true;
+            //                }
+            //            case 'polyline':
+            //                {
+            //                    context2D.moveTo(this.points[0].x * scale, this.points[0].y * scale);
+            //
+            //                    this.points.forEach(function (point) {
+            //                        context2D.lineTo(point.x * scale, point.y * scale);
+            //                    });
+            //
+            //                    return true;
+            //                }
+            //            case 'rectangle':
+            //                {
+            //                    context2D.translate(this.point.x * scale, this.point.y * scale);
+            //                    context2D.strokeRect(0, 0, this.width * scale, this.height * scale);
+            //
+            //                    return true;
+            //                }
+            //            }
+            //            
+            //            
+
             switch (this.type) {
             case 'arc':
                 {
@@ -2078,6 +2035,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                     return true;
                 }
             }
+
 
         },
         toObject: function () {
@@ -2519,7 +2477,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             if (layer.active) {
                 layer.active.shapes.list().forEach(function (shape) {
                     if (shape.status != 'selected') {
-                        shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
+                        shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY), layer) ? 'over' : 'out';
                     }
                 });
                 layer.update();
@@ -2544,9 +2502,9 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 });
                 layer.update();
 
-                toolStore.list().forEach(function (Tool) {
-                    if (Tool.active) {
-                        Tool.notify('onMouseClick', {
+                toolStore.list().forEach(function (tool) {
+                    if (tool.active) {
+                        tool.notify('onMouseClick', {
                             type: 'onMouseClick',
                             shapes: shapeSelected.list()
                         });
@@ -2616,6 +2574,204 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     exports.initialize = initialize;
     exports.create = create;
+});
+define("structure/view", ['require', 'exports'], function (require, exports) {
+
+    var matrix = require('geometric/matrix');
+
+
+    var view = (function () {
+
+        var transform = matrix.create(),
+            viewPort = null,
+            _zoom = 1,
+            center = {
+                x: 0,
+                y: 0
+            },
+            bounds = {
+                bottom: 0,
+                height: 0,
+                left: 0,
+                right: 0,
+                top: 0,
+                width: 0
+            },
+            size = {
+                height: 0,
+                width: 0
+            };
+
+        return {
+            initialize: function (config) {
+
+                viewPort = config.viewPort;
+
+                bounds.height = viewPort.clientHeight;
+                bounds.width = viewPort.clientWidth;
+
+                center.x = viewPort.clientWidth / 2;
+                center.y = viewPort.clientHeight / 2;
+
+                size.height = viewPort.clientHeight;
+                size.width = viewPort.clientWidth;
+
+                return true;
+            },
+            // zoom level
+            get zoom() {
+                return _zoom;
+                //                return Math.sqrt(transform.a * transform.d);
+            },
+            set zoom(value) {
+
+                this.zoomTo(value, {
+                    x: 0,
+                    y: 0
+                });
+
+                return true;
+            },
+
+            /**
+             * Descrição para o metodo zoomTo
+             *
+             * @method zoomTo
+             * @param factor {Number} fator de zoom aplicado
+             * @param point {Object} local onde o zoom será aplicado
+             * @return {Boolean} Copy of ...
+             */
+            //            zoomTo: function (factor, point) {
+            zoomTo: function (zoom, point) {
+
+                //                                debugger;
+
+                var factor, motion;
+
+                factor = zoom / _zoom;
+
+                transform.scale({
+                    x: factor,
+                    y: factor
+                }, point);
+
+                motion = {
+                    x: transform.tx,
+                    y: transform.ty
+                }
+
+                _zoom = zoom;
+
+
+                //                var zoom, motion;
+                //
+                //                zoom = factor > 0 ? (1.041666666666667 / Math.sqrt(transform.a * transform.d)) : (.96 / Math.sqrt(transform.a * transform.d));
+                //
+                //                transform.scale({
+                //                    x: zoom,
+                //                    y: zoom
+                //                }, point);
+                //
+                //                motion = {
+                //                    x: transform.tx,
+                //                    y: transform.ty
+                //                }
+
+
+
+
+                // High Performance - JavaScript - Loops - Page 65
+                //                var layers = layer.list(),
+                //                    l = layer.list().length;
+                //                while (l--) {
+                //                    var shapes = layers[l].shapes.list(),
+                //                        s = shapes.length;
+                //                    while (s--) {
+                //                        shapes[s].scaleTo(this.zoom);
+                //                        shapes[s].moveTo({
+                //                            x: transform.tx,
+                //                            y: transform.ty
+                //                        });
+                //                    }
+                //                }
+
+                // movimentando todos os shapes de todas as layers
+                var layers = layer.list(),
+                    l = layer.list().length - 1;
+                do {
+                    var shapes = layers[l].shapes.list(),
+                        s = shapes.length - 1;
+                    do {
+                        shapes[s].scaleTo(zoom);
+                        shapes[s].moveTo(motion);
+                    } while (s--);
+                } while (l--);
+                layer.update();
+
+                //                                layer.update(transform);
+
+                return true;
+            },
+            moveTo: function (value) { // absolute
+
+
+
+                return true;
+            },
+            center: {
+                get position() {
+                    return center;
+                },
+                add: function (value) { // relative
+
+                    return true;
+                },
+                reset: function () {
+
+                    // goto center initial
+
+                    return true;
+                }
+            },
+            get bounds() {
+
+                //                debugger;                
+
+                //                var bound = this.size;
+                //                var iii = transform.inverted()._transformBounds(bound);
+                //                var fff = this.size;
+
+
+                return bounds;
+            },
+            get size() {
+                return size;
+            },
+            reset: function () {
+
+                transform.reset();
+
+                zoom = 1;
+
+                bounds.height = viewPort.clientHeight;
+                bounds.width = viewPort.clientWidth;
+
+                center.x = viewPort.clientWidth / 2;
+                center.y = viewPort.clientHeight / 2;
+
+                size.height = viewPort.clientHeight;
+                size.width = viewPort.clientWidth;
+
+                return true;
+            }
+        }
+    })();
+
+
+    function initialize() {}
+
+    exports.initialize = initialize;
+
 });
 define("utility/types", ['require', 'exports'], function (require, exports) {
 

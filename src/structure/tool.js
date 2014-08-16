@@ -60,7 +60,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             if (layer.active) {
                 layer.active.shapes.list().forEach(function (shape) {
                     if (shape.status != 'selected') {
-                        shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
+                        shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY), layer) ? 'over' : 'out';
                     }
                 });
                 layer.update();
@@ -85,9 +85,9 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 });
                 layer.update();
 
-                toolStore.list().forEach(function (Tool) {
-                    if (Tool.active) {
-                        Tool.notify('onMouseClick', {
+                toolStore.list().forEach(function (tool) {
+                    if (tool.active) {
+                        tool.notify('onMouseClick', {
                             type: 'onMouseClick',
                             shapes: shapeSelected.list()
                         });

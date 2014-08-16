@@ -183,6 +183,12 @@
             plane.layer.update();
 
 
+//            plane.update();
+//            
+//            plane.select.layer
+//            plane.select.shapes
+//            plane.select.groups
+            
 
 
 
@@ -291,13 +297,13 @@
 
   //              debugger;
 
-                                var viewPosition = mousePosition(viewPort, event.clientX, event.clientY),
-                                    zoomNew = event.wheelDelta > 1 ? 1 : -1,
-                                    zoomFactor = plane.view.zoom / event.wheelDelta < 1 ? 1.041666666666667 : .96;
+//                                var viewPosition = mousePosition(viewPort, event.clientX, event.clientY),
+//                                    zoomNew = event.wheelDelta > 1 ? 1 : -1,
+//                                    zoomFactor = plane.view.zoom / event.wheelDelta < 1 ? 1.041666666666667 : .96;
 
-//                var viewPosition = mousePosition(viewPort, event.clientX, event.clientY),
-//                    zoomNew = event.wheelDelta > 1 ? plane.view.zoom / .97 : plane.view.zoom * .97,
-//                    zoomFactor = plane.view.zoom / zoomNew;
+                var viewPosition = mousePosition(viewPort, event.clientX, event.clientY),
+                    zoomNew = event.wheelDelta > 1 ? plane.view.zoom / .97 : plane.view.zoom * .97,
+                    zoomFactor = plane.view.zoom / zoomNew;
 
                 var centerFactor = {
                     x: viewPosition.x - plane.view.center.position.x,

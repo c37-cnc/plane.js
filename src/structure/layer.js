@@ -31,10 +31,14 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
+        debugger;
+        
+        
         attrs = types.object.union(attrs, {
             viewPort: viewPort
         });
 
+        
         var uuid = types.math.uuid(9, 16);
 
         // montando o render da Layer
@@ -99,15 +103,23 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         return store.find(value);
     }
 
-    function update() {
+    function update(transform) {
 
         var style = this.active.style,
             shapes = this.active.shapes.list(),
             render = this.active.render,
             context2D = render.getContext('2d');
 
+//        debugger;
+        
         // clear context, +1 is needed on some browsers to really clear the borders
-        context2D.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
+        context2D.clearRect(-3, -3, viewPort.clientWidth + 6, viewPort.clientHeight + 6);
+
+//        if (transform) {
+//            context2D.setTransform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
+//            context2D.translate(0, render.height);
+//            context2D.scale(1, -1);
+//        }
 
         // style of layer
         context2D.lineCap = style.lineCap;
@@ -155,6 +167,10 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
         },
         enumerable: true
     });
+    
+    function initialize(){};
+    
+    exports.initialize = initialize;
 
     exports.create = create;
     exports.update = update;

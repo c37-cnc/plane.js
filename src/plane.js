@@ -5,13 +5,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
-    var matrix = require('geometric/matrix');
-
     var layer = require('structure/layer'),
         point = require('structure/point'),
         shape = require('structure/shape'),
         group = require('structure/group'),
-        tool = require('structure/tool');
+        tool = require('structure/tool'),
+        view = require('structure/view');
 
     var importer = require('data/importer'),
         exporter = require('data/exporter');
@@ -33,10 +32,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
         viewPort = config.viewPort;
 
         view.initialize({
-            viewPort: viewPort
+            viewPort: viewPort,
+            select: select
+        });
+        layer.initialize({
+            select: select
         });
         tool.initialize({
-            viewPort: viewPort
+            viewPort: viewPort,
+            select: select
         });
 
         return true;
@@ -48,238 +52,69 @@ define("plane", ['require', 'exports'], function (require, exports) {
         view.reset();
 
         // remove em todas as layers
-        layerManager.remove();
+        layer.remove();
 
         return true;
     }
 
+    function update() {
 
 
+        return true;
+    }
 
+    var select = (function () {
 
-    var selected = (function () {
-
+        var _layer = null,
+            _shapes = types.data.dictionary.create(),
+            _groups = types.data.dictionary.create();
 
         return {
             get layer() {
-                return this._layer;
+                return _layer;
             },
-            set layer(value) {
+            set layer(uuid) {
                 this.events.notify('onDeactivated', {
                     type: 'onDeactivated',
-                    layer: this.layer
+                    layer: _layer
                 });
 
-                this._layer = layer.find(value);
+                _layer = layer.find(uuid);
+                _shapes.clear();
+                _groups.clear();
 
                 this.events.notify('onActivated', {
                     type: 'onActivated',
-                    layer: this.layer
+                    layer: _layer
                 });
             },
             get shapes() {
-                return this._shapes;
+                return _shapes.list();
             },
-            set shapes(value) {},
+            set shapes(shape) {
+                return _shapes.add(shape.uuid, shape);
+            },
             get groups() {
-                return this._groups;
+                return _groups.list();
             },
-            set groups(value) {},
+            set groups(group) {
+                return _groups.add(group.uuid, group);
+            },
             events: types.object.event.create()
         }
     })();
 
 
 
-    var view = (function () {
 
-        var transform = matrix.create(),
-            viewPort = null,
-            _zoom = 1,
-            center = {
-                x: 0,
-                y: 0
-            },
-            bounds = {
-                bottom: 0,
-                height: 0,
-                left: 0,
-                right: 0,
-                top: 0,
-                width: 0
-            },
-            size = {
-                height: 0,
-                width: 0
-            };
-
-        return {
-            initialize: function (config) {
-
-                viewPort = config.viewPort;
-
-                bounds.height = viewPort.clientHeight;
-                bounds.width = viewPort.clientWidth;
-
-                center.x = viewPort.clientWidth / 2;
-                center.y = viewPort.clientHeight / 2;
-
-                size.height = viewPort.clientHeight;
-                size.width = viewPort.clientWidth;
-
-                return true;
-            },
-            // zoom level
-            get zoom() {
-                return _zoom;
-                //                return Math.sqrt(transform.a * transform.d);
-            },
-            set zoom(value) {
-
-                this.zoomTo(value, {
-                    x: 0,
-                    y: 0
-                });
-
-                return true;
-            },
-
-            /**
-             * Descrição para o metodo zoomTo
-             *
-             * @method zoomTo
-             * @param factor {Number} fator de zoom aplicado
-             * @param point {Object} local onde o zoom será aplicado
-             * @return {Boolean} Copy of ...
-             */
-            //            zoomTo: function (factor, point) {
-            zoomTo: function (zoom, point) {
-
-//                                debugger;
-
-                var factor, motion;
-
-                factor = zoom / _zoom;
-
-                transform.scale({
-                    x: factor,
-                    y: factor
-                }, point);
-
-                motion = {
-                    x: transform.tx,
-                    y: transform.ty
-                }
-                
-                _zoom = zoom;
-
-
-                //                var zoom, motion;
-                //
-                //                zoom = factor > 0 ? (1.041666666666667 / Math.sqrt(transform.a * transform.d)) : (.96 / Math.sqrt(transform.a * transform.d));
-                //
-                //                transform.scale({
-                //                    x: zoom,
-                //                    y: zoom
-                //                }, point);
-                //
-                //                motion = {
-                //                    x: transform.tx,
-                //                    y: transform.ty
-                //                }
-
-
-
-
-                // High Performance - JavaScript - Loops - Page 65
-                //                var layers = layer.list(),
-                //                    l = layer.list().length;
-                //                while (l--) {
-                //                    var shapes = layers[l].shapes.list(),
-                //                        s = shapes.length;
-                //                    while (s--) {
-                //                        shapes[s].scaleTo(this.zoom);
-                //                        shapes[s].moveTo({
-                //                            x: transform.tx,
-                //                            y: transform.ty
-                //                        });
-                //                    }
-                //                }
-
-                // movimentando todos os shapes de todas as layers
-                var layers = layer.list(),
-                    l = layer.list().length - 1;
-                do {
-                    var shapes = layers[l].shapes.list(),
-                        s = shapes.length - 1;
-                    do {
-                        shapes[s].scaleTo(zoom);
-                        shapes[s].moveTo(motion);
-                    } while (s--);
-                } while (l--);
-                layer.update();
-
-                return true;
-            },
-            moveTo: function (value) { // absolute
-
-
-
-                return true;
-            },
-            center: {
-                get position() {
-                    return center;
-                },
-                add: function (value) { // relative
-
-                    return true;
-                },
-                reset: function () {
-
-                    // goto center initial
-
-                    return true;
-                }
-            },
-            get bounds() {
-
-                //                debugger;                
-
-                //                var bound = this.size;
-                //                var iii = transform.inverted()._transformBounds(bound);
-                //                var fff = this.size;
-
-
-                return bounds;
-            },
-            get size() {
-                return size;
-            },
-            reset: function () {
-
-                transform.reset();
-
-                zoom = 1;
-
-                bounds.height = viewPort.clientHeight;
-                bounds.width = viewPort.clientWidth;
-
-                center.x = viewPort.clientWidth / 2;
-                center.y = viewPort.clientHeight / 2;
-
-                size.height = viewPort.clientHeight;
-                size.width = viewPort.clientWidth;
-
-                return true;
-            }
-        }
-    })();
 
 
     exports.initialize = initialize;
-    exports.view = view;
+    exports.update = update;
     exports.clear = clear;
+
+    exports.view = view;
+    exports.select = select;
 
     exports.layer = layer;
     exports.point = point;
