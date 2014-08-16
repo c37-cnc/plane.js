@@ -1,5 +1,5 @@
 /*!
- * C37 in 15-08-2014 at 22:32:18 
+ * C37 in 16-08-2014 at 02:43:11 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1224,12 +1224,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
+    var matrix = require('geometric/matrix');
+
     var layer = require('structure/layer'),
         point = require('structure/point'),
         shape = require('structure/shape'),
         group = require('structure/group'),
-        tool = require('structure/tool'),
-        view = require('structure/view');
+        tool = require('structure/tool');
 
     var importer = require('data/importer'),
         exporter = require('data/exporter');
@@ -1250,16 +1251,36 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         viewPort = config.viewPort;
 
-        view.initialize({
-            viewPort: viewPort,
+
+        // montando o render de Plane
+        var render = document.createElement('canvas');
+
+        render.id = types.math.uuid(9, 16);
+        render.width = viewPort.clientWidth;
+        render.height = viewPort.clientHeight;
+
+        render.style.position = "absolute";
+        render.style.backgroundColor = 'transparent';
+
+        // add em viewPort
+        viewPort.appendChild(render);
+
+        // add to view
+        view.context = render.getContext('2d');
+        view.transform = matrix.create();
+
+
+        // initialize structure
+        layer.initialize({
             select: select
         });
-        layer.initialize({
+        shape.initialize({
             select: select
         });
         tool.initialize({
             viewPort: viewPort,
-            select: select
+            select: select,
+            view: view
         });
 
         return true;
@@ -1278,9 +1299,92 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     function update() {
 
+        var context = view.context,
+            transform = view.transform;
 
-        return true;
+        // reset context
+        context.resetTransform();
+        
+        // clear context, +1 is needed on some browsers to really clear the borders
+        context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
+
+        // transform da view
+        context.setTransform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
+
+        // sistema cartesiano de coordenadas
+        context.translate(0, viewPort.clientHeight);
+        context.scale(1, -1);
+
+        var layers = layer.list(),
+            l = layers.length;
+        while (l--) {
+            var shapes = layers[l].children.list(),
+                s = shapes.length;
+
+            // style of layer
+            context.lineCap = layers[l].style.lineCap;
+            context.lineJoin = layers[l].style.lineJoin;
+
+            while (s--) {
+                // save state of all configuration
+                context.save();
+                context.beginPath();
+
+                shapes[s].render(context);
+
+                context.stroke();
+                // restore state of all configuration
+                context.restore();
+            }
+        }
+
+        return this;
     }
+
+    var view = {
+        context: null,
+        transform: null,
+        reset: function () {
+
+        },
+        get zoom() {
+            return this._zoom || 1;
+            //                return Math.sqrt(transform.a * transform.d);
+        },
+        set zoom(value) {
+
+            this.zoomTo(value, {
+                x: 500,
+                y: 0
+            });
+
+            return true;
+        },
+        zoomTo: function (zoom, point) {
+
+            debugger;
+
+            var factor, motion;
+
+            factor = zoom / this.zoom;
+
+            this.transform.scale({
+                x: factor,
+                y: factor
+            }, point);
+
+            this._zoom = zoom;
+
+            update();
+
+
+
+            return true;
+        },
+
+    };
+
+
 
     var select = (function () {
 
@@ -1324,22 +1428,28 @@ define("plane", ['require', 'exports'], function (require, exports) {
     })();
 
 
-
-
-
-
     exports.initialize = initialize;
     exports.update = update;
     exports.clear = clear;
 
-    exports.view = view;
+    exports.view = view
     exports.select = select;
 
-    exports.layer = layer;
     exports.point = point;
     exports.shape = shape;
     exports.group = group;
-    exports.tool = tool;
+    exports.layer = {
+        create: layer.create,
+        list: layer.list,
+        find: layer.find,
+        remove: layer.remove
+    };
+    exports.tool = {
+        create: tool.create,
+        list: tool.list,
+        find: tool.find,
+        remove: tool.remove
+    };
 
     exports.importer = importer;
     exports.exporter = exporter;
@@ -1370,26 +1480,38 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
 
     var store = types.data.dictionary.create();
 
+    var select = null;
 
-    var Layer = types.object.inherits(function Layer(attrs) {
+
+    function Layer(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.status = attrs.status;
         this.style = attrs.style;
-        this.render = attrs.render;
-        this.shapes = attrs.shapes;
-    }, types.object.event);
+        this.children = attrs.children;
+        this.events = attrs.events;
+    };
 
     Layer.prototype.toObject = function () {
         return {
             uuid: this.uuid,
             name: this.name,
-            locked: this.locked,
             status: this.status,
             style: this.style,
-            shapes: this.shapes.list()
+            children: this.children.list()
         };
     }
+
+
+    function initialize(config) {
+
+        select = config.select;
+
+
+
+        return true;
+    };
+
 
 
     function create(attrs) {
@@ -1397,31 +1519,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        debugger;
-        
-        
-        attrs = types.object.union(attrs, {
-            viewPort: viewPort
-        });
-
-        
         var uuid = types.math.uuid(9, 16);
-
-        // montando o render da Layer
-        var render = document.createElement('canvas');
-
-        render.id = types.math.uuid(9, 16);
-        render.width = attrs.viewPort.clientWidth;
-        render.height = attrs.viewPort.clientHeight;
-
-        render.style.position = "absolute";
-        render.style.backgroundColor = (attrs.status == 'system') ? attrs.style.backgroundColor : 'transparent';
-
-        var context2D = render.getContext('2d');
-
-        // sistema cartesiano de coordenadas
-        context2D.translate(0, render.height);
-        context2D.scale(1, -1);
 
         // parametros para a nova Layer
         attrs = types.object.merge({
@@ -1434,116 +1532,43 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
                 lineColor: 'rgb(0, 0, 0)',
             },
             status: 'visible',
-            shapes: types.data.dictionary.create(),
-            render: render
+            children: types.data.dictionary.create(),
+            events: types.object.event.create()
         }, attrs);
         // parametros para a nova Layer
 
         // nova Layer
         var layer = new Layer(attrs);
 
-        // add em viewPort
-        attrs.viewPort.appendChild(layer.render);
-
-
+        // armazenando 
         store.add(layer.uuid, layer);
-        return this.active = layer.uuid;
-    }
 
+        // colocando nova layer como selecionada
+        select.layer = layer.uuid;
 
-    function remove(value) {
-        store.list().forEach(function (layer) {
-            var element = document.getElementById(layer.render.id);
-            if (element && element.parentNode) {
-                element.parentNode.removeChild(element);
-            }
-            store.remove(layer.uuid);
-        });
+        return this;
     }
 
     function list() {
         return store.list();
     }
 
-    function find(value) {
-        return store.find(value);
+    function find(uuid) {
+        return store.find(uuid);
     }
 
-    function update(transform) {
-
-        var style = this.active.style,
-            shapes = this.active.shapes.list(),
-            render = this.active.render,
-            context2D = render.getContext('2d');
-
-//        debugger;
-        
-        // clear context, +1 is needed on some browsers to really clear the borders
-        context2D.clearRect(-3, -3, viewPort.clientWidth + 6, viewPort.clientHeight + 6);
-
-//        if (transform) {
-//            context2D.setTransform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
-//            context2D.translate(0, render.height);
-//            context2D.scale(1, -1);
-//        }
-
-        // style of layer
-        context2D.lineCap = style.lineCap;
-        context2D.lineJoin = style.lineJoin;
-
-        // render para cada shape
-        shapes.forEach(function (shape) {
-            // save state of all configuration
-            context2D.save();
-            context2D.beginPath();
-
-            shape.render(context2D);
-
-            context2D.stroke();
-            // restore state of all configuration
-            context2D.restore();
-        });
-
-        return true;
+    function remove(uuid) {
+        return store.remove(uuid);
     }
 
-    var events = types.object.extend(types.object.event.create(), {
 
 
-
-    });
-
-
-    Object.defineProperty(exports, 'active', {
-        get: function () {
-            return this._active;
-        },
-        set: function (value) {
-            events.notify('onDeactivated', {
-                type: 'onDeactivated',
-                layer: this.active
-            });
-
-            this._active = store.find(value);
-
-            events.notify('onActivated', {
-                type: 'onActivated',
-                layer: this.active
-            });
-        },
-        enumerable: true
-    });
-    
-    function initialize(){};
-    
     exports.initialize = initialize;
 
     exports.create = create;
-    exports.update = update;
     exports.list = list;
     exports.find = find;
     exports.remove = remove;
-    exports.events = events;
 });
 define("structure/point", ['require', 'exports'], function (require, exports) {
 
@@ -1606,6 +1631,9 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
     var point = require('structure/point'),
         layer = require('structure/layer');
+
+    var select = null;
+
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -1737,12 +1765,12 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             return true;
         },
-        contains: function (pointMouse) {
+        contains: function (point, transform) {
 
             switch (this.type) {
             case 'line':
                 {
-                    if (intersection.circleLine(pointMouse, 2, this.points[0], this.points[1]))
+                    if (intersection.circleLine(point, 2, this.points[0], this.points[1]))
                         return true;
 
                     break;
@@ -1750,34 +1778,34 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             case 'bezier':
                 {
                     for (var i = 0; i < this.points.length; i++) {
-                        if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point.create(pointMouse.x, pointMouse.y), 2, 2))
+                        if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point, 2, 2))
                             return true;
                     }
                     break;
                 }
             case 'rectangle':
                 {
-                    if (intersection.circleRectangle(pointMouse, 2, this.point, this.height, this.width))
+                    if (intersection.circleRectangle(point, 2, this.point, this.height, this.width))
                         return true;
 
                     break;
                 }
             case 'arc':
                 {
-                    if (intersection.circleArc(point.create(pointMouse.x, pointMouse.y), 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise))
+                    if (intersection.circleArc(point, 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise))
                         return true;
 
                     break;
                 }
             case 'circle':
                 {
-                    if (intersection.circleCircle(pointMouse = point.create(pointMouse.x, pointMouse.y), 2, this.point, this.radius))
+                    if (intersection.circleCircle(point, 2, this.point, this.radius))
                         return true;
 
                     break;
                 }
             case 'ellipse':
-                return (intersection.circleEllipse(pointMouse, 2, 2, this.point, this.radiusY, this.radiusX))
+                return (intersection.circleEllipse(point, 2, 2, this.point, this.radiusY, this.radiusX))
             case 'polygon':
                 {
                     var pointA = null,
@@ -1793,7 +1821,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                             pointB = this.points[i + 1];
                         }
 
-                        if (intersection.circleLine(pointMouse, 2, pointA, pointB))
+                        if (intersection.circleLine(point, 2, pointA, pointB))
                             return true;
                     }
                     break;
@@ -1813,7 +1841,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                             pointB = this.points[i + 1];
                         }
 
-                        if (intersection.circleLine(pointMouse, 2, pointA, pointB))
+                        if (intersection.circleLine(point, 2, pointA, pointB))
                             return true;
                     }
                     break;
@@ -2283,6 +2311,17 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     }, Shape);
 
 
+
+    function initialize(config) {
+
+        select = config.select;
+
+
+
+        return true;
+    };
+
+
     function create(attrs) {
         if ((typeof attrs == "function") || (attrs == null)) {
             throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -2400,7 +2439,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
         }
 
         // adicionando o novo shape na layer ativa
-        return layer.active.shapes.add(shape.uuid, shape);
+        return select.layer.children.add(shape.uuid, shape);
     }
 
     function remove(value) {}
@@ -2408,7 +2447,10 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     function list() {}
 
     function find() {}
+    
+    
 
+    exports.initialize = initialize;
 
     exports.create = create;
     exports.remove = remove;
@@ -2419,24 +2461,26 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
-    var toolStore = types.data.dictionary.create(),
-        shapeSelected = types.data.dictionary.create();
+    var store = types.data.dictionary.create();
 
-    var layer = require('structure/layer');
+    var point = require('structure/point');
 
-    var viewPort = null;
+    var viewPort = null,
+        select = null,
+        view = null;
 
 
-    var Tool = types.object.inherits(function Tool(attrs) {
+    function Tool(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
+        this.events = attrs.events;
 
         Object.defineProperty(this, 'active', {
             get: function () {
                 return this._active || false;
             },
             set: function (value) {
-                this.notify(value ? 'onActive' : 'onDeactive', {
+                this.events.notify(value ? 'onActive' : 'onDeactive', {
                     type: value ? 'onActive' : 'onDeactive',
                     Now: new Date().toISOString()
 
@@ -2444,8 +2488,105 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 this._active = value;
             }
         });
-    }, types.object.event);
+    };
 
+
+    function initialize(config) {
+
+        viewPort = config.viewPort;
+        select = config.select;
+        view = config.view;
+
+
+        function onMouseDown(event) {
+
+        }
+
+        function onMouseUp(event) {
+
+        }
+
+        function onMouseDrag(event) {
+            // http://paperjs.org/reference/toolevent/#point
+            event = {
+                pointFirst: null,
+                pointMiddle: null,
+                pointLast: null
+            }
+
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseDrag', event);
+                }
+            }
+        }
+
+        function onMouseMove(event) {
+            // apenas procuro na layer selecionada
+            var children = select.layer.children.list(),
+                c = children.length,
+                shapes = [];
+
+            while (c--) {
+                if (children[c].contains(point.create(0, 0), view.transform))
+                    shapes.push(children[c]);
+            }
+            
+            
+            // customized event
+            event = {
+                positionInView: {
+                    x: 0,
+                    y: 0
+                },
+                shapes: shapes,
+                Now: new Date().toISOString()
+            };
+            
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseMove', event);
+                }
+            }
+        }
+
+        function onMouseLeave(event) {
+
+        }
+
+        function onMouseWheel(event) {
+            // customized event
+            event = {
+                delta: event.deltaY,
+                positionInView: {
+                    x: 0,
+                    y: 0
+                },
+                Now: new Date().toISOString()
+            };
+
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseWheel', event);
+                }
+            }
+        }
+
+
+        viewPort.onmousedown = onMouseDown;
+        viewPort.onmouseup = onMouseUp;
+        viewPort.onmousemove = onMouseMove;
+        viewPort.onmouseleave = onMouseLeave;
+        viewPort.onmousewheel = onMouseWheel;
+
+        return true;
+    }
 
     function create(attrs) {
         if (typeof attrs == 'function') {
@@ -2456,128 +2597,49 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
         attrs = types.object.merge({
             uuid: uuid,
-            name: 'Tool '.concat(uuid)
+            name: 'Tool '.concat(uuid),
+            events: types.object.event.create()
         }, attrs);
 
         // nova tool
         var tool = new Tool(attrs)
 
-        toolStore.add(tool.uuid, tool);
+        store.add(tool.uuid, tool);
 
         return tool;
     }
 
+    function list() {
+        return store.list();
+    }
 
-    function initialize(config) {
+    function find(uuid) {
+        return store.find(uuid);
+    }
 
-        viewPort = config.viewPort;
-
-        viewPort.onmousemove = function (event) {
-
-            if (layer.active) {
-                layer.active.shapes.list().forEach(function (shape) {
-                    if (shape.status != 'selected') {
-                        shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY), layer) ? 'over' : 'out';
-                    }
-                });
-                layer.update();
-            }
-        }
-
-        viewPort.onclick = function (event) {
-            if (layer.active) {
-
-                layer.active.shapes.list().forEach(function (shape) {
-                    if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
-
-                        shape.status = shape.status != 'selected' ? 'selected' : 'over';
-
-                        if (shape.status == 'selected') {
-                            shapeSelected.add(shape.uuid, shape);
-                        } else {
-                            shapeSelected.remove(shape.uuid);
-                        }
-
-                    }
-                });
-                layer.update();
-
-                toolStore.list().forEach(function (tool) {
-                    if (tool.active) {
-                        tool.notify('onMouseClick', {
-                            type: 'onMouseClick',
-                            shapes: shapeSelected.list()
-                        });
-                    }
-                });
-            }
-        }
-
-        return true;
+    function remove(uuid) {
+        return store.remove(uuid);
     }
 
 
-
-
-
-
-//    var event = types.object.extend(types.object.event.create(), {
-//
-//        start: function (config) {
-//
-//            viewPort = config.viewPort;
-//
-//            viewPort.onmousemove = function (event) {
-//
-//                if (layer.active) {
-//                    layer.active.shapes.list().forEach(function (shape) {
-//                        if (shape.status != 'selected') {
-//                            shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
-//                        }
-//                    });
-//                    layer.update();
-//                }
-//            }
-//
-//            viewPort.onclick = function (event) {
-//                if (layer.active) {
-//
-//                    layer.active.shapes.list().forEach(function (shape) {
-//                        if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
-//
-//                            shape.status = shape.status != 'selected' ? 'selected' : 'over';
-//
-//                            if (shape.status == 'selected') {
-//                                shapeSelected.add(shape.uuid, shape);
-//                            } else {
-//                                shapeSelected.remove(shape.uuid);
-//                            }
-//
-//                        }
-//                    });
-//                    layer.update();
-//
-//                    toolStore.list().forEach(function (Tool) {
-//                        if (Tool.active) {
-//                            Tool.notify('onMouseClick', {
-//                                type: 'onMouseClick',
-//                                shapes: shapeSelected.list()
-//                            });
-//                        }
-//                    });
-//                }
-//            }
-//        }
-//    });
-    
-    
-
     exports.initialize = initialize;
+
     exports.create = create;
+    exports.list = list;
+    exports.find = find;
+    exports.remove = remove;
 });
 define("structure/view", ['require', 'exports'], function (require, exports) {
 
+    var types = require('utility/types');
+
     var matrix = require('geometric/matrix');
+
+    var viewPort = null,
+        canvas = {
+            context: null,
+            transform: null
+        };
 
 
     var view = (function () {
@@ -2768,9 +2830,32 @@ define("structure/view", ['require', 'exports'], function (require, exports) {
     })();
 
 
-    function initialize() {}
+    function initialize(config) {
+
+        viewPort = config.viewPort;
+
+        // montando o render da Layer
+        var render = document.createElement('canvas');
+
+        render.id = types.math.uuid(9, 16);
+        render.width = viewPort.clientWidth;
+        render.height = viewPort.clientHeight;
+
+        render.style.position = "absolute";
+        render.style.backgroundColor = 'transparent';
+
+        // add em viewPort
+        viewPort.appendChild(render);
+
+        // add to public
+        canvas.context = render.getContext('2d');
+        canvas.transform = matrix.create()
+
+        return true;
+    }
 
     exports.initialize = initialize;
+    exports.canvas = canvas;
 
 });
 define("utility/types", ['require', 'exports'], function (require, exports) {

@@ -2,24 +2,26 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
-    var toolStore = types.data.dictionary.create(),
-        shapeSelected = types.data.dictionary.create();
+    var store = types.data.dictionary.create();
 
-    var layer = require('structure/layer');
+    var point = require('structure/point');
 
-    var viewPort = null;
+    var viewPort = null,
+        select = null,
+        view = null;
 
 
-    var Tool = types.object.inherits(function Tool(attrs) {
+    function Tool(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
+        this.events = attrs.events;
 
         Object.defineProperty(this, 'active', {
             get: function () {
                 return this._active || false;
             },
             set: function (value) {
-                this.notify(value ? 'onActive' : 'onDeactive', {
+                this.events.notify(value ? 'onActive' : 'onDeactive', {
                     type: value ? 'onActive' : 'onDeactive',
                     Now: new Date().toISOString()
 
@@ -27,8 +29,105 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 this._active = value;
             }
         });
-    }, types.object.event);
+    };
 
+
+    function initialize(config) {
+
+        viewPort = config.viewPort;
+        select = config.select;
+        view = config.view;
+
+
+        function onMouseDown(event) {
+
+        }
+
+        function onMouseUp(event) {
+
+        }
+
+        function onMouseDrag(event) {
+            // http://paperjs.org/reference/toolevent/#point
+            event = {
+                pointFirst: null,
+                pointMiddle: null,
+                pointLast: null
+            }
+
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseDrag', event);
+                }
+            }
+        }
+
+        function onMouseMove(event) {
+            // apenas procuro na layer selecionada
+            var children = select.layer.children.list(),
+                c = children.length,
+                shapes = [];
+
+            while (c--) {
+                if (children[c].contains(point.create(0, 0), view.transform))
+                    shapes.push(children[c]);
+            }
+            
+            
+            // customized event
+            event = {
+                positionInView: {
+                    x: 0,
+                    y: 0
+                },
+                shapes: shapes,
+                Now: new Date().toISOString()
+            };
+            
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseMove', event);
+                }
+            }
+        }
+
+        function onMouseLeave(event) {
+
+        }
+
+        function onMouseWheel(event) {
+            // customized event
+            event = {
+                delta: event.deltaY,
+                positionInView: {
+                    x: 0,
+                    y: 0
+                },
+                Now: new Date().toISOString()
+            };
+
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseWheel', event);
+                }
+            }
+        }
+
+
+        viewPort.onmousedown = onMouseDown;
+        viewPort.onmouseup = onMouseUp;
+        viewPort.onmousemove = onMouseMove;
+        viewPort.onmouseleave = onMouseLeave;
+        viewPort.onmousewheel = onMouseWheel;
+
+        return true;
+    }
 
     function create(attrs) {
         if (typeof attrs == 'function') {
@@ -39,122 +138,35 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
         attrs = types.object.merge({
             uuid: uuid,
-            name: 'Tool '.concat(uuid)
+            name: 'Tool '.concat(uuid),
+            events: types.object.event.create()
         }, attrs);
 
         // nova tool
         var tool = new Tool(attrs)
 
-        toolStore.add(tool.uuid, tool);
+        store.add(tool.uuid, tool);
 
         return tool;
     }
 
+    function list() {
+        return store.list();
+    }
 
-    function initialize(config) {
+    function find(uuid) {
+        return store.find(uuid);
+    }
 
-        viewPort = config.viewPort;
-
-        viewPort.onmousemove = function (event) {
-
-            if (layer.active) {
-                layer.active.shapes.list().forEach(function (shape) {
-                    if (shape.status != 'selected') {
-                        shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY), layer) ? 'over' : 'out';
-                    }
-                });
-                layer.update();
-            }
-        }
-
-        viewPort.onclick = function (event) {
-            if (layer.active) {
-
-                layer.active.shapes.list().forEach(function (shape) {
-                    if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
-
-                        shape.status = shape.status != 'selected' ? 'selected' : 'over';
-
-                        if (shape.status == 'selected') {
-                            shapeSelected.add(shape.uuid, shape);
-                        } else {
-                            shapeSelected.remove(shape.uuid);
-                        }
-
-                    }
-                });
-                layer.update();
-
-                toolStore.list().forEach(function (tool) {
-                    if (tool.active) {
-                        tool.notify('onMouseClick', {
-                            type: 'onMouseClick',
-                            shapes: shapeSelected.list()
-                        });
-                    }
-                });
-            }
-        }
-
-        return true;
+    function remove(uuid) {
+        return store.remove(uuid);
     }
 
 
-
-
-
-
-//    var event = types.object.extend(types.object.event.create(), {
-//
-//        start: function (config) {
-//
-//            viewPort = config.viewPort;
-//
-//            viewPort.onmousemove = function (event) {
-//
-//                if (layer.active) {
-//                    layer.active.shapes.list().forEach(function (shape) {
-//                        if (shape.status != 'selected') {
-//                            shape.status = shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY)) ? 'over' : 'out';
-//                        }
-//                    });
-//                    layer.update();
-//                }
-//            }
-//
-//            viewPort.onclick = function (event) {
-//                if (layer.active) {
-//
-//                    layer.active.shapes.list().forEach(function (shape) {
-//                        if (shape.contains(types.graphic.mousePosition(viewPort, event.clientX, event.clientY))) {
-//
-//                            shape.status = shape.status != 'selected' ? 'selected' : 'over';
-//
-//                            if (shape.status == 'selected') {
-//                                shapeSelected.add(shape.uuid, shape);
-//                            } else {
-//                                shapeSelected.remove(shape.uuid);
-//                            }
-//
-//                        }
-//                    });
-//                    layer.update();
-//
-//                    toolStore.list().forEach(function (Tool) {
-//                        if (Tool.active) {
-//                            Tool.notify('onMouseClick', {
-//                                type: 'onMouseClick',
-//                                shapes: shapeSelected.list()
-//                            });
-//                        }
-//                    });
-//                }
-//            }
-//        }
-//    });
-    
-    
-
     exports.initialize = initialize;
+
     exports.create = create;
+    exports.list = list;
+    exports.find = find;
+    exports.remove = remove;
 });

@@ -1,6 +1,14 @@
 define("structure/view", ['require', 'exports'], function (require, exports) {
 
+    var types = require('utility/types');
+
     var matrix = require('geometric/matrix');
+
+    var viewPort = null,
+        canvas = {
+            context: null,
+            transform: null
+        };
 
 
     var view = (function () {
@@ -191,8 +199,31 @@ define("structure/view", ['require', 'exports'], function (require, exports) {
     })();
 
 
-    function initialize() {}
+    function initialize(config) {
+
+        viewPort = config.viewPort;
+
+        // montando o render da Layer
+        var render = document.createElement('canvas');
+
+        render.id = types.math.uuid(9, 16);
+        render.width = viewPort.clientWidth;
+        render.height = viewPort.clientHeight;
+
+        render.style.position = "absolute";
+        render.style.backgroundColor = 'transparent';
+
+        // add em viewPort
+        viewPort.appendChild(render);
+
+        // add to public
+        canvas.context = render.getContext('2d');
+        canvas.transform = matrix.create()
+
+        return true;
+    }
 
     exports.initialize = initialize;
+    exports.canvas = canvas;
 
 });

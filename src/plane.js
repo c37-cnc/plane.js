@@ -5,12 +5,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     var types = require('utility/types');
 
+    var matrix = require('geometric/matrix');
+
     var layer = require('structure/layer'),
         point = require('structure/point'),
         shape = require('structure/shape'),
         group = require('structure/group'),
-        tool = require('structure/tool'),
-        view = require('structure/view');
+        tool = require('structure/tool');
 
     var importer = require('data/importer'),
         exporter = require('data/exporter');
@@ -31,16 +32,36 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         viewPort = config.viewPort;
 
-        view.initialize({
-            viewPort: viewPort,
+
+        // montando o render de Plane
+        var render = document.createElement('canvas');
+
+        render.id = types.math.uuid(9, 16);
+        render.width = viewPort.clientWidth;
+        render.height = viewPort.clientHeight;
+
+        render.style.position = "absolute";
+        render.style.backgroundColor = 'transparent';
+
+        // add em viewPort
+        viewPort.appendChild(render);
+
+        // add to view
+        view.context = render.getContext('2d');
+        view.transform = matrix.create();
+
+
+        // initialize structure
+        layer.initialize({
             select: select
         });
-        layer.initialize({
+        shape.initialize({
             select: select
         });
         tool.initialize({
             viewPort: viewPort,
-            select: select
+            select: select,
+            view: view
         });
 
         return true;
@@ -59,9 +80,92 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     function update() {
 
+        var context = view.context,
+            transform = view.transform;
 
-        return true;
+        // reset context
+        context.resetTransform();
+        
+        // clear context, +1 is needed on some browsers to really clear the borders
+        context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
+
+        // transform da view
+        context.setTransform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
+
+        // sistema cartesiano de coordenadas
+        context.translate(0, viewPort.clientHeight);
+        context.scale(1, -1);
+
+        var layers = layer.list(),
+            l = layers.length;
+        while (l--) {
+            var shapes = layers[l].children.list(),
+                s = shapes.length;
+
+            // style of layer
+            context.lineCap = layers[l].style.lineCap;
+            context.lineJoin = layers[l].style.lineJoin;
+
+            while (s--) {
+                // save state of all configuration
+                context.save();
+                context.beginPath();
+
+                shapes[s].render(context);
+
+                context.stroke();
+                // restore state of all configuration
+                context.restore();
+            }
+        }
+
+        return this;
     }
+
+    var view = {
+        context: null,
+        transform: null,
+        reset: function () {
+
+        },
+        get zoom() {
+            return this._zoom || 1;
+            //                return Math.sqrt(transform.a * transform.d);
+        },
+        set zoom(value) {
+
+            this.zoomTo(value, {
+                x: 500,
+                y: 0
+            });
+
+            return true;
+        },
+        zoomTo: function (zoom, point) {
+
+            debugger;
+
+            var factor, motion;
+
+            factor = zoom / this.zoom;
+
+            this.transform.scale({
+                x: factor,
+                y: factor
+            }, point);
+
+            this._zoom = zoom;
+
+            update();
+
+
+
+            return true;
+        },
+
+    };
+
+
 
     var select = (function () {
 
@@ -105,22 +209,28 @@ define("plane", ['require', 'exports'], function (require, exports) {
     })();
 
 
-
-
-
-
     exports.initialize = initialize;
     exports.update = update;
     exports.clear = clear;
 
-    exports.view = view;
+    exports.view = view
     exports.select = select;
 
-    exports.layer = layer;
     exports.point = point;
     exports.shape = shape;
     exports.group = group;
-    exports.tool = tool;
+    exports.layer = {
+        create: layer.create,
+        list: layer.list,
+        find: layer.find,
+        remove: layer.remove
+    };
+    exports.tool = {
+        create: tool.create,
+        list: tool.list,
+        find: tool.find,
+        remove: tool.remove
+    };
 
     exports.importer = importer;
     exports.exporter = exporter;

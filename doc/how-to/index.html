@@ -180,7 +180,7 @@
                 radiusX: 45
             });
 
-            plane.layer.update();
+            plane.update();
 
 
 //            plane.update();
@@ -196,32 +196,18 @@
 
 
 
-            var Tool001 = plane.tool.create();
-            Tool001.active = true;
+            var tool001 = plane.tool.create();
+            tool001.active = true;
 
-            console.log(Tool001);
+            console.log(tool001);
 
-            Tool001.listen('onMouseClick', function (event) {
-
+            tool001.events.listen('onMouseWheel', function (event) {
                 console.log(event);
-
-                event.shapes.forEach(function (shape) {
-
-                    if (shape.points) {
-
-                        //                        shape.points.forEach(function(point){
-                        //                        
-                        //                            point.x += (10 * plane.zoom);
-                        //                            point.y += (10 * plane.zoom);
-                        //                        
-                        //                        })
-                    }
-
-                })
-
-                plane.layer.update();
-
             });
+
+//            tool001.events.listen('onMouseMove', function (event) {
+//                console.log(event);
+//            });
 
 
             document.getElementById('fileImport').addEventListener('change', function () {
@@ -257,14 +243,17 @@
             });
 
             document.getElementById('zoomMoreButton').addEventListener('click', function (event) {
-                // plane.view.zoom /= .97;
-                plane.view.zoomTo(plane.view.zoom / .97, plane.view.center.position);
+                plane.view.zoom /= .97;
+                
+                // plane.view.zoom(plane.view.zoom() / .97);
+                
+                // plane.view.zoomTo(plane.view.zoom / .97, plane.view.center.position);
                 // plane.view.zoomTo(1, plane.view.center.position);
             });
 
             document.getElementById('zoomLessButton').addEventListener('click', function (event) {
-                // plane.view.zoom *= .97;
-                plane.view.zoomTo(plane.view.zoom * .97, plane.view.center.position);
+                plane.view.zoom *= .97;
+                // plane.view.zoomTo(plane.view.zoom * .97, plane.view.center.position);
                 // plane.view.zoomTo(-1, plane.view.center.position);
             });
 
@@ -293,7 +282,7 @@
             };
 
 
-            viewPort.addEventListener('mousewheel', function (event) {
+            viewPort.addEventListener('msousewheel', function (event) {
 
   //              debugger;
 

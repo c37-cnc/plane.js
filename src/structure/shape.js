@@ -8,6 +8,9 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     var point = require('structure/point'),
         layer = require('structure/layer');
 
+    var select = null;
+
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -138,12 +141,12 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             return true;
         },
-        contains: function (pointMouse) {
+        contains: function (point, transform) {
 
             switch (this.type) {
             case 'line':
                 {
-                    if (intersection.circleLine(pointMouse, 2, this.points[0], this.points[1]))
+                    if (intersection.circleLine(point, 2, this.points[0], this.points[1]))
                         return true;
 
                     break;
@@ -151,34 +154,34 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             case 'bezier':
                 {
                     for (var i = 0; i < this.points.length; i++) {
-                        if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point.create(pointMouse.x, pointMouse.y), 2, 2))
+                        if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point, 2, 2))
                             return true;
                     }
                     break;
                 }
             case 'rectangle':
                 {
-                    if (intersection.circleRectangle(pointMouse, 2, this.point, this.height, this.width))
+                    if (intersection.circleRectangle(point, 2, this.point, this.height, this.width))
                         return true;
 
                     break;
                 }
             case 'arc':
                 {
-                    if (intersection.circleArc(point.create(pointMouse.x, pointMouse.y), 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise))
+                    if (intersection.circleArc(point, 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise))
                         return true;
 
                     break;
                 }
             case 'circle':
                 {
-                    if (intersection.circleCircle(pointMouse = point.create(pointMouse.x, pointMouse.y), 2, this.point, this.radius))
+                    if (intersection.circleCircle(point, 2, this.point, this.radius))
                         return true;
 
                     break;
                 }
             case 'ellipse':
-                return (intersection.circleEllipse(pointMouse, 2, 2, this.point, this.radiusY, this.radiusX))
+                return (intersection.circleEllipse(point, 2, 2, this.point, this.radiusY, this.radiusX))
             case 'polygon':
                 {
                     var pointA = null,
@@ -194,7 +197,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                             pointB = this.points[i + 1];
                         }
 
-                        if (intersection.circleLine(pointMouse, 2, pointA, pointB))
+                        if (intersection.circleLine(point, 2, pointA, pointB))
                             return true;
                     }
                     break;
@@ -214,7 +217,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                             pointB = this.points[i + 1];
                         }
 
-                        if (intersection.circleLine(pointMouse, 2, pointA, pointB))
+                        if (intersection.circleLine(point, 2, pointA, pointB))
                             return true;
                     }
                     break;
@@ -684,6 +687,17 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     }, Shape);
 
 
+
+    function initialize(config) {
+
+        select = config.select;
+
+
+
+        return true;
+    };
+
+
     function create(attrs) {
         if ((typeof attrs == "function") || (attrs == null)) {
             throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -801,7 +815,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
         }
 
         // adicionando o novo shape na layer ativa
-        return layer.active.shapes.add(shape.uuid, shape);
+        return select.layer.children.add(shape.uuid, shape);
     }
 
     function remove(value) {}
@@ -809,7 +823,10 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     function list() {}
 
     function find() {}
+    
+    
 
+    exports.initialize = initialize;
 
     exports.create = create;
     exports.remove = remove;
