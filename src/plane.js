@@ -52,6 +52,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // add to private view
         _view.context = render.getContext('2d');
         _view.transform = matrix.create();
+        
+        
+        // sistema cartesiano de coordenadas
+        _view.context.translate(0, viewPort.clientHeight);
+        _view.context.scale(1, -1);
+        
 
 
         // o centro inicial
@@ -61,8 +67,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         _view.size.height = viewPort.clientHeight;
         _view.size.width = viewPort.clientWidth;
 
-
-
+        
         // initialize structure
         layer.initialize({
             select: select
@@ -96,41 +101,19 @@ define("plane", ['require', 'exports'], function (require, exports) {
             transform = _view.transform;
 
         // reset context
-        context.resetTransform();
+//        context.resetTransform();
 
         // clear context, +1 is needed on some browsers to really clear the borders
         context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
 
-        debugger;
+//        debugger;
         
         // transform da view
-        context.transform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
+//        context.transform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
 
-        // sistema cartesiano de coordenadas
-        context.translate(0, viewPort.clientHeight);
-        context.scale(1, -1);
-
-
-
-        // a procura da performance
-        //        layer.list().forEach(function (layer) {
-        //            // style of layer
-        //            context.lineCap = layer.style.lineCap;
-        //            context.lineJoin = layer.style.lineJoin;
-        //
-        //            layer.children.list().forEach(function (shape) {
-        //                // save state of all configuration
-        //                context.save();
-        //                context.beginPath();
-        //
-        //                shape.render(context);
-        //
-        //                context.stroke();
-        //                // restore state of all configuration
-        //                context.restore();
-        //            });
-        //        });
-
+//        // sistema cartesiano de coordenadas
+//        context.translate(0, viewPort.clientHeight);
+//        context.scale(1, -1);
 
         var layers = layer.list(),
             l = layers.length;
@@ -144,10 +127,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             while (s--) {
                 context.beginPath();
-                shapes[s].render(context);
+                shapes[s].render(context, transform);
                 context.stroke();
             }
-
         }
 
         return this;
@@ -202,7 +184,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         set center(center) {
 
-            debugger;
+//            debugger;
 
             var centerSubtract = center.subtract(_view.center);
             centerSubtract = centerSubtract.negate();

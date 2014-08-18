@@ -59,7 +59,8 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             y = (y - bb.top) * (element.clientHeight / bb.height);
 
             // tradução para o sistema de coordenadas cartesiano
-//            y = (y - element.clientHeight) * -1;
+            y = (y - element.clientHeight) * -1;
+            // ATENÇÃO - quando context.transform() a inversão não é feita
 
             return {
                 x: x,

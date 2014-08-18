@@ -199,7 +199,7 @@
             toolZoomWheel.events.listen('onMouseWheel', function (event) {
 
                 var position = event.point,
-                    zoomNew = event.delta < 0 ? plane.view.zoom / .93 : plane.view.zoom * .93,
+                    zoomNew = event.delta < 0 ? plane.view.zoom / .83 : plane.view.zoom * .83,
                     zoomFactor = plane.view.zoom / zoomNew;
 
 //                debugger;

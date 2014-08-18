@@ -29,18 +29,6 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
         },
         scaleTo: function (value) {
 
-            //            var ccc = value / Math.sqrt(this.transform.a * this.transform.d);
-            //
-            //            this.transform.scale({
-            //                x: ccc,
-            //                y: ccc
-            //            }, {
-            //                x: 0,
-            //                y: 0
-            //            });
-            //
-            //            //            var factor = ccc;
-            //
             var factor = value;
 
 
@@ -228,12 +216,18 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             return false;
         },
-        render: function (context) {
+        render: function (context, tranform) {
+
+            var scale = Math.sqrt(tranform.a * tranform.d);
+            var move = {
+                x: tranform.tx,
+                y: tranform.ty
+            };
 
             switch (this.type) {
             case 'arc':
                 {
-                    context.arc(this.point.x, this.point.y, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                    context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
 
                     return true;
                 }
@@ -241,14 +235,14 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 {
                     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
                     this.points.forEach(function (point) {
-                        context.bezierCurveTo(point.a.x, point.a.y, point.b.x, point.b.y, point.c.x, point.c.y);
+                        context.bezierCurveTo((point.a.x * scale) + move.x, (point.a.y * scale) + move.y, (point.b.x * scale) + move.x, (point.b.y * scale) + move.y, (point.c.x * scale) + move.x, (point.c.y * scale) + move.y);
                     });
 
                     return true;
                 }
             case 'circle':
                 {
-                    context.arc(this.point.x, this.point.y, this.radius, 0, Math.PI * 2, true);
+                    context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, 0, Math.PI * 2, true);
 
                     return true;
                 }
@@ -262,9 +256,9 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         var yPos = this.point.y + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
 
                         if (i == 0) {
-                            context.moveTo(xPos, yPos);
+                            context.moveTo((xPos * scale) + move.x, (yPos * scale) + move.y);
                         } else {
-                            context.lineTo(xPos, yPos);
+                            context.lineTo((xPos * scale) + move.x, (yPos * scale) + move.y);
                         }
                     }
 
@@ -272,17 +266,17 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'line':
                 {
-                    context.moveTo(this.points[0].x, this.points[0].y);
-                    context.lineTo(this.points[1].x, this.points[1].y);
+                    context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
+                    context.lineTo((this.points[1].x * scale) + move.x, (this.points[1].y * scale) + move.y);
 
                     return true;
                 }
             case 'polygon':
                 {
-                    context.moveTo(this.points[0].x, this.points[0].y);
+                    context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
 
                     this.points.forEach(function (point) {
-                        context.lineTo(point.x, point.y);
+                        context.lineTo((point.x * scale) + move.x, (point.y * scale) + move.y);
                     });
                     context.closePath();
 
@@ -290,21 +284,97 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'polyline':
                 {
-                    context.moveTo(this.points[0].x, this.points[0].y);
+                    context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
 
                     this.points.forEach(function (point) {
-                        context.lineTo(point.x, point.y);
+                        context.lineTo((point.x * scale) + move.x, (point.y * scale) + move.y);
                     });
 
                     return true;
                 }
             case 'rectangle':
                 {
-                    context.strokeRect(this.point.x, this.point.y, this.width, this.height);
+                    context.strokeRect((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.width * scale, this.height * scale);
 
                     return true;
                 }
             }
+
+            //            switch (this.type) {
+            //            case 'arc':
+            //                {
+            //                    context.arc(this.point.x, this.point.y, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+            //
+            //                    return true;
+            //                }
+            //            case 'bezier':
+            //                {
+            //                    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
+            //                    this.points.forEach(function (point) {
+            //                        context.bezierCurveTo(point.a.x, point.a.y, point.b.x, point.b.y, point.c.x, point.c.y);
+            //                    });
+            //
+            //                    return true;
+            //                }
+            //            case 'circle':
+            //                {
+            //                    context.arc(this.point.x, this.point.y, this.radius, 0, Math.PI * 2, true);
+            //
+            //                    return true;
+            //                }
+            //            case 'ellipse':
+            //                {
+            //                    // http://scienceprimer.com/draw-oval-html5-canvas
+            //                    // angle in radian
+            //                    var sss = 0;
+            //                    for (var i = 0 * Math.PI; i < 2 * Math.PI; i += 0.01) {
+            //                        var xPos = this.point.x - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss * Math.PI);
+            //                        var yPos = this.point.y + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
+            //
+            //                        if (i == 0) {
+            //                            context.moveTo(xPos, yPos);
+            //                        } else {
+            //                            context.lineTo(xPos, yPos);
+            //                        }
+            //                    }
+            //
+            //                    return true;
+            //                }
+            //            case 'line':
+            //                {
+            //                    context.moveTo(this.points[0].x, this.points[0].y);
+            //                    context.lineTo(this.points[1].x, this.points[1].y);
+            //
+            //                    return true;
+            //                }
+            //            case 'polygon':
+            //                {
+            //                    context.moveTo(this.points[0].x, this.points[0].y);
+            //
+            //                    this.points.forEach(function (point) {
+            //                        context.lineTo(point.x, point.y);
+            //                    });
+            //                    context.closePath();
+            //
+            //                    return true;
+            //                }
+            //            case 'polyline':
+            //                {
+            //                    context.moveTo(this.points[0].x, this.points[0].y);
+            //
+            //                    this.points.forEach(function (point) {
+            //                        context.lineTo(point.x, point.y);
+            //                    });
+            //
+            //                    return true;
+            //                }
+            //            case 'rectangle':
+            //                {
+            //                    context.strokeRect(this.point.x, this.point.y, this.width, this.height);
+            //
+            //                    return true;
+            //                }
+            //            }
 
 
         },
@@ -638,6 +708,8 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 attrs.radius = attrs.radius;
 
                 shape = new Circle(attrs);
+                
+                break;
             }
         case 'ellipse':
             {
