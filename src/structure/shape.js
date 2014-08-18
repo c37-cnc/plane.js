@@ -233,8 +233,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             switch (this.type) {
             case 'arc':
                 {
-                    context.translate(this.point.x, this.point.y);
-                    context.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                    context.arc(this.point.x, this.point.y, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
 
                     return true;
                 }
@@ -249,21 +248,18 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'circle':
                 {
-                    context.translate(this.point.x, this.point.y);
-                    context.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+                    context.arc(this.point.x, this.point.y, this.radius, 0, Math.PI * 2, true);
 
                     return true;
                 }
             case 'ellipse':
                 {
                     // http://scienceprimer.com/draw-oval-html5-canvas
-                    context.translate(this.point.x, this.point.y);
-
                     // angle in radian
                     var sss = 0;
                     for (var i = 0 * Math.PI; i < 2 * Math.PI; i += 0.01) {
-                        var xPos = 0 - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss * Math.PI);
-                        var yPos = 0 + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
+                        var xPos = this.point.x - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss * Math.PI);
+                        var yPos = this.point.y + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
 
                         if (i == 0) {
                             context.moveTo(xPos, yPos);
@@ -276,12 +272,6 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'line':
                 {
-                    // possivel personalização
-                    if (this.status != 'Over') {
-                        context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
-                        context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
-                    }
-
                     context.moveTo(this.points[0].x, this.points[0].y);
                     context.lineTo(this.points[1].x, this.points[1].y);
 
@@ -310,8 +300,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'rectangle':
                 {
-                    context.translate(this.point.x, this.point.y);
-                    context.strokeRect(0, 0, this.width, this.height);
+                    context.strokeRect(this.point.x, this.point.y, this.width, this.height);
 
                     return true;
                 }
@@ -700,8 +689,8 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     function list() {}
 
     function find() {}
-    
-    
+
+
 
     exports.initialize = initialize;
 

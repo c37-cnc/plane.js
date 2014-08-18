@@ -202,7 +202,7 @@
                     zoomNew = event.delta < 0 ? plane.view.zoom / .93 : plane.view.zoom * .93,
                     zoomFactor = plane.view.zoom / zoomNew;
 
-                debugger;
+//                debugger;
                 
                 var centerFactor = position.subtract(plane.view.center);
                 var centerSum =  position.subtract(centerFactor.multiply(zoomFactor)).subtract(plane.view.center);

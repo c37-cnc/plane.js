@@ -1,5 +1,5 @@
 /*!
- * C37 in 16-08-2014 at 18:46:41 
+ * C37 in 17-08-2014 at 21:19:48 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1258,10 +1258,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
         _view.context = render.getContext('2d');
         _view.transform = matrix.create();
 
-        
+
         // o centro inicial
-        _view.center  = _view.center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
-        
+        _view.center = _view.center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
+
         // os tamanhos que são fixos
         _view.size.height = viewPort.clientHeight;
         _view.size.width = viewPort.clientWidth;
@@ -1306,12 +1306,36 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // clear context, +1 is needed on some browsers to really clear the borders
         context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
 
+        debugger;
+        
         // transform da view
         context.transform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
 
         // sistema cartesiano de coordenadas
         context.translate(0, viewPort.clientHeight);
         context.scale(1, -1);
+
+
+
+        // a procura da performance
+        //        layer.list().forEach(function (layer) {
+        //            // style of layer
+        //            context.lineCap = layer.style.lineCap;
+        //            context.lineJoin = layer.style.lineJoin;
+        //
+        //            layer.children.list().forEach(function (shape) {
+        //                // save state of all configuration
+        //                context.save();
+        //                context.beginPath();
+        //
+        //                shape.render(context);
+        //
+        //                context.stroke();
+        //                // restore state of all configuration
+        //                context.restore();
+        //            });
+        //        });
+
 
         var layers = layer.list(),
             l = layers.length;
@@ -1324,16 +1348,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
             context.lineJoin = layers[l].style.lineJoin;
 
             while (s--) {
-                // save state of all configuration
-                context.save();
                 context.beginPath();
-
                 shapes[s].render(context);
-
                 context.stroke();
-                // restore state of all configuration
-                context.restore();
             }
+
         }
 
         return this;
@@ -1378,7 +1397,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             _view.zoom = zoom;
 
-            
+
             update();
 
             return true;
@@ -1386,22 +1405,22 @@ define("plane", ['require', 'exports'], function (require, exports) {
         get center() {
             return _view.center;
         },
-        set center(center){
-            
+        set center(center) {
+
             debugger;
-            
+
             var centerSubtract = center.subtract(_view.center);
             centerSubtract = centerSubtract.negate();
-            
+
             var xxx = matrix.create();
             xxx.translate(centerSubtract.x, centerSubtract.y);
-            
+
             _view.transform.concate(xxx);
-            
+
             _view.center = center;
-            
+
             update();
-            
+
             return true;
         }
     };
@@ -1491,8 +1510,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             }
         }
     };
-    
-    
+
+
     exports.exporter = exporter;
 });
 define("structure/group", ['require', 'exports'], function (require, exports) {
@@ -1901,8 +1920,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             switch (this.type) {
             case 'arc':
                 {
-                    context.translate(this.point.x, this.point.y);
-                    context.arc(0, 0, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                    context.arc(this.point.x, this.point.y, this.radius, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
 
                     return true;
                 }
@@ -1917,21 +1935,18 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'circle':
                 {
-                    context.translate(this.point.x, this.point.y);
-                    context.arc(0, 0, this.radius, 0, Math.PI * 2, true);
+                    context.arc(this.point.x, this.point.y, this.radius, 0, Math.PI * 2, true);
 
                     return true;
                 }
             case 'ellipse':
                 {
                     // http://scienceprimer.com/draw-oval-html5-canvas
-                    context.translate(this.point.x, this.point.y);
-
                     // angle in radian
                     var sss = 0;
                     for (var i = 0 * Math.PI; i < 2 * Math.PI; i += 0.01) {
-                        var xPos = 0 - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss * Math.PI);
-                        var yPos = 0 + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
+                        var xPos = this.point.x - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss * Math.PI);
+                        var yPos = this.point.y + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
 
                         if (i == 0) {
                             context.moveTo(xPos, yPos);
@@ -1944,12 +1959,6 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'line':
                 {
-                    // possivel personalização
-                    if (this.status != 'Over') {
-                        context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
-                        context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
-                    }
-
                     context.moveTo(this.points[0].x, this.points[0].y);
                     context.lineTo(this.points[1].x, this.points[1].y);
 
@@ -1978,8 +1987,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 }
             case 'rectangle':
                 {
-                    context.translate(this.point.x, this.point.y);
-                    context.strokeRect(0, 0, this.width, this.height);
+                    context.strokeRect(this.point.x, this.point.y, this.width, this.height);
 
                     return true;
                 }
@@ -2368,8 +2376,8 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     function list() {}
 
     function find() {}
-    
-    
+
+
 
     exports.initialize = initialize;
 
@@ -2409,7 +2417,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 this._active = value;
             }
         });
-        
+
         this.active = attrs.active;
     };
 
@@ -2456,8 +2464,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 if (children[c].contains(point.create(0, 0), view.transform))
                     shapes.push(children[c]);
             }
-            
-            
+
+
             // customized event
             event = {
                 positionInView: {
@@ -2467,7 +2475,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 shapes: shapes,
                 Now: new Date().toISOString()
             };
-            
+
             var tools = store.list(),
                 t = tools.length;
             while (t--) {
@@ -2482,19 +2490,14 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         }
 
         function onMouseWheel(event) {
-            
-            debugger;
-            
-//            var lll = point.create(types.graphic.mousePosition(viewPort, event.x, event.y));
-            var lll = types.graphic.mousePosition(viewPort, event.x, event.y);
-            var fff = view.transform.inverseTransform(lll);
-            
-            
-            
+
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas);
+
             // customized event
             event = {
                 delta: event.deltaY,
-                point: point.create(fff),
+                point: point.create(pointInView),
                 now: new Date().toISOString()
             };
 

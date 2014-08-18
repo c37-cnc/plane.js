@@ -53,10 +53,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
         _view.context = render.getContext('2d');
         _view.transform = matrix.create();
 
-        
+
         // o centro inicial
-        _view.center  = _view.center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
-        
+        _view.center = _view.center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
+
         // os tamanhos que são fixos
         _view.size.height = viewPort.clientHeight;
         _view.size.width = viewPort.clientWidth;
@@ -101,12 +101,36 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // clear context, +1 is needed on some browsers to really clear the borders
         context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
 
+        debugger;
+        
         // transform da view
         context.transform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
 
         // sistema cartesiano de coordenadas
         context.translate(0, viewPort.clientHeight);
         context.scale(1, -1);
+
+
+
+        // a procura da performance
+        //        layer.list().forEach(function (layer) {
+        //            // style of layer
+        //            context.lineCap = layer.style.lineCap;
+        //            context.lineJoin = layer.style.lineJoin;
+        //
+        //            layer.children.list().forEach(function (shape) {
+        //                // save state of all configuration
+        //                context.save();
+        //                context.beginPath();
+        //
+        //                shape.render(context);
+        //
+        //                context.stroke();
+        //                // restore state of all configuration
+        //                context.restore();
+        //            });
+        //        });
+
 
         var layers = layer.list(),
             l = layers.length;
@@ -119,16 +143,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
             context.lineJoin = layers[l].style.lineJoin;
 
             while (s--) {
-                // save state of all configuration
-                context.save();
                 context.beginPath();
-
                 shapes[s].render(context);
-
                 context.stroke();
-                // restore state of all configuration
-                context.restore();
             }
+
         }
 
         return this;
@@ -173,7 +192,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             _view.zoom = zoom;
 
-            
+
             update();
 
             return true;
@@ -181,22 +200,22 @@ define("plane", ['require', 'exports'], function (require, exports) {
         get center() {
             return _view.center;
         },
-        set center(center){
-            
+        set center(center) {
+
             debugger;
-            
+
             var centerSubtract = center.subtract(_view.center);
             centerSubtract = centerSubtract.negate();
-            
+
             var xxx = matrix.create();
             xxx.translate(centerSubtract.x, centerSubtract.y);
-            
+
             _view.transform.concate(xxx);
-            
+
             _view.center = center;
-            
+
             update();
-            
+
             return true;
         }
     };
@@ -286,7 +305,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             }
         }
     };
-    
-    
+
+
     exports.exporter = exporter;
 });

@@ -29,7 +29,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 this._active = value;
             }
         });
-        
+
         this.active = attrs.active;
     };
 
@@ -76,8 +76,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 if (children[c].contains(point.create(0, 0), view.transform))
                     shapes.push(children[c]);
             }
-            
-            
+
+
             // customized event
             event = {
                 positionInView: {
@@ -87,7 +87,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                 shapes: shapes,
                 Now: new Date().toISOString()
             };
-            
+
             var tools = store.list(),
                 t = tools.length;
             while (t--) {
@@ -102,19 +102,14 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         }
 
         function onMouseWheel(event) {
-            
-            debugger;
-            
-//            var lll = point.create(types.graphic.mousePosition(viewPort, event.x, event.y));
-            var lll = types.graphic.mousePosition(viewPort, event.x, event.y);
-            var fff = view.transform.inverseTransform(lll);
-            
-            
-            
+
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas);
+
             // customized event
             event = {
                 delta: event.deltaY,
-                point: point.create(fff),
+                point: point.create(pointInView),
                 now: new Date().toISOString()
             };
 
