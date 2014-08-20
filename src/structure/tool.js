@@ -111,8 +111,16 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         function onMouseMove(event) {
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas),
-                pointMove = point.create(pointInView);
+                pointMove = point.create(pointInCanvas);
+//                pointMove = point.create(pointInView);
+
+
+            //            console.log(pointInCanvas);
+            //            console.log(pointInView);
+
+            //            console.log(view.context.getImageData(mouseInCanvas.x, mouseInCanvas.y, 3, 3).data);
 
 
             // apenas procuro na layer selecionada
@@ -146,7 +154,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         }
 
         function onMouseLeave(event) {
-
+            //            pointDown = null;
         }
 
         function onMouseWheel(event) {

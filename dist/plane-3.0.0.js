@@ -1,5 +1,5 @@
 /*!
- * C37 in 19-08-2014 at 22:54:07 
+ * C37 in 20-08-2014 at 13:17:02 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1826,7 +1826,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             
             if (this.type == 'arc') {
 
-                return intersection.circleArc(position, 2, this.point.sum(this.point.multiply(scale)), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
+                return intersection.circleArc(position, 2, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
 
             } else if (this.type == 'bezier') {
 
@@ -1848,7 +1848,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'ellipse') {
 
-                return intersection.circleEllipse(position, 2, 2, this.point.sum(this.point.multiply(scale)), this.radiusY * scale, this.radiusX * scale);
+                return intersection.circleEllipse(position, 2, 2, this.point.multiply(scale).sum(move), this.radiusY * scale, this.radiusX * scale);
 
             } else if (this.type == 'line') {
 
@@ -1894,7 +1894,15 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'rectangle') {
 
-                return intersection.circleRectangle(position, 2, this.point.sum(this.point.multiply(scale)), this.height * scale, this.width * scale);
+                var xxx = this.point.multiply(scale).sum(move);
+                console.log(xxx);
+                
+//                var rrr = transform.inverseTransform(this.point);
+//                console.log(rrr);
+                
+                console.log(position);
+                
+                return intersection.circleRectangle(position, 2, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
 
             }
 
@@ -2478,8 +2486,16 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         function onMouseMove(event) {
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas),
-                pointMove = point.create(pointInView);
+                pointMove = point.create(pointInCanvas);
+//                pointMove = point.create(pointInView);
+
+
+            //            console.log(pointInCanvas);
+            //            console.log(pointInView);
+
+            //            console.log(view.context.getImageData(mouseInCanvas.x, mouseInCanvas.y, 3, 3).data);
 
 
             // apenas procuro na layer selecionada
@@ -2513,7 +2529,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         }
 
         function onMouseLeave(event) {
-
+            //            pointDown = null;
         }
 
         function onMouseWheel(event) {
@@ -2883,6 +2899,18 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
             // tradução para o sistema de coordenadas cartesiano
             y = (y - element.clientHeight) * -1;
             // ATENÇÃO - quando context.transform() a inversão não é feita
+
+            return {
+                x: x,
+                y: y
+            };
+        },
+
+        canvasPosition: function (element, x, y) {
+            var bb = element.getBoundingClientRect();
+
+            x = (x - bb.left) * (element.clientWidth / bb.width);
+            y = (y - bb.top) * (element.clientHeight / bb.height);
 
             return {
                 x: x,

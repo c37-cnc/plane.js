@@ -94,19 +94,19 @@
 
             plane.layer.create();
 
-            //            plane.shape.create({
-            //                type: 'rectangle',
-            //                x: 0,
-            //                y: 0,
-            //                width: viewPort.clientWidth,
-            //                height: viewPort.clientHeight
-            //            });
+                        plane.shape.create({
+                            type: 'rectangle',
+                            x: 0,
+                            y: 0,
+                            width: viewPort.clientWidth,
+                            height: viewPort.clientHeight
+                        });
             //
-//                        plane.shape.create({
-//                            type: 'line',
-//                            a: [350, 350],
-//                            b: [600, 50]
-//                        });
+                        plane.shape.create({
+                            type: 'line',
+                            a: [350, 350],
+                            b: [600, 50]
+                        });
             //            plane.shape.create({
             //                type: 'polygon',
             //                x: 300,
@@ -121,15 +121,15 @@
             //                width: 125,
             //                height: 100
             //            });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 800,
-            //                y: 150,
-            //                radius: 50,
-            //                startAngle: 0,
-            //                endAngle: 180,
-            //                clockWise: true
-            //            });
+                        plane.shape.create({
+                            type: 'arc',
+                            x: 800,
+                            y: 150,
+                            radius: 50,
+                            startAngle: 0,
+                            endAngle: 180,
+                            clockWise: true
+                        });
             //            plane.shape.create({
             //                type: 'arc',
             //                x: 500,
@@ -180,7 +180,7 @@
             //                radiusX: 45
             //            });
             //
-//                        plane.update();
+                        plane.update();
             //
 
 
@@ -224,10 +224,7 @@
             toolPan.events.listen('onMouseDrag', function (event) {
 
                 var moveFactor = event.pointFirst.subtract(event.pointLast);
-                
                 var newCenter = plane.view.center.sum(moveFactor);
-
-                console.log(newCenter);
 
                 plane.view.center = newCenter;
 
@@ -242,7 +239,7 @@
 
             toolMove.events.listen('onMouseMove', function (event) {
                 
-//                console.log(event);
+                console.log(event);
 
             });
 

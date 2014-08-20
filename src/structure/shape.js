@@ -137,7 +137,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             
             if (this.type == 'arc') {
 
-                return intersection.circleArc(position, 2, this.point.sum(this.point.multiply(scale)), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
+                return intersection.circleArc(position, 2, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
 
             } else if (this.type == 'bezier') {
 
@@ -159,7 +159,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'ellipse') {
 
-                return intersection.circleEllipse(position, 2, 2, this.point.sum(this.point.multiply(scale)), this.radiusY * scale, this.radiusX * scale);
+                return intersection.circleEllipse(position, 2, 2, this.point.multiply(scale).sum(move), this.radiusY * scale, this.radiusX * scale);
 
             } else if (this.type == 'line') {
 
@@ -205,7 +205,15 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'rectangle') {
 
-                return intersection.circleRectangle(position, 2, this.point.sum(this.point.multiply(scale)), this.height * scale, this.width * scale);
+                var xxx = this.point.multiply(scale).sum(move);
+                console.log(xxx);
+                
+//                var rrr = transform.inverseTransform(this.point);
+//                console.log(rrr);
+                
+                console.log(position);
+                
+                return intersection.circleRectangle(position, 2, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
 
             }
 

@@ -66,6 +66,18 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
                 x: x,
                 y: y
             };
+        },
+
+        canvasPosition: function (element, x, y) {
+            var bb = element.getBoundingClientRect();
+
+            x = (x - bb.left) * (element.clientWidth / bb.width);
+            y = (y - bb.top) * (element.clientHeight / bb.height);
+
+            return {
+                x: x,
+                y: y
+            };
         }
 
     }
