@@ -47,18 +47,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // add em viewPort HTMLElement
         viewPort.appendChild(render);
 
+        
         // initialize view
 
         // add to private view
         _view.context = render.getContext('2d');
-        _view.transform = matrix.create();
-        
         
         // sistema cartesiano de coordenadas
         _view.context.translate(0, viewPort.clientHeight);
         _view.context.scale(1, -1);
         
-
+        // created the matrix transform
+        _view.transform = matrix.create();
 
         // o centro inicial
         _view.center = _view.center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
@@ -100,20 +100,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
         var context = _view.context,
             transform = _view.transform;
 
-        // reset context
-//        context.resetTransform();
-
         // clear context, +1 is needed on some browsers to really clear the borders
         context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
-
-//        debugger;
-        
-        // transform da view
-//        context.transform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
-
-//        // sistema cartesiano de coordenadas
-//        context.translate(0, viewPort.clientHeight);
-//        context.scale(1, -1);
 
         var layers = layer.list(),
             l = layers.length;
@@ -131,7 +119,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 context.stroke();
             }
         }
-
         return this;
     }
 
@@ -177,6 +164,39 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             update();
 
+            return true;
+        },
+        zoomTo: function(zoom, center){
+            
+            var factor, motion;
+
+            factor = zoom / _view.zoom;
+
+            _view.transform.scale({
+                x: factor,
+                y: factor
+            }, _view.center);
+
+            _view.zoom = zoom;
+            
+            
+
+            var centerSubtract = center.subtract(_view.center);
+            centerSubtract = centerSubtract.negate();
+
+            var xxx = matrix.create();
+            xxx.translate(centerSubtract.x, centerSubtract.y);
+
+            _view.transform.concate(xxx);
+
+            _view.center = center;
+            
+            
+            
+            
+            
+            update();
+            
             return true;
         },
         get center() {

@@ -42,7 +42,7 @@ define("structure/point", ['require', 'exports'], function (require, exports) {
 
         if (arguments.length == 2 && (arguments[0] != null && arguments[1] != null)) {
             return new Point(arguments[0], arguments[1]);
-        } else if (arguments.length == 1 && typeof arguments == 'object' && (arguments[0].x && arguments[0].y)) {
+        } else if (arguments.length == 1 && typeof arguments == 'object' && (arguments[0].x != null && arguments[0].y != null)) {
             return new Point(arguments[0].x, arguments[0].y);
         }
 

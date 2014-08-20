@@ -40,34 +40,16 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         select = config.select;
         view = config.view;
 
+        var pointDown,
+            shapesOver = types.data.dictionary.create();
+
 
         function onMouseDown(event) {
 
-        }
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas);
 
-        function onMouseUp(event) {
 
-        }
-
-        function onMouseDrag(event) {
-            // http://paperjs.org/reference/toolevent/#point
-            event = {
-                pointFirst: null,
-                pointMiddle: null,
-                pointLast: null
-            }
-
-            var tools = store.list(),
-                t = tools.length;
-            while (t--) {
-                if (tools[t].active) {
-                    tools[t].events.notify('onMouseDrag', event);
-                }
-            }
-        }
-
-        function onMouseMove(event) {
-            // apenas procuro na layer selecionada
             var children = select.layer.children.list(),
                 c = children.length,
                 shapes = [];
@@ -77,14 +59,80 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                     shapes.push(children[c]);
             }
 
+            pointDown = point.create(pointInView);
+
 
             // customized event
             event = {
-                positionInView: {
-                    x: 0,
-                    y: 0
-                },
+                type: 'onMouseDown',
+                point: pointDown,
                 shapes: shapes,
+                now: new Date().toISOString()
+            };
+
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseDown', event);
+                }
+            }
+        }
+
+        function onMouseUp(event) {
+            pointDown = null;
+        }
+
+        function onMouseDrag(event) {
+
+            if (pointDown) {
+
+                var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                    pointInView = view.transform.inverseTransform(pointInCanvas);
+
+                // http://paperjs.org/reference/toolevent/#point
+                event = {
+                    type: 'onMouseDrag',
+                    pointFirst: pointDown,
+                    pointLast: point.create(pointInView),
+                    now: new Date().toISOString()
+                }
+
+                var tools = store.list(),
+                    t = tools.length;
+                while (t--) {
+                    if (tools[t].active) {
+                        tools[t].events.notify('onMouseDrag', event);
+                    }
+                }
+            }
+        }
+
+        function onMouseMove(event) {
+
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas),
+                pointMove = point.create(pointInView);
+
+
+            // apenas procuro na layer selecionada
+            var children = select.layer.children.list(),
+                c = children.length;
+
+            while (c--) {
+                if (children[c].contains(pointMove, view.transform)) {
+                    shapesOver.add(children[c].uuid, children[c]);
+                } else {
+                    shapesOver.remove(children[c].uuid);
+                }
+            }
+
+
+            // customized event
+            event = {
+                type: 'onMouseMove',
+                point: pointMove,
+                shapes: shapesOver.list(),
                 Now: new Date().toISOString()
             };
 
@@ -108,6 +156,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
             // customized event
             event = {
+                type: 'onMouseWheel',
                 delta: event.deltaY,
                 point: point.create(pointInView),
                 now: new Date().toISOString()
@@ -125,7 +174,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
         viewPort.onmousedown = onMouseDown;
         viewPort.onmouseup = onMouseUp;
-        viewPort.onmousemove = onMouseMove;
+        viewPort.addEventListener('mousemove', onMouseMove, false);
+        viewPort.addEventListener('mousemove', onMouseDrag, false);
         viewPort.onmouseleave = onMouseLeave;
         viewPort.onmousewheel = onMouseWheel;
 

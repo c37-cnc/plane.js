@@ -130,11 +130,14 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             return true;
         },
-        contains: function (point, transform) {
-
+        contains: function (position, transform) {
+            
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+            
             if (this.type == 'arc') {
 
-                return intersection.circleArc(point, 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise);
+                return intersection.circleArc(position, 2, this.point.sum(this.point.multiply(scale)), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
 
             } else if (this.type == 'bezier') {
 
@@ -145,15 +148,22 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'circle') {
 
-                return intersection.circleCircle(point, 2, this.point, this.radius);
+//                var x = (this.point.x * scale) + move.x,
+//                    y = (this.point.y * scale) + move.y;
+//                
+//                var xxx = point.create(x, y);
+//                
+                var xxx = this.point.multiply(scale).sum(move);
+                
+                return intersection.circleCircle(position, 2, xxx, this.radius * scale);
 
             } else if (this.type == 'ellipse') {
 
-                return intersection.circleEllipse(point, 2, 2, this.point, this.radiusY, this.radiusX);
+                return intersection.circleEllipse(position, 2, 2, this.point.sum(this.point.multiply(scale)), this.radiusY * scale, this.radiusX * scale);
 
             } else if (this.type == 'line') {
 
-                return intersection.circleLine(point, 2, this.points[0], this.points[1]);
+                return intersection.circleLine(position, 2,  this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
 
             } else if (this.type == 'polygon') {
 
@@ -170,7 +180,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(point, 2, pointA, pointB))
+                    if (intersection.circleLine(position, 2, pointA, pointB))
                         return true;
                 }
 
@@ -189,25 +199,25 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(point, 2, pointA, pointB))
+                    if (intersection.circleLine(position, 2, pointA, pointB))
                         return true;
                 }
 
             } else if (this.type == 'rectangle') {
 
-                return intersection.circleRectangle(point, 2, this.point, this.height, this.width);
+                return intersection.circleRectangle(position, 2, this.point.sum(this.point.multiply(scale)), this.height * scale, this.width * scale);
 
             }
 
             return false;
 
         },
-        render: function (context, tranform) {
+        render: function (context, transform) {
 
-            var scale = Math.sqrt(tranform.a * tranform.d);
+            var scale = Math.sqrt(transform.a * transform.d);
             var move = {
-                x: tranform.tx,
-                y: tranform.ty
+                x: transform.tx,
+                y: transform.ty
             };
 
             if (this.type == 'arc') {

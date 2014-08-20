@@ -1,5 +1,5 @@
 /*!
- * C37 in 18-08-2014 at 21:14:20 
+ * C37 in 19-08-2014 at 22:54:07 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1252,18 +1252,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // add em viewPort HTMLElement
         viewPort.appendChild(render);
 
+        
         // initialize view
 
         // add to private view
         _view.context = render.getContext('2d');
-        _view.transform = matrix.create();
-        
         
         // sistema cartesiano de coordenadas
         _view.context.translate(0, viewPort.clientHeight);
         _view.context.scale(1, -1);
         
-
+        // created the matrix transform
+        _view.transform = matrix.create();
 
         // o centro inicial
         _view.center = _view.center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
@@ -1305,20 +1305,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
         var context = _view.context,
             transform = _view.transform;
 
-        // reset context
-//        context.resetTransform();
-
         // clear context, +1 is needed on some browsers to really clear the borders
         context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
-
-//        debugger;
-        
-        // transform da view
-//        context.transform(transform.a, transform.b, transform.c, transform.d, transform.tx, transform.ty);
-
-//        // sistema cartesiano de coordenadas
-//        context.translate(0, viewPort.clientHeight);
-//        context.scale(1, -1);
 
         var layers = layer.list(),
             l = layers.length;
@@ -1336,7 +1324,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 context.stroke();
             }
         }
-
         return this;
     }
 
@@ -1382,6 +1369,39 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             update();
 
+            return true;
+        },
+        zoomTo: function(zoom, center){
+            
+            var factor, motion;
+
+            factor = zoom / _view.zoom;
+
+            _view.transform.scale({
+                x: factor,
+                y: factor
+            }, _view.center);
+
+            _view.zoom = zoom;
+            
+            
+
+            var centerSubtract = center.subtract(_view.center);
+            centerSubtract = centerSubtract.negate();
+
+            var xxx = matrix.create();
+            xxx.translate(centerSubtract.x, centerSubtract.y);
+
+            _view.transform.concate(xxx);
+
+            _view.center = center;
+            
+            
+            
+            
+            
+            update();
+            
             return true;
         },
         get center() {
@@ -1656,7 +1676,7 @@ define("structure/point", ['require', 'exports'], function (require, exports) {
 
         if (arguments.length == 2 && (arguments[0] != null && arguments[1] != null)) {
             return new Point(arguments[0], arguments[1]);
-        } else if (arguments.length == 1 && typeof arguments == 'object' && (arguments[0].x && arguments[0].y)) {
+        } else if (arguments.length == 1 && typeof arguments == 'object' && (arguments[0].x != null && arguments[0].y != null)) {
             return new Point(arguments[0].x, arguments[0].y);
         }
 
@@ -1799,11 +1819,14 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             return true;
         },
-        contains: function (point, transform) {
-
+        contains: function (position, transform) {
+            
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+            
             if (this.type == 'arc') {
 
-                return intersection.circleArc(point, 2, this.point, this.radius, this.startAngle, this.endAngle, this.clockWise);
+                return intersection.circleArc(position, 2, this.point.sum(this.point.multiply(scale)), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
 
             } else if (this.type == 'bezier') {
 
@@ -1814,15 +1837,22 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'circle') {
 
-                return intersection.circleCircle(point, 2, this.point, this.radius);
+//                var x = (this.point.x * scale) + move.x,
+//                    y = (this.point.y * scale) + move.y;
+//                
+//                var xxx = point.create(x, y);
+//                
+                var xxx = this.point.multiply(scale).sum(move);
+                
+                return intersection.circleCircle(position, 2, xxx, this.radius * scale);
 
             } else if (this.type == 'ellipse') {
 
-                return intersection.circleEllipse(point, 2, 2, this.point, this.radiusY, this.radiusX);
+                return intersection.circleEllipse(position, 2, 2, this.point.sum(this.point.multiply(scale)), this.radiusY * scale, this.radiusX * scale);
 
             } else if (this.type == 'line') {
 
-                return intersection.circleLine(point, 2, this.points[0], this.points[1]);
+                return intersection.circleLine(position, 2,  this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
 
             } else if (this.type == 'polygon') {
 
@@ -1839,7 +1869,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(point, 2, pointA, pointB))
+                    if (intersection.circleLine(position, 2, pointA, pointB))
                         return true;
                 }
 
@@ -1858,25 +1888,25 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(point, 2, pointA, pointB))
+                    if (intersection.circleLine(position, 2, pointA, pointB))
                         return true;
                 }
 
             } else if (this.type == 'rectangle') {
 
-                return intersection.circleRectangle(point, 2, this.point, this.height, this.width);
+                return intersection.circleRectangle(position, 2, this.point.sum(this.point.multiply(scale)), this.height * scale, this.width * scale);
 
             }
 
             return false;
 
         },
-        render: function (context, tranform) {
+        render: function (context, transform) {
 
-            var scale = Math.sqrt(tranform.a * tranform.d);
+            var scale = Math.sqrt(transform.a * transform.d);
             var move = {
-                x: tranform.tx,
-                y: tranform.ty
+                x: transform.tx,
+                y: transform.ty
             };
 
             if (this.type == 'arc') {
@@ -2377,34 +2407,16 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         select = config.select;
         view = config.view;
 
+        var pointDown,
+            shapesOver = types.data.dictionary.create();
+
 
         function onMouseDown(event) {
 
-        }
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas);
 
-        function onMouseUp(event) {
 
-        }
-
-        function onMouseDrag(event) {
-            // http://paperjs.org/reference/toolevent/#point
-            event = {
-                pointFirst: null,
-                pointMiddle: null,
-                pointLast: null
-            }
-
-            var tools = store.list(),
-                t = tools.length;
-            while (t--) {
-                if (tools[t].active) {
-                    tools[t].events.notify('onMouseDrag', event);
-                }
-            }
-        }
-
-        function onMouseMove(event) {
-            // apenas procuro na layer selecionada
             var children = select.layer.children.list(),
                 c = children.length,
                 shapes = [];
@@ -2414,14 +2426,80 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
                     shapes.push(children[c]);
             }
 
+            pointDown = point.create(pointInView);
+
 
             // customized event
             event = {
-                positionInView: {
-                    x: 0,
-                    y: 0
-                },
+                type: 'onMouseDown',
+                point: pointDown,
                 shapes: shapes,
+                now: new Date().toISOString()
+            };
+
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseDown', event);
+                }
+            }
+        }
+
+        function onMouseUp(event) {
+            pointDown = null;
+        }
+
+        function onMouseDrag(event) {
+
+            if (pointDown) {
+
+                var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                    pointInView = view.transform.inverseTransform(pointInCanvas);
+
+                // http://paperjs.org/reference/toolevent/#point
+                event = {
+                    type: 'onMouseDrag',
+                    pointFirst: pointDown,
+                    pointLast: point.create(pointInView),
+                    now: new Date().toISOString()
+                }
+
+                var tools = store.list(),
+                    t = tools.length;
+                while (t--) {
+                    if (tools[t].active) {
+                        tools[t].events.notify('onMouseDrag', event);
+                    }
+                }
+            }
+        }
+
+        function onMouseMove(event) {
+
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas),
+                pointMove = point.create(pointInView);
+
+
+            // apenas procuro na layer selecionada
+            var children = select.layer.children.list(),
+                c = children.length;
+
+            while (c--) {
+                if (children[c].contains(pointMove, view.transform)) {
+                    shapesOver.add(children[c].uuid, children[c]);
+                } else {
+                    shapesOver.remove(children[c].uuid);
+                }
+            }
+
+
+            // customized event
+            event = {
+                type: 'onMouseMove',
+                point: pointMove,
+                shapes: shapesOver.list(),
                 Now: new Date().toISOString()
             };
 
@@ -2445,6 +2523,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
             // customized event
             event = {
+                type: 'onMouseWheel',
                 delta: event.deltaY,
                 point: point.create(pointInView),
                 now: new Date().toISOString()
@@ -2462,7 +2541,8 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 
         viewPort.onmousedown = onMouseDown;
         viewPort.onmouseup = onMouseUp;
-        viewPort.onmousemove = onMouseMove;
+        viewPort.addEventListener('mousemove', onMouseMove, false);
+        viewPort.addEventListener('mousemove', onMouseDrag, false);
         viewPort.onmouseleave = onMouseLeave;
         viewPort.onmousewheel = onMouseWheel;
 

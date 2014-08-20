@@ -94,94 +94,94 @@
 
             plane.layer.create();
 
-//            plane.shape.create({
-//                type: 'rectangle',
-//                x: 0,
-//                y: 0,
-//                width: viewPort.clientWidth,
-//                height: viewPort.clientHeight
-//            });
-//
-//            plane.shape.create({
-//                type: 'line',
-//                a: [350, 350],
-//                b: [600, 50]
-//            });
-//            plane.shape.create({
-//                type: 'polygon',
-//                x: 300,
-//                y: 500,
-//                radius: 70,
-//                sides: 5
-//            });
-//            plane.shape.create({
-//                type: 'rectangle',
-//                x: 300,
-//                y: 10,
-//                width: 125,
-//                height: 100
-//            });
-//            plane.shape.create({
-//                type: 'arc',
-//                x: 800,
-//                y: 150,
-//                radius: 50,
-//                startAngle: 0,
-//                endAngle: 180,
-//                clockWise: true
-//            });
-//            plane.shape.create({
-//                type: 'arc',
-//                x: 500,
-//                y: 250,
-//                radius: 50,
-//                startAngle: 90,
-//                endAngle: 180,
-//                clockWise: false
-//            });
-//            plane.shape.create({
-//                type: 'arc',
-//                x: 700,
-//                y: 250,
-//                radius: 50,
-//                startAngle: 90,
-//                endAngle: 270,
-//                clockWise: false
-//            });
-//            plane.shape.create({
-//                type: 'arc',
-//                x: 1000,
-//                y: 250,
-//                radius: 50,
-//                startAngle: 90,
-//                endAngle: 270,
-//                clockWise: true
-//            });
-//            plane.shape.create({
-//                type: 'arc',
-//                x: 1500,
-//                y: 600,
-//                radius: 30,
-//                startAngle: 90,
-//                endAngle: 180,
-//                clockWise: true
-//            });
-//            plane.shape.create({
-//                type: 'circle',
-//                x: 1200,
-//                y: 100,
-//                radius: 50
-//            });
-//            plane.shape.create({
-//                type: 'ellipse',
-//                x: 1000,
-//                y: 100,
-//                radiusY: 25,
-//                radiusX: 45
-//            });
-//
-//            plane.update();
-//
+            //            plane.shape.create({
+            //                type: 'rectangle',
+            //                x: 0,
+            //                y: 0,
+            //                width: viewPort.clientWidth,
+            //                height: viewPort.clientHeight
+            //            });
+            //
+//                        plane.shape.create({
+//                            type: 'line',
+//                            a: [350, 350],
+//                            b: [600, 50]
+//                        });
+            //            plane.shape.create({
+            //                type: 'polygon',
+            //                x: 300,
+            //                y: 500,
+            //                radius: 70,
+            //                sides: 5
+            //            });
+            //            plane.shape.create({
+            //                type: 'rectangle',
+            //                x: 300,
+            //                y: 10,
+            //                width: 125,
+            //                height: 100
+            //            });
+            //            plane.shape.create({
+            //                type: 'arc',
+            //                x: 800,
+            //                y: 150,
+            //                radius: 50,
+            //                startAngle: 0,
+            //                endAngle: 180,
+            //                clockWise: true
+            //            });
+            //            plane.shape.create({
+            //                type: 'arc',
+            //                x: 500,
+            //                y: 250,
+            //                radius: 50,
+            //                startAngle: 90,
+            //                endAngle: 180,
+            //                clockWise: false
+            //            });
+            //            plane.shape.create({
+            //                type: 'arc',
+            //                x: 700,
+            //                y: 250,
+            //                radius: 50,
+            //                startAngle: 90,
+            //                endAngle: 270,
+            //                clockWise: false
+            //            });
+            //            plane.shape.create({
+            //                type: 'arc',
+            //                x: 1000,
+            //                y: 250,
+            //                radius: 50,
+            //                startAngle: 90,
+            //                endAngle: 270,
+            //                clockWise: true
+            //            });
+            //            plane.shape.create({
+            //                type: 'arc',
+            //                x: 1500,
+            //                y: 600,
+            //                radius: 30,
+            //                startAngle: 90,
+            //                endAngle: 180,
+            //                clockWise: true
+            //            });
+//                        plane.shape.create({
+//                            type: 'circle',
+//                            x: 1200,
+//                            y: 100,
+//                            radius: 50
+//                        });
+            //            plane.shape.create({
+            //                type: 'ellipse',
+            //                x: 1000,
+            //                y: 100,
+            //                radiusY: 25,
+            //                radiusX: 45
+            //            });
+            //
+//                        plane.update();
+            //
 
 
 
@@ -202,15 +202,50 @@
                     zoomNew = event.delta < 0 ? plane.view.zoom / .83 : plane.view.zoom * .83,
                     zoomFactor = plane.view.zoom / zoomNew;
 
-//                debugger;
-                
+                //                debugger;
+
                 var centerFactor = position.subtract(plane.view.center);
-                var centerSum =  position.subtract(centerFactor.multiply(zoomFactor)).subtract(plane.view.center);
+                var centerSum = position.subtract(centerFactor.multiply(zoomFactor)).subtract(plane.view.center);
                 var centerNew = plane.view.center.sum(centerSum);
 
-                plane.view.zoom = zoomNew;
-                plane.view.center = centerNew;
+                //                plane.view.zoom = zoomNew;
+                //                plane.view.center = centerNew;
+
+                plane.view.zoomTo(zoomNew, centerNew);
             });
+
+
+            var toolPan = plane.tool.create({
+                active: true
+            });
+
+            console.log(toolPan);
+
+            toolPan.events.listen('onMouseDrag', function (event) {
+
+                var moveFactor = event.pointFirst.subtract(event.pointLast);
+                
+                var newCenter = plane.view.center.sum(moveFactor);
+
+                console.log(newCenter);
+
+                plane.view.center = newCenter;
+
+            });
+
+
+            var toolMove = plane.tool.create({
+                active: true
+            });
+
+            console.log(toolMove);
+
+            toolMove.events.listen('onMouseMove', function (event) {
+                
+//                console.log(event);
+
+            });
+
 
 
             document.getElementById('fileImport').addEventListener('change', function () {
