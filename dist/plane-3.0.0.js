@@ -1,5 +1,5 @@
 /*!
- * C37 in 20-08-2014 at 21:00:35 
+ * C37 in 21-08-2014 at 11:36:47 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1252,16 +1252,16 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // add em viewPort HTMLElement
         viewPort.appendChild(render);
 
-        
+
         // initialize view
 
         // add to private view
         _view.context = render.getContext('2d');
-        
+
         // sistema cartesiano de coordenadas
         _view.context.translate(0, viewPort.clientHeight);
         _view.context.scale(1, -1);
-        
+
         // created the matrix transform
         _view.transform = matrix.create();
 
@@ -1272,7 +1272,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         _view.size.height = viewPort.clientHeight;
         _view.size.width = viewPort.clientWidth;
 
-        
+
         // initialize structure
         layer.initialize({
             select: select
@@ -1319,9 +1319,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             context.lineJoin = layers[l].style.lineJoin;
 
             while (s--) {
-                context.beginPath();
                 shapes[s].render(context, transform);
-                context.stroke();
             }
         }
         return this;
@@ -1371,8 +1369,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             return true;
         },
-        zoomTo: function(zoom, center){
-            
+        zoomTo: function (zoom, center) {
+
             var factor, motion;
 
             factor = zoom / _view.zoom;
@@ -1383,8 +1381,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             }, _view.center);
 
             _view.zoom = zoom;
-            
-            
+
+
 
             var centerSubtract = center.subtract(_view.center);
             centerSubtract = centerSubtract.negate();
@@ -1395,13 +1393,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
             _view.transform.concate(xxx);
 
             _view.center = center;
-            
-            
-            
-            
-            
+
+
+
             update();
-            
+
             return true;
         },
         get center() {
@@ -1409,7 +1405,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         set center(center) {
 
-//            debugger;
+            //            debugger;
 
             var centerSubtract = center.subtract(_view.center);
             centerSubtract = centerSubtract.negate();
@@ -1424,6 +1420,20 @@ define("plane", ['require', 'exports'], function (require, exports) {
             update();
 
             return true;
+        },
+        get bounds() {
+
+            var scale = Math.sqrt(_view.transform.a * _view.transform.d);
+
+            return {
+                x: _view.transform.tx,
+                y: _view.transform.ty,
+                height: _view.size.height * scale,
+                width: _view.size.width * scale
+            }
+        },
+        get size() {
+            return _view.size;
         }
     };
 
@@ -1794,7 +1804,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 this.point.y *= factor;
                 this.height *= factor;
                 this.width *= factor;
-                
+
             }
 
 
@@ -1820,10 +1830,10 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             return true;
         },
         contains: function (position, transform) {
-            
+
             var scale = Math.sqrt(transform.a * transform.d);
             var move = point.create(transform.tx, transform.ty);
-            
+
             if (this.type == 'arc') {
 
                 return intersection.circleArc(position, 3, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
@@ -1837,13 +1847,8 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'circle') {
 
-//                var x = (this.point.x * scale) + move.x,
-//                    y = (this.point.y * scale) + move.y;
-//                
-//                var xxx = point.create(x, y);
-//                
                 var xxx = this.point.multiply(scale).sum(move);
-                
+
                 return intersection.circleCircle(position, 3, xxx, this.radius * scale);
 
             } else if (this.type == 'ellipse') {
@@ -1852,7 +1857,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'line') {
 
-                return intersection.circleLine(position, 3,  this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+                return intersection.circleLine(position, 3, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
 
             } else if (this.type == 'polygon') {
 
@@ -1896,12 +1901,12 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
                 var xxx = this.point.multiply(scale).sum(move);
                 console.log(xxx);
-                
-//                var rrr = transform.inverseTransform(this.point);
-//                console.log(rrr);
-                
-//                console.log(position);
-                
+
+                //                var rrr = transform.inverseTransform(this.point);
+                //                console.log(rrr);
+
+                //                console.log(position);
+
                 return intersection.circleRectangle(position, 3, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
 
             }
@@ -1916,6 +1921,17 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 x: transform.tx,
                 y: transform.ty
             };
+
+
+            // possivel personalização
+            if (this.style && this.style.lineWidth) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth;
+                context.strokeStyle = this.style.lineColor;
+            }
+
+            context.beginPath();
 
             if (this.type == 'arc') {
 
@@ -1952,6 +1968,10 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'line') {
 
+                // possivel personalização
+                context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
+
                 context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
                 context.lineTo((this.points[1].x * scale) + move.x, (this.points[1].y * scale) + move.y);
 
@@ -1976,6 +1996,13 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
                 context.strokeRect((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.width * scale, this.height * scale);
 
+            }
+
+            context.stroke();
+            
+            // possivel personalização
+            if (this.style && this.style.lineWidth) {
+                context.restore();
             }
 
             return true;

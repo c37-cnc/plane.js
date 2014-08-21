@@ -94,13 +94,13 @@
 
             plane.layer.create();
 
-            //                        plane.shape.create({
-            //                            type: 'rectangle',
-            //                            x: 0,
-            //                            y: 0,
-            //                            width: viewPort.clientWidth,
-            //                            height: viewPort.clientHeight
-            //                        });
+                                    plane.shape.create({
+                                        type: 'rectangle',
+                                        x: 0,
+                                        y: 0,
+                                        width: viewPort.clientWidth,
+                                        height: viewPort.clientHeight
+                                    });
             //
             //                        plane.shape.create({
             //                            type: 'line',
@@ -180,7 +180,7 @@
             //                radiusX: 45
             //            });
             //
-            //                        plane.update();
+                                    plane.update();
             //
 
 
@@ -212,6 +212,8 @@
                 //                plane.view.center = centerNew;
 
                 plane.view.zoomTo(zoomNew, centerNew);
+
+                console.log(plane.view.bounds);
             });
 
 
@@ -228,6 +230,8 @@
 
                 plane.view.center = newCenter;
 
+                console.log(plane.view.bounds);
+
             });
 
 
@@ -239,7 +243,7 @@
 
             toolMove.events.listen('onMouseMove', function (event) {
 
-                console.log(event);
+                //                console.log(event);
 
             });
 
@@ -272,19 +276,19 @@
                 }
 
             });
-            
-            
-            
+
+
+
             var toolClick = plane.tool.create({
-                    active: true
-                });
+                active: true
+            });
 
             toolClick.events.listen('onMouseDown', function (event) {
-            
+
                 console.log(event);
-            
+
             });
-            
+
 
 
 

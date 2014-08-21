@@ -105,7 +105,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 this.point.y *= factor;
                 this.height *= factor;
                 this.width *= factor;
-                
+
             }
 
 
@@ -131,10 +131,10 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             return true;
         },
         contains: function (position, transform) {
-            
+
             var scale = Math.sqrt(transform.a * transform.d);
             var move = point.create(transform.tx, transform.ty);
-            
+
             if (this.type == 'arc') {
 
                 return intersection.circleArc(position, 3, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
@@ -148,13 +148,8 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'circle') {
 
-//                var x = (this.point.x * scale) + move.x,
-//                    y = (this.point.y * scale) + move.y;
-//                
-//                var xxx = point.create(x, y);
-//                
                 var xxx = this.point.multiply(scale).sum(move);
-                
+
                 return intersection.circleCircle(position, 3, xxx, this.radius * scale);
 
             } else if (this.type == 'ellipse') {
@@ -163,7 +158,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'line') {
 
-                return intersection.circleLine(position, 3,  this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+                return intersection.circleLine(position, 3, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
 
             } else if (this.type == 'polygon') {
 
@@ -206,13 +201,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             } else if (this.type == 'rectangle') {
 
                 var xxx = this.point.multiply(scale).sum(move);
-                console.log(xxx);
-                
-//                var rrr = transform.inverseTransform(this.point);
-//                console.log(rrr);
-                
-//                console.log(position);
-                
+
                 return intersection.circleRectangle(position, 3, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
 
             }
@@ -227,6 +216,17 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                 x: transform.tx,
                 y: transform.ty
             };
+
+
+            // possivel personalização
+            if (this.style && this.style.lineWidth) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth;
+                context.strokeStyle = this.style.lineColor;
+            }
+
+            context.beginPath();
 
             if (this.type == 'arc') {
 
@@ -263,6 +263,10 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             } else if (this.type == 'line') {
 
+                // possivel personalização
+                context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
+
                 context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
                 context.lineTo((this.points[1].x * scale) + move.x, (this.points[1].y * scale) + move.y);
 
@@ -287,6 +291,13 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
                 context.strokeRect((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.width * scale, this.height * scale);
 
+            }
+
+            context.stroke();
+            
+            // possivel personalização
+            if (this.style && this.style.lineWidth) {
+                context.restore();
             }
 
             return true;

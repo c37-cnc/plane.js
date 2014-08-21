@@ -47,16 +47,16 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // add em viewPort HTMLElement
         viewPort.appendChild(render);
 
-        
+
         // initialize view
 
         // add to private view
         _view.context = render.getContext('2d');
-        
+
         // sistema cartesiano de coordenadas
         _view.context.translate(0, viewPort.clientHeight);
         _view.context.scale(1, -1);
-        
+
         // created the matrix transform
         _view.transform = matrix.create();
 
@@ -67,7 +67,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         _view.size.height = viewPort.clientHeight;
         _view.size.width = viewPort.clientWidth;
 
-        
+
         // initialize structure
         layer.initialize({
             select: select
@@ -114,9 +114,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             context.lineJoin = layers[l].style.lineJoin;
 
             while (s--) {
-                context.beginPath();
                 shapes[s].render(context, transform);
-                context.stroke();
             }
         }
         return this;
@@ -166,8 +164,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             return true;
         },
-        zoomTo: function(zoom, center){
-            
+        zoomTo: function (zoom, center) {
+
             var factor, motion;
 
             factor = zoom / _view.zoom;
@@ -178,8 +176,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             }, _view.center);
 
             _view.zoom = zoom;
-            
-            
+
+
 
             var centerSubtract = center.subtract(_view.center);
             centerSubtract = centerSubtract.negate();
@@ -190,13 +188,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
             _view.transform.concate(xxx);
 
             _view.center = center;
-            
-            
-            
-            
-            
+
+
+
             update();
-            
+
             return true;
         },
         get center() {
@@ -204,7 +200,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         set center(center) {
 
-//            debugger;
+            //            debugger;
 
             var centerSubtract = center.subtract(_view.center);
             centerSubtract = centerSubtract.negate();
@@ -219,6 +215,20 @@ define("plane", ['require', 'exports'], function (require, exports) {
             update();
 
             return true;
+        },
+        get bounds() {
+
+            var scale = Math.sqrt(_view.transform.a * _view.transform.d);
+
+            return {
+                x: _view.transform.tx,
+                y: _view.transform.ty,
+                height: _view.size.height * scale,
+                width: _view.size.width * scale
+            }
+        },
+        get size() {
+            return _view.size;
         }
     };
 
