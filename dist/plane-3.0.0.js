@@ -1,5 +1,5 @@
 /*!
- * C37 in 20-08-2014 at 13:17:02 
+ * C37 in 20-08-2014 at 21:00:35 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1455,7 +1455,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 });
             },
             get shapes() {
-                return _shapes.list();
+                return _shapes;
             },
             set shapes(shape) {
                 return _shapes.add(shape.uuid, shape);
@@ -1826,12 +1826,12 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             
             if (this.type == 'arc') {
 
-                return intersection.circleArc(position, 2, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
+                return intersection.circleArc(position, 3, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
 
             } else if (this.type == 'bezier') {
 
                 for (var i = 0; i < this.points.length; i++) {
-                    if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point, 2, 2))
+                    if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point, 3, 3))
                         return true;
                 }
 
@@ -1844,15 +1844,15 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 //                
                 var xxx = this.point.multiply(scale).sum(move);
                 
-                return intersection.circleCircle(position, 2, xxx, this.radius * scale);
+                return intersection.circleCircle(position, 3, xxx, this.radius * scale);
 
             } else if (this.type == 'ellipse') {
 
-                return intersection.circleEllipse(position, 2, 2, this.point.multiply(scale).sum(move), this.radiusY * scale, this.radiusX * scale);
+                return intersection.circleEllipse(position, 3, 3, this.point.multiply(scale).sum(move), this.radiusY * scale, this.radiusX * scale);
 
             } else if (this.type == 'line') {
 
-                return intersection.circleLine(position, 2,  this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+                return intersection.circleLine(position, 3,  this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
 
             } else if (this.type == 'polygon') {
 
@@ -1869,7 +1869,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 2, pointA, pointB))
+                    if (intersection.circleLine(position, 3, pointA, pointB))
                         return true;
                 }
 
@@ -1888,7 +1888,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 2, pointA, pointB))
+                    if (intersection.circleLine(position, 3, pointA, pointB))
                         return true;
                 }
 
@@ -1900,9 +1900,9 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 //                var rrr = transform.inverseTransform(this.point);
 //                console.log(rrr);
                 
-                console.log(position);
+//                console.log(position);
                 
-                return intersection.circleRectangle(position, 2, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
+                return intersection.circleRectangle(position, 3, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
 
             }
 
@@ -2416,33 +2416,54 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
         view = config.view;
 
         var pointDown,
+            shapesSelect = select.shapes,
             shapesOver = types.data.dictionary.create();
 
 
         function onMouseDown(event) {
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas);
+                mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas),
+                pointMove = point.create(pointInView);
 
+            // to point
+            pointInCanvas = point.create(pointInCanvas);
 
-            var children = select.layer.children.list(),
-                c = children.length,
-                shapes = [];
-
-            while (c--) {
-                if (children[c].contains(point.create(0, 0), view.transform))
-                    shapes.push(children[c]);
-            }
-
+            // dizendo que o mouse preenche o evento down
             pointDown = point.create(pointInView);
 
+            // verifico se o local onde o ponto está possui alguma shape como imagem
+            var imageData = [].some.call(view.context.getImageData(mouseInCanvas.x, mouseInCanvas.y, 3, 3).data, function (element) {
+                return element > 0;
+            });
+
+//            debugger;
+
+            // caso positivo realizamos a procura 
+            if (imageData) {
+                // apenas procuro na layer selecionada
+                var children = select.layer.children.list(),
+                    c = children.length;
+
+                while (c--) {
+                    if (children[c].contains(pointInCanvas, view.transform)) {
+                        shapesSelect.add(children[c].uuid, children[c]);
+                        break;
+                    } else {
+                        shapesSelect.remove(children[c].uuid);
+                    }
+                }
+            } else { // caso negativo - limpamos os shapesSelect
+                shapesSelect.clear();
+            }
 
             // customized event
             event = {
                 type: 'onMouseDown',
-                point: pointDown,
-                shapes: shapes,
-                now: new Date().toISOString()
+                point: pointMove,
+                shapes: shapesSelect.list(),
+                Now: new Date().toISOString()
             };
 
             var tools = store.list(),
@@ -2458,10 +2479,10 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             pointDown = null;
         }
 
+        // Mouse Drag com o evento Mouse Move
         function onMouseDrag(event) {
-
+            // se Mouse Down preenchido 
             if (pointDown) {
-
                 var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                     pointInView = view.transform.inverseTransform(pointInCanvas);
 
@@ -2488,28 +2509,33 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                 mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas),
-                pointMove = point.create(pointInCanvas);
-//                pointMove = point.create(pointInView);
+                pointMove = point.create(pointInView);
 
+            // to point para procura em contains
+            pointInCanvas = point.create(pointInCanvas);
 
-            //            console.log(pointInCanvas);
-            //            console.log(pointInView);
+            // verifico se o local onde o ponto está possui alguma shape como imagem
+            var imageData = [].some.call(view.context.getImageData(mouseInCanvas.x, mouseInCanvas.y, 3, 3).data, function (element) {
+                return element > 0;
+            });
 
-            //            console.log(view.context.getImageData(mouseInCanvas.x, mouseInCanvas.y, 3, 3).data);
+            // caso positivo realizamos a procura 
+            if (imageData) {
+                // apenas procuro na layer selecionada
+                var children = select.layer.children.list(),
+                    c = children.length;
 
-
-            // apenas procuro na layer selecionada
-            var children = select.layer.children.list(),
-                c = children.length;
-
-            while (c--) {
-                if (children[c].contains(pointMove, view.transform)) {
-                    shapesOver.add(children[c].uuid, children[c]);
-                } else {
-                    shapesOver.remove(children[c].uuid);
+                while (c--) {
+                    if (children[c].contains(pointInCanvas, view.transform)) {
+                        shapesOver.add(children[c].uuid, children[c]);
+                        break;
+                    } else {
+                        shapesOver.remove(children[c].uuid);
+                    }
                 }
+            } else { // caso negativo - limpamos os shapesOver
+                shapesOver.clear();
             }
-
 
             // customized event
             event = {

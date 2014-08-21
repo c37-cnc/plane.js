@@ -250,7 +250,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 });
             },
             get shapes() {
-                return _shapes.list();
+                return _shapes;
             },
             set shapes(shape) {
                 return _shapes.add(shape.uuid, shape);
