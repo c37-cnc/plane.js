@@ -31,12 +31,20 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         }
     }
 
+
+    var date = {
+
+        format: function () {}
+
+    }
+
+
     /**
      * Descrição para o objeto String no arquivo types.js
      *
      * @class String
      * @static
-     */    
+     */
     var string = {
 
         format: function (str, args) {
@@ -328,5 +336,6 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     exports.string = string;
     exports.graphic = graphic;
     exports.data = data;
+    exports.date = date;
     exports.object = object;
 });

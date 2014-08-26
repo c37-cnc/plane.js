@@ -1,5 +1,5 @@
 /*!
- * C37 in 21-08-2014 at 11:36:47 
+ * C37 in 26-08-2014 at 20:06:10 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -8,13 +8,9 @@
  */
 define("data/exporter", ['require', 'exports'], function (require, exports) {
     
-//    function toJson (){
-//        return true;
-//    }
-//    
-//    function toSvg (){
-//        return true;
-//    }
+    function toSvg (){
+        return true;
+    }
     
     function toDxf (){
         return true;
@@ -28,34 +24,10 @@ define("data/exporter", ['require', 'exports'], function (require, exports) {
         return true;
     }
 
-    // exporter
-    function toJson() {
-
-        var planeExport = {
-            //            center: _center,
-            layers: layerManager.list().map(function (layer) {
-                var layerObject = layer.toObject();
-
-                layerObject.shapes = layerObject.shapes.map(function (shape) {
-                    return shape.toObject();
-                });
-
-                return layerObject;
-            })
-        }
-
-        return JSON.stringify(planeExport);
-    }
-
-    function toSvg() {
-        return true;
-    }
-    // exporter    
     
     
     
     
-    exports.toJson = toJson;
     exports.toSvg = toSvg;
     exports.toDxf = toDxf;
     exports.toPng = toPng;
@@ -272,65 +244,23 @@ define("data/importer", ['require', 'exports'], function (require, exports) {
         return stringJson ? '[' + stringJson.substring(0, stringJson.length - 1) + ']' : '[]';
     }
 
-    function fromDwg(stringDwg) {
+    function parseDwg(stringDwg) {
         return true;
     }
 
-    function fromJson(stringJson) {
+    function parseJson(stringJson) {
         return true;
     }
 
-    function fromSvg(stringSvg) {
+    function parseSvg(stringSvg) {
         return true;
     }
-    
-    
-//
-//    // importer
-//    function fromJson(stringJson) {
-//
-//        var planeObject = JSON.parse(stringJson);
-//
-//        clear();
-//
-//        //        _center = planeObject.position;
-//
-//        planeObject.layers.forEach(function (layerObject) {
-//
-//            layerManager.create({
-//                uuid: layerObject.uuid,
-//                name: layerObject.name,
-//                locked: layerObject.locked,
-//                Visible: layerObject.Visible,
-//                style: layerObject.style,
-//                viewPort: viewPort
-//            });
-//
-//            layerObject.shapes.forEach(function (shapeObject) {
-//                shape.create(shapeObject)
-//            });
-//
-//            layerManager.update();
-//        });
-//
-//        return true;
-//    };
-//
-//    function fromSvg(stringSvg) {
-//        return true;
-//    };
-//
-//
-//    function fromDwg(stringDwg) {
-//        return true;
-//    }
-//    // importer
     
 
     exports.parseDxf = parseDxf;
-    exports.fromDwg = fromDwg;
-    exports.fromJson = fromJson;
-    exports.fromSvg = fromSvg;
+    exports.parseDwg = parseDwg;
+    exports.parseJson = parseJson;
+    exports.parseSvg = parseSvg;
 
 });
 
@@ -1386,6 +1316,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         get size() {
             return _view.size;
+        },
+        get transform() {
+            return _view.transform;
         }
     };
 
@@ -1472,11 +1405,50 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 }
                 update();
             }
+        },
+        fromJson: function (stringJson) {
+
+            var objectPlane = JSON.parse(stringJson);
+
+            clear();
+
+            objectPlane.layers.forEach(function (objectLayer) {
+
+                layer.create({
+                    uuid: objectLayer.uuid,
+                    name: objectLayer.name,
+                    status: objectLayer.status,
+                    style: objectLayer.style,
+                });
+
+                objectLayer.children.forEach(function (objectShape) {
+                    shape.create(objectShape);
+                });
+            });
+
+            view.zoomTo(objectPlane.zoom, point.create(objectPlane.center));
+
+            return true;
         }
     };
 
 
-    exports.exporter = exporter;
+    exports.exporter = {
+        toJson: function () {
+
+            var plane = {
+                center: _view.center,
+                zoom: _view.zoom,
+                layers: layer.list().map(function (layer) {
+                    return layer.status != 'system' ? layer.toObject() : null;
+                }).filter(function (layer) {
+                    return layer != undefined
+                })
+            }
+
+            return JSON.stringify(plane);
+        }
+    };
 });
 define("structure/group", ['require', 'exports'], function (require, exports) {
 
@@ -1522,7 +1494,9 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             name: this.name,
             status: this.status,
             style: this.style,
-            children: this.children.list()
+            children: this.children.list().map(function (shape) {
+                return shape.toObject();
+            })
         };
     }
 
@@ -1852,12 +1826,6 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             } else if (this.type == 'rectangle') {
 
                 var xxx = this.point.multiply(scale).sum(move);
-                console.log(xxx);
-
-                //                var rrr = transform.inverseTransform(this.point);
-                //                console.log(rrr);
-
-                //                console.log(position);
 
                 return intersection.circleRectangle(position, 3, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
 
@@ -2874,12 +2842,20 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
         }
     }
 
+
+    var date = {
+
+        format: function () {}
+
+    }
+
+
     /**
      * Descrição para o objeto String no arquivo types.js
      *
      * @class String
      * @static
-     */    
+     */
     var string = {
 
         format: function (str, args) {
@@ -3171,5 +3147,6 @@ define("utility/types", ['require', 'exports'], function (require, exports) {
     exports.string = string;
     exports.graphic = graphic;
     exports.data = data;
+    exports.date = date;
     exports.object = object;
 });

@@ -22,7 +22,9 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
             name: this.name,
             status: this.status,
             style: this.style,
-            children: this.children.list()
+            children: this.children.list().map(function (shape) {
+                return shape.toObject();
+            })
         };
     }
 

@@ -208,64 +208,22 @@ define("data/importer", ['require', 'exports'], function (require, exports) {
         return stringJson ? '[' + stringJson.substring(0, stringJson.length - 1) + ']' : '[]';
     }
 
-    function fromDwg(stringDwg) {
+    function parseDwg(stringDwg) {
         return true;
     }
 
-    function fromJson(stringJson) {
+    function parseJson(stringJson) {
         return true;
     }
 
-    function fromSvg(stringSvg) {
+    function parseSvg(stringSvg) {
         return true;
     }
-    
-    
-//
-//    // importer
-//    function fromJson(stringJson) {
-//
-//        var planeObject = JSON.parse(stringJson);
-//
-//        clear();
-//
-//        //        _center = planeObject.position;
-//
-//        planeObject.layers.forEach(function (layerObject) {
-//
-//            layerManager.create({
-//                uuid: layerObject.uuid,
-//                name: layerObject.name,
-//                locked: layerObject.locked,
-//                Visible: layerObject.Visible,
-//                style: layerObject.style,
-//                viewPort: viewPort
-//            });
-//
-//            layerObject.shapes.forEach(function (shapeObject) {
-//                shape.create(shapeObject)
-//            });
-//
-//            layerManager.update();
-//        });
-//
-//        return true;
-//    };
-//
-//    function fromSvg(stringSvg) {
-//        return true;
-//    };
-//
-//
-//    function fromDwg(stringDwg) {
-//        return true;
-//    }
-//    // importer
     
 
     exports.parseDxf = parseDxf;
-    exports.fromDwg = fromDwg;
-    exports.fromJson = fromJson;
-    exports.fromSvg = fromSvg;
+    exports.parseDwg = parseDwg;
+    exports.parseJson = parseJson;
+    exports.parseSvg = parseSvg;
 
 });

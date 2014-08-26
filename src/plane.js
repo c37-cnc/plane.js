@@ -229,6 +229,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         get size() {
             return _view.size;
+        },
+        get transform() {
+            return _view.transform;
         }
     };
 
@@ -315,9 +318,48 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 }
                 update();
             }
+        },
+        fromJson: function (stringJson) {
+
+            var objectPlane = JSON.parse(stringJson);
+
+            clear();
+
+            objectPlane.layers.forEach(function (objectLayer) {
+
+                layer.create({
+                    uuid: objectLayer.uuid,
+                    name: objectLayer.name,
+                    status: objectLayer.status,
+                    style: objectLayer.style,
+                });
+
+                objectLayer.children.forEach(function (objectShape) {
+                    shape.create(objectShape);
+                });
+            });
+
+            view.zoomTo(objectPlane.zoom, point.create(objectPlane.center));
+
+            return true;
         }
     };
 
 
-    exports.exporter = exporter;
+    exports.exporter = {
+        toJson: function () {
+
+            var plane = {
+                center: _view.center,
+                zoom: _view.zoom,
+                layers: layer.list().map(function (layer) {
+                    return layer.status != 'system' ? layer.toObject() : null;
+                }).filter(function (layer) {
+                    return layer != undefined
+                })
+            }
+
+            return JSON.stringify(plane);
+        }
+    };
 });
