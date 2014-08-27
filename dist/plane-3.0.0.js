@@ -1,5 +1,5 @@
 /*!
- * C37 in 26-08-2014 at 20:06:10 
+ * C37 in 27-08-2014 at 19:27:09 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -54,7 +54,7 @@ var define, require;
         return modules[name] = exports || concrete;
     };
 })();
-define("data/exporter", ['require', 'exports'], function (require, exports) {
+define("plane/data/exporter", ['require', 'exports'], function (require, exports) {
     
     function toSvg (){
         return true;
@@ -82,9 +82,9 @@ define("data/exporter", ['require', 'exports'], function (require, exports) {
     exports.toPdf = toPdf;
 
 });
-define("data/importer", ['require', 'exports'], function (require, exports) {
+define("plane/data/importer", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
     function parseDxf(stringDxf) {
 
@@ -324,10 +324,10 @@ define("data/importer", ['require', 'exports'], function (require, exports) {
 //	testPoint(path, path.bounds.topRight, false);
 //	testPoint(path, path.bounds.bottomLeft, false);
 //	testPoint(path, path.bounds.bottomRight, false);
-define("geometric/intersection", ['require', 'exports'], function (require, exports) {
+define("plane/geometric/intersection", ['require', 'exports'], function (require, exports) {
 
-    var polynomial = require('geometric/polynomial'),
-        point = require('structure/point');
+    var polynomial = require('plane/geometric/polynomial'),
+        point = require('plane/structure/point');
 
 
     function Bezout(e1, e2) {
@@ -597,7 +597,7 @@ define("geometric/intersection", ['require', 'exports'], function (require, expo
     exports.circleEllipse = circleEllipse;
     exports.circleBezier = circleBezier;
 });
-define("geometric/matrix", ['require', 'exports'], function (require, exports) {
+define("plane/geometric/matrix", ['require', 'exports'], function (require, exports) {
 
     // http://www.senocular.com/flash/tutorials/transformmatrix/
     // https://github.com/heygrady/transform/wiki/Calculating-2d-Matrices
@@ -907,7 +907,7 @@ define("geometric/matrix", ['require', 'exports'], function (require, exports) {
     exports.create = create;
     exports.toPoint = toPoint;
 });
-define("geometric/polynomial", ['require', 'exports'], function (require, exports) {
+define("plane/geometric/polynomial", ['require', 'exports'], function (require, exports) {
 
     function Polynomial(coefs) {
         this.coefs = new Array();
@@ -1138,18 +1138,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var version = '3.0.0',
         authors = ['lilo@c37.co', 'ser@c37.co'];
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
-    var matrix = require('geometric/matrix');
+    var matrix = require('plane/geometric/matrix');
 
-    var layer = require('structure/layer'),
-        point = require('structure/point'),
-        shape = require('structure/shape'),
-        group = require('structure/group'),
-        tool = require('structure/tool');
+    var layer = require('plane/structure/layer'),
+        point = require('plane/structure/point'),
+        shape = require('plane/structure/shape'),
+        group = require('plane/structure/group'),
+        tool = require('plane/structure/tool');
 
-    var importer = require('data/importer'),
-        exporter = require('data/exporter');
+    var importer = require('plane/data/importer'),
+        exporter = require('plane/data/exporter');
 
     var viewPort = null;
 
@@ -1498,7 +1498,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         }
     };
 });
-define("structure/group", ['require', 'exports'], function (require, exports) {
+define("plane/structure/group", ['require', 'exports'], function (require, exports) {
 
     function Group() {};
 
@@ -1518,9 +1518,9 @@ define("structure/group", ['require', 'exports'], function (require, exports) {
     exports.create = create;
 
 });
-define("structure/layer", ['require', 'exports'], function (require, exports) {
+define("plane/structure/layer", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
     var store = types.data.dictionary.create();
 
@@ -1616,7 +1616,7 @@ define("structure/layer", ['require', 'exports'], function (require, exports) {
     exports.find = find;
     exports.remove = remove;
 });
-define("structure/point", ['require', 'exports'], function (require, exports) {
+define("plane/structure/point", ['require', 'exports'], function (require, exports) {
 
     function Point(x, y) {
         this.x = x;
@@ -1671,15 +1671,15 @@ define("structure/point", ['require', 'exports'], function (require, exports) {
     exports.create = create;
 
 });
-define("structure/shape", ['require', 'exports'], function (require, exports) {
+define("plane/structure/shape", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
-    var intersection = require('geometric/intersection'),
-        matrix = require('geometric/matrix');
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
 
-    var point = require('structure/point'),
-        layer = require('structure/layer');
+    var point = require('plane/structure/point'),
+        layer = require('plane/structure/layer');
 
     var select = null;
 
@@ -1810,12 +1810,12 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             if (this.type == 'arc') {
 
-                return intersection.circleArc(position, 3, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
+                return intersection.circleArc(position, 4, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
 
             } else if (this.type == 'bezier') {
 
                 for (var i = 0; i < this.points.length; i++) {
-                    if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point, 3, 3))
+                    if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point, 4, 4))
                         return true;
                 }
 
@@ -1823,15 +1823,15 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
                 var xxx = this.point.multiply(scale).sum(move);
 
-                return intersection.circleCircle(position, 3, xxx, this.radius * scale);
+                return intersection.circleCircle(position, 4, xxx, this.radius * scale);
 
             } else if (this.type == 'ellipse') {
 
-                return intersection.circleEllipse(position, 3, 3, this.point.multiply(scale).sum(move), this.radiusY * scale, this.radiusX * scale);
+                return intersection.circleEllipse(position, 4, 4, this.point.multiply(scale).sum(move), this.radiusY * scale, this.radiusX * scale);
 
             } else if (this.type == 'line') {
 
-                return intersection.circleLine(position, 3, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+                return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
 
             } else if (this.type == 'polygon') {
 
@@ -1848,7 +1848,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 3, pointA, pointB))
+                    if (intersection.circleLine(position, 4, pointA, pointB))
                         return true;
                 }
 
@@ -1867,7 +1867,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 3, pointA, pointB))
+                    if (intersection.circleLine(position, 4, pointA, pointB))
                         return true;
                 }
 
@@ -1875,7 +1875,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
                 var xxx = this.point.multiply(scale).sum(move);
 
-                return intersection.circleRectangle(position, 3, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
+                return intersection.circleRectangle(position, 4, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
 
             }
 
@@ -1892,11 +1892,11 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
 
             // possivel personalização
-            if (this.style && this.style.lineWidth) {
+            if (this.style) {
                 context.save();
 
-                context.lineWidth = this.style.lineWidth;
-                context.strokeStyle = this.style.lineColor;
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
 
             context.beginPath();
@@ -1969,7 +1969,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             context.stroke();
             
             // possivel personalização
-            if (this.style && this.style.lineWidth) {
+            if (this.style) {
                 context.restore();
             }
 
@@ -2368,13 +2368,13 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
     exports.list = list;
     exports.find = find;
 });
-define("structure/tool", ['require', 'exports'], function (require, exports) {
+define("plane/structure/tool", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
     var store = types.data.dictionary.create();
 
-    var point = require('structure/point');
+    var point = require('plane/structure/point');
 
     var viewPort = null,
         select = null,
@@ -2436,7 +2436,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 //            debugger;
 
             // caso positivo realizamos a procura 
-            if (imageData) {
+            if (imageData && select.layer && select.layer.status != 'system') {
                 // apenas procuro na layer selecionada
                 var children = select.layer.children.list(),
                     c = children.length;
@@ -2515,7 +2515,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             });
 
             // caso positivo realizamos a procura 
-            if (imageData) {
+            if (imageData && select.layer && select.layer.status != 'system') {
                 // apenas procuro na layer selecionada
                 var children = select.layer.children.list(),
                     c = children.length;
@@ -2628,11 +2628,11 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
     exports.find = find;
     exports.remove = remove;
 });
-define("structure/view", ['require', 'exports'], function (require, exports) {
+define("plane/structure/view", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
-    var matrix = require('geometric/matrix');
+    var matrix = require('plane/geometric/matrix');
 
     var viewPort = null,
         canvas = {
@@ -2857,7 +2857,7 @@ define("structure/view", ['require', 'exports'], function (require, exports) {
     exports.canvas = canvas;
 
 });
-define("utility/types", ['require', 'exports'], function (require, exports) {
+define("plane/utility/types", ['require', 'exports'], function (require, exports) {
 
     var math = {
         uuid: function (length, radix) {

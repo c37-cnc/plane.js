@@ -1,4 +1,4 @@
-define("structure/point", ['require', 'exports'], function (require, exports) {
+define("plane/structure/point", ['require', 'exports'], function (require, exports) {
 
     function Point(x, y) {
         this.x = x;

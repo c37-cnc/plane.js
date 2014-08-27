@@ -1,6 +1,6 @@
-define("data/importer", ['require', 'exports'], function (require, exports) {
+define("plane/data/importer", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
     function parseDxf(stringDxf) {
 

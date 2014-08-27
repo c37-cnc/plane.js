@@ -1,8 +1,8 @@
-define("structure/view", ['require', 'exports'], function (require, exports) {
+define("plane/structure/view", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
-    var matrix = require('geometric/matrix');
+    var matrix = require('plane/geometric/matrix');
 
     var viewPort = null,
         canvas = {

@@ -1,6 +1,6 @@
-define("structure/layer", ['require', 'exports'], function (require, exports) {
+define("plane/structure/layer", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
     var store = types.data.dictionary.create();
 

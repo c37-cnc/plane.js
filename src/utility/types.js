@@ -1,4 +1,4 @@
-define("utility/types", ['require', 'exports'], function (require, exports) {
+define("plane/utility/types", ['require', 'exports'], function (require, exports) {
 
     var math = {
         uuid: function (length, radix) {

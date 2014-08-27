@@ -3,18 +3,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var version = '3.0.0',
         authors = ['lilo@c37.co', 'ser@c37.co'];
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
-    var matrix = require('geometric/matrix');
+    var matrix = require('plane/geometric/matrix');
 
-    var layer = require('structure/layer'),
-        point = require('structure/point'),
-        shape = require('structure/shape'),
-        group = require('structure/group'),
-        tool = require('structure/tool');
+    var layer = require('plane/structure/layer'),
+        point = require('plane/structure/point'),
+        shape = require('plane/structure/shape'),
+        group = require('plane/structure/group'),
+        tool = require('plane/structure/tool');
 
-    var importer = require('data/importer'),
-        exporter = require('data/exporter');
+    var importer = require('plane/data/importer'),
+        exporter = require('plane/data/exporter');
 
     var viewPort = null;
 

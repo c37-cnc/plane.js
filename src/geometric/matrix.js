@@ -1,4 +1,4 @@
-define("geometric/matrix", ['require', 'exports'], function (require, exports) {
+define("plane/geometric/matrix", ['require', 'exports'], function (require, exports) {
 
     // http://www.senocular.com/flash/tutorials/transformmatrix/
     // https://github.com/heygrady/transform/wiki/Calculating-2d-Matrices

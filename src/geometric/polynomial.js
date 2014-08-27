@@ -1,4 +1,4 @@
-define("geometric/polynomial", ['require', 'exports'], function (require, exports) {
+define("plane/geometric/polynomial", ['require', 'exports'], function (require, exports) {
 
     function Polynomial(coefs) {
         this.coefs = new Array();

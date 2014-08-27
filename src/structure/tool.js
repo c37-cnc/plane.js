@@ -1,10 +1,10 @@
-define("structure/tool", ['require', 'exports'], function (require, exports) {
+define("plane/structure/tool", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
     var store = types.data.dictionary.create();
 
-    var point = require('structure/point');
+    var point = require('plane/structure/point');
 
     var viewPort = null,
         select = null,
@@ -66,7 +66,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
 //            debugger;
 
             // caso positivo realizamos a procura 
-            if (imageData) {
+            if (imageData && select.layer && select.layer.status != 'system') {
                 // apenas procuro na layer selecionada
                 var children = select.layer.children.list(),
                     c = children.length;
@@ -145,7 +145,7 @@ define("structure/tool", ['require', 'exports'], function (require, exports) {
             });
 
             // caso positivo realizamos a procura 
-            if (imageData) {
+            if (imageData && select.layer && select.layer.status != 'system') {
                 // apenas procuro na layer selecionada
                 var children = select.layer.children.list(),
                     c = children.length;

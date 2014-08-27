@@ -1,12 +1,12 @@
-define("structure/shape", ['require', 'exports'], function (require, exports) {
+define("plane/structure/shape", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility/types');
+    var types = require('plane/utility/types');
 
-    var intersection = require('geometric/intersection'),
-        matrix = require('geometric/matrix');
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
 
-    var point = require('structure/point'),
-        layer = require('structure/layer');
+    var point = require('plane/structure/point'),
+        layer = require('plane/structure/layer');
 
     var select = null;
 
@@ -137,12 +137,12 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
             if (this.type == 'arc') {
 
-                return intersection.circleArc(position, 3, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
+                return intersection.circleArc(position, 4, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
 
             } else if (this.type == 'bezier') {
 
                 for (var i = 0; i < this.points.length; i++) {
-                    if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point, 3, 3))
+                    if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point, 4, 4))
                         return true;
                 }
 
@@ -150,15 +150,15 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
                 var xxx = this.point.multiply(scale).sum(move);
 
-                return intersection.circleCircle(position, 3, xxx, this.radius * scale);
+                return intersection.circleCircle(position, 4, xxx, this.radius * scale);
 
             } else if (this.type == 'ellipse') {
 
-                return intersection.circleEllipse(position, 3, 3, this.point.multiply(scale).sum(move), this.radiusY * scale, this.radiusX * scale);
+                return intersection.circleEllipse(position, 4, 4, this.point.multiply(scale).sum(move), this.radiusY * scale, this.radiusX * scale);
 
             } else if (this.type == 'line') {
 
-                return intersection.circleLine(position, 3, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+                return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
 
             } else if (this.type == 'polygon') {
 
@@ -175,7 +175,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 3, pointA, pointB))
+                    if (intersection.circleLine(position, 4, pointA, pointB))
                         return true;
                 }
 
@@ -194,7 +194,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 3, pointA, pointB))
+                    if (intersection.circleLine(position, 4, pointA, pointB))
                         return true;
                 }
 
@@ -202,7 +202,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
                 var xxx = this.point.multiply(scale).sum(move);
 
-                return intersection.circleRectangle(position, 3, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
+                return intersection.circleRectangle(position, 4, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
 
             }
 
@@ -219,11 +219,11 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
 
 
             // possivel personalização
-            if (this.style && this.style.lineWidth) {
+            if (this.style) {
                 context.save();
 
-                context.lineWidth = this.style.lineWidth;
-                context.strokeStyle = this.style.lineColor;
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
 
             context.beginPath();
@@ -296,7 +296,7 @@ define("structure/shape", ['require', 'exports'], function (require, exports) {
             context.stroke();
             
             // possivel personalização
-            if (this.style && this.style.lineWidth) {
+            if (this.style) {
                 context.restore();
             }
 
