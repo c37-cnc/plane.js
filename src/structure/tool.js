@@ -74,7 +74,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 while (c--) {
                     if (children[c].contains(pointInCanvas, view.transform)) {
                         shapesSelect.add(children[c].uuid, children[c]);
-                        break;
+//                        break; - lilo - teste de performance
                     } else {
                         shapesSelect.remove(children[c].uuid);
                     }
@@ -153,7 +153,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 while (c--) {
                     if (children[c].contains(pointInCanvas, view.transform)) {
                         shapesOver.add(children[c].uuid, children[c]);
-                        break;
+//                        break; - lilo - teste de performance
                     } else {
                         shapesOver.remove(children[c].uuid);
                     }

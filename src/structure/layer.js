@@ -84,7 +84,17 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
     }
 
     function remove(uuid) {
-        return store.remove(uuid);
+        if(uuid){
+            return store.remove(uuid);
+        } else {
+            store.list().forEach(function(layer){
+                if (layer.status != 'system'){
+                    store.remove(layer.uuid);
+                }
+            });
+            return true;
+        }
+//        return uuid ? store.remove(uuid) : store.clear();
     }
 
 

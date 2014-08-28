@@ -1,5 +1,5 @@
 /*!
- * C37 in 27-08-2014 at 19:27:09 
+ * C37 in 27-08-2014 at 22:53:19 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1604,7 +1604,17 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
     }
 
     function remove(uuid) {
-        return store.remove(uuid);
+        if(uuid){
+            return store.remove(uuid);
+        } else {
+            store.list().forEach(function(layer){
+                if (layer.status != 'system'){
+                    store.remove(layer.uuid);
+                }
+            });
+            return true;
+        }
+//        return uuid ? store.remove(uuid) : store.clear();
     }
 
 
@@ -2444,7 +2454,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 while (c--) {
                     if (children[c].contains(pointInCanvas, view.transform)) {
                         shapesSelect.add(children[c].uuid, children[c]);
-                        break;
+//                        break; - lilo - teste de performance
                     } else {
                         shapesSelect.remove(children[c].uuid);
                     }
@@ -2523,7 +2533,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 while (c--) {
                     if (children[c].contains(pointInCanvas, view.transform)) {
                         shapesOver.add(children[c].uuid, children[c]);
-                        break;
+//                        break; - lilo - teste de performance
                     } else {
                         shapesOver.remove(children[c].uuid);
                     }
