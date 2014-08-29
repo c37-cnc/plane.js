@@ -15,7 +15,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
             case 'spline':
                 {
                     if (objectDxf.points) {
-                        var spline = '{"type": "spline", "points": [{0}]},',
+                        var spline = '{"type": "spline", "degree": {0}, "knots": [{1}], "points": [{2}]},',
                             points = '';
 
                         for (var i = 0; i < objectDxf.points.length; i++) {
@@ -24,7 +24,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                             points += types.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
 
                         }
-                        return types.string.format(spline, [points]);
+                        return types.string.format(spline, [objectDxf.degree, objectDxf.knots.join(), points]);
                     }
                     return '';
                 }
@@ -180,7 +180,15 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
 
             if (stringAux == ' 40') {
-                objectParse.r = types.math.parseFloat(stringLine, 5);
+                // verificação especifica para spline
+                if (objectParse.type == 'spline') {
+                    // caso necessário crio um array de points
+                    objectParse.knots = objectParse.knots || [];
+                    objectParse.knots.push(stringLine);
+//                    objectParse.knots.push(types.math.parseFloat(stringLine, 5));
+                } else {
+                    objectParse.r = types.math.parseFloat(stringLine, 5);
+                }                
                 stringAux = '';
                 continue;
             }
@@ -205,6 +213,16 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 continue;
             }
             if (stringLine == ' 51') {
+                stringAux = stringLine;
+                continue;
+            }
+
+            if (stringAux == ' 71') {
+                objectParse.degree = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 71') {
                 stringAux = stringLine;
                 continue;
             }

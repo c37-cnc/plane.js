@@ -1,5 +1,5 @@
 /*!
- * C37 in 28-08-2014 at 22:45:53 
+ * C37 in 29-08-2014 at 10:20:27 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -99,7 +99,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
             case 'spline':
                 {
                     if (objectDxf.points) {
-                        var spline = '{"type": "spline", "points": [{0}]},',
+                        var spline = '{"type": "spline", "degree": {0}, "knots": [{1}], "points": [{2}]},',
                             points = '';
 
                         for (var i = 0; i < objectDxf.points.length; i++) {
@@ -108,7 +108,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                             points += types.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
 
                         }
-                        return types.string.format(spline, [points]);
+                        return types.string.format(spline, [objectDxf.degree, objectDxf.knots.join(), points]);
                     }
                     return '';
                 }
@@ -264,7 +264,15 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
 
             if (stringAux == ' 40') {
-                objectParse.r = types.math.parseFloat(stringLine, 5);
+                // verificação especifica para spline
+                if (objectParse.type == 'spline') {
+                    // caso necessário crio um array de points
+                    objectParse.knots = objectParse.knots || [];
+                    objectParse.knots.push(stringLine);
+//                    objectParse.knots.push(types.math.parseFloat(stringLine, 5));
+                } else {
+                    objectParse.r = types.math.parseFloat(stringLine, 5);
+                }                
                 stringAux = '';
                 continue;
             }
@@ -289,6 +297,16 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 continue;
             }
             if (stringLine == ' 51') {
+                stringAux = stringLine;
+                continue;
+            }
+
+            if (stringAux == ' 71') {
+                objectParse.degree = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 71') {
                 stringAux = stringLine;
                 continue;
             }
@@ -1711,94 +1729,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     var select = null;
 
 
-    function getCurvePoints(pts, tension, isClosed, numOfSegments) {
-
-        // use input value if provided, or use a default value   
-        tension = (typeof tension != 'undefined') ? tension : 0.5;
-        isClosed = isClosed ? isClosed : false;
-        numOfSegments = numOfSegments ? numOfSegments : 16;
-
-        var _pts = [],
-            res = [], // clone array
-            x, y, // our x,y coords
-            t1x, t2x, t1y, t2y, // tension vectors
-            c1, c2, c3, c4, // cardinal points
-            st, t, i; // steps based on num. of segments
-
-        // clone array so we don't change the original
-        _pts = pts.slice(0);
-
-        // The algorithm require a previous and next point to the actual point array.
-        // Check if we will draw closed or open curve.
-        // If closed, copy end points to beginning and first points to end
-        // If open, duplicate first points to befinning, end points to end
-        if (isClosed) {
-            _pts.unshift(pts[pts.length - 1]);
-            _pts.unshift(pts[pts.length - 2]);
-            _pts.unshift(pts[pts.length - 1]);
-            _pts.unshift(pts[pts.length - 2]);
-            _pts.push(pts[0]);
-            _pts.push(pts[1]);
-        } else {
-            _pts.unshift(pts[1]); //copy 1. point and insert at beginning
-            _pts.unshift(pts[0]);
-            _pts.push(pts[pts.length - 2]); //copy last point and append
-            _pts.push(pts[pts.length - 1]);
-        }
-
-        // ok, lets start..
-
-        // 1. loop goes through point array
-        // 2. loop goes through each segment between the 2 pts + 1e point before and after
-        for (i = 2; i < (_pts.length - 4); i += 2) {
-            for (t = 0; t <= numOfSegments; t++) {
-
-                // calc tension vectors
-                t1x = (_pts[i + 2] - _pts[i - 2]) * tension;
-                t2x = (_pts[i + 4] - _pts[i]) * tension;
-
-                t1y = (_pts[i + 3] - _pts[i - 1]) * tension;
-                t2y = (_pts[i + 5] - _pts[i + 1]) * tension;
-
-                // calc step
-                st = t / numOfSegments;
-
-                // calc cardinals
-                c1 = 2 * Math.pow(st, 3) - 3 * Math.pow(st, 2) + 1;
-                c2 = -(2 * Math.pow(st, 3)) + 3 * Math.pow(st, 2);
-                c3 = Math.pow(st, 3) - 2 * Math.pow(st, 2) + st;
-                c4 = Math.pow(st, 3) - Math.pow(st, 2);
-
-                // calc x and y cords with common control vectors
-                x = c1 * _pts[i] + c2 * _pts[i + 2] + c3 * t1x + c4 * t2x;
-                y = c1 * _pts[i + 1] + c2 * _pts[i + 3] + c3 * t1y + c4 * t2y;
-
-                //store points in array
-                res.push(x);
-                res.push(y);
-
-            }
-        }
-
-        return res;
-    }
-
-    function drawLines(ctx, pts) {
-
-        //        debugger;
-
-        ctx.moveTo(pts[0], pts[1]);
-        for (var i = 2; i < pts.length - 1; i += 2) {
-            ctx.lineTo(pts[i], pts[i + 1]);
-            ctx.stroke();
-        }
-
-
-
-    }
-
-
-
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -2090,72 +2020,38 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
                 debugger;
 
-                var pts = [];
+                var newPoint = [];
 
+//                for (var index1 = 0; index1 < this.knots.length; ++index1) {
+//
+//                    var num1 = this.knots[index1];
+//                    var num2 = this.knots[index1 + 1];
+//
+//                    if (num2 > num1) {
+//                        for (var index2 = 0; index2 <= 12; ++index2) {
+//
+//                            var p = _CalcPoint(this.points, this.knots, num1 + (num2 - num1) * index2 / 12);
+//                            newPoint.push(p);
+//
+//                        }
+//                    }
+//
+//                }
 
-                this.points.forEach(function (item) {
-                    pts.push([(item.x * scale) + move.x, (item.y * scale) + move.y]);
-                });
-
-                var spline = new BSpline(pts, 4, true);
+                var POINTS = this.points.map(function(item){return [item.x * scale + move.x, item.y * scale + move.y]});
+                var n = 3;
                 
-                var oldx, oldy, x, y;
-                oldx = spline.calcAt(0)[0];
-                oldy = spline.calcAt(0)[1];
-                for (var t = 0; t <= 1; t += .005) {
-                    context.moveTo(oldx, oldy);
-                    var interpol = spline.calcAt(t);
-                    x = interpol[0];
-                    y = interpol[1];
-                    context.lineTo(x, y);
-                    oldx = x;
-                    oldy = y;
-                    context.stroke();
-                }
+                var curve = chaikin4(POINTS, n);
+
+                var xxx = newPoint;
 
 
-
-
-                //                // move to the first point
-                //                context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
-                //
-                //
-                //                for (i = 1; i < this.points.length - 2; i++) {
-                //                    var xc = ((this.points[i].x * scale + move.x) + (this.points[i + 1].x * scale + move.x)) / 2;
-                //                    var yc = ((this.points[i].y * scale + move.y) + (this.points[i + 1].y * scale + move.y)) / 2;
-                //                    context.quadraticCurveTo((this.points[i].x * scale) + move.x, (this.points[i].y * scale) + move.y, xc, yc);
-                //                    context.stroke();
-                //                }
-                //                // curve through the last two points
-                //                context.quadraticCurveTo((this.points[i].x * scale) + move.x, (this.points[i].y * scale) + move.y, (this.points[i + 1].x * scale) + move.x, (this.points[i + 1].y * scale) + move.y);
-                //                context.stroke();
-
-
-                //                var pts = [];
-                //
-                //
-                //                this.points.forEach(function (item) {
-                //                    pts.push((item.x * scale) + move.x);
-                //                    pts.push((item.y * scale) + move.y);
-                //                });
-                //
-                //
-                //                var showPoints = showPoints ? showPoints : true;
-                //                var tension = .5;
-                //                var isClosed = false;
-                //                var numOfSegments = 10;
-                //
-                //
-                //                context.beginPath();
-                //
-                //                drawLines(context, getCurvePoints(pts, tension, isClosed, numOfSegments));
-                //
-                //                if (showPoints) {
-                //                    context.stroke();
-                //                    context.beginPath();
-                //                    for (var i = 0; i < pts.length - 1; i += 2)
-                //                        context.rect(pts[i] - 2, pts[i + 1] - 2, 4, 4);
-                //                }
+                var p0 = curve[0];
+                context.moveTo(p0[0], p0[1]);
+                var _js6 = curve.length;
+                for (var i = 1; i < _js6; i += 1) {
+                    context.lineTo(curve[i][0], curve[i][1]);
+                };
 
 
             }
@@ -2267,6 +2163,162 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
         }
     };
+    
+    
+      function chaikin4(lst, N7) {
+            if (N7 === 0) {
+                return lst;
+            } else {
+                var _js8 = function () {
+                    var n = lst.length;
+                    var result = [];
+                    result.push(lst[0]);
+                    
+                    var _js10 = n - 1;
+                    
+                    for (var i = 1; i < _js10; i += 1) {
+                        var start = i - 1;
+                        var weighted = [[lst[start + 0], 1], [lst[start + 1], 3]];
+                        result.push(affineCombination(weighted));
+                        var start = i;
+                        var weighted = [[lst[start + 0], 3], [lst[start + 1], 1]];
+                        result.push(affineCombination(weighted));
+                    };
+                    
+                    result.push(lst[n - 1]);
+                    return result;
+                };
+                return chaikin4(_js8(), N7 - 1);
+            };
+        };
+    
+      function chaikin8(lst, N11) {
+            if (N11 === 0) {
+                return lst;
+            } else {
+                var _js12 = function () {
+                    var n = lst.length;
+                    var result = [];
+                    result.push(lst[0]);
+                    var _js14 = n - 1;
+                    for (var i = 1; i < _js14; i += 1) {
+                        var start = i - 1;
+                        var weighted = [[lst[start + 0], 1], [lst[start + 1], 1]];
+                        result.push(affineCombination(weighted));
+                        var start = i - 1;
+                        var weighted = [[lst[start + 0], 1], [lst[start + 1], 6], [lst[start + 2], 1]];
+                        result.push(affineCombination(weighted));
+                    };
+                    var start = n - 2;
+                    var weighted = [[lst[start + 0], 1], [lst[start + 1], 1]];
+                    result.push(affineCombination(weighted));
+                    result.push(lst[n - 1]);
+                    return result;
+                };
+                return chaikin8(_js12(), N11 - 1);
+            };
+        };    
+
+        function vplus(p, q) {
+            return [p[0] + q[0], p[1] + q[1]];
+        };
+
+        function vminus(p, q) {
+            return [p[0] - q[0], p[1] - q[1]];
+        };
+
+        function vscale(p, x) {
+            return [p[0] * x, p[1] * x];
+        };
+
+        function vlength(p) {
+            return Math.sqrt(p[0] * p[0] + p[1] * p[1]);
+        };
+
+        function pointDistance(p, q) {
+            return vlength(vminus(p, q));
+        };    
+    
+        function affineCombination(lst) {
+            var wsum = (function () {
+                var _js2 = lst.length;
+                var sum3 = 0;
+                var _js1 = 0;
+                if (_js1 < _js2) {
+                    var pw = lst[_js1];
+                    while (true) {
+                        sum3 += pw[1];
+                        _js1 += 1;
+                        if (_js1 >= _js2) {
+                            break;
+                        };
+                        pw = lst[_js1];
+                    };
+                };
+                return sum3;
+            })();
+            var result = [0, 0];
+            var _js5 = lst.length;
+            var _js4 = 0;
+            if (_js4 < _js5) {
+                var pw = lst[_js4];
+                while (true) {
+                    result = vplus(result, vscale(pw[0], pw[1] / wsum));
+                    _js4 += 1;
+                    if (_js4 >= _js5) {
+                        break;
+                    };
+                    pw = lst[_js4];
+                };
+            };
+            return result;
+        };
+    
+    function _Basis(j, n, t, knots) {
+
+        var num1 = 0.0,
+            num2 = knots[j + n] - knots[j];
+
+        if (num2 != 0.0)
+            num1 = (t - knots[j]) * _Basis(j, n - 1, t, knots) / num2;
+
+        var num3 = knots[j + n + 1] - knots[j + 1];
+
+        if (num3 != 0.0)
+            num1 += (knots[j + n + 1] - t) * _Basis(j + 1, n - 1, t, knots) / num3;
+
+        return num1;
+    }
+
+
+    function _CalcPoint(points, knots, t) {
+
+        var xval = 0.0,
+            yval = 0.0,
+            num = 0.0;
+
+        for (var j = 0; j < points.length; ++j) {
+
+            if (j < points.length) {
+
+                var xxx = _Basis(j, 3, t, knots);
+
+                xval += points[j].x * 1.0 * xxx;
+                yval += points[j].y * 1.0 * xxx;
+                num += 1 * xxx;
+
+            }
+
+        }
+        if (num != 0) {
+            xval /= num;
+            yval /= num;
+        }
+        return {
+            x: xval,
+            y: yval
+        };
+    }
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -2420,6 +2472,8 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         this.status = attrs.status;
 
         this.type = 'spline';
+        this.degree = attrs.degree;
+        this.knots = attrs.knots;
         this.points = attrs.points;
     }, Shape);
 
