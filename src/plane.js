@@ -87,7 +87,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     function clear() {
 
         // reset all parameters in view
-        _view.reset();
+        view.reset();
 
         // remove em todas as layers
         layer.remove();
@@ -135,9 +135,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
             y: 0,
             height: 0,
             width: 0
-        },
-        reset: function () {
-
         }
     };
 
@@ -232,6 +229,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         get transform() {
             return _view.transform;
+        },
+        reset: function () {
+            this.zoomTo(1, point.create(_view.size.width /2, _view.size.height / 2));
         }
     };
 

@@ -80,6 +80,7 @@
         /* application components */
     </style>
 
+    <script src="BSpline.js"></script>
     <script src="../../dist/plane-3.0.0.js"></script>
 
     <script>
@@ -94,99 +95,93 @@
 
             plane.layer.create();
 
-                                    plane.shape.create({
-                                        type: 'rectangle',
-                                        x: 0,
-                                        y: 0,
-                                        width: viewPort.clientWidth,
-                                        height: viewPort.clientHeight
-                                    });
-            //
-            //                        plane.shape.create({
-            //                            type: 'line',
-            //                            a: [350, 350],
-            //                            b: [600, 50]
-            //                        });
-            //            plane.shape.create({
-            //                type: 'polygon',
-            //                x: 300,
-            //                y: 500,
-            //                radius: 70,
-            //                sides: 5
-            //            });
-            //            plane.shape.create({
-            //                type: 'rectangle',
-            //                x: 300,
-            //                y: 10,
-            //                width: 125,
-            //                height: 100
-            //            });
-            //                        plane.shape.create({
-            //                            type: 'arc',
-            //                            x: 800,
-            //                            y: 150,
-            //                            radius: 50,
-            //                            startAngle: 0,
-            //                            endAngle: 180,
-            //                            clockWise: true
-            //                        });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 500,
-            //                y: 250,
-            //                radius: 50,
-            //                startAngle: 90,
-            //                endAngle: 180,
-            //                clockWise: false
-            //            });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 700,
-            //                y: 250,
-            //                radius: 50,
-            //                startAngle: 90,
-            //                endAngle: 270,
-            //                clockWise: false
-            //            });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 1000,
-            //                y: 250,
-            //                radius: 50,
-            //                startAngle: 90,
-            //                endAngle: 270,
-            //                clockWise: true
-            //            });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 1500,
-            //                y: 600,
-            //                radius: 30,
-            //                startAngle: 90,
-            //                endAngle: 180,
-            //                clockWise: true
-            //            });
-            //                        plane.shape.create({
-            //                            type: 'circle',
-            //                            x: 1200,
-            //                            y: 100,
-            //                            radius: 50
-            //                        });
-            //            plane.shape.create({
-            //                type: 'ellipse',
-            //                x: 1000,
-            //                y: 100,
-            //                radiusY: 25,
-            //                radiusX: 45
-            //            });
-            //
-                                    plane.update();
-            //
+            plane.shape.create({
+                type: 'rectangle',
+                x: 0,
+                y: 0,
+                width: viewPort.clientWidth,
+                height: viewPort.clientHeight
+            });
 
+            plane.shape.create({
+                type: 'line',
+                a: [350, 350],
+                b: [600, 50]
+            });
+            plane.shape.create({
+                type: 'polygon',
+                x: 300,
+                y: 500,
+                radius: 70,
+                sides: 5
+            });
+            plane.shape.create({
+                type: 'rectangle',
+                x: 300,
+                y: 10,
+                width: 125,
+                height: 100
+            });
+            plane.shape.create({
+                type: 'arc',
+                x: 800,
+                y: 150,
+                radius: 50,
+                startAngle: 0,
+                endAngle: 180,
+                clockWise: true
+            });
+            plane.shape.create({
+                type: 'arc',
+                x: 500,
+                y: 250,
+                radius: 50,
+                startAngle: 90,
+                endAngle: 180,
+                clockWise: false
+            });
+            plane.shape.create({
+                type: 'arc',
+                x: 700,
+                y: 250,
+                radius: 50,
+                startAngle: 90,
+                endAngle: 270,
+                clockWise: false
+            });
+            plane.shape.create({
+                type: 'arc',
+                x: 1000,
+                y: 250,
+                radius: 50,
+                startAngle: 90,
+                endAngle: 270,
+                clockWise: true
+            });
+            plane.shape.create({
+                type: 'arc',
+                x: 1500,
+                y: 600,
+                radius: 30,
+                startAngle: 90,
+                endAngle: 180,
+                clockWise: true
+            });
+            plane.shape.create({
+                type: 'circle',
+                x: 1200,
+                y: 100,
+                radius: 50
+            });
+            plane.shape.create({
+                type: 'ellipse',
+                x: 1000,
+                y: 100,
+                radiusY: 25,
+                radiusX: 45
+            });
 
-
-
-
+            plane.update();
 
 
 
@@ -202,14 +197,9 @@
                     zoomNew = event.delta < 0 ? plane.view.zoom / .83 : plane.view.zoom * .83,
                     zoomFactor = plane.view.zoom / zoomNew;
 
-                //                debugger;
-
                 var centerFactor = position.subtract(plane.view.center);
                 var centerSum = position.subtract(centerFactor.multiply(zoomFactor)).subtract(plane.view.center);
                 var centerNew = plane.view.center.sum(centerSum);
-
-                //                plane.view.zoom = zoomNew;
-                //                plane.view.center = centerNew;
 
                 plane.view.zoomTo(zoomNew, centerNew);
 
@@ -332,15 +322,9 @@
                 plane.view.zoom *= .93;
             });
 
-            document.getElementById('zoomCenterButton').addEventListener('click', function (event) {
-                plane.view.center = {
-                    x: plane.view.center.x + parseFloat(document.getElementById('zoomCenterInputX').value),
-                    y: plane.view.center.y + parseFloat(document.getElementById('zoomCenterInputY').value)
-                }
-                console.log(plane.view.bounds);
+            document.getElementById('zoomHomeButton').addEventListener('click', function (event) {
+                plane.view.reset();
             });
-
-
 
         };
     </script>
@@ -374,7 +358,7 @@
             <input id="zoomCenterInputY" type="text" style="width:60px" value="0">
             <button id="zoomMoreButton">Zoom +++</button>
             <button id="zoomLessButton">Zoom ---</button>
-            <button id="zoomCenterButton">Center</button>
+            <button id="zoomHomeButton">Home</button>
 
         </div>
         <ul id="shapesList">

@@ -14,8 +14,19 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 }
             case 'spline':
                 {
-                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
-                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
+                    if (objectDxf.points) {
+                        var spline = '{"type": "spline", "points": [{0}]},',
+                            points = '';
+
+                        for (var i = 0; i < objectDxf.points.length; i++) {
+
+                            var point = i == objectDxf.points.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
+                            points += types.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
+
+                        }
+                        return types.string.format(spline, [points]);
+                    }
+                    return '';
                 }
             case 'circle':
                 {
@@ -104,8 +115,10 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
             if (stringAux == ' 10') {
                 // verificação especifica para spline
-                if (objectParse.type == 'spline' && objectParse.x) {
-                    objectParse.x1 = types.math.parseFloat(stringLine, 5);
+                if (objectParse.type == 'spline') {
+                    // caso necessário crio um array de points
+                    objectParse.points = objectParse.points || [];
+                    objectParse.points.push([types.math.parseFloat(stringLine, 5), 0]);
                 } else {
                     objectParse.x = types.math.parseFloat(stringLine, 5);
                 }
@@ -127,13 +140,17 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 continue;
             }
 
+            // TODO: verificar qual logica é melhor para reinterpretação de uma array de pontos
             if (stringAux == ' 20') {
+                // de acordo com o tipo localizar o ultimo point em array e add y ?
                 // verificação especifica para spline
-                if (objectParse.type == 'spline' && objectParse.y) {
-                    objectParse.y1 = types.math.parseFloat(stringLine, 5);
+                if (objectParse.type == 'spline') {
+                    // localizando o ultimo point de points para completar add ao valor de y
+                    objectParse.points[objectParse.points.length - 1][1] = types.math.parseFloat(stringLine, 5);
                 } else {
                     objectParse.y = types.math.parseFloat(stringLine, 5);
                 }
+                // de acordo com o tipo pegar o preenchido de x e y ?
                 // verificação especifica para lwpolyline e polyline
                 if (objectParse.type == 'lwpolyline' || objectParse.type == 'polyline') {
                     if (objectParse.x && objectParse.y) {
@@ -219,7 +236,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
     function parseSvg(stringSvg) {
         return true;
     }
-    
+
 
     exports.parseDxf = parseDxf;
     exports.parseDwg = parseDwg;

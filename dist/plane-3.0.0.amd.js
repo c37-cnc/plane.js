@@ -1,5 +1,5 @@
 /*!
- * C37 in 27-08-2014 at 22:53:19 
+ * C37 in 28-08-2014 at 11:27:54 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1174,7 +1174,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     function clear() {
 
         // reset all parameters in view
-        _view.reset();
+        view.reset();
 
         // remove em todas as layers
         layer.remove();
@@ -1222,9 +1222,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
             y: 0,
             height: 0,
             width: 0
-        },
-        reset: function () {
-
         }
     };
 
@@ -1319,6 +1316,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
         },
         get transform() {
             return _view.transform;
+        },
+        reset: function () {
+            this.zoomTo(1, point.create(_view.size.width /2, _view.size.height / 2));
         }
     };
 
