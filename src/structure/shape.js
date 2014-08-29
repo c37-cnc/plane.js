@@ -270,7 +270,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 4, pointA, pointB))
+                    if (intersection.circleLine(position, 4, point.create(pointA.x * scale + move.x, pointA.y * scale + move.y), point.create(pointB.x * scale + move.x, pointB.y * scale + move.y)))
                         return true;
                 }
 
@@ -289,7 +289,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 4, pointA, pointB))
+                    if (intersection.circleLine(position, 4, point.create(pointA.x * scale + move.x, pointA.y * scale + move.y), point.create(pointB.x * scale + move.x, pointB.y * scale + move.y)))
                         return true;
                 }
 

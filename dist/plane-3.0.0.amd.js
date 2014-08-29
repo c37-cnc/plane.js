@@ -1,5 +1,5 @@
 /*!
- * C37 in 28-08-2014 at 11:27:54 
+ * C37 in 28-08-2014 at 22:45:53 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -50,8 +50,19 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 }
             case 'spline':
                 {
-                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
-                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
+                    if (objectDxf.points) {
+                        var spline = '{"type": "spline", "points": [{0}]},',
+                            points = '';
+
+                        for (var i = 0; i < objectDxf.points.length; i++) {
+
+                            var point = i == objectDxf.points.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
+                            points += types.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
+
+                        }
+                        return types.string.format(spline, [points]);
+                    }
+                    return '';
                 }
             case 'circle':
                 {
@@ -140,8 +151,10 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
             if (stringAux == ' 10') {
                 // verificação especifica para spline
-                if (objectParse.type == 'spline' && objectParse.x) {
-                    objectParse.x1 = types.math.parseFloat(stringLine, 5);
+                if (objectParse.type == 'spline') {
+                    // caso necessário crio um array de points
+                    objectParse.points = objectParse.points || [];
+                    objectParse.points.push([types.math.parseFloat(stringLine, 5), 0]);
                 } else {
                     objectParse.x = types.math.parseFloat(stringLine, 5);
                 }
@@ -163,13 +176,17 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 continue;
             }
 
+            // TODO: verificar qual logica é melhor para reinterpretação de uma array de pontos
             if (stringAux == ' 20') {
+                // de acordo com o tipo localizar o ultimo point em array e add y ?
                 // verificação especifica para spline
-                if (objectParse.type == 'spline' && objectParse.y) {
-                    objectParse.y1 = types.math.parseFloat(stringLine, 5);
+                if (objectParse.type == 'spline') {
+                    // localizando o ultimo point de points para completar add ao valor de y
+                    objectParse.points[objectParse.points.length - 1][1] = types.math.parseFloat(stringLine, 5);
                 } else {
                     objectParse.y = types.math.parseFloat(stringLine, 5);
                 }
+                // de acordo com o tipo pegar o preenchido de x e y ?
                 // verificação especifica para lwpolyline e polyline
                 if (objectParse.type == 'lwpolyline' || objectParse.type == 'polyline') {
                     if (objectParse.x && objectParse.y) {
@@ -255,7 +272,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
     function parseSvg(stringSvg) {
         return true;
     }
-    
+
 
     exports.parseDxf = parseDxf;
     exports.parseDwg = parseDwg;
@@ -1646,6 +1663,94 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     var select = null;
 
 
+    function getCurvePoints(pts, tension, isClosed, numOfSegments) {
+
+        // use input value if provided, or use a default value   
+        tension = (typeof tension != 'undefined') ? tension : 0.5;
+        isClosed = isClosed ? isClosed : false;
+        numOfSegments = numOfSegments ? numOfSegments : 16;
+
+        var _pts = [],
+            res = [], // clone array
+            x, y, // our x,y coords
+            t1x, t2x, t1y, t2y, // tension vectors
+            c1, c2, c3, c4, // cardinal points
+            st, t, i; // steps based on num. of segments
+
+        // clone array so we don't change the original
+        _pts = pts.slice(0);
+
+        // The algorithm require a previous and next point to the actual point array.
+        // Check if we will draw closed or open curve.
+        // If closed, copy end points to beginning and first points to end
+        // If open, duplicate first points to befinning, end points to end
+        if (isClosed) {
+            _pts.unshift(pts[pts.length - 1]);
+            _pts.unshift(pts[pts.length - 2]);
+            _pts.unshift(pts[pts.length - 1]);
+            _pts.unshift(pts[pts.length - 2]);
+            _pts.push(pts[0]);
+            _pts.push(pts[1]);
+        } else {
+            _pts.unshift(pts[1]); //copy 1. point and insert at beginning
+            _pts.unshift(pts[0]);
+            _pts.push(pts[pts.length - 2]); //copy last point and append
+            _pts.push(pts[pts.length - 1]);
+        }
+
+        // ok, lets start..
+
+        // 1. loop goes through point array
+        // 2. loop goes through each segment between the 2 pts + 1e point before and after
+        for (i = 2; i < (_pts.length - 4); i += 2) {
+            for (t = 0; t <= numOfSegments; t++) {
+
+                // calc tension vectors
+                t1x = (_pts[i + 2] - _pts[i - 2]) * tension;
+                t2x = (_pts[i + 4] - _pts[i]) * tension;
+
+                t1y = (_pts[i + 3] - _pts[i - 1]) * tension;
+                t2y = (_pts[i + 5] - _pts[i + 1]) * tension;
+
+                // calc step
+                st = t / numOfSegments;
+
+                // calc cardinals
+                c1 = 2 * Math.pow(st, 3) - 3 * Math.pow(st, 2) + 1;
+                c2 = -(2 * Math.pow(st, 3)) + 3 * Math.pow(st, 2);
+                c3 = Math.pow(st, 3) - 2 * Math.pow(st, 2) + st;
+                c4 = Math.pow(st, 3) - Math.pow(st, 2);
+
+                // calc x and y cords with common control vectors
+                x = c1 * _pts[i] + c2 * _pts[i + 2] + c3 * t1x + c4 * t2x;
+                y = c1 * _pts[i + 1] + c2 * _pts[i + 3] + c3 * t1y + c4 * t2y;
+
+                //store points in array
+                res.push(x);
+                res.push(y);
+
+            }
+        }
+
+        return res;
+    }
+
+    function drawLines(ctx, pts) {
+
+        //        debugger;
+
+        ctx.moveTo(pts[0], pts[1]);
+        for (var i = 2; i < pts.length - 1; i += 2) {
+            ctx.lineTo(pts[i], pts[i + 1]);
+            ctx.stroke();
+        }
+
+
+
+    }
+
+
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -1734,6 +1839,13 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     point.y *= factor;
                 });
 
+            } else if (this.type == 'spline') {
+
+                this.points.forEach(function (point) {
+                    point.x *= factor;
+                    point.y *= factor;
+                });
+
             } else if (this.type == 'rectangle') {
 
                 this.point.x *= factor;
@@ -1810,7 +1922,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 4, pointA, pointB))
+                    if (intersection.circleLine(position, 4, point.create(pointA.x * scale + move.x, pointA.y * scale + move.y), point.create(pointB.x * scale + move.x, pointB.y * scale + move.y)))
                         return true;
                 }
 
@@ -1829,7 +1941,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 4, pointA, pointB))
+                    if (intersection.circleLine(position, 4, point.create(pointA.x * scale + move.x, pointA.y * scale + move.y), point.create(pointB.x * scale + move.x, pointB.y * scale + move.y)))
                         return true;
                 }
 
@@ -1926,10 +2038,82 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
                 context.strokeRect((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.width * scale, this.height * scale);
 
+            } else if (this.type == 'spline') {
+
+                debugger;
+
+                var pts = [];
+
+
+                this.points.forEach(function (item) {
+                    pts.push([(item.x * scale) + move.x, (item.y * scale) + move.y]);
+                });
+
+                var spline = new BSpline(pts, 4, true);
+                
+                var oldx, oldy, x, y;
+                oldx = spline.calcAt(0)[0];
+                oldy = spline.calcAt(0)[1];
+                for (var t = 0; t <= 1; t += .005) {
+                    context.moveTo(oldx, oldy);
+                    var interpol = spline.calcAt(t);
+                    x = interpol[0];
+                    y = interpol[1];
+                    context.lineTo(x, y);
+                    oldx = x;
+                    oldy = y;
+                    context.stroke();
+                }
+
+
+
+
+                //                // move to the first point
+                //                context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
+                //
+                //
+                //                for (i = 1; i < this.points.length - 2; i++) {
+                //                    var xc = ((this.points[i].x * scale + move.x) + (this.points[i + 1].x * scale + move.x)) / 2;
+                //                    var yc = ((this.points[i].y * scale + move.y) + (this.points[i + 1].y * scale + move.y)) / 2;
+                //                    context.quadraticCurveTo((this.points[i].x * scale) + move.x, (this.points[i].y * scale) + move.y, xc, yc);
+                //                    context.stroke();
+                //                }
+                //                // curve through the last two points
+                //                context.quadraticCurveTo((this.points[i].x * scale) + move.x, (this.points[i].y * scale) + move.y, (this.points[i + 1].x * scale) + move.x, (this.points[i + 1].y * scale) + move.y);
+                //                context.stroke();
+
+
+                //                var pts = [];
+                //
+                //
+                //                this.points.forEach(function (item) {
+                //                    pts.push((item.x * scale) + move.x);
+                //                    pts.push((item.y * scale) + move.y);
+                //                });
+                //
+                //
+                //                var showPoints = showPoints ? showPoints : true;
+                //                var tension = .5;
+                //                var isClosed = false;
+                //                var numOfSegments = 10;
+                //
+                //
+                //                context.beginPath();
+                //
+                //                drawLines(context, getCurvePoints(pts, tension, isClosed, numOfSegments));
+                //
+                //                if (showPoints) {
+                //                    context.stroke();
+                //                    context.beginPath();
+                //                    for (var i = 0; i < pts.length - 1; i += 2)
+                //                        context.rect(pts[i] - 2, pts[i + 1] - 2, 4, 4);
+                //                }
+
+
             }
 
             context.stroke();
-            
+
             // possivel personalização
             if (this.style) {
                 context.restore();
@@ -2181,6 +2365,16 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         this.width = attrs.width;
     }, Shape);
 
+    var Spline = types.object.inherits(function Spline(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.transform = attrs.transform;
+        this.status = attrs.status;
+
+        this.type = 'spline';
+        this.points = attrs.points;
+    }, Shape);
+
 
 
     function initialize(config) {
@@ -2197,10 +2391,10 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         if ((typeof attrs == "function") || (attrs == null)) {
             throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier'].indexOf(attrs.type) == -1) {
+        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier', 'spline'].indexOf(attrs.type) == -1) {
             throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-        if (((attrs.type != 'polyline') && (attrs.type != 'bezier') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
+        if (((attrs.type != 'polyline') && (attrs.type != 'bezier') && (attrs.type != 'spline') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
             throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
@@ -2304,6 +2498,16 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                 }
 
                 shape = new Polyline(attrs);
+
+                break;
+            }
+        case 'spline':
+            {
+                for (var i = 0; i < attrs.points.length; i++) {
+                    attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
+                }
+
+                shape = new Spline(attrs);
 
                 break;
             }

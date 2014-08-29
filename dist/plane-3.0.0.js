@@ -1,5 +1,5 @@
 /*!
- * C37 in 28-08-2014 at 22:13:16 
+ * C37 in 28-08-2014 at 22:45:53 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1970,7 +1970,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 4, pointA, pointB))
+                    if (intersection.circleLine(position, 4, point.create(pointA.x * scale + move.x, pointA.y * scale + move.y), point.create(pointB.x * scale + move.x, pointB.y * scale + move.y)))
                         return true;
                 }
 
@@ -1989,7 +1989,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                         pointB = this.points[i + 1];
                     }
 
-                    if (intersection.circleLine(position, 4, pointA, pointB))
+                    if (intersection.circleLine(position, 4, point.create(pointA.x * scale + move.x, pointA.y * scale + move.y), point.create(pointB.x * scale + move.x, pointB.y * scale + move.y)))
                         return true;
                 }
 
