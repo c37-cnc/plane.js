@@ -1,5 +1,5 @@
 /*!
- * C37 in 29-08-2014 at 10:20:27 
+ * C37 in 29-08-2014 at 13:39:08 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -2018,40 +2018,159 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
             } else if (this.type == 'spline') {
 
+                /*
+                    Finds knot vector span.
+
+                    p : degree
+                    u : parametric value
+                    U : knot vector
+
+                    returns the span
+                */
+                var findSpan = function (p, u, U) {
+                    var n = U.length - p - 1;
+
+                    if (u >= U[n]) {
+                        return n - 1;
+                    }
+
+                    if (u <= U[p]) {
+                        return p;
+                    }
+
+                    var low = p;
+                    var high = n;
+                    var mid = Math.floor((low + high) / 2);
+
+                    while (u < U[mid] || u >= U[mid + 1]) {
+
+                        if (u < U[mid]) {
+                            high = mid;
+                        } else {
+                            low = mid;
+                        }
+
+                        mid = Math.floor((low + high) / 2);
+                    }
+
+                    return mid;
+                }
+
+                /*
+                    Calculate basis functions. See The NURBS Book, page 70, algorithm A2.2
+
+                    span : span in which u lies
+                    u    : parametric point
+                    p    : degree
+                    U    : knot vector
+
+                    returns array[p+1] with basis functions values.
+                */
+                var calcBasisFunctions = function (span, u, p, U) {
+                    var N = [];
+                    var left = [];
+                    var right = [];
+                    N[0] = 1.0;
+
+                    for (var j = 1; j <= p; ++j) {
+
+                        left[j] = u - U[span + 1 - j];
+                        right[j] = U[span + j] - u;
+
+                        var saved = 0.0;
+
+                        for (var r = 0; r < j; ++r) {
+
+                            var rv = right[r + 1];
+                            var lv = left[j - r];
+                            var temp = N[r] / (rv + lv);
+                            N[r] = saved + rv * temp;
+                            saved = lv * temp;
+                        }
+
+                        N[j] = saved;
+                    }
+
+                    return N;
+                }
+
+                /*
+                    Calculate B-Spline curve points. See The NURBS Book, page 82, algorithm A3.1.
+
+                    p : degree of B-Spline
+                    U : knot vector
+                    P : control points (x, y, z, w)
+                    u : parametric point
+
+                    returns point for given u
+                */
+                var calcBSplinePoint = function (p, U, P, u) {
+                    var span = findSpan(p, u, U);
+                    var N = calcBasisFunctions(span, u, p, U);
+                    //                    var C = new THREE.Vector4(0, 0, 0, 0);
+                    var C = {
+                        x: 0,
+                        y: 0
+                    };
+
+                    for (var j = 0; j <= p; ++j) {
+                        var point = P[span - p + j];
+                        var Nj = N[j];
+//                        var wNj = point.w * Nj;
+                        C.x += point.x * Nj;
+                        C.y += point.y * Nj;
+                        //                        C.z += point.z * wNj;
+                        //                        C.w += point.w * Nj;
+                    }
+
+                    return C;
+                }
+
+
+                var getPoint = function (t, degree, knots, points) {
+
+                    var u = knots[0] + t * (knots[knots.length - 1] - knots[0]); // linear mapping t->u
+
+                    // following results in (wx, wy, wz, w) homogeneous point
+                    var hpoint = calcBSplinePoint(degree, knots, points, u);
+
+                    //                    if (hpoint.w != 1.0) { // project to 3D space: (wx, wy, wz, w) -> (x, y, z, 1)
+                    //                        hpoint.divideScalar(hpoint.w);
+                    //                    }
+
+                    //                    return new THREE.Vector3(hpoint.x, hpoint.y, hpoint.z);
+                    return {
+                        x: hpoint.x,
+                        y: hpoint.y
+                    };
+                }
+
+                var getPoints = function (divisions, degree, knots, points) {
+
+                    if (!divisions) divisions = 5;
+
+                    var d, pts = [];
+
+                    for (d = 0; d <= divisions; d++) {
+
+                        pts.push(getPoint(d / divisions, degree, knots, points));
+
+                    }
+                    return pts;
+                }
+                
+                var xxx = getPoints(300, this.degree, this.knots, this.points);
+
                 debugger;
 
-                var newPoint = [];
-
-//                for (var index1 = 0; index1 < this.knots.length; ++index1) {
-//
-//                    var num1 = this.knots[index1];
-//                    var num2 = this.knots[index1 + 1];
-//
-//                    if (num2 > num1) {
-//                        for (var index2 = 0; index2 <= 12; ++index2) {
-//
-//                            var p = _CalcPoint(this.points, this.knots, num1 + (num2 - num1) * index2 / 12);
-//                            newPoint.push(p);
-//
-//                        }
-//                    }
-//
-//                }
-
-                var POINTS = this.points.map(function(item){return [item.x * scale + move.x, item.y * scale + move.y]});
-                var n = 3;
                 
-                var curve = chaikin4(POINTS, n);
-
-                var xxx = newPoint;
-
-
-                var p0 = curve[0];
-                context.moveTo(p0[0], p0[1]);
-                var _js6 = curve.length;
-                for (var i = 1; i < _js6; i += 1) {
-                    context.lineTo(curve[i][0], curve[i][1]);
-                };
+                context.moveTo(xxx[0].x * scale + move.x, xxx.y * scale + move.y);
+                
+                for(var i = 0; i < xxx.length; i++){
+                    context.lineTo(xxx[i].x * scale + move.x, xxx[i].y * scale + move.y);
+                    context.stroke();
+                }
+                
 
 
             }
@@ -2163,162 +2282,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
         }
     };
-    
-    
-      function chaikin4(lst, N7) {
-            if (N7 === 0) {
-                return lst;
-            } else {
-                var _js8 = function () {
-                    var n = lst.length;
-                    var result = [];
-                    result.push(lst[0]);
-                    
-                    var _js10 = n - 1;
-                    
-                    for (var i = 1; i < _js10; i += 1) {
-                        var start = i - 1;
-                        var weighted = [[lst[start + 0], 1], [lst[start + 1], 3]];
-                        result.push(affineCombination(weighted));
-                        var start = i;
-                        var weighted = [[lst[start + 0], 3], [lst[start + 1], 1]];
-                        result.push(affineCombination(weighted));
-                    };
-                    
-                    result.push(lst[n - 1]);
-                    return result;
-                };
-                return chaikin4(_js8(), N7 - 1);
-            };
-        };
-    
-      function chaikin8(lst, N11) {
-            if (N11 === 0) {
-                return lst;
-            } else {
-                var _js12 = function () {
-                    var n = lst.length;
-                    var result = [];
-                    result.push(lst[0]);
-                    var _js14 = n - 1;
-                    for (var i = 1; i < _js14; i += 1) {
-                        var start = i - 1;
-                        var weighted = [[lst[start + 0], 1], [lst[start + 1], 1]];
-                        result.push(affineCombination(weighted));
-                        var start = i - 1;
-                        var weighted = [[lst[start + 0], 1], [lst[start + 1], 6], [lst[start + 2], 1]];
-                        result.push(affineCombination(weighted));
-                    };
-                    var start = n - 2;
-                    var weighted = [[lst[start + 0], 1], [lst[start + 1], 1]];
-                    result.push(affineCombination(weighted));
-                    result.push(lst[n - 1]);
-                    return result;
-                };
-                return chaikin8(_js12(), N11 - 1);
-            };
-        };    
 
-        function vplus(p, q) {
-            return [p[0] + q[0], p[1] + q[1]];
-        };
-
-        function vminus(p, q) {
-            return [p[0] - q[0], p[1] - q[1]];
-        };
-
-        function vscale(p, x) {
-            return [p[0] * x, p[1] * x];
-        };
-
-        function vlength(p) {
-            return Math.sqrt(p[0] * p[0] + p[1] * p[1]);
-        };
-
-        function pointDistance(p, q) {
-            return vlength(vminus(p, q));
-        };    
-    
-        function affineCombination(lst) {
-            var wsum = (function () {
-                var _js2 = lst.length;
-                var sum3 = 0;
-                var _js1 = 0;
-                if (_js1 < _js2) {
-                    var pw = lst[_js1];
-                    while (true) {
-                        sum3 += pw[1];
-                        _js1 += 1;
-                        if (_js1 >= _js2) {
-                            break;
-                        };
-                        pw = lst[_js1];
-                    };
-                };
-                return sum3;
-            })();
-            var result = [0, 0];
-            var _js5 = lst.length;
-            var _js4 = 0;
-            if (_js4 < _js5) {
-                var pw = lst[_js4];
-                while (true) {
-                    result = vplus(result, vscale(pw[0], pw[1] / wsum));
-                    _js4 += 1;
-                    if (_js4 >= _js5) {
-                        break;
-                    };
-                    pw = lst[_js4];
-                };
-            };
-            return result;
-        };
-    
-    function _Basis(j, n, t, knots) {
-
-        var num1 = 0.0,
-            num2 = knots[j + n] - knots[j];
-
-        if (num2 != 0.0)
-            num1 = (t - knots[j]) * _Basis(j, n - 1, t, knots) / num2;
-
-        var num3 = knots[j + n + 1] - knots[j + 1];
-
-        if (num3 != 0.0)
-            num1 += (knots[j + n + 1] - t) * _Basis(j + 1, n - 1, t, knots) / num3;
-
-        return num1;
-    }
-
-
-    function _CalcPoint(points, knots, t) {
-
-        var xval = 0.0,
-            yval = 0.0,
-            num = 0.0;
-
-        for (var j = 0; j < points.length; ++j) {
-
-            if (j < points.length) {
-
-                var xxx = _Basis(j, 3, t, knots);
-
-                xval += points[j].x * 1.0 * xxx;
-                yval += points[j].y * 1.0 * xxx;
-                num += 1 * xxx;
-
-            }
-
-        }
-        if (num != 0) {
-            xval /= num;
-            yval /= num;
-        }
-        return {
-            x: xval,
-            y: yval
-        };
-    }
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
