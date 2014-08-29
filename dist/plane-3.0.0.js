@@ -1,5 +1,5 @@
 /*!
- * C37 in 29-08-2014 at 13:39:08 
+ * C37 in 29-08-2014 at 15:06:35 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -2116,7 +2116,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     for (var j = 0; j <= p; ++j) {
                         var point = P[span - p + j];
                         var Nj = N[j];
-//                        var wNj = point.w * Nj;
+                        //                        var wNj = point.w * Nj;
                         C.x += point.x * Nj;
                         C.y += point.y * Nj;
                         //                        C.z += point.z * wNj;
@@ -2147,8 +2147,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
                 var getPoints = function (divisions, degree, knots, points) {
 
-                    if (!divisions) divisions = 5;
-
                     var d, pts = [];
 
                     for (d = 0; d <= divisions; d++) {
@@ -2158,19 +2156,38 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     }
                     return pts;
                 }
-                
-                var xxx = getPoints(300, this.degree, this.knots, this.points);
+
+                var LEUWF3cpo = function(_param1, degree, knots, points) {
+                    
+                    var point3Farray = [];
+                    
+                    for (var index1 = 0; index1 < knots.length - 1; ++index1) {
+                        var num1 = knots[index1];
+                        var num2 = knots[index1 + 1];
+                        
+                        if (num2 > num1) {
+                            for (var index2 = 0; index2 <= (_param1 == 0 ? 12 : _param1); ++index2) {
+                                var p = calcBSplinePoint(degree, knots, points, num1 + (num2 - num1) * index2 / (_param1 == 0 ? 12.0 : _param1));
+                                point3Farray.push(p);
+                            }
+                        }
+                    }
+                    return point3Farray;
+                }
 
                 debugger;
 
-                
+//                                var xxx = getPoints(800, this.degree, this.knots, this.points);
+                var xxx = LEUWF3cpo(12, this.degree, this.knots, this.points);
+
+
+
                 context.moveTo(xxx[0].x * scale + move.x, xxx.y * scale + move.y);
-                
-                for(var i = 0; i < xxx.length; i++){
+
+                for (var i = 0; i < xxx.length; i++) {
                     context.lineTo(xxx[i].x * scale + move.x, xxx[i].y * scale + move.y);
-                    context.stroke();
                 }
-                
+
 
 
             }
