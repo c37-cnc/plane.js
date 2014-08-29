@@ -457,10 +457,10 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     return point3Farray;
                 }
 
-                debugger;
+//                debugger;
 
 //                                var xxx = getPoints(800, this.degree, this.knots, this.points);
-                var xxx = LEUWF3cpo(12, this.degree, this.knots, this.points);
+                var xxx = LEUWF3cpo(17, this.degree, this.knots, this.points);
 
 
 

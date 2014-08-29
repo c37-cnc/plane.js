@@ -1,5 +1,5 @@
 /*!
- * C37 in 29-08-2014 at 15:06:35 
+ * C37 in 29-08-2014 at 15:19:34 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -2175,10 +2175,10 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     return point3Farray;
                 }
 
-                debugger;
+//                debugger;
 
 //                                var xxx = getPoints(800, this.degree, this.knots, this.points);
-                var xxx = LEUWF3cpo(12, this.degree, this.knots, this.points);
+                var xxx = LEUWF3cpo(17, this.degree, this.knots, this.points);
 
 
 
