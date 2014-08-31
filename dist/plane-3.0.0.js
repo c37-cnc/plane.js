@@ -1,5 +1,5 @@
 /*!
- * C37 in 29-08-2014 at 15:19:34 
+ * C37 in 30-08-2014 at 23:53:10 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -124,11 +124,28 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 }
             case 'ellipse':
                 {
-                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} },',
+                    debugger;
+
+                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3}, "startAngle": {4}, "endAngle": {5}, "angle": {6}},',
+                        Cx = objectDxf.x,
+                        Cy = objectDxf.y,
+                        a = -(objectDxf.x1 / 2),
+                        b = -(objectDxf.y1 / 2),
                         radiusX = Math.abs(objectDxf.x1),
                         radiusY = radiusX * objectDxf.r;
 
-                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX])
+                    var pointA = (Cx + a * Math.cos(objectDxf.startAngle));
+                    var pointB = (Cy + b * Math.sin(objectDxf.endAngle))
+
+                    var radians = Math.atan2(objectDxf.y1, objectDxf.x1);
+                    var angle = radians * (180 / Math.PI);
+
+                                        
+                                        var startAngle = radiusX * Math.cos(angle);
+                                        var endAngle = radiusY * Math.sin(angle);
+                    //                        
+                    //return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, pointA, pointB, angle]);
+                                        return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, endAngle, angle]);
                 }
             case 'lwpolyline':
                 {
@@ -185,7 +202,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
             stringLine = arrayDxf[i].toLowerCase();
 
             entitiesSection = entitiesSection ? entitiesSection : (stringLine == 'entities');
-            if (!entitiesSection) continue;
+            //            if (!entitiesSection) continue;
 
             if (entitiesSupport.indexOf(stringLine) > -1) {
                 objectParse = {
@@ -268,15 +285,35 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 if (objectParse.type == 'spline') {
                     // caso necessário crio um array de points
                     objectParse.knots = objectParse.knots || [];
-                    objectParse.knots.push(stringLine);
-//                    objectParse.knots.push(types.math.parseFloat(stringLine, 5));
+                    objectParse.knots.push(types.math.parseFloat(stringLine, 5));
                 } else {
                     objectParse.r = types.math.parseFloat(stringLine, 5);
-                }                
+                }
                 stringAux = '';
                 continue;
             }
             if (stringLine == ' 40') {
+                stringAux = stringLine;
+                continue;
+            }
+
+
+            if (stringAux == ' 41') {
+                objectParse.startAngle = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 41') {
+                stringAux = stringLine;
+                continue;
+            }
+
+            if (stringAux == ' 42') {
+                objectParse.endAngle = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 42') {
                 stringAux = stringLine;
                 continue;
             }
@@ -300,6 +337,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 stringAux = stringLine;
                 continue;
             }
+
 
             if (stringAux == ' 71') {
                 objectParse.degree = types.math.parseFloat(stringLine, 5);
@@ -1973,18 +2011,126 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
             } else if (this.type == 'ellipse') {
 
                 // http://scienceprimer.com/draw-oval-html5-canvas
-                // angle in radian
-                var sss = 0;
-                for (var i = 0 * Math.PI; i < 2 * Math.PI; i += 0.01) {
-                    var xPos = this.point.x - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss * Math.PI);
-                    var yPos = this.point.y + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
+                //                                 angle in radian
+                //                                var sss = types.math.radians(this.angle || 0);
 
-                    if (i == 0) {
-                        context.moveTo((xPos * scale) + move.x, (yPos * scale) + move.y);
-                    } else {
-                        context.lineTo((xPos * scale) + move.x, (yPos * scale) + move.y);
-                    }
+//                debugger;
+
+//                var rotation = types.math.radians(this.angle || 0);
+                
+                // erro na conversão dxf - ver entidade na linha 7506 de entities.dxf
+
+                var points = [];
+                var beta = (this.angle || 0) *  (Math.PI / 180);
+                var sinbeta = Math.sin(beta);
+                var cosbeta = Math.cos(beta);
+
+                for (var i = 0; i <= 361; i += 360 / 200) {
+                    var alpha = i * (Math.PI / 180);
+                    var sinalpha = Math.sin(alpha);
+                    var cosalpha = Math.cos(alpha);
+
+                    var pointX = 0.5 * (this.radiusX * cosalpha * cosbeta - this.radiusY * sinalpha * sinbeta);
+                    var pointY = 0.5 * (this.radiusX * cosalpha * sinbeta + this.radiusY * sinalpha * cosbeta);
+
+                    points.push({
+                        x: this.point.x + pointX,
+                        y: this.point.y + pointY
+                    });
                 }
+
+//                context.moveTo(this.point.x, this.point.y);
+                for (var i = 0; i < points.length; i++) {
+                    context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+                    context.stroke();
+                }
+
+                
+
+
+
+                //                context.ellipse(this.point.x * scale + move.x, this.point.y * scale + move.y, this.radiusX * scale, this.radiusY * scale, rotation, 0, 360);
+
+
+                //                for (var i = 2 * Math.PI; i > 0; i -=.1) {
+                //                    
+                //                    var xPos = this.point.x - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss * Math.PI);
+                //                    var yPos = this.point.y + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
+                //
+                //                    if (i == 0) {
+                //                        context.moveTo((xPos * scale) + move.x, (yPos * scale) + move.y);
+                //                    } else {
+                //                        context.lineTo((xPos * scale) + move.x, (yPos * scale) + move.y);
+                //                    }
+                //                }
+
+                //                for (var i = 0; i < 2 * Math.PI; i +=.1) {
+                //                    var xPos = this.point.x - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss);
+                //                    var yPos = this.point.y + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss);
+                //
+                //                    if (i == 0) {
+                //                        context.moveTo((xPos * scale) + move.x, (yPos * scale) + move.y);
+                //                    } else {
+                //                        context.lineTo((xPos * scale) + move.x, (yPos * scale) + move.y);
+                //                    }
+                //                }
+                //                
+
+                var getPoint = function (t, point, startAngle, endAngle, radiusX, radiusY) {
+
+                    var aClockwise = true;
+                    var angle;
+                    var deltaAngle = endAngle - startAngle;
+
+                    if (deltaAngle < 0) deltaAngle += Math.PI * 2;
+                    if (deltaAngle > Math.PI * 2) deltaAngle -= Math.PI * 2;
+
+                    if (aClockwise === true) {
+
+                        angle = endAngle + (1 - t) * (Math.PI * 2 - deltaAngle);
+
+                    } else {
+
+                        angle = startAngle + t * deltaAngle;
+
+                    }
+
+                    var tx = point.x + radiusX * Math.cos(angle);
+                    var ty = point.y + radiusY * Math.sin(angle);
+
+                    return {
+                        x: tx,
+                        y: ty
+                    };
+                }
+
+                var getPoints = function (divisions, point, startAngle, endAngle, radiusX, radiusY) {
+
+                    var d, pts = [];
+
+                    for (d = 0; d <= divisions; d++) {
+
+                        pts.push(getPoint(d / divisions, point, startAngle, endAngle, radiusX, radiusY));
+
+                    }
+                    return pts;
+                }
+
+                //                if (this.startAngle && this.endAngle) {
+                //                    
+                ////                    debugger;
+                //                    
+                //                    var xxx = getPoints(300, this.point, this.startAngle, this.endAngle, this.radiusX, this.radiusY);
+                //
+                //                    context.moveTo(xxx[0].x * scale + move.x, xxx.y * scale + move.y);
+                //
+                //                    for (var i = 0; i < xxx.length; i++) {
+                //                        context.lineTo(xxx[i].x * scale + move.x, xxx[i].y * scale + move.y);
+                //                    }
+                //                    
+                //                    context.stroke();
+                //                }
+
 
             } else if (this.type == 'line') {
 
@@ -2157,14 +2303,14 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     return pts;
                 }
 
-                var LEUWF3cpo = function(_param1, degree, knots, points) {
-                    
+                var LEUWF3cpo = function (_param1, degree, knots, points) {
+
                     var point3Farray = [];
-                    
+
                     for (var index1 = 0; index1 < knots.length - 1; ++index1) {
                         var num1 = knots[index1];
                         var num2 = knots[index1 + 1];
-                        
+
                         if (num2 > num1) {
                             for (var index2 = 0; index2 <= (_param1 == 0 ? 12 : _param1); ++index2) {
                                 var p = calcBSplinePoint(degree, knots, points, num1 + (num2 - num1) * index2 / (_param1 == 0 ? 12.0 : _param1));
@@ -2175,9 +2321,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     return point3Farray;
                 }
 
-//                debugger;
+                //                debugger;
 
-//                                var xxx = getPoints(800, this.degree, this.knots, this.points);
+                //                                var xxx = getPoints(800, this.degree, this.knots, this.points);
                 var xxx = LEUWF3cpo(17, this.degree, this.knots, this.points);
 
 
@@ -2399,6 +2545,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         this.point = attrs.point;
         this.radiusY = attrs.radiusY;
         this.radiusX = attrs.radiusX;
+        this.startAngle = attrs.startAngle;
+        this.endAngle = attrs.endAngle;
+        this.angle = attrs.angle;
     }, Shape);
 
     var Line = types.object.inherits(function Line(attrs) {
@@ -3136,6 +3285,14 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
         },
         parseFloat: function (float, decimal) {
             return Number(parseFloat(float).toFixed(decimal));
+        },
+        // Converts from degrees to radians.
+        radians: function (degrees) {
+            return degrees * (Math.PI / 180);
+        },
+        // Converts from radians to degrees.
+        degrees: function (radians) {
+            return radians * (180 / Math.PI);
         }
     }
 
@@ -3145,7 +3302,6 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
         format: function () {}
 
     }
-
 
     /**
      * Descrição para o objeto String no arquivo types.js

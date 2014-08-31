@@ -40,11 +40,28 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 }
             case 'ellipse':
                 {
-                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} },',
+                    debugger;
+
+                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3}, "startAngle": {4}, "endAngle": {5}, "angle": {6}},',
+                        Cx = objectDxf.x,
+                        Cy = objectDxf.y,
+                        a = -(objectDxf.x1 / 2),
+                        b = -(objectDxf.y1 / 2),
                         radiusX = Math.abs(objectDxf.x1),
                         radiusY = radiusX * objectDxf.r;
 
-                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX])
+                    var pointA = (Cx + a * Math.cos(objectDxf.startAngle));
+                    var pointB = (Cy + b * Math.sin(objectDxf.endAngle))
+
+                    var radians = Math.atan2(objectDxf.y1, objectDxf.x1);
+                    var angle = radians * (180 / Math.PI);
+
+                                        
+                                        var startAngle = radiusX * Math.cos(angle);
+                                        var endAngle = radiusY * Math.sin(angle);
+                    //                        
+                    //return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, pointA, pointB, angle]);
+                                        return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, endAngle, angle]);
                 }
             case 'lwpolyline':
                 {
@@ -101,7 +118,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
             stringLine = arrayDxf[i].toLowerCase();
 
             entitiesSection = entitiesSection ? entitiesSection : (stringLine == 'entities');
-            if (!entitiesSection) continue;
+            //            if (!entitiesSection) continue;
 
             if (entitiesSupport.indexOf(stringLine) > -1) {
                 objectParse = {
@@ -184,15 +201,35 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 if (objectParse.type == 'spline') {
                     // caso necessário crio um array de points
                     objectParse.knots = objectParse.knots || [];
-                    objectParse.knots.push(stringLine);
-//                    objectParse.knots.push(types.math.parseFloat(stringLine, 5));
+                    objectParse.knots.push(types.math.parseFloat(stringLine, 5));
                 } else {
                     objectParse.r = types.math.parseFloat(stringLine, 5);
-                }                
+                }
                 stringAux = '';
                 continue;
             }
             if (stringLine == ' 40') {
+                stringAux = stringLine;
+                continue;
+            }
+
+
+            if (stringAux == ' 41') {
+                objectParse.startAngle = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 41') {
+                stringAux = stringLine;
+                continue;
+            }
+
+            if (stringAux == ' 42') {
+                objectParse.endAngle = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 42') {
                 stringAux = stringLine;
                 continue;
             }
@@ -216,6 +253,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 stringAux = stringLine;
                 continue;
             }
+
 
             if (stringAux == ' 71') {
                 objectParse.degree = types.math.parseFloat(stringLine, 5);

@@ -28,6 +28,14 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
         },
         parseFloat: function (float, decimal) {
             return Number(parseFloat(float).toFixed(decimal));
+        },
+        // Converts from degrees to radians.
+        radians: function (degrees) {
+            return degrees * (Math.PI / 180);
+        },
+        // Converts from radians to degrees.
+        degrees: function (radians) {
+            return radians * (180 / Math.PI);
         }
     }
 
@@ -37,7 +45,6 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
         format: function () {}
 
     }
-
 
     /**
      * Descrição para o objeto String no arquivo types.js
