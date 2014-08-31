@@ -18,6 +18,10 @@ SPline
 http://threejs.org/examples/#webgl_geometry_nurbs
 https://github.com/mrdoob/three.js/blob/1769fbfc6c994b51a54c15a5c096855fd3cb8a1a/examples/canvas_geometry_nurbs.html#L103
 
+Ellipse
+http://www.autodesk.com/techpubs/autocad/acadr14/dxf/ellipse_al_u05_c.htm
+
+
 
 Programas
 Estlcam

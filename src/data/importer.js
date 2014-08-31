@@ -40,28 +40,99 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 }
             case 'ellipse':
                 {
-                    debugger;
+//                    debugger;
 
-                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3}, "startAngle": {4}, "endAngle": {5}, "angle": {6}},',
+                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3}, "startAngle": {4}, "endAngle": [{5}], "angle": {6} },',
                         Cx = objectDxf.x,
                         Cy = objectDxf.y,
                         a = -(objectDxf.x1 / 2),
                         b = -(objectDxf.y1 / 2),
                         radiusX = Math.abs(objectDxf.x1),
-                        radiusY = radiusX * objectDxf.r;
+                        radiusY = Math.abs(objectDxf.y1);
+                    //                        radiusY = radiusX * objectDxf.r;
 
                     var pointA = (Cx + a * Math.cos(objectDxf.startAngle));
                     var pointB = (Cy + b * Math.sin(objectDxf.endAngle))
 
+                    // ok
                     var radians = Math.atan2(objectDxf.y1, objectDxf.x1);
                     var angle = radians * (180 / Math.PI);
 
-                                        
-                                        var startAngle = radiusX * Math.cos(angle);
-                                        var endAngle = radiusY * Math.sin(angle);
+                    var startAngle = radiusX * Math.cos(angle);
+                    var endAngle = radiusY * Math.sin(angle);
+
+
+                    var p2 = {
+                        x: objectDxf.x1,
+                        y: objectDxf.y1
+                    };
+
+                    var double2 = objectDxf.r;
+                    var double3 = objectParse.startAngle;
+                    var double4 = objectParse.endAngle || (2.0 * Math.PI);
+
+                    while (double4 < double3) {
+                        double4 += 2.0 * Math.PI;
+                    }
+
+                    var num16 = {
+                        x: 0 - p2.x,
+                        y: 0 - p2.y
+                    };
+
+                    num16 = Math.sqrt(num16.x * num16.x + num16.y * num16.y);
+
+                    var num17 = num16 * double2;
+                    var th = Math.atan2(p2.y, p2.x);
+                    var num18 = Math.PI / 60.0;
+                    var num19 = double3;
+
+
+                    radiusX = num17;
+                    radiusY = num16;
+
+                    var polyline2 = [];
+                    
+                    debugger;
+                    
+                    var num = Math.cos(th);
+                    var num12 = Math.sin(th);
+                    
+
+                    while (true) {
+                        if (num19 > double4) {
+                            num18 -= num19 - double4;
+                            num19 = double4;
+                        }
+                        var p3 = {
+                            x: num16 * Math.cos(num19),
+                            y: num17 * Math.sin(num19)
+                        };
+                        //                        p3 *= matrix4x4F;
+                        p3 = {
+                            x:  p3.x * num + p3.y * -num12,
+                            y: p3.x * num12 + p3.y * num
+                        }
+                        p3 = {
+                            x: objectDxf.x + p3.x,
+                            y: objectDxf.y + p3.y
+                        };
+                        
+                        polyline2.push(p3);
+                        
+                        if (num19 != double4)
+                            num19 += num18;
+                        else
+                            break;
+                    }
+                    
+                    var xxx = polyline2.map(function(item){
+                        return [item.x, item.y];
+                    });
+                    
                     //                        
                     //return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, pointA, pointB, angle]);
-                                        return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, endAngle, angle]);
+                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, xxx, angle]);
                 }
             case 'lwpolyline':
                 {

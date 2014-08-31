@@ -258,38 +258,57 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                 //                                 angle in radian
                 //                                var sss = types.math.radians(this.angle || 0);
 
-//                debugger;
+                //                var rotation = types.math.radians(this.angle || 0);
 
-//                var rotation = types.math.radians(this.angle || 0);
-                
+                if (this.endAngle) {
+
+                    debugger;
+
+                    var points = this.endAngle;
+
+
+
+                    for (var i = 0; i < points.length; i+=2) {
+                        
+                        var x= points[i] * scale + move.x;
+                        var y = points[i+1] * scale + move.y;
+                        
+                        context.lineTo(points[i] * scale + move.x, points[i+1] * scale + move.y);
+                        context.stroke();
+                    }
+
+                }
+
+
+
                 // erro na conversão dxf - ver entidade na linha 7506 de entities.dxf
 
-                var points = [];
-                var beta = (this.angle || 0) *  (Math.PI / 180);
-                var sinbeta = Math.sin(beta);
-                var cosbeta = Math.cos(beta);
+                //                var points = [];
+                //                var beta = (90) *  (Math.PI / 180);
+                //                var sinbeta = Math.sin(beta);
+                //                var cosbeta = Math.cos(beta);
+                //
+                //                for (var i = 0; i <= 361; i += 360 / 200) {
+                //                    var alpha = i * (Math.PI / 180);
+                //                    var sinalpha = Math.sin(alpha);
+                //                    var cosalpha = Math.cos(alpha);
+                //
+                //                    var pointX = 0.5 * (this.radiusX * cosalpha * cosbeta - this.radiusY * sinalpha * sinbeta);
+                //                    var pointY = 0.5 * (this.radiusX * cosalpha * sinbeta + this.radiusY * sinalpha * cosbeta);
+                //
+                //                    points.push({
+                //                        x: this.point.x + pointX,
+                //                        y: this.point.y + pointY
+                //                    });
+                //                }
 
-                for (var i = 0; i <= 361; i += 360 / 200) {
-                    var alpha = i * (Math.PI / 180);
-                    var sinalpha = Math.sin(alpha);
-                    var cosalpha = Math.cos(alpha);
+                //                context.moveTo(this.point.x, this.point.y);
+                //                for (var i = 0; i < points.length; i++) {
+                //                    context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+                //                    context.stroke();
+                //                }
 
-                    var pointX = 0.5 * (this.radiusX * cosalpha * cosbeta - this.radiusY * sinalpha * sinbeta);
-                    var pointY = 0.5 * (this.radiusX * cosalpha * sinbeta + this.radiusY * sinalpha * cosbeta);
 
-                    points.push({
-                        x: this.point.x + pointX,
-                        y: this.point.y + pointY
-                    });
-                }
-
-//                context.moveTo(this.point.x, this.point.y);
-                for (var i = 0; i < points.length; i++) {
-                    context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
-                    context.stroke();
-                }
-
-                
 
 
 
