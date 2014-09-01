@@ -35,7 +35,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 }
             case 'arc':
                 {
-                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
+                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2}, "startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
                     return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1, false]);
                 }
             case 'ellipse':
@@ -93,7 +93,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
                     var polyline2 = [];
                     
-                    debugger;
+//                    debugger;
                     
                     var num = Math.cos(th);
                     var num12 = Math.sin(th);
@@ -108,18 +108,22 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                             x: num16 * Math.cos(num19),
                             y: num17 * Math.sin(num19)
                         };
-                        //                        p3 *= matrix4x4F;
+                        // p3 *= matrix4x4F;
+                        // aplicando a matrix para a rotação
                         p3 = {
                             x:  p3.x * num + p3.y * -num12,
                             y: p3.x * num12 + p3.y * num
                         }
+                        // o ponto de centro + o item da ellipse
                         p3 = {
                             x: objectDxf.x + p3.x,
                             y: objectDxf.y + p3.y
                         };
                         
+                        // armazenando no array
                         polyline2.push(p3);
                         
+                        // continuando até a volta completa
                         if (num19 != double4)
                             num19 += num18;
                         else

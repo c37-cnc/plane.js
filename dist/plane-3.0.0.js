@@ -1,5 +1,5 @@
 /*!
- * C37 in 31-08-2014 at 12:52:22 
+ * C37 in 01-09-2014 at 03:46:51 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -119,7 +119,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 }
             case 'arc':
                 {
-                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
+                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2}, "startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
                     return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1, false]);
                 }
             case 'ellipse':
@@ -177,7 +177,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
                     var polyline2 = [];
                     
-                    debugger;
+//                    debugger;
                     
                     var num = Math.cos(th);
                     var num12 = Math.sin(th);
@@ -192,18 +192,22 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                             x: num16 * Math.cos(num19),
                             y: num17 * Math.sin(num19)
                         };
-                        //                        p3 *= matrix4x4F;
+                        // p3 *= matrix4x4F;
+                        // aplicando a matrix para a rotação
                         p3 = {
                             x:  p3.x * num + p3.y * -num12,
                             y: p3.x * num12 + p3.y * num
                         }
+                        // o ponto de centro + o item da ellipse
                         p3 = {
                             x: objectDxf.x + p3.x,
                             y: objectDxf.y + p3.y
                         };
                         
+                        // armazenando no array
                         polyline2.push(p3);
                         
+                        // continuando até a volta completa
                         if (num19 != double4)
                             num19 += num18;
                         else
@@ -1642,6 +1646,16 @@ define("plane", ['require', 'exports'], function (require, exports) {
         }
     };
 });
+
+
+
+
+
+
+
+
+
+
 define("plane/structure/group", ['require', 'exports'], function (require, exports) {
 
     function Group() {};
@@ -2064,7 +2078,52 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
             if (this.type == 'arc') {
 
-                context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                //                context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                //                context.stroke();
+
+                var points = [];
+
+                var end = this.endAngle - this.startAngle;
+                if (end < 0.0) {
+                    end += 360.0;
+                }
+
+                // .7 resolution
+                var num1 = .7 / 180.0 * Math.PI;
+                var num2 = this.startAngle / 180.0 * Math.PI;
+                var num3 = end / 180.0 * Math.PI;
+
+                if (num3 < 0.0)
+                    num1 = -num1;
+                var size = Math.abs(num3 / num1) + 2;
+
+                var index = 0;
+                var num4 = num2;
+                while (index < size - 1) {
+
+                    var xval = this.point.x + this.radius * Math.cos(num4);
+                    var yval = this.point.y + this.radius * Math.sin(num4);
+
+                    points.push({
+                        x: xval,
+                        y: yval
+                    });
+                    ++index;
+                    num4 += num1;
+                }
+
+                var xval1 = this.point.x + this.radius * Math.cos(num2 + num3);
+                var yval1 = this.point.y + this.radius * Math.sin(num2 + num3);
+
+                points[points.length - 1].x = xval1;
+                points[points.length - 1].y = yval1;
+
+
+                for (var i = 0; i < points.length; i += 2) {
+                    context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+                }
+                context.stroke();
+
 
             } else if (this.type == 'bezier') {
 
@@ -2089,20 +2148,20 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
                 if (this.endAngle) {
 
-                    debugger;
+                    //                    debugger;
 
                     var points = this.endAngle;
 
 
 
-                    for (var i = 0; i < points.length; i+=2) {
-                        
-                        var x= points[i] * scale + move.x;
-                        var y = points[i+1] * scale + move.y;
-                        
-                        context.lineTo(points[i] * scale + move.x, points[i+1] * scale + move.y);
-                        context.stroke();
+                    for (var i = 0; i < points.length; i += 2) {
+
+                        var x = points[i] * scale + move.x;
+                        var y = points[i + 1] * scale + move.y;
+
+                        context.lineTo(points[i] * scale + move.x, points[i + 1] * scale + move.y);
                     }
+                    context.stroke();
 
                 }
 

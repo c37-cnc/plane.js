@@ -237,7 +237,52 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
             if (this.type == 'arc') {
 
-                context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                //                context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                //                context.stroke();
+
+                var points = [];
+
+                var end = this.endAngle - this.startAngle;
+                if (end < 0.0) {
+                    end += 360.0;
+                }
+
+                // .7 resolution
+                var num1 = .7 / 180.0 * Math.PI;
+                var num2 = this.startAngle / 180.0 * Math.PI;
+                var num3 = end / 180.0 * Math.PI;
+
+                if (num3 < 0.0)
+                    num1 = -num1;
+                var size = Math.abs(num3 / num1) + 2;
+
+                var index = 0;
+                var num4 = num2;
+                while (index < size - 1) {
+
+                    var xval = this.point.x + this.radius * Math.cos(num4);
+                    var yval = this.point.y + this.radius * Math.sin(num4);
+
+                    points.push({
+                        x: xval,
+                        y: yval
+                    });
+                    ++index;
+                    num4 += num1;
+                }
+
+                var xval1 = this.point.x + this.radius * Math.cos(num2 + num3);
+                var yval1 = this.point.y + this.radius * Math.sin(num2 + num3);
+
+                points[points.length - 1].x = xval1;
+                points[points.length - 1].y = yval1;
+
+
+                for (var i = 0; i < points.length; i += 2) {
+                    context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+                }
+                context.stroke();
+
 
             } else if (this.type == 'bezier') {
 
@@ -262,20 +307,20 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
                 if (this.endAngle) {
 
-                    debugger;
+                    //                    debugger;
 
                     var points = this.endAngle;
 
 
 
-                    for (var i = 0; i < points.length; i+=2) {
-                        
-                        var x= points[i] * scale + move.x;
-                        var y = points[i+1] * scale + move.y;
-                        
-                        context.lineTo(points[i] * scale + move.x, points[i+1] * scale + move.y);
-                        context.stroke();
+                    for (var i = 0; i < points.length; i += 2) {
+
+                        var x = points[i] * scale + move.x;
+                        var y = points[i + 1] * scale + move.y;
+
+                        context.lineTo(points[i] * scale + move.x, points[i + 1] * scale + move.y);
                     }
+                    context.stroke();
 
                 }
 
