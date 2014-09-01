@@ -1,5 +1,5 @@
 /*!
- * C37 in 01-09-2014 at 03:46:51 
+ * C37 in 01-09-2014 at 04:03:06 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -145,6 +145,16 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                     var startAngle = radiusX * Math.cos(angle);
                     var endAngle = radiusY * Math.sin(angle);
 
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
 
                     var p2 = {
                         x: objectDxf.x1,
@@ -2136,7 +2146,30 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
             } else if (this.type == 'circle') {
 
-                context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, 0, Math.PI * 2, true);
+                //                context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, 0, Math.PI * 2, true);
+
+                var points = [];
+
+                // em numero de partes - 58 
+                var num1 = Math.PI / 58;
+                var size = Math.abs(2.0 * Math.PI / num1) + 2;
+                var index = 0;
+                var num2 = 0.0;
+
+                while (index < size - 1) {
+                    points.push({
+                        x: this.point.x + this.radius * Math.cos(num2),
+                        y: this.point.y + this.radius * Math.sin(num2)
+                    });
+                    ++index;
+                    num2 += num1;
+                }
+                
+                for (var i = 0; i < points.length; i += 2) {
+                    context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+                }
+                context.stroke();
+
 
             } else if (this.type == 'ellipse') {
 

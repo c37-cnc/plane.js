@@ -61,6 +61,16 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                     var startAngle = radiusX * Math.cos(angle);
                     var endAngle = radiusY * Math.sin(angle);
 
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
 
                     var p2 = {
                         x: objectDxf.x1,
