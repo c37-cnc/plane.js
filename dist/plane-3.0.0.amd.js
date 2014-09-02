@@ -1,5 +1,5 @@
 /*!
- * C37 in 28-08-2014 at 22:45:53 
+ * C37 in 01-09-2014 at 21:48:53 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -51,7 +51,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
             case 'spline':
                 {
                     if (objectDxf.points) {
-                        var spline = '{"type": "spline", "points": [{0}]},',
+                        var spline = '{"type": "spline", "degree": {0}, "knots": [{1}], "points": [{2}]},',
                             points = '';
 
                         for (var i = 0; i < objectDxf.points.length; i++) {
@@ -60,7 +60,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                             points += types.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
 
                         }
-                        return types.string.format(spline, [points]);
+                        return types.string.format(spline, [objectDxf.degree, objectDxf.knots.join(), points]);
                     }
                     return '';
                 }
@@ -71,16 +71,118 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 }
             case 'arc':
                 {
-                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2},"startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
+                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2}, "startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
                     return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1, false]);
                 }
             case 'ellipse':
                 {
-                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3} },',
-                        radiusX = Math.abs(objectDxf.x1),
-                        radiusY = radiusX * objectDxf.r;
+//                    debugger;
 
-                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX])
+                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3}, "startAngle": {4}, "endAngle": [{5}], "angle": {6} },',
+                        Cx = objectDxf.x,
+                        Cy = objectDxf.y,
+                        a = -(objectDxf.x1 / 2),
+                        b = -(objectDxf.y1 / 2),
+                        radiusX = Math.abs(objectDxf.x1),
+                        radiusY = Math.abs(objectDxf.y1);
+                    //                        radiusY = radiusX * objectDxf.r;
+
+                    var pointA = (Cx + a * Math.cos(objectDxf.startAngle));
+                    var pointB = (Cy + b * Math.sin(objectDxf.endAngle))
+
+                    // ok
+                    var radians = Math.atan2(objectDxf.y1, objectDxf.x1);
+                    var angle = radians * (180 / Math.PI);
+
+                    var startAngle = radiusX * Math.cos(angle);
+                    var endAngle = radiusY * Math.sin(angle);
+
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+
+                    var p2 = {
+                        x: objectDxf.x1,
+                        y: objectDxf.y1
+                    };
+
+                    var double2 = objectDxf.r;
+                    var double3 = objectParse.startAngle;
+                    var double4 = objectParse.endAngle || (2.0 * Math.PI);
+
+                    while (double4 < double3) {
+                        double4 += 2.0 * Math.PI;
+                    }
+
+                    var num16 = {
+                        x: 0 - p2.x,
+                        y: 0 - p2.y
+                    };
+
+                    num16 = Math.sqrt(num16.x * num16.x + num16.y * num16.y);
+
+                    var num17 = num16 * double2;
+                    var th = Math.atan2(p2.y, p2.x);
+                    var num18 = Math.PI / 60.0;
+                    var num19 = double3;
+
+
+                    radiusX = num17;
+                    radiusY = num16;
+
+                    var polyline2 = [];
+                    
+//                    debugger;
+                    
+                    var num = Math.cos(th);
+                    var num12 = Math.sin(th);
+                    
+
+                    while (true) {
+                        if (num19 > double4) {
+                            num18 -= num19 - double4;
+                            num19 = double4;
+                        }
+                        var p3 = {
+                            x: num16 * Math.cos(num19),
+                            y: num17 * Math.sin(num19)
+                        };
+                        // p3 *= matrix4x4F;
+                        // aplicando a matrix para a rotação
+                        p3 = {
+                            x:  p3.x * num + p3.y * -num12,
+                            y: p3.x * num12 + p3.y * num
+                        }
+                        // o ponto de centro + o item da ellipse
+                        p3 = {
+                            x: objectDxf.x + p3.x,
+                            y: objectDxf.y + p3.y
+                        };
+                        
+                        // armazenando no array
+                        polyline2.push(p3);
+                        
+                        // continuando até a volta completa
+                        if (num19 != double4)
+                            num19 += num18;
+                        else
+                            break;
+                    }
+                    
+                    var xxx = polyline2.map(function(item){
+                        return [item.x, item.y];
+                    });
+                    
+                    //                        
+                    //return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, pointA, pointB, angle]);
+                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, xxx, angle]);
                 }
             case 'lwpolyline':
                 {
@@ -137,7 +239,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
             stringLine = arrayDxf[i].toLowerCase();
 
             entitiesSection = entitiesSection ? entitiesSection : (stringLine == 'entities');
-            if (!entitiesSection) continue;
+            //            if (!entitiesSection) continue;
 
             if (entitiesSupport.indexOf(stringLine) > -1) {
                 objectParse = {
@@ -216,11 +318,39 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
 
             if (stringAux == ' 40') {
-                objectParse.r = types.math.parseFloat(stringLine, 5);
+                // verificação especifica para spline
+                if (objectParse.type == 'spline') {
+                    // caso necessário crio um array de points
+                    objectParse.knots = objectParse.knots || [];
+                    objectParse.knots.push(types.math.parseFloat(stringLine, 5));
+                } else {
+                    objectParse.r = types.math.parseFloat(stringLine, 5);
+                }
                 stringAux = '';
                 continue;
             }
             if (stringLine == ' 40') {
+                stringAux = stringLine;
+                continue;
+            }
+
+
+            if (stringAux == ' 41') {
+                objectParse.startAngle = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 41') {
+                stringAux = stringLine;
+                continue;
+            }
+
+            if (stringAux == ' 42') {
+                objectParse.endAngle = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 42') {
                 stringAux = stringLine;
                 continue;
             }
@@ -241,6 +371,17 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 continue;
             }
             if (stringLine == ' 51') {
+                stringAux = stringLine;
+                continue;
+            }
+
+
+            if (stringAux == ' 71') {
+                objectParse.degree = types.math.parseFloat(stringLine, 5);
+                stringAux = '';
+                continue;
+            }
+            if (stringLine == ' 71') {
                 stringAux = stringLine;
                 continue;
             }
@@ -1467,6 +1608,22 @@ define("plane", ['require', 'exports'], function (require, exports) {
         }
     };
 });
+
+
+
+
+
+
+
+
+
+
+
+
+//render apenas através de vértices
+
+//vértice = ponto de conexão || encontro de duas ou mais semi-retas
+
 define("plane/structure/group", ['require', 'exports'], function (require, exports) {
 
     function Group() {};
@@ -1661,94 +1818,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         layer = require('plane/structure/layer');
 
     var select = null;
-
-
-    function getCurvePoints(pts, tension, isClosed, numOfSegments) {
-
-        // use input value if provided, or use a default value   
-        tension = (typeof tension != 'undefined') ? tension : 0.5;
-        isClosed = isClosed ? isClosed : false;
-        numOfSegments = numOfSegments ? numOfSegments : 16;
-
-        var _pts = [],
-            res = [], // clone array
-            x, y, // our x,y coords
-            t1x, t2x, t1y, t2y, // tension vectors
-            c1, c2, c3, c4, // cardinal points
-            st, t, i; // steps based on num. of segments
-
-        // clone array so we don't change the original
-        _pts = pts.slice(0);
-
-        // The algorithm require a previous and next point to the actual point array.
-        // Check if we will draw closed or open curve.
-        // If closed, copy end points to beginning and first points to end
-        // If open, duplicate first points to befinning, end points to end
-        if (isClosed) {
-            _pts.unshift(pts[pts.length - 1]);
-            _pts.unshift(pts[pts.length - 2]);
-            _pts.unshift(pts[pts.length - 1]);
-            _pts.unshift(pts[pts.length - 2]);
-            _pts.push(pts[0]);
-            _pts.push(pts[1]);
-        } else {
-            _pts.unshift(pts[1]); //copy 1. point and insert at beginning
-            _pts.unshift(pts[0]);
-            _pts.push(pts[pts.length - 2]); //copy last point and append
-            _pts.push(pts[pts.length - 1]);
-        }
-
-        // ok, lets start..
-
-        // 1. loop goes through point array
-        // 2. loop goes through each segment between the 2 pts + 1e point before and after
-        for (i = 2; i < (_pts.length - 4); i += 2) {
-            for (t = 0; t <= numOfSegments; t++) {
-
-                // calc tension vectors
-                t1x = (_pts[i + 2] - _pts[i - 2]) * tension;
-                t2x = (_pts[i + 4] - _pts[i]) * tension;
-
-                t1y = (_pts[i + 3] - _pts[i - 1]) * tension;
-                t2y = (_pts[i + 5] - _pts[i + 1]) * tension;
-
-                // calc step
-                st = t / numOfSegments;
-
-                // calc cardinals
-                c1 = 2 * Math.pow(st, 3) - 3 * Math.pow(st, 2) + 1;
-                c2 = -(2 * Math.pow(st, 3)) + 3 * Math.pow(st, 2);
-                c3 = Math.pow(st, 3) - 2 * Math.pow(st, 2) + st;
-                c4 = Math.pow(st, 3) - Math.pow(st, 2);
-
-                // calc x and y cords with common control vectors
-                x = c1 * _pts[i] + c2 * _pts[i + 2] + c3 * t1x + c4 * t2x;
-                y = c1 * _pts[i + 1] + c2 * _pts[i + 3] + c3 * t1y + c4 * t2y;
-
-                //store points in array
-                res.push(x);
-                res.push(y);
-
-            }
-        }
-
-        return res;
-    }
-
-    function drawLines(ctx, pts) {
-
-        //        debugger;
-
-        ctx.moveTo(pts[0], pts[1]);
-        for (var i = 2; i < pts.length - 1; i += 2) {
-            ctx.lineTo(pts[i], pts[i + 1]);
-            ctx.stroke();
-        }
-
-
-
-    }
-
 
 
     /**
@@ -1977,7 +2046,52 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
             if (this.type == 'arc') {
 
-                context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                //                context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
+                //                context.stroke();
+
+                var points = [];
+
+                var end = this.endAngle - this.startAngle;
+                if (end < 0.0) {
+                    end += 360.0;
+                }
+
+                // .7 resolution
+                var num1 = .7 / 180.0 * Math.PI;
+                var num2 = this.startAngle / 180.0 * Math.PI;
+                var num3 = end / 180.0 * Math.PI;
+
+                if (num3 < 0.0)
+                    num1 = -num1;
+                var size = Math.abs(num3 / num1) + 2;
+
+                var index = 0;
+                var num4 = num2;
+                while (index < size - 1) {
+
+                    var xval = this.point.x + this.radius * Math.cos(num4);
+                    var yval = this.point.y + this.radius * Math.sin(num4);
+
+                    points.push({
+                        x: xval,
+                        y: yval
+                    });
+                    ++index;
+                    num4 += num1;
+                }
+
+                var xval1 = this.point.x + this.radius * Math.cos(num2 + num3);
+                var yval1 = this.point.y + this.radius * Math.sin(num2 + num3);
+
+                points[points.length - 1].x = xval1;
+                points[points.length - 1].y = yval1;
+
+
+                for (var i = 0; i < points.length; i += 2) {
+                    context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+                }
+                context.stroke();
+
 
             } else if (this.type == 'bezier') {
 
@@ -1990,23 +2104,173 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
             } else if (this.type == 'circle') {
 
-                context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, 0, Math.PI * 2, true);
+                //                context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, 0, Math.PI * 2, true);
+
+                var points = [];
+
+                // em numero de partes - 58 
+                var num1 = Math.PI / 58;
+                var size = Math.abs(2.0 * Math.PI / num1) + 2;
+                var index = 0;
+                var num2 = 0.0;
+
+                while (index < size - 1) {
+                    points.push({
+                        x: this.point.x + this.radius * Math.cos(num2),
+                        y: this.point.y + this.radius * Math.sin(num2)
+                    });
+                    ++index;
+                    num2 += num1;
+                }
+                
+                for (var i = 0; i < points.length; i += 2) {
+                    context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+                }
+                context.stroke();
+
 
             } else if (this.type == 'ellipse') {
 
                 // http://scienceprimer.com/draw-oval-html5-canvas
-                // angle in radian
-                var sss = 0;
-                for (var i = 0 * Math.PI; i < 2 * Math.PI; i += 0.01) {
-                    var xPos = this.point.x - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss * Math.PI);
-                    var yPos = this.point.y + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
+                //                                 angle in radian
+                //                                var sss = types.math.radians(this.angle || 0);
 
-                    if (i == 0) {
-                        context.moveTo((xPos * scale) + move.x, (yPos * scale) + move.y);
-                    } else {
-                        context.lineTo((xPos * scale) + move.x, (yPos * scale) + move.y);
+                //                var rotation = types.math.radians(this.angle || 0);
+
+                if (this.endAngle) {
+
+                    //                    debugger;
+
+                    var points = this.endAngle;
+
+
+
+                    for (var i = 0; i < points.length; i += 2) {
+
+                        var x = points[i] * scale + move.x;
+                        var y = points[i + 1] * scale + move.y;
+
+                        context.lineTo(points[i] * scale + move.x, points[i + 1] * scale + move.y);
                     }
+                    context.stroke();
+
                 }
+
+
+
+                // erro na conversão dxf - ver entidade na linha 7506 de entities.dxf
+
+                //                var points = [];
+                //                var beta = (90) *  (Math.PI / 180);
+                //                var sinbeta = Math.sin(beta);
+                //                var cosbeta = Math.cos(beta);
+                //
+                //                for (var i = 0; i <= 361; i += 360 / 200) {
+                //                    var alpha = i * (Math.PI / 180);
+                //                    var sinalpha = Math.sin(alpha);
+                //                    var cosalpha = Math.cos(alpha);
+                //
+                //                    var pointX = 0.5 * (this.radiusX * cosalpha * cosbeta - this.radiusY * sinalpha * sinbeta);
+                //                    var pointY = 0.5 * (this.radiusX * cosalpha * sinbeta + this.radiusY * sinalpha * cosbeta);
+                //
+                //                    points.push({
+                //                        x: this.point.x + pointX,
+                //                        y: this.point.y + pointY
+                //                    });
+                //                }
+
+                //                context.moveTo(this.point.x, this.point.y);
+                //                for (var i = 0; i < points.length; i++) {
+                //                    context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+                //                    context.stroke();
+                //                }
+
+
+
+
+
+                //                context.ellipse(this.point.x * scale + move.x, this.point.y * scale + move.y, this.radiusX * scale, this.radiusY * scale, rotation, 0, 360);
+
+
+                //                for (var i = 2 * Math.PI; i > 0; i -=.1) {
+                //                    
+                //                    var xPos = this.point.x - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss * Math.PI);
+                //                    var yPos = this.point.y + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss * Math.PI);
+                //
+                //                    if (i == 0) {
+                //                        context.moveTo((xPos * scale) + move.x, (yPos * scale) + move.y);
+                //                    } else {
+                //                        context.lineTo((xPos * scale) + move.x, (yPos * scale) + move.y);
+                //                    }
+                //                }
+
+                //                for (var i = 0; i < 2 * Math.PI; i +=.1) {
+                //                    var xPos = this.point.x - (this.radiusY * Math.sin(i)) * Math.sin(sss * Math.PI) + (this.radiusX * Math.cos(i)) * Math.cos(sss);
+                //                    var yPos = this.point.y + (this.radiusX * Math.cos(i)) * Math.sin(sss * Math.PI) + (this.radiusY * Math.sin(i)) * Math.cos(sss);
+                //
+                //                    if (i == 0) {
+                //                        context.moveTo((xPos * scale) + move.x, (yPos * scale) + move.y);
+                //                    } else {
+                //                        context.lineTo((xPos * scale) + move.x, (yPos * scale) + move.y);
+                //                    }
+                //                }
+                //                
+
+                var getPoint = function (t, point, startAngle, endAngle, radiusX, radiusY) {
+
+                    var aClockwise = true;
+                    var angle;
+                    var deltaAngle = endAngle - startAngle;
+
+                    if (deltaAngle < 0) deltaAngle += Math.PI * 2;
+                    if (deltaAngle > Math.PI * 2) deltaAngle -= Math.PI * 2;
+
+                    if (aClockwise === true) {
+
+                        angle = endAngle + (1 - t) * (Math.PI * 2 - deltaAngle);
+
+                    } else {
+
+                        angle = startAngle + t * deltaAngle;
+
+                    }
+
+                    var tx = point.x + radiusX * Math.cos(angle);
+                    var ty = point.y + radiusY * Math.sin(angle);
+
+                    return {
+                        x: tx,
+                        y: ty
+                    };
+                }
+
+                var getPoints = function (divisions, point, startAngle, endAngle, radiusX, radiusY) {
+
+                    var d, pts = [];
+
+                    for (d = 0; d <= divisions; d++) {
+
+                        pts.push(getPoint(d / divisions, point, startAngle, endAngle, radiusX, radiusY));
+
+                    }
+                    return pts;
+                }
+
+                //                if (this.startAngle && this.endAngle) {
+                //                    
+                ////                    debugger;
+                //                    
+                //                    var xxx = getPoints(300, this.point, this.startAngle, this.endAngle, this.radiusX, this.radiusY);
+                //
+                //                    context.moveTo(xxx[0].x * scale + move.x, xxx.y * scale + move.y);
+                //
+                //                    for (var i = 0; i < xxx.length; i++) {
+                //                        context.lineTo(xxx[i].x * scale + move.x, xxx[i].y * scale + move.y);
+                //                    }
+                //                    
+                //                    context.stroke();
+                //                }
+
 
             } else if (this.type == 'line') {
 
@@ -2040,74 +2304,176 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
             } else if (this.type == 'spline') {
 
-                debugger;
+                /*
+                    Finds knot vector span.
 
-                var pts = [];
+                    p : degree
+                    u : parametric value
+                    U : knot vector
 
+                    returns the span
+                */
+                var findSpan = function (p, u, U) {
+                    var n = U.length - p - 1;
 
-                this.points.forEach(function (item) {
-                    pts.push([(item.x * scale) + move.x, (item.y * scale) + move.y]);
-                });
+                    if (u >= U[n]) {
+                        return n - 1;
+                    }
 
-                var spline = new BSpline(pts, 4, true);
-                
-                var oldx, oldy, x, y;
-                oldx = spline.calcAt(0)[0];
-                oldy = spline.calcAt(0)[1];
-                for (var t = 0; t <= 1; t += .005) {
-                    context.moveTo(oldx, oldy);
-                    var interpol = spline.calcAt(t);
-                    x = interpol[0];
-                    y = interpol[1];
-                    context.lineTo(x, y);
-                    oldx = x;
-                    oldy = y;
-                    context.stroke();
+                    if (u <= U[p]) {
+                        return p;
+                    }
+
+                    var low = p;
+                    var high = n;
+                    var mid = Math.floor((low + high) / 2);
+
+                    while (u < U[mid] || u >= U[mid + 1]) {
+
+                        if (u < U[mid]) {
+                            high = mid;
+                        } else {
+                            low = mid;
+                        }
+
+                        mid = Math.floor((low + high) / 2);
+                    }
+
+                    return mid;
+                }
+
+                /*
+                    Calculate basis functions. See The NURBS Book, page 70, algorithm A2.2
+
+                    span : span in which u lies
+                    u    : parametric point
+                    p    : degree
+                    U    : knot vector
+
+                    returns array[p+1] with basis functions values.
+                */
+                var calcBasisFunctions = function (span, u, p, U) {
+                    var N = [];
+                    var left = [];
+                    var right = [];
+                    N[0] = 1.0;
+
+                    for (var j = 1; j <= p; ++j) {
+
+                        left[j] = u - U[span + 1 - j];
+                        right[j] = U[span + j] - u;
+
+                        var saved = 0.0;
+
+                        for (var r = 0; r < j; ++r) {
+
+                            var rv = right[r + 1];
+                            var lv = left[j - r];
+                            var temp = N[r] / (rv + lv);
+                            N[r] = saved + rv * temp;
+                            saved = lv * temp;
+                        }
+
+                        N[j] = saved;
+                    }
+
+                    return N;
+                }
+
+                /*
+                    Calculate B-Spline curve points. See The NURBS Book, page 82, algorithm A3.1.
+
+                    p : degree of B-Spline
+                    U : knot vector
+                    P : control points (x, y, z, w)
+                    u : parametric point
+
+                    returns point for given u
+                */
+                var calcBSplinePoint = function (p, U, P, u) {
+                    var span = findSpan(p, u, U);
+                    var N = calcBasisFunctions(span, u, p, U);
+                    //                    var C = new THREE.Vector4(0, 0, 0, 0);
+                    var C = {
+                        x: 0,
+                        y: 0
+                    };
+
+                    for (var j = 0; j <= p; ++j) {
+                        var point = P[span - p + j];
+                        var Nj = N[j];
+                        //                        var wNj = point.w * Nj;
+                        C.x += point.x * Nj;
+                        C.y += point.y * Nj;
+                        //                        C.z += point.z * wNj;
+                        //                        C.w += point.w * Nj;
+                    }
+
+                    return C;
                 }
 
 
+                var getPoint = function (t, degree, knots, points) {
+
+                    var u = knots[0] + t * (knots[knots.length - 1] - knots[0]); // linear mapping t->u
+
+                    // following results in (wx, wy, wz, w) homogeneous point
+                    var hpoint = calcBSplinePoint(degree, knots, points, u);
+
+                    //                    if (hpoint.w != 1.0) { // project to 3D space: (wx, wy, wz, w) -> (x, y, z, 1)
+                    //                        hpoint.divideScalar(hpoint.w);
+                    //                    }
+
+                    //                    return new THREE.Vector3(hpoint.x, hpoint.y, hpoint.z);
+                    return {
+                        x: hpoint.x,
+                        y: hpoint.y
+                    };
+                }
+
+                var getPoints = function (divisions, degree, knots, points) {
+
+                    var d, pts = [];
+
+                    for (d = 0; d <= divisions; d++) {
+
+                        pts.push(getPoint(d / divisions, degree, knots, points));
+
+                    }
+                    return pts;
+                }
+
+                var LEUWF3cpo = function (_param1, degree, knots, points) {
+
+                    var point3Farray = [];
+
+                    for (var index1 = 0; index1 < knots.length - 1; ++index1) {
+                        var num1 = knots[index1];
+                        var num2 = knots[index1 + 1];
+
+                        if (num2 > num1) {
+                            for (var index2 = 0; index2 <= (_param1 == 0 ? 12 : _param1); ++index2) {
+                                var p = calcBSplinePoint(degree, knots, points, num1 + (num2 - num1) * index2 / (_param1 == 0 ? 12.0 : _param1));
+                                point3Farray.push(p);
+                            }
+                        }
+                    }
+                    return point3Farray;
+                }
+
+                //                debugger;
+
+                //                                var xxx = getPoints(800, this.degree, this.knots, this.points);
+                var xxx = LEUWF3cpo(17, this.degree, this.knots, this.points);
 
 
-                //                // move to the first point
-                //                context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
-                //
-                //
-                //                for (i = 1; i < this.points.length - 2; i++) {
-                //                    var xc = ((this.points[i].x * scale + move.x) + (this.points[i + 1].x * scale + move.x)) / 2;
-                //                    var yc = ((this.points[i].y * scale + move.y) + (this.points[i + 1].y * scale + move.y)) / 2;
-                //                    context.quadraticCurveTo((this.points[i].x * scale) + move.x, (this.points[i].y * scale) + move.y, xc, yc);
-                //                    context.stroke();
-                //                }
-                //                // curve through the last two points
-                //                context.quadraticCurveTo((this.points[i].x * scale) + move.x, (this.points[i].y * scale) + move.y, (this.points[i + 1].x * scale) + move.x, (this.points[i + 1].y * scale) + move.y);
-                //                context.stroke();
 
+                context.moveTo(xxx[0].x * scale + move.x, xxx.y * scale + move.y);
 
-                //                var pts = [];
-                //
-                //
-                //                this.points.forEach(function (item) {
-                //                    pts.push((item.x * scale) + move.x);
-                //                    pts.push((item.y * scale) + move.y);
-                //                });
-                //
-                //
-                //                var showPoints = showPoints ? showPoints : true;
-                //                var tension = .5;
-                //                var isClosed = false;
-                //                var numOfSegments = 10;
-                //
-                //
-                //                context.beginPath();
-                //
-                //                drawLines(context, getCurvePoints(pts, tension, isClosed, numOfSegments));
-                //
-                //                if (showPoints) {
-                //                    context.stroke();
-                //                    context.beginPath();
-                //                    for (var i = 0; i < pts.length - 1; i += 2)
-                //                        context.rect(pts[i] - 2, pts[i + 1] - 2, 4, 4);
-                //                }
+                for (var i = 0; i < xxx.length; i++) {
+                    context.lineTo(xxx[i].x * scale + move.x, xxx[i].y * scale + move.y);
+                }
+
 
 
             }
@@ -2220,6 +2586,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         }
     };
 
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -2318,6 +2685,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         this.point = attrs.point;
         this.radiusY = attrs.radiusY;
         this.radiusX = attrs.radiusX;
+        this.startAngle = attrs.startAngle;
+        this.endAngle = attrs.endAngle;
+        this.angle = attrs.angle;
     }, Shape);
 
     var Line = types.object.inherits(function Line(attrs) {
@@ -2372,6 +2742,8 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         this.status = attrs.status;
 
         this.type = 'spline';
+        this.degree = attrs.degree;
+        this.knots = attrs.knots;
         this.points = attrs.points;
     }, Shape);
 
@@ -3053,6 +3425,14 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
         },
         parseFloat: function (float, decimal) {
             return Number(parseFloat(float).toFixed(decimal));
+        },
+        // Converts from degrees to radians.
+        radians: function (degrees) {
+            return degrees * (Math.PI / 180);
+        },
+        // Converts from radians to degrees.
+        degrees: function (radians) {
+            return radians * (180 / Math.PI);
         }
     }
 
@@ -3062,7 +3442,6 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
         format: function () {}
 
     }
-
 
     /**
      * Descrição para o objeto String no arquivo types.js

@@ -1,5 +1,5 @@
 /*!
- * C37 in 01-09-2014 at 04:03:06 
+ * C37 in 01-09-2014 at 21:48:53 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1665,6 +1665,12 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
 
 
+
+
+
+//render apenas através de vértices
+
+//vértice = ponto de conexão || encontro de duas ou mais semi-retas
 
 define("plane/structure/group", ['require', 'exports'], function (require, exports) {
 
