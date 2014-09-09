@@ -133,8 +133,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                 mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas),
-                pointMove = point.create(pointInView);
+                pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // to point para procura em contains
             pointInCanvas = point.create(pointInCanvas);
@@ -165,7 +164,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             // customized event
             event = {
                 type: 'onMouseMove',
-                point: pointMove,
+                point: {
+                    inDocument: point.create(event.x, event.y),
+                    inCanvas: point.create(mouseInCanvas.x, mouseInCanvas.y),
+                    inView: point.create(pointInView)
+                },
                 shapes: shapesOver.list(),
                 Now: new Date().toISOString()
             };

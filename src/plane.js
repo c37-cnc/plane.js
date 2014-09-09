@@ -231,7 +231,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return _view.transform;
         },
         reset: function () {
-            this.zoomTo(1, point.create(_view.size.width /2, _view.size.height / 2));
+            this.zoomTo(1, point.create(_view.size.width / 2, _view.size.height / 2));
         }
     };
 

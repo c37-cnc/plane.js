@@ -1,5 +1,5 @@
 /*!
- * C37 in 01-09-2014 at 21:48:53 
+ * C37 in 09-09-2014 at 01:27:06 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1524,7 +1524,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return _view.transform;
         },
         reset: function () {
-            this.zoomTo(1, point.create(_view.size.width /2, _view.size.height / 2));
+            this.zoomTo(1, point.create(_view.size.width / 2, _view.size.height / 2));
         }
     };
 
@@ -3089,8 +3089,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                 mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas),
-                pointMove = point.create(pointInView);
+                pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // to point para procura em contains
             pointInCanvas = point.create(pointInCanvas);
@@ -3121,7 +3120,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             // customized event
             event = {
                 type: 'onMouseMove',
-                point: pointMove,
+                point: {
+                    inDocument: point.create(event.x, event.y),
+                    inCanvas: point.create(mouseInCanvas.x, mouseInCanvas.y),
+                    inView: point.create(pointInView)
+                },
                 shapes: shapesOver.list(),
                 Now: new Date().toISOString()
             };
