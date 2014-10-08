@@ -103,6 +103,17 @@
             });
 
             plane.shape.create({
+                type: 'bezier-quadratic',
+                points: [[60, 190], [260, 10], [550, 120]]
+            });
+
+            plane.shape.create({
+                type: 'bezier-cubic',
+                points: [[60, 190], [120, 10], [550, 10], [520,190]]
+            });
+
+
+            plane.shape.create({
                 type: 'line',
                 a: [350, 350],
                 b: [600, 50]
@@ -121,33 +132,33 @@
                 width: 125,
                 height: 100
             });
-//            plane.shape.create({
-//                type: 'arc',
-//                x: 800,
-//                y: 150,
-//                radius: 50,
-//                startAngle: 0,
-//                endAngle: 180,
-//                clockWise: true
-//            });
-//            plane.shape.create({
-//                type: 'arc',
-//                x: 500,
-//                y: 250,
-//                radius: 50,
-//                startAngle: 90,
-//                endAngle: 180,
-//                clockWise: false
-//            });
-//            plane.shape.create({
-//                type: 'arc',
-//                x: 700,
-//                y: 250,
-//                radius: 50,
-//                startAngle: 90,
-//                endAngle: 270,
-//                clockWise: false
-//            });
+            //            plane.shape.create({
+            //                type: 'arc',
+            //                x: 800,
+            //                y: 150,
+            //                radius: 50,
+            //                startAngle: 0,
+            //                endAngle: 180,
+            //                clockWise: true
+            //            });
+            //            plane.shape.create({
+            //                type: 'arc',
+            //                x: 500,
+            //                y: 250,
+            //                radius: 50,
+            //                startAngle: 90,
+            //                endAngle: 180,
+            //                clockWise: false
+            //            });
+            //            plane.shape.create({
+            //                type: 'arc',
+            //                x: 700,
+            //                y: 250,
+            //                radius: 50,
+            //                startAngle: 90,
+            //                endAngle: 270,
+            //                clockWise: false
+            //            });
             plane.shape.create({
                 type: 'arc',
                 x: 1000,
@@ -157,15 +168,15 @@
                 endAngle: 90,
                 clockWise: true
             });
-//            plane.shape.create({
-//                type: 'arc',
-//                x: 1200,
-//                y: 400,
-//                radius: 30,
-//                startAngle: 360,
-//                endAngle: 90,
-//                clockWise: true
-//            });
+            //            plane.shape.create({
+            //                type: 'arc',
+            //                x: 1200,
+            //                y: 400,
+            //                radius: 30,
+            //                startAngle: 360,
+            //                endAngle: 90,
+            //                clockWise: true
+            //            });
             plane.shape.create({
                 type: 'circle',
                 x: 1200,

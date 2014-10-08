@@ -1,5 +1,5 @@
 /*!
- * C37 in 10-09-2014 at 13:25:56 
+ * C37 in 08-10-2014 at 01:33:48 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1837,7 +1837,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
             if (this.type == 'arc') {
 
-            } else if (this.type == 'bezier') {
+            } else if (this.type == 'bezier-quadratic') {
 
             } else if (this.type == 'circle') {
 
@@ -1864,7 +1864,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                 this.point.y *= factor;
                 this.radius *= factor;
 
-            } else if (this.type == 'bezier') {
+            } else if (this.type == 'bezier-quadratic') {
 
                 this.points.forEach(function (point) {
                     point.a = point.a.multiply(factor);
@@ -1931,12 +1931,12 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
             if (this.point) {
                 this.point = this.point.sum(value);
             }
-            if (this.points && this.type != 'bezier') {
+            if (this.points && this.type != 'bezier-quadratic') {
                 for (var i = 0; i <= this.points.length - 1; i++) {
                     this.points[i] = this.points[i].sum(value);
                 }
             }
-            if (this.points && this.type == 'bezier') {
+            if (this.points && this.type == 'bezier-quadratic') {
                 for (var i = 0; i <= this.points.length - 1; i++) {
                     this.points[i].a = this.points[i].a.sum(value);
                     this.points[i].b = this.points[i].b.sum(value);
@@ -1955,7 +1955,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
                 return intersection.circleArc(position, 4, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
 
-            } else if (this.type == 'bezier') {
+            } else if (this.type == 'bezier-quadratic') {
 
                 for (var i = 0; i < this.points.length; i++) {
                     if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point, 4, 4))
@@ -2093,14 +2093,116 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                 context.stroke();
 
 
-            } else if (this.type == 'bezier') {
+            } else if (this.type == 'bezier-quadratic') {
 
                 // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
+                //                                this.points.forEach(function (point) {
+                //                                    var x = (point.c.x * scale) + move.x,
+                //                                        y = (point.c.y * scale) + move.y;
+                //                                    context.bezierCurveTo((point.a.x * scale) + move.x, (point.a.y * scale) + move.y, (point.b.x * scale) + move.x, (point.b.y * scale) + move.y, x, y);
+                //                                });
+
+
+                // https://github.com/mrdoob/three.js/blob/1769fbfc6c994b51a54c15a5c096855fd3cb8a1a/src/extras/curves/QuadraticBezierCurve.js#L21
+                // https://github.com/mrdoob/three.js/blob/1769fbfc6c994b51a54c15a5c096855fd3cb8a1a/src/extras/core/Shape.js#L534
+
+                // Bezier Curves formulas obtained from
+                // http://en.wikipedia.org/wiki/B%C3%A9zier_curve
+
+                // Quad Bezier Functions
+
+                //                var b2p0 = function (t, p) {
+                //
+                //                    var k = 1 - t;
+                //                    return k * k * p;
+                //
+                //                };
+                //
+                //                var b2p1 = function (t, p) {
+                //
+                //                    return 2 * (1 - t) * t * p;
+                //
+                //                };
+                //
+                //                var b2p2 = function (t, p) {
+                //
+                //                    return t * t * p;
+                //
+                //                };
+                //
+                //                var b2 = function (t, p0, p1, p2) {
+                //
+                //                    return b2p0(t, p0) + b2p1(t, p1) + b2p2(t, p2);
+                //
+                //                };
+                //
+                //                var d, pts = [],
+                //                    divisions = 200;
+                //
+                //                this.points.forEach(function (point) {
+                //
+                //                    for (d = 0; d <= divisions; d++) {
+                //
+                //                        var t = d / divisions;
+                //
+                //                        var tx = b2(t, point.a.x, point.b.x, point.c.x);
+                //                        var ty = b2(t, point.a.y, point.b.y, point.c.y);
+                //
+                //                        pts.push({
+                //                            x: tx,
+                //                            y: ty
+                //                        });
+                //                    }
+                //
+                //                });
+
+
+                var pts = [],
+                    lineSegments = 100;
+
+
+                var dot = function (v1, v2) {
+                    var sum = 0;
+                    for (var i = 0; i < v1.length; i++) {
+                        sum += v1[i] * v2[i];
+                    }
+                    return sum;
+                }
+
+                var quadraticBezier = function (points, t) {
+                    var p0 = points.a;
+                    var p1 = points.b;
+                    var p2 = points.c;
+                    var t3 = t * t * t;
+                    var t2 = t * t;
+
+                    var dx = dot([p0.x, p1.x, p2.x], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
+                    var dy = dot([p0.y, p1.y, p2.y], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
+
+                    return {
+                        x: dx,
+                        y: dy
+                    };
+                }
+
+
                 this.points.forEach(function (point) {
-                    var x = (point.c.x * scale) + move.x,
-                        y = (point.c.y * scale) + move.y;
-                    context.bezierCurveTo((point.a.x * scale) + move.x, (point.a.y * scale) + move.y, (point.b.x * scale) + move.x, (point.b.y * scale) + move.y, x, y);
+
+                    for (var j = 0; j < lineSegments + 1; j++) {
+                        pts.push(quadraticBezier(point, j / lineSegments));
+                    }
+
                 });
+
+
+
+                for (var i = 0; i < pts.length; i += 2) {
+                    context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
+                }
+                context.stroke();
+
+
+
 
             } else if (this.type == 'circle') {
 
@@ -2122,7 +2224,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     ++index;
                     num2 += num1;
                 }
-                
+
                 for (var i = 0; i < points.length; i += 2) {
                     context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
                 }
@@ -2503,7 +2605,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     endAngle: types.math.parseFloat(this.endAngle, 5),
                     clockWise: this.clockWise
                 };
-            case 'bezier':
+            case 'bezier-quadratic':
                 return {
                     uuid: this.uuid,
                     type: this.type,
@@ -2628,17 +2730,17 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
      *
      * @namespace Structure
      * @extends Shape
-     * @class Bezier
+     * @class Bezier Quadratic
      * @constructor
      */
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-    var Bezier = types.object.inherits(function Bezier(attrs) {
+    var BezierQuadratic = types.object.inherits(function BezierQuadratic(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.transform = attrs.transform;
         this.status = attrs.status;
 
-        this.type = 'bezier';
+        this.type = 'bezier-quadratic';
         this.points = attrs.points;
     }, Shape);
 
@@ -2763,10 +2865,10 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         if ((typeof attrs == "function") || (attrs == null)) {
             throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier', 'spline'].indexOf(attrs.type) == -1) {
+        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier-quadratic', 'spline'].indexOf(attrs.type) == -1) {
             throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-        if (((attrs.type != 'polyline') && (attrs.type != 'bezier') && (attrs.type != 'spline') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
+        if (((attrs.type != 'polyline') && (attrs.type != 'bezier-quadratic') && (attrs.type != 'spline') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
             throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
@@ -2791,7 +2893,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
                 break;
             }
-        case 'bezier':
+        case 'bezier-quadratic':
             {
                 attrs.points = attrs.points.map(function (pointAttrs) {
                     return {
@@ -2801,7 +2903,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     };
                 });
 
-                shape = new Bezier(attrs);
+                shape = new BezierQuadratic(attrs);
 
                 break;
             }
