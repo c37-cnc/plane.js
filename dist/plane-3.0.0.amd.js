@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-10-2014 at 01:33:48 
+ * C37 in 03-11-2014 at 14:53:53 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1608,22 +1608,407 @@ define("plane", ['require', 'exports'], function (require, exports) {
         }
     };
 });
+define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
+
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shapes
+     * @extends Shape
+     * @class Arc
+     * @constructor
+     */
+    function Arc(attrs) {
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.transform = attrs.transform;
+        this.status = attrs.status;
+
+        this.type = 'arc';
+        this.point = attrs.point;
+        this.radius = attrs.radius;
+        this.startAngle = attrs.startAngle;
+        this.endAngle = attrs.endAngle;
+        this.clockWise = attrs.clockWise;
+    };
+
+
+    Arc.prototype = {
+        render: function (context, transform) {
+
+            context.beginPath();
+            
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
+
+
+            var points = [];
+
+            var end = this.endAngle - this.startAngle;
+            if (end < 0.0) {
+                end += 360.0;
+            }
+
+            // .7 resolution
+            var num1 = .7 / 180.0 * Math.PI;
+            var num2 = this.startAngle / 180.0 * Math.PI;
+            var num3 = end / 180.0 * Math.PI;
+
+            if (num3 < 0.0)
+                num1 = -num1;
+            var size = Math.abs(num3 / num1) + 2;
+
+            var index = 0;
+            var num4 = num2;
+            while (index < size - 1) {
+
+                var xval = this.point.x + this.radius * Math.cos(num4);
+                var yval = this.point.y + this.radius * Math.sin(num4);
+
+                points.push({
+                    x: xval,
+                    y: yval
+                });
+                ++index;
+                num4 += num1;
+            }
+
+            var xval1 = this.point.x + this.radius * Math.cos(num2 + num3);
+            var yval1 = this.point.y + this.radius * Math.sin(num2 + num3);
+
+            points[points.length - 1].x = xval1;
+            points[points.length - 1].y = yval1;
+
+
+            for (var i = 0; i < points.length; i += 2) {
+                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+            }
+            
+            context.stroke();
+
+        }
+    };
 
 
 
 
 
 
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Arc(attrs);
+    };
+
+    exports.create = create;
+
+});
+define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, exports) {
+
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Structure
+     * @extends Shape
+     * @class Bezier Cubic
+     * @constructor
+     */
+    // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
+    function BezierCubic(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.transform = attrs.transform;
+        this.status = attrs.status;
+
+        this.type = 'bezier-cubic';
+        this.points = attrs.points;
+    };
+
+
+    BezierCubic.prototype = {
+        render: function (context, transform) {
+
+            context.beginPath();
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
+
+            // https://github.com/MartinDoms/Splines/blob/master/cubicBezier.js
+
+            var pts = [],
+                lineSegments = 100;
+
+
+            var dot = function (v1, v2) {
+                var sum = 0;
+                for (var i = 0; i < v1.length; i++) {
+                    sum += v1[i] * v2[i];
+                }
+                return sum;
+            };
+
+            var cubicBezier = function (points, t) {
+                var p0 = points[0];
+                var p1 = points[1];
+                var p2 = points[2];
+                var p3 = points[3];
+                var t3 = t * t * t;
+                var t2 = t * t;
+
+                var dx = dot([p0.x, p1.x, p2.x, p3.x], [(1 - t) * (1 - t) * (1 - t), 3 * (1 - t) * (1 - t) * t, 3 * (1 - t) * t2, t3]);
+                var dy = dot([p0.y, p1.y, p2.y, p3.y], [(1 - t) * (1 - t) * (1 - t), 3 * (1 - t) * (1 - t) * t, 3 * (1 - t) * t2, t3]);
+
+                return {
+                    x: dx,
+                    y: dy
+                };
+            }
+
+
+            for (var j = 0; j < lineSegments + 1; j++) {
+                pts.push(cubicBezier(this.points, j / lineSegments));
+            }
+
+
+            for (var i = 0; i < pts.length; i += 2) {
+                context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
+            }
+            context.stroke();
 
 
 
 
+        }
+    }
 
 
-//render apenas através de vértices
 
-//vértice = ponto de conexão || encontro de duas ou mais semi-retas
 
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new BezierCubic(attrs);
+    };
+
+    exports.create = create;
+
+});
+define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (require, exports) {
+
+    function Group() {};
+
+    Group.prototype = {};
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Group();
+    };
+
+    exports.create = create;
+
+});
+define("plane/shapes/circle", ['require', 'exports'], function (require, exports) {
+
+    function Group() {};
+
+    Group.prototype = {};
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Group();
+    };
+
+    exports.create = create;
+
+});
+define("plane/shapes/ellipse", ['require', 'exports'], function (require, exports) {
+
+    function Group() {};
+
+    Group.prototype = {};
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Group();
+    };
+
+    exports.create = create;
+
+});
+define("plane/shapes/line", ['require', 'exports'], function (require, exports) {
+
+    function Group() {};
+
+    Group.prototype = {};
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Group();
+    };
+
+    exports.create = create;
+
+});
+define("plane/shapes/polygon", ['require', 'exports'], function (require, exports) {
+
+    function Group() {};
+
+    Group.prototype = {};
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Group();
+    };
+
+    exports.create = create;
+
+});
+define("plane/shapes/polyline", ['require', 'exports'], function (require, exports) {
+
+    function Group() {};
+
+    Group.prototype = {};
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Group();
+    };
+
+    exports.create = create;
+
+});
+define("plane/shapes/rectangle", ['require', 'exports'], function (require, exports) {
+
+    function Group() {};
+
+    Group.prototype = {};
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Group();
+    };
+
+    exports.create = create;
+
+});
+define("plane/shapes/spline-catmull–rom", ['require', 'exports'], function (require, exports) {
+    
+    
+    // http://jsbin.com/piyal/15/edit?js,output
+    
+    
+    
+
+    function Group() {};
+
+    Group.prototype = {};
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Group();
+    };
+
+    exports.create = create;
+
+});
+define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, exports) {
+
+    function Group() {};
+
+    Group.prototype = {};
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Group();
+    };
+
+    exports.create = create;
+
+});
 define("plane/structure/group", ['require', 'exports'], function (require, exports) {
 
     function Group() {};
@@ -1817,6 +2202,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     var point = require('plane/structure/point'),
         layer = require('plane/structure/layer');
 
+    var arc = require('plane/shapes/arc'),
+        bezierCubic = require('plane/shapes/bezier-cubic');
+
     var select = null;
 
 
@@ -1867,9 +2255,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
             } else if (this.type == 'bezier-quadratic') {
 
                 this.points.forEach(function (point) {
-                    point.a = point.a.multiply(factor);
-                    point.b = point.b.multiply(factor);
-                    point.c = point.c.multiply(factor);
+                    point[0] = point[0].multiply(factor);
+                    point[1] = point[1].multiply(factor);
+                    point[2] = point[2].multiply(factor);
                 });
 
             } else if (this.type == 'circle') {
@@ -2044,56 +2432,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
             context.beginPath();
 
-            if (this.type == 'arc') {
-
-                //                context.arc((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.radius * scale, (Math.PI / 180) * this.startAngle, (Math.PI / 180) * this.endAngle, this.clockWise);
-                //                context.stroke();
-
-                var points = [];
-
-                var end = this.endAngle - this.startAngle;
-                if (end < 0.0) {
-                    end += 360.0;
-                }
-
-                // .7 resolution
-                var num1 = .7 / 180.0 * Math.PI;
-                var num2 = this.startAngle / 180.0 * Math.PI;
-                var num3 = end / 180.0 * Math.PI;
-
-                if (num3 < 0.0)
-                    num1 = -num1;
-                var size = Math.abs(num3 / num1) + 2;
-
-                var index = 0;
-                var num4 = num2;
-                while (index < size - 1) {
-
-                    var xval = this.point.x + this.radius * Math.cos(num4);
-                    var yval = this.point.y + this.radius * Math.sin(num4);
-
-                    points.push({
-                        x: xval,
-                        y: yval
-                    });
-                    ++index;
-                    num4 += num1;
-                }
-
-                var xval1 = this.point.x + this.radius * Math.cos(num2 + num3);
-                var yval1 = this.point.y + this.radius * Math.sin(num2 + num3);
-
-                points[points.length - 1].x = xval1;
-                points[points.length - 1].y = yval1;
-
-
-                for (var i = 0; i < points.length; i += 2) {
-                    context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
-                }
-                context.stroke();
-
-
-            } else if (this.type == 'bezier-quadratic') {
+            if (this.type == 'bezier-quadratic') {
 
                 // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
                 //                                this.points.forEach(function (point) {
@@ -2170,9 +2509,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                 }
 
                 var quadraticBezier = function (points, t) {
-                    var p0 = points.a;
-                    var p1 = points.b;
-                    var p2 = points.c;
+                    var p0 = points[0];
+                    var p1 = points[1];
+                    var p2 = points[2];
                     var t3 = t * t * t;
                     var t2 = t * t;
 
@@ -2185,14 +2524,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     };
                 }
 
-
-                this.points.forEach(function (point) {
-
-                    for (var j = 0; j < lineSegments + 1; j++) {
-                        pts.push(quadraticBezier(point, j / lineSegments));
-                    }
-
-                });
+                for (var j = 0; j < lineSegments + 1; j++) {
+                    pts.push(quadraticBezier(this.points, j / lineSegments));
+                }
 
 
 
@@ -2606,19 +2940,19 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     clockWise: this.clockWise
                 };
             case 'bezier-quadratic':
-                return {
-                    uuid: this.uuid,
-                    type: this.type,
-                    name: this.name,
-                    status: this.status,
-                    points: this.points.map(function (point) {
-                        return {
-                            a: [types.math.parseFloat(point.a.x, 5), types.math.parseFloat(point.a.y, 5)],
-                            b: [types.math.parseFloat(point.b.x, 5), types.math.parseFloat(point.b.y, 5)],
-                            c: [types.math.parseFloat(point.c.x, 5), types.math.parseFloat(point.c.y, 5)]
-                        }
-                    })
-                };
+                //                return {
+                //                    uuid: this.uuid,
+                //                    type: this.type,
+                //                    name: this.name,
+                //                    status: this.status,
+                //                    points: this.points.map(function (point) {
+                //                        return {
+                //                            a: [types.math.parseFloat(point.a.x, 5), types.math.parseFloat(point.a.y, 5)],
+                //                            b: [types.math.parseFloat(point.b.x, 5), types.math.parseFloat(point.b.y, 5)],
+                //                            c: [types.math.parseFloat(point.c.x, 5), types.math.parseFloat(point.c.y, 5)]
+                //                        }
+                //                    })
+                //                };
             case 'circle':
                 return {
                     uuid: this.uuid,
@@ -2688,40 +3022,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         }
     };
 
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Structure
-     * @extends Shape
-     * @class Arc
-     * @constructor
-     */
-    var Arc = types.object.inherits(function Arc(attrs) {
-        /**
-         * A Universally unique identifier for
-         * a single instance of Object
-         *
-         * @property uuid
-         * @type String
-         * @default 'uuid'
-         */
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
-
-        this.type = 'arc';
-        this.point = attrs.point;
-        this.radius = attrs.radius;
-        this.startAngle = attrs.startAngle;
-        this.endAngle = attrs.endAngle;
-        this.clockWise = attrs.clockWise;
-    }, Shape);
-
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -2743,6 +3043,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         this.type = 'bezier-quadratic';
         this.points = attrs.points;
     }, Shape);
+
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -2865,10 +3166,11 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         if ((typeof attrs == "function") || (attrs == null)) {
             throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier-quadratic', 'spline'].indexOf(attrs.type) == -1) {
+        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier-cubic', 'bezier-quadratic', 'spline'].indexOf(attrs.type) == -1) {
             throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-        if (((attrs.type != 'polyline') && (attrs.type != 'bezier-quadratic') && (attrs.type != 'spline') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
+        if (((attrs.type != 'polyline') && (attrs.type != 'bezier-quadratic') && (attrs.type != 'bezier-cubic') &&
+            (attrs.type != 'spline') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
             throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
@@ -2893,15 +3195,22 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
                 break;
             }
+        case 'bezier-cubic':
+            {
+                attrs.points[0] = point.create(attrs.points[0][0], attrs.points[0][1]);
+                attrs.points[1] = point.create(attrs.points[1][0], attrs.points[1][1]);
+                attrs.points[2] = point.create(attrs.points[2][0], attrs.points[2][1]);
+                attrs.points[3] = point.create(attrs.points[3][0], attrs.points[3][1]);
+
+                shape = bezierCubic.create(attrs);
+
+                break;
+            }
         case 'bezier-quadratic':
             {
-                attrs.points = attrs.points.map(function (pointAttrs) {
-                    return {
-                        a: point.create(pointAttrs.a[0], pointAttrs.a[1]),
-                        b: point.create(pointAttrs.b[0], pointAttrs.b[1]),
-                        c: point.create(pointAttrs.c[0], pointAttrs.c[1])
-                    };
-                });
+                attrs.points[0] = point.create(attrs.points[0][0], attrs.points[0][1]);
+                attrs.points[1] = point.create(attrs.points[1][0], attrs.points[1][1]);
+                attrs.points[2] = point.create(attrs.points[2][0], attrs.points[2][1]);
 
                 shape = new BezierQuadratic(attrs);
 
@@ -2925,7 +3234,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                 attrs.endAngle = attrs.endAngle;
                 attrs.clockWise = attrs.clockWise;
 
-                shape = new Arc(attrs);
+                shape = arc.create(attrs);
 
                 break;
             }
