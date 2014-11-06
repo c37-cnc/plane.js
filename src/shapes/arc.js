@@ -25,16 +25,58 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+
         this.type = 'arc';
         this.point = attrs.point;
         this.radius = attrs.radius;
         this.startAngle = attrs.startAngle;
         this.endAngle = attrs.endAngle;
         this.clockWise = attrs.clockWise;
+
+        this.initialize();
     };
 
 
     Arc.prototype = {
+        initialize: function () {
+
+            var end = this.endAngle - this.startAngle;
+            if (end < 0.0) {
+                end += 360.0;
+            }
+
+            // .7 resolution
+            var num1 = .7 / 180.0 * Math.PI;
+            var num2 = this.startAngle / 180.0 * Math.PI;
+            var num3 = end / 180.0 * Math.PI;
+
+            if (num3 < 0.0)
+                num1 = -num1;
+            var size = Math.abs(num3 / num1) + 2;
+
+            var index = 0;
+            var num4 = num2;
+            while (index < size - 1) {
+
+                var xval = this.point.x + this.radius * Math.cos(num4);
+                var yval = this.point.y + this.radius * Math.sin(num4);
+
+                this.segments.push({
+                    x: xval,
+                    y: yval
+                });
+                ++index;
+                num4 += num1;
+            }
+
+            var xval1 = this.point.x + this.radius * Math.cos(num2 + num3);
+            var yval1 = this.point.y + this.radius * Math.sin(num2 + num3);
+
+            this.segments[this.segments.length - 1].x = xval1;
+            this.segments[this.segments.length - 1].y = yval1;
+            
+        },
         toObject: function () {
 
             return {
@@ -62,47 +104,19 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
             };
 
 
-            var points = [];
 
-            var end = this.endAngle - this.startAngle;
-            if (end < 0.0) {
-                end += 360.0;
+
+//            for (var i = 0; i < points.length; i += 2) {
+//                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+//            }
+            
+            for (var i = 0; i < this.segments.length; i += 2) {
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
             }
-
-            // .7 resolution
-            var num1 = .7 / 180.0 * Math.PI;
-            var num2 = this.startAngle / 180.0 * Math.PI;
-            var num3 = end / 180.0 * Math.PI;
-
-            if (num3 < 0.0)
-                num1 = -num1;
-            var size = Math.abs(num3 / num1) + 2;
-
-            var index = 0;
-            var num4 = num2;
-            while (index < size - 1) {
-
-                var xval = this.point.x + this.radius * Math.cos(num4);
-                var yval = this.point.y + this.radius * Math.sin(num4);
-
-                points.push({
-                    x: xval,
-                    y: yval
-                });
-                ++index;
-                num4 += num1;
-            }
-
-            var xval1 = this.point.x + this.radius * Math.cos(num2 + num3);
-            var yval1 = this.point.y + this.radius * Math.sin(num2 + num3);
-
-            points[points.length - 1].x = xval1;
-            points[points.length - 1].y = yval1;
-
-
-            for (var i = 0; i < points.length; i += 2) {
-                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
-            }
+            
 
             context.stroke();
 

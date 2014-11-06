@@ -340,7 +340,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
                 }
 
-                shape = new Polyline(attrs);
+                shape = polyline.create(attrs);
 
                 break;
             }
@@ -350,7 +350,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
                 }
 
-                shape = new Spline(attrs);
+                shape = splineNurbs.create(attrs);
 
                 break;
             }

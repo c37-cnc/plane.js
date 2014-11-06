@@ -36,6 +36,8 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
             }
             
             
+//            debugger;
+            
             context.beginPath();
 
             var scale = Math.sqrt(transform.a * transform.d);
@@ -52,6 +54,9 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
             context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
             context.lineTo((this.points[1].x * scale) + move.x, (this.points[1].y * scale) + move.y);
 
+            context.stroke();
+            
+            
 
             // possivel personalização
             if (this.style) {

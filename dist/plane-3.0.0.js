@@ -1,5 +1,5 @@
 /*!
- * C37 in 03-11-2014 at 15:50:33 
+ * C37 in 06-11-2014 at 02:36:42 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -124,113 +124,34 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 }
             case 'ellipse':
                 {
-//                    debugger;
-
-                    var ellipse = '{"type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2},"radiusX": {3}, "startAngle": {4}, "endAngle": [{5}], "angle": {6} },',
-                        Cx = objectDxf.x,
-                        Cy = objectDxf.y,
-                        a = -(objectDxf.x1 / 2),
-                        b = -(objectDxf.y1 / 2),
-                        radiusX = Math.abs(objectDxf.x1),
-                        radiusY = Math.abs(objectDxf.y1);
-                    //                        radiusY = radiusX * objectDxf.r;
-
-                    var pointA = (Cx + a * Math.cos(objectDxf.startAngle));
-                    var pointB = (Cy + b * Math.sin(objectDxf.endAngle))
-
-                    // ok
-                    var radians = Math.atan2(objectDxf.y1, objectDxf.x1);
-                    var angle = radians * (180 / Math.PI);
-
-                    var startAngle = radiusX * Math.cos(angle);
-                    var endAngle = radiusY * Math.sin(angle);
-
+                    var ellipse = '{ "type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2}, "radiusX": {3}, "startAngle": {4}, "endAngle": {5}, "angle": {6} },';
                     
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-
                     var p2 = {
                         x: objectDxf.x1,
                         y: objectDxf.y1
                     };
 
-                    var double2 = objectDxf.r;
-                    var double3 = objectParse.startAngle;
-                    var double4 = objectParse.endAngle || (2.0 * Math.PI);
+                    var ratio = objectDxf.r;
+                    var startAngle = objectParse.startAngle;
+                    var endAngle = objectParse.endAngle || (2.0 * Math.PI);
 
-                    while (double4 < double3) {
-                        double4 += 2.0 * Math.PI;
+                    while (endAngle < startAngle) {
+                        endAngle += 2.0 * Math.PI;
                     }
 
-                    var num16 = {
+                    var radiusX = {
                         x: 0 - p2.x,
                         y: 0 - p2.y
                     };
 
-                    num16 = Math.sqrt(num16.x * num16.x + num16.y * num16.y);
+                    radiusX = Math.sqrt(radiusX.x * radiusX.x + radiusX.y * radiusX.y);
 
-                    var num17 = num16 * double2;
-                    var th = Math.atan2(p2.y, p2.x);
-                    var num18 = Math.PI / 60.0;
-                    var num19 = double3;
-
-
-                    radiusX = num17;
-                    radiusY = num16;
-
-                    var polyline2 = [];
+                    var radiusY = radiusX * ratio;
+                    var angle = Math.atan2(p2.y, p2.x);
                     
-//                    debugger;
                     
-                    var num = Math.cos(th);
-                    var num12 = Math.sin(th);
                     
-
-                    while (true) {
-                        if (num19 > double4) {
-                            num18 -= num19 - double4;
-                            num19 = double4;
-                        }
-                        var p3 = {
-                            x: num16 * Math.cos(num19),
-                            y: num17 * Math.sin(num19)
-                        };
-                        // p3 *= matrix4x4F;
-                        // aplicando a matrix para a rotação
-                        p3 = {
-                            x:  p3.x * num + p3.y * -num12,
-                            y: p3.x * num12 + p3.y * num
-                        }
-                        // o ponto de centro + o item da ellipse
-                        p3 = {
-                            x: objectDxf.x + p3.x,
-                            y: objectDxf.y + p3.y
-                        };
-                        
-                        // armazenando no array
-                        polyline2.push(p3);
-                        
-                        // continuando até a volta completa
-                        if (num19 != double4)
-                            num19 += num18;
-                        else
-                            break;
-                    }
-                    
-                    var xxx = polyline2.map(function(item){
-                        return [item.x, item.y];
-                    });
-                    
-                    //                        
-                    //return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, pointA, pointB, angle]);
-                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, xxx, angle]);
+                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, endAngle, angle]);
                 }
             case 'lwpolyline':
                 {
@@ -1683,16 +1604,58 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+
         this.type = 'arc';
         this.point = attrs.point;
         this.radius = attrs.radius;
         this.startAngle = attrs.startAngle;
         this.endAngle = attrs.endAngle;
         this.clockWise = attrs.clockWise;
+
+        this.initialize();
     };
 
 
     Arc.prototype = {
+        initialize: function () {
+
+            var end = this.endAngle - this.startAngle;
+            if (end < 0.0) {
+                end += 360.0;
+            }
+
+            // .7 resolution
+            var num1 = .7 / 180.0 * Math.PI;
+            var num2 = this.startAngle / 180.0 * Math.PI;
+            var num3 = end / 180.0 * Math.PI;
+
+            if (num3 < 0.0)
+                num1 = -num1;
+            var size = Math.abs(num3 / num1) + 2;
+
+            var index = 0;
+            var num4 = num2;
+            while (index < size - 1) {
+
+                var xval = this.point.x + this.radius * Math.cos(num4);
+                var yval = this.point.y + this.radius * Math.sin(num4);
+
+                this.segments.push({
+                    x: xval,
+                    y: yval
+                });
+                ++index;
+                num4 += num1;
+            }
+
+            var xval1 = this.point.x + this.radius * Math.cos(num2 + num3);
+            var yval1 = this.point.y + this.radius * Math.sin(num2 + num3);
+
+            this.segments[this.segments.length - 1].x = xval1;
+            this.segments[this.segments.length - 1].y = yval1;
+            
+        },
         toObject: function () {
 
             return {
@@ -1720,47 +1683,19 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
             };
 
 
-            var points = [];
 
-            var end = this.endAngle - this.startAngle;
-            if (end < 0.0) {
-                end += 360.0;
+
+//            for (var i = 0; i < points.length; i += 2) {
+//                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+//            }
+            
+            for (var i = 0; i < this.segments.length; i += 2) {
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
             }
-
-            // .7 resolution
-            var num1 = .7 / 180.0 * Math.PI;
-            var num2 = this.startAngle / 180.0 * Math.PI;
-            var num3 = end / 180.0 * Math.PI;
-
-            if (num3 < 0.0)
-                num1 = -num1;
-            var size = Math.abs(num3 / num1) + 2;
-
-            var index = 0;
-            var num4 = num2;
-            while (index < size - 1) {
-
-                var xval = this.point.x + this.radius * Math.cos(num4);
-                var yval = this.point.y + this.radius * Math.sin(num4);
-
-                points.push({
-                    x: xval,
-                    y: yval
-                });
-                ++index;
-                num4 += num1;
-            }
-
-            var xval1 = this.point.x + this.radius * Math.cos(num2 + num3);
-            var yval1 = this.point.y + this.radius * Math.sin(num2 + num3);
-
-            points[points.length - 1].x = xval1;
-            points[points.length - 1].y = yval1;
-
-
-            for (var i = 0; i < points.length; i += 2) {
-                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
-            }
+            
 
             context.stroke();
 
@@ -2017,12 +1952,34 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+
         this.type = 'circle';
         this.point = attrs.point;
         this.radius = attrs.radius;
+
+        this.initialize();
     };
 
     Circle.prototype = {
+        initialize: function () {
+
+            // em numero de partes - 58 
+            var num1 = Math.PI / 58;
+            var size = Math.abs(2.0 * Math.PI / num1) + 2;
+            var index = 0;
+            var num2 = 0.0;
+
+            while (index < size - 1) {
+                this.segments.push({
+                    x: this.point.x + this.radius * Math.cos(num2),
+                    y: this.point.y + this.radius * Math.sin(num2)
+                });
+                ++index;
+                num2 += num1;
+            }
+
+        },
         toObject: function () {
             return {
                 uuid: this.uuid,
@@ -2044,25 +2001,13 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
                 y: transform.ty
             };
 
-            var points = [];
 
-            // em numero de partes - 58 
-            var num1 = Math.PI / 58;
-            var size = Math.abs(2.0 * Math.PI / num1) + 2;
-            var index = 0;
-            var num2 = 0.0;
 
-            while (index < size - 1) {
-                points.push({
-                    x: this.point.x + this.radius * Math.cos(num2),
-                    y: this.point.y + this.radius * Math.sin(num2)
-                });
-                ++index;
-                num2 += num1;
-            }
+            for (var i = 0; i < this.segments.length; i += 2) {
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
 
-            for (var i = 0; i < points.length; i += 2) {
-                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+                context.lineTo(x, y);
             }
             context.stroke();
 
@@ -2087,6 +2032,8 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
 });
 define("plane/shapes/ellipse", ['require', 'exports'], function (require, exports) {
 
+    var types = require('plane/utility/types');
+    
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -2104,6 +2051,9 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+
+        this.segments = [];
+
         this.type = 'ellipse';
         this.point = attrs.point;
         this.radiusY = attrs.radiusY;
@@ -2111,9 +2061,74 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
         this.startAngle = attrs.startAngle;
         this.endAngle = attrs.endAngle;
         this.angle = attrs.angle;
+
+
+        this.initialize();
     };
 
     Ellipse.prototype = {
+        initialize: function () {
+        
+            var startAngle = this.startAngle || 0;
+            var endAngle = this.endAngle || (2.0 * Math.PI);
+
+            while (endAngle < startAngle) {
+                endAngle += 2.0 * Math.PI;
+            }
+
+            var radiusX = this.radiusX;
+            var radiusY = this.radiusY;
+
+            var angle = types.math.radians(this.angle) || 0;
+            var num18 = Math.PI / 60.0;
+
+
+            var polyline2 = [];
+
+
+            var num = Math.cos(angle);
+            var num12 = Math.sin(angle);
+
+
+            while (true) {
+                if (startAngle > endAngle) {
+                    num18 -= startAngle - endAngle;
+                    startAngle = endAngle;
+                }
+                var p3 = {
+                    x: radiusX * Math.cos(startAngle),
+                    y: radiusY * Math.sin(startAngle)
+                };
+                // p3 *= matrix4x4F;
+                // aplicando a matrix para a rotação
+                p3 = {
+                    x: p3.x * num + p3.y * -num12,
+                    y: p3.x * num12 + p3.y * num
+                }
+                // o ponto de centro + o item da ellipse
+                p3 = {
+                    x: this.point.x + p3.x,
+                    y: this.point.y + p3.y
+                };
+
+                // armazenando no array
+                polyline2.push(p3);
+
+                // continuando até a volta completa
+                if (startAngle != endAngle)
+                    startAngle += num18;
+                else
+                    break;
+            }
+
+            this.segments = polyline2.map(function (item) {
+                return {
+                    x: item.x,
+                    y: item.y
+                };
+            });            
+        
+        },
         toObject: function () {
 
             return {
@@ -2139,87 +2154,24 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
             };
 
 
+            //            debugger;
 
 
-            var p2 = {
-                x: this.point.x,
-                y: this.point.y
-            };
-
-            var double2 = this.radiusX;
-            var double3 = this.startAngle;
-            var double4 = this.endAngle || (2.0 * Math.PI);
-
-            while (double4 < double3) {
-                double4 += 2.0 * Math.PI;
-            }
-
-            var num16 = {
-                x: 0 - p2.x,
-                y: 0 - p2.y
-            };
-
-            num16 = Math.sqrt(num16.x * num16.x + num16.y * num16.y);
-
-            var num17 = num16 * double2;
-            var th = Math.atan2(p2.y, p2.x);
-            var num18 = Math.PI / 60.0;
-            var num19 = double3;
 
 
-            var polyline2 = [];
 
 
-            var num = Math.cos(th);
-            var num12 = Math.sin(th);
 
+            for (var i = 0; i < this.segments.length; i++) {
 
-            while (true) {
-                if (num19 > double4) {
-                    num18 -= num19 - double4;
-                    num19 = double4;
-                }
-                var p3 = {
-                    x: num16 * Math.cos(num19),
-                    y: num17 * Math.sin(num19)
-                };
-                // p3 *= matrix4x4F;
-                // aplicando a matrix para a rotação
-                p3 = {
-                    x: p3.x * num + p3.y * -num12,
-                    y: p3.x * num12 + p3.y * num
-                }
-                // o ponto de centro + o item da ellipse
-                p3 = {
-                    x: this.point.x + p3.x,
-                    y: this.point.y + p3.y
-                };
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
 
-                // armazenando no array
-                polyline2.push(p3);
-
-                // continuando até a volta completa
-                if (num19 != double4)
-                    num19 += num18;
-                else
-                    break;
-            }
-
-            var points = polyline2.map(function (item) {
-                return [item.x, item.y];
-            });
-
-            for (var i = 0; i < points.length; i += 2) {
-
-                var x = points[i] * scale + move.x;
-                var y = points[i + 1] * scale + move.y;
-
-                context.lineTo(points[i] * scale + move.x, points[i + 1] * scale + move.y);
+                context.lineTo(x, y);
             }
 
 
             context.stroke();
-
 
 
 
@@ -2279,6 +2231,8 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
             }
             
             
+//            debugger;
+            
             context.beginPath();
 
             var scale = Math.sqrt(transform.a * transform.d);
@@ -2295,6 +2249,9 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
             context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
             context.lineTo((this.points[1].x * scale) + move.x, (this.points[1].y * scale) + move.y);
 
+            context.stroke();
+            
+            
 
             // possivel personalização
             if (this.style) {
@@ -3326,7 +3283,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
                 }
 
-                shape = new Polyline(attrs);
+                shape = polyline.create(attrs);
 
                 break;
             }
@@ -3336,7 +3293,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
                     attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
                 }
 
-                shape = new Spline(attrs);
+                shape = splineNurbs.create(attrs);
 
                 break;
             }

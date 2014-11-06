@@ -17,12 +17,34 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+
         this.type = 'circle';
         this.point = attrs.point;
         this.radius = attrs.radius;
+
+        this.initialize();
     };
 
     Circle.prototype = {
+        initialize: function () {
+
+            // em numero de partes - 58 
+            var num1 = Math.PI / 58;
+            var size = Math.abs(2.0 * Math.PI / num1) + 2;
+            var index = 0;
+            var num2 = 0.0;
+
+            while (index < size - 1) {
+                this.segments.push({
+                    x: this.point.x + this.radius * Math.cos(num2),
+                    y: this.point.y + this.radius * Math.sin(num2)
+                });
+                ++index;
+                num2 += num1;
+            }
+
+        },
         toObject: function () {
             return {
                 uuid: this.uuid,
@@ -44,25 +66,13 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
                 y: transform.ty
             };
 
-            var points = [];
 
-            // em numero de partes - 58 
-            var num1 = Math.PI / 58;
-            var size = Math.abs(2.0 * Math.PI / num1) + 2;
-            var index = 0;
-            var num2 = 0.0;
 
-            while (index < size - 1) {
-                points.push({
-                    x: this.point.x + this.radius * Math.cos(num2),
-                    y: this.point.y + this.radius * Math.sin(num2)
-                });
-                ++index;
-                num2 += num1;
-            }
+            for (var i = 0; i < this.segments.length; i += 2) {
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
 
-            for (var i = 0; i < points.length; i += 2) {
-                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+                context.lineTo(x, y);
             }
             context.stroke();
 
