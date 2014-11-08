@@ -290,12 +290,14 @@ define("plane", ['require', 'exports'], function (require, exports) {
     exports.point = point;
     exports.shape = shape;
     exports.group = group;
-    exports.layer = {
-        create: layer.create,
-        list: layer.list,
-        find: layer.find,
-        remove: layer.remove
-    };
+    
+    exports.layer = layer;
+//    exports.layer = {
+//        create: layer.create,
+//        list: layer.list,
+//        find: layer.find,
+//        remove: layer.remove
+//    };
     exports.tool = {
         create: tool.create,
         list: tool.list,

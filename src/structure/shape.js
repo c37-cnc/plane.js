@@ -359,7 +359,8 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         }
 
         // adicionando o novo shape na layer ativa
-        return select.layer.children.add(shape.uuid, shape);
+        return layer.active.children.add(shape.uuid, shape);
+        //        return  select.layer.children.add(shape.uuid, shape);
     }
 
     function remove(value) {}

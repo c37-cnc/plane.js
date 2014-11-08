@@ -4,6 +4,8 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
 
     var store = types.data.dictionary.create();
 
+    var _active = null;
+
     var select = null;
 
 
@@ -71,6 +73,8 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
 
         // colocando nova layer como selecionada
         select.layer = layer.uuid;
+        
+        this.active = layer.uuid;
 
         return this;
     }
@@ -84,18 +88,54 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
     }
 
     function remove(uuid) {
-        if(uuid){
+        if (uuid) {
             return store.remove(uuid);
         } else {
-            store.list().forEach(function(layer){
-                if (layer.status != 'system'){
+            store.list().forEach(function (layer) {
+                if (layer.status != 'system') {
                     store.remove(layer.uuid);
                 }
             });
             return true;
         }
-//        return uuid ? store.remove(uuid) : store.clear();
+        //        return uuid ? store.remove(uuid) : store.clear();
     }
+
+
+
+
+    function active(uuid) {
+        return uuid ? active = store.find(uuid) : active;
+    }
+
+
+    Object.defineProperty(exports, 'active', {
+        get: function () {
+            return _active;
+
+        },
+        set: function (uuid) {
+
+            this.events.notify('onDeactivated', {
+                type: 'onDeactivated',
+                layer: _active
+            });
+
+            _active = store.find(uuid);
+
+            this.events.notify('onActivated', {
+                type: 'onActivated',
+                layer: _active
+            });
+
+        }
+    });
+
+
+    exports.events = types.object.event.create();
+
+
+
 
 
 
