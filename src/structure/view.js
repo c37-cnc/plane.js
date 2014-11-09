@@ -1,229 +1,201 @@
 define("plane/structure/view", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
-
     var matrix = require('plane/geometric/matrix');
 
+    var layer = require('plane/structure/layer'),
+        point = require('plane/structure/point');
+
+
+
     var viewPort = null,
-        canvas = {
-            context: null,
-            transform: null
+        _context = null,
+        _transform = null,
+        _zoom = 1,
+        _center = point.create(0, 0),
+        size = {
+            height: 0,
+            width: 0
+        },
+        bounds = {
+            x: 0,
+            y: 0,
+            height: 0,
+            width: 0
         };
 
 
-    var view = (function () {
-
-        var transform = matrix.create(),
-            viewPort = null,
-            _zoom = 1,
-            center = {
-                x: 0,
-                y: 0
-            },
-            bounds = {
-                bottom: 0,
-                height: 0,
-                left: 0,
-                right: 0,
-                top: 0,
-                width: 0
-            },
-            size = {
-                height: 0,
-                width: 0
-            };
-
-        return {
-            initialize: function (config) {
-
-                viewPort = config.viewPort;
-
-                bounds.height = viewPort.clientHeight;
-                bounds.width = viewPort.clientWidth;
-
-                center.x = viewPort.clientWidth / 2;
-                center.y = viewPort.clientHeight / 2;
-
-                size.height = viewPort.clientHeight;
-                size.width = viewPort.clientWidth;
-
-                return true;
-            },
-            // zoom level
-            get zoom() {
-                return _zoom;
-                //                return Math.sqrt(transform.a * transform.d);
-            },
-            set zoom(value) {
-
-                this.zoomTo(value, {
-                    x: 0,
-                    y: 0
-                });
-
-                return true;
-            },
-
-            /**
-             * Descrição para o metodo zoomTo
-             *
-             * @method zoomTo
-             * @param factor {Number} fator de zoom aplicado
-             * @param point {Object} local onde o zoom será aplicado
-             * @return {Boolean} Copy of ...
-             */
-            //            zoomTo: function (factor, point) {
-            zoomTo: function (zoom, point) {
-
-                //                                debugger;
-
-                var factor, motion;
-
-                factor = zoom / _zoom;
-
-                transform.scale({
-                    x: factor,
-                    y: factor
-                }, point);
-
-                motion = {
-                    x: transform.tx,
-                    y: transform.ty
-                }
-
-                _zoom = zoom;
-
-
-                //                var zoom, motion;
-                //
-                //                zoom = factor > 0 ? (1.041666666666667 / Math.sqrt(transform.a * transform.d)) : (.96 / Math.sqrt(transform.a * transform.d));
-                //
-                //                transform.scale({
-                //                    x: zoom,
-                //                    y: zoom
-                //                }, point);
-                //
-                //                motion = {
-                //                    x: transform.tx,
-                //                    y: transform.ty
-                //                }
-
-
-
-
-                // High Performance - JavaScript - Loops - Page 65
-                //                var layers = layer.list(),
-                //                    l = layer.list().length;
-                //                while (l--) {
-                //                    var shapes = layers[l].shapes.list(),
-                //                        s = shapes.length;
-                //                    while (s--) {
-                //                        shapes[s].scaleTo(this.zoom);
-                //                        shapes[s].moveTo({
-                //                            x: transform.tx,
-                //                            y: transform.ty
-                //                        });
-                //                    }
-                //                }
-
-                // movimentando todos os shapes de todas as layers
-                var layers = layer.list(),
-                    l = layer.list().length - 1;
-                do {
-                    var shapes = layers[l].shapes.list(),
-                        s = shapes.length - 1;
-                    do {
-                        shapes[s].scaleTo(zoom);
-                        shapes[s].moveTo(motion);
-                    } while (s--);
-                } while (l--);
-                layer.update();
-
-                //                                layer.update(transform);
-
-                return true;
-            },
-            moveTo: function (value) { // absolute
-
-
-
-                return true;
-            },
-            center: {
-                get position() {
-                    return center;
-                },
-                add: function (value) { // relative
-
-                    return true;
-                },
-                reset: function () {
-
-                    // goto center initial
-
-                    return true;
-                }
-            },
-            get bounds() {
-
-                //                debugger;                
-
-                //                var bound = this.size;
-                //                var iii = transform.inverted()._transformBounds(bound);
-                //                var fff = this.size;
-
-
-                return bounds;
-            },
-            get size() {
-                return size;
-            },
-            reset: function () {
-
-                transform.reset();
-
-                zoom = 1;
-
-                bounds.height = viewPort.clientHeight;
-                bounds.width = viewPort.clientWidth;
-
-                center.x = viewPort.clientWidth / 2;
-                center.y = viewPort.clientHeight / 2;
-
-                size.height = viewPort.clientHeight;
-                size.width = viewPort.clientWidth;
-
-                return true;
-            }
-        }
-    })();
 
 
     function initialize(config) {
 
         viewPort = config.viewPort;
+        _context = config.context;
+        
+        // sistema cartesiano de coordenadas
+        _context.translate(0, viewPort.clientHeight);
+        _context.scale(1, -1);
 
-        // montando o render da Layer
-        var render = document.createElement('canvas');
+        // created the matrix transform
+        _transform = matrix.create();
 
-        render.id = types.math.uuid(9, 16);
-        render.width = viewPort.clientWidth;
-        render.height = viewPort.clientHeight;
+        // o centro inicial
+        _center = _center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
 
-        render.style.position = "absolute";
-        render.style.backgroundColor = 'transparent';
+        // os tamanhos que são fixos
+        size.height = viewPort.clientHeight;
+        size.width = viewPort.clientWidth;
+    }
 
-        // add em viewPort
-        viewPort.appendChild(render);
 
-        // add to public
-        canvas.context = render.getContext('2d');
-        canvas.transform = matrix.create()
+
+
+
+
+    function update() {
+
+
+        // clear context, +1 is needed on some browsers to really clear the borders
+        _context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
+
+        var layers = layer.list(),
+            l = layers.length;
+        while (l--) {
+            var shapes = layers[l].children.list(),
+                s = shapes.length;
+
+            // style of layer
+            _context.lineCap = layers[l].style.lineCap;
+            _context.lineJoin = layers[l].style.lineJoin;
+
+            while (s--) {
+                shapes[s].render(_context, _transform);
+            }
+        }
+        return this;
+    }
+
+
+
+
+
+    function zoomTo(zoom, center) {
+
+        var factor, motion;
+
+        factor = zoom / _zoom;
+
+        _transform.scale({
+            x: factor,
+            y: factor
+        }, _center);
+
+        _zoom = zoom;
+
+
+        var centerSubtract = center.subtract(_center);
+        centerSubtract = centerSubtract.negate();
+
+        var xxx = matrix.create();
+        xxx.translate(centerSubtract.x, centerSubtract.y);
+
+        _transform.concate(xxx);
+
+        _center = center;
+
+        update();
 
         return true;
     }
 
-    exports.initialize = initialize;
-    exports.canvas = canvas;
+    
+    
+    
+    function reset() {
+        zoomTo(1, point.create(size.width / 2, size.height / 2));
+    }
 
+
+    Object.defineProperty(exports, 'context', {
+        get: function () {
+            return _context;
+        }
+    });
+
+    Object.defineProperty(exports, 'transform', {
+        get: function () {
+            return _transform;
+        }
+    });
+
+    Object.defineProperty(exports, 'size', {
+        get: function () {
+            return size;
+        }
+    });
+
+    Object.defineProperty(exports, 'bounds', {
+        get: function () {
+            var scale = Math.sqrt(_transform.a * _transform.d);
+
+            return {
+                x: _transform.tx,
+                y: _transform.ty,
+                height: size.height * scale,
+                width: size.width * scale
+            }
+        }
+    });
+
+    Object.defineProperty(exports, 'center', {
+        get: function () {
+            return _center;
+        },
+        set: function (value) {
+
+            var centerSubtract = center.subtract(_center);
+            centerSubtract = centerSubtract.negate();
+
+            var xxx = matrix.create();
+            xxx.translate(centerSubtract.x, centerSubtract.y);
+
+            _transform.concate(xxx);
+
+            _center = value;
+
+            update();
+
+            return true;
+        }
+    });
+
+    Object.defineProperty(exports, 'zoom', {
+        get: function () {
+            return _zoom;
+        },
+        set: function (value) {
+
+            var factor, motion;
+
+            factor = value / _zoom;
+
+            _transform.scale({
+                x: factor,
+                y: factor
+            }, _center);
+
+            _zoom = value;
+
+            update();
+
+            return true;
+        }
+    });
+
+
+
+
+    exports.initialize = initialize;
+    exports.update = update;
+    exports.zoomTo = zoomTo;
+    
 });

@@ -6,8 +6,6 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
 
     var _active = null;
 
-    var select = null;
-
 
     function Layer(attrs) {
         this.uuid = attrs.uuid;
@@ -29,16 +27,6 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
             })
         };
     }
-
-
-    function initialize(config) {
-
-        select = config.select;
-
-
-
-        return true;
-    };
 
 
 
@@ -72,8 +60,6 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
         store.add(layer.uuid, layer);
 
         // colocando nova layer como selecionada
-        select.layer = layer.uuid;
-        
         this.active = layer.uuid;
 
         return this;
@@ -135,11 +121,6 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
     exports.events = types.object.event.create();
 
 
-
-
-
-
-    exports.initialize = initialize;
 
     exports.create = create;
     exports.list = list;

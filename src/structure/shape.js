@@ -20,8 +20,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         splineCatmullRom = require('plane/shapes/spline-catmull–rom'),
         splineNurbs = require('plane/shapes/spline-nurbs');
 
-    var select = null;
-
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -212,16 +210,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
 
 
-    function initialize(config) {
-
-        select = config.select;
-
-
-
-        return true;
-    };
-
-
     function create(attrs) {
         if ((typeof attrs == "function") || (attrs == null)) {
             throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -360,7 +348,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
         // adicionando o novo shape na layer ativa
         return layer.active.children.add(shape.uuid, shape);
-        //        return  select.layer.children.add(shape.uuid, shape);
     }
 
     function remove(value) {}
@@ -370,8 +357,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     function find() {}
 
 
-
-    exports.initialize = initialize;
 
     exports.create = create;
     exports.remove = remove;

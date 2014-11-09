@@ -1,5 +1,5 @@
 /*!
- * C37 in 07-11-2014 at 15:24:32 
+ * C37 in 09-11-2014 at 02:22:28 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1225,7 +1225,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
         point = require('plane/structure/point'),
         shape = require('plane/structure/shape'),
         group = require('plane/structure/group'),
-        tool = require('plane/structure/tool');
+        tool = require('plane/structure/tool'),
+        view = require('plane/structure/view');
 
     var importer = require('plane/data/importer'),
         exporter = require('plane/data/exporter');
@@ -1249,54 +1250,33 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
 
         // montando o render de Plane
-        var render = document.createElement('canvas');
+        var canvas = document.createElement('canvas');
 
-        render.id = types.math.uuid(9, 16);
-        render.width = viewPort.clientWidth;
-        render.height = viewPort.clientHeight;
+        canvas.id = types.math.uuid(9, 16);
+        canvas.width = viewPort.clientWidth;
+        canvas.height = viewPort.clientHeight;
 
-        render.style.position = "absolute";
-        render.style.backgroundColor = 'transparent';
+        canvas.style.position = "absolute";
+        canvas.style.backgroundColor = 'transparent';
 
         // add em viewPort HTMLElement
-        viewPort.appendChild(render);
+        viewPort.appendChild(canvas);
 
 
         // initialize view
-
-        // add to private view
-        _view.context = render.getContext('2d');
-
-        // sistema cartesiano de coordenadas
-        _view.context.translate(0, viewPort.clientHeight);
-        _view.context.scale(1, -1);
-
-        // created the matrix transform
-        _view.transform = matrix.create();
-
-        // o centro inicial
-        _view.center = _view.center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
-
-        // os tamanhos que são fixos
-        _view.size.height = viewPort.clientHeight;
-        _view.size.width = viewPort.clientWidth;
-
-
-        // initialize structure
-        layer.initialize({
-            select: select
+        view.initialize({
+            viewPort: viewPort,
+            context : canvas.getContext('2d')
         });
-        shape.initialize({
-            select: select
-        });
+        // initialize tool
         tool.initialize({
             viewPort: viewPort,
-            select: select,
-            view: _view
+            view: view
         });
 
         return true;
     }
+    
 
     function clear() {
 
@@ -1309,209 +1289,22 @@ define("plane", ['require', 'exports'], function (require, exports) {
         return true;
     }
 
-    function update() {
-
-        var context = _view.context,
-            transform = _view.transform;
-
-        // clear context, +1 is needed on some browsers to really clear the borders
-        context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
-
-        var layers = layer.list(),
-            l = layers.length;
-        while (l--) {
-            var shapes = layers[l].children.list(),
-                s = shapes.length;
-
-            // style of layer
-            context.lineCap = layers[l].style.lineCap;
-            context.lineJoin = layers[l].style.lineJoin;
-
-            while (s--) {
-                shapes[s].render(context, transform);
-            }
-        }
-        return this;
-    }
-
-    // private view
-    var _view = {
-        context: null,
-        transform: null,
-        zoom: 1,
-        center: point.create(0, 0),
-        size: {
-            height: 0,
-            width: 0
-        },
-        bounds: {
-            x: 0,
-            y: 0,
-            height: 0,
-            width: 0
-        }
-    };
-
-    // public view
-    var view = {
-        get zoom() {
-            return _view.zoom;
-        },
-        set zoom(zoom) {
-
-            var factor, motion;
-
-            factor = zoom / _view.zoom;
-
-            _view.transform.scale({
-                x: factor,
-                y: factor
-            }, _view.center);
-
-            _view.zoom = zoom;
-
-
-            update();
-
-            return true;
-        },
-        zoomTo: function (zoom, center) {
-
-            var factor, motion;
-
-            factor = zoom / _view.zoom;
-
-            _view.transform.scale({
-                x: factor,
-                y: factor
-            }, _view.center);
-
-            _view.zoom = zoom;
-
-
-
-            var centerSubtract = center.subtract(_view.center);
-            centerSubtract = centerSubtract.negate();
-
-            var xxx = matrix.create();
-            xxx.translate(centerSubtract.x, centerSubtract.y);
-
-            _view.transform.concate(xxx);
-
-            _view.center = center;
-
-
-
-            update();
-
-            return true;
-        },
-        get center() {
-            return _view.center;
-        },
-        set center(center) {
-
-            //            debugger;
-
-            var centerSubtract = center.subtract(_view.center);
-            centerSubtract = centerSubtract.negate();
-
-            var xxx = matrix.create();
-            xxx.translate(centerSubtract.x, centerSubtract.y);
-
-            _view.transform.concate(xxx);
-
-            _view.center = center;
-
-            update();
-
-            return true;
-        },
-        get bounds() {
-
-            var scale = Math.sqrt(_view.transform.a * _view.transform.d);
-
-            return {
-                x: _view.transform.tx,
-                y: _view.transform.ty,
-                height: _view.size.height * scale,
-                width: _view.size.width * scale
-            }
-        },
-        get size() {
-            return _view.size;
-        },
-        get transform() {
-            return _view.transform;
-        },
-        reset: function () {
-            this.zoomTo(1, point.create(_view.size.width / 2, _view.size.height / 2));
-        }
-    };
-
-
-
-    var select = (function () {
-
-        var _layer = null,
-            _shapes = types.data.dictionary.create(),
-            _groups = types.data.dictionary.create();
-
-        return {
-            get layer() {
-                return _layer;
-            },
-            set layer(uuid) {
-                this.events.notify('onDeactivated', {
-                    type: 'onDeactivated',
-                    layer: _layer
-                });
-
-                _layer = layer.find(uuid);
-                _shapes.clear();
-                _groups.clear();
-
-                this.events.notify('onActivated', {
-                    type: 'onActivated',
-                    layer: _layer
-                });
-            },
-            get shapes() {
-                return _shapes;
-            },
-            set shapes(shape) {
-                return _shapes.add(shape.uuid, shape);
-            },
-            get groups() {
-                return _groups.list();
-            },
-            set groups(group) {
-                return _groups.add(group.uuid, group);
-            },
-            events: types.object.event.create()
-        }
-    })();
+ 
+    
+    
 
 
 
     exports.initialize = initialize;
-    exports.update = update;
     exports.clear = clear;
 
-    exports.view = view
-    exports.select = select;
+    exports.view = view;
 
     exports.point = point;
     exports.shape = shape;
     exports.group = group;
-    
+
     exports.layer = layer;
-//    exports.layer = {
-//        create: layer.create,
-//        list: layer.list,
-//        find: layer.find,
-//        remove: layer.remove
-//    };
     exports.tool = {
         create: tool.create,
         list: tool.list,
@@ -2788,8 +2581,6 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
 
     var _active = null;
 
-    var select = null;
-
 
     function Layer(attrs) {
         this.uuid = attrs.uuid;
@@ -2811,16 +2602,6 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
             })
         };
     }
-
-
-    function initialize(config) {
-
-        select = config.select;
-
-
-
-        return true;
-    };
 
 
 
@@ -2854,8 +2635,6 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
         store.add(layer.uuid, layer);
 
         // colocando nova layer como selecionada
-        select.layer = layer.uuid;
-        
         this.active = layer.uuid;
 
         return this;
@@ -2917,11 +2696,6 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
     exports.events = types.object.event.create();
 
 
-
-
-
-
-    exports.initialize = initialize;
 
     exports.create = create;
     exports.list = list;
@@ -3004,8 +2778,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         rectangle = require('plane/shapes/rectangle'),
         splineCatmullRom = require('plane/shapes/spline-catmull–rom'),
         splineNurbs = require('plane/shapes/spline-nurbs');
-
-    var select = null;
 
 
     /**
@@ -3197,16 +2969,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
 
 
-    function initialize(config) {
-
-        select = config.select;
-
-
-
-        return true;
-    };
-
-
     function create(attrs) {
         if ((typeof attrs == "function") || (attrs == null)) {
             throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -3345,7 +3107,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
         // adicionando o novo shape na layer ativa
         return layer.active.children.add(shape.uuid, shape);
-        //        return  select.layer.children.add(shape.uuid, shape);
     }
 
     function remove(value) {}
@@ -3355,8 +3116,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     function find() {}
 
 
-
-    exports.initialize = initialize;
 
     exports.create = create;
     exports.remove = remove;
@@ -3372,7 +3131,6 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
     var point = require('plane/structure/point');
 
     var viewPort = null,
-        select = null,
         view = null;
 
 
@@ -3402,11 +3160,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
     function initialize(config) {
 
         viewPort = config.viewPort;
-        select = config.select;
+//        select = config.select;
         view = config.view;
 
         var pointDown,
-            shapesSelect = select.shapes,
+//            shapesSelect = select.shapes,
             shapesOver = types.data.dictionary.create();
 
 
@@ -3428,33 +3186,33 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 return element > 0;
             });
 
-//            debugger;
-
-            // caso positivo realizamos a procura 
-            if (imageData && select.layer && select.layer.status != 'system') {
-                // apenas procuro na layer selecionada
-                var children = select.layer.children.list(),
-                    c = children.length;
-
-                while (c--) {
-                    if (children[c].contains(pointInCanvas, view.transform)) {
-                        shapesSelect.add(children[c].uuid, children[c]);
-//                        break; - lilo - teste de performance
-                    } else {
-                        shapesSelect.remove(children[c].uuid);
-                    }
-                }
-            } else { // caso negativo - limpamos os shapesSelect
-                shapesSelect.clear();
-            }
-
-            // customized event
-            event = {
-                type: 'onMouseDown',
-                point: pointMove,
-                shapes: shapesSelect.list(),
-                Now: new Date().toISOString()
-            };
+////            debugger;
+//
+//            // caso positivo realizamos a procura 
+//            if (imageData && select.layer && select.layer.status != 'system') {
+//                // apenas procuro na layer selecionada
+//                var children = select.layer.children.list(),
+//                    c = children.length;
+//
+//                while (c--) {
+//                    if (children[c].contains(pointInCanvas, view.transform)) {
+//                        shapesSelect.add(children[c].uuid, children[c]);
+////                        break; - lilo - teste de performance
+//                    } else {
+//                        shapesSelect.remove(children[c].uuid);
+//                    }
+//                }
+//            } else { // caso negativo - limpamos os shapesSelect
+//                shapesSelect.clear();
+//            }
+//
+//            // customized event
+//            event = {
+//                type: 'onMouseDown',
+//                point: pointMove,
+//                shapes: shapesSelect.list(),
+//                Now: new Date().toISOString()
+//            };
 
             var tools = store.list(),
                 t = tools.length;
@@ -3628,232 +3386,204 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 });
 define("plane/structure/view", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
-
     var matrix = require('plane/geometric/matrix');
 
+    var layer = require('plane/structure/layer'),
+        point = require('plane/structure/point');
+
+
+
     var viewPort = null,
-        canvas = {
-            context: null,
-            transform: null
+        _context = null,
+        _transform = null,
+        _zoom = 1,
+        _center = point.create(0, 0),
+        size = {
+            height: 0,
+            width: 0
+        },
+        bounds = {
+            x: 0,
+            y: 0,
+            height: 0,
+            width: 0
         };
 
 
-    var view = (function () {
-
-        var transform = matrix.create(),
-            viewPort = null,
-            _zoom = 1,
-            center = {
-                x: 0,
-                y: 0
-            },
-            bounds = {
-                bottom: 0,
-                height: 0,
-                left: 0,
-                right: 0,
-                top: 0,
-                width: 0
-            },
-            size = {
-                height: 0,
-                width: 0
-            };
-
-        return {
-            initialize: function (config) {
-
-                viewPort = config.viewPort;
-
-                bounds.height = viewPort.clientHeight;
-                bounds.width = viewPort.clientWidth;
-
-                center.x = viewPort.clientWidth / 2;
-                center.y = viewPort.clientHeight / 2;
-
-                size.height = viewPort.clientHeight;
-                size.width = viewPort.clientWidth;
-
-                return true;
-            },
-            // zoom level
-            get zoom() {
-                return _zoom;
-                //                return Math.sqrt(transform.a * transform.d);
-            },
-            set zoom(value) {
-
-                this.zoomTo(value, {
-                    x: 0,
-                    y: 0
-                });
-
-                return true;
-            },
-
-            /**
-             * Descrição para o metodo zoomTo
-             *
-             * @method zoomTo
-             * @param factor {Number} fator de zoom aplicado
-             * @param point {Object} local onde o zoom será aplicado
-             * @return {Boolean} Copy of ...
-             */
-            //            zoomTo: function (factor, point) {
-            zoomTo: function (zoom, point) {
-
-                //                                debugger;
-
-                var factor, motion;
-
-                factor = zoom / _zoom;
-
-                transform.scale({
-                    x: factor,
-                    y: factor
-                }, point);
-
-                motion = {
-                    x: transform.tx,
-                    y: transform.ty
-                }
-
-                _zoom = zoom;
-
-
-                //                var zoom, motion;
-                //
-                //                zoom = factor > 0 ? (1.041666666666667 / Math.sqrt(transform.a * transform.d)) : (.96 / Math.sqrt(transform.a * transform.d));
-                //
-                //                transform.scale({
-                //                    x: zoom,
-                //                    y: zoom
-                //                }, point);
-                //
-                //                motion = {
-                //                    x: transform.tx,
-                //                    y: transform.ty
-                //                }
-
-
-
-
-                // High Performance - JavaScript - Loops - Page 65
-                //                var layers = layer.list(),
-                //                    l = layer.list().length;
-                //                while (l--) {
-                //                    var shapes = layers[l].shapes.list(),
-                //                        s = shapes.length;
-                //                    while (s--) {
-                //                        shapes[s].scaleTo(this.zoom);
-                //                        shapes[s].moveTo({
-                //                            x: transform.tx,
-                //                            y: transform.ty
-                //                        });
-                //                    }
-                //                }
-
-                // movimentando todos os shapes de todas as layers
-                var layers = layer.list(),
-                    l = layer.list().length - 1;
-                do {
-                    var shapes = layers[l].shapes.list(),
-                        s = shapes.length - 1;
-                    do {
-                        shapes[s].scaleTo(zoom);
-                        shapes[s].moveTo(motion);
-                    } while (s--);
-                } while (l--);
-                layer.update();
-
-                //                                layer.update(transform);
-
-                return true;
-            },
-            moveTo: function (value) { // absolute
-
-
-
-                return true;
-            },
-            center: {
-                get position() {
-                    return center;
-                },
-                add: function (value) { // relative
-
-                    return true;
-                },
-                reset: function () {
-
-                    // goto center initial
-
-                    return true;
-                }
-            },
-            get bounds() {
-
-                //                debugger;                
-
-                //                var bound = this.size;
-                //                var iii = transform.inverted()._transformBounds(bound);
-                //                var fff = this.size;
-
-
-                return bounds;
-            },
-            get size() {
-                return size;
-            },
-            reset: function () {
-
-                transform.reset();
-
-                zoom = 1;
-
-                bounds.height = viewPort.clientHeight;
-                bounds.width = viewPort.clientWidth;
-
-                center.x = viewPort.clientWidth / 2;
-                center.y = viewPort.clientHeight / 2;
-
-                size.height = viewPort.clientHeight;
-                size.width = viewPort.clientWidth;
-
-                return true;
-            }
-        }
-    })();
 
 
     function initialize(config) {
 
         viewPort = config.viewPort;
+        _context = config.context;
+        
+        // sistema cartesiano de coordenadas
+        _context.translate(0, viewPort.clientHeight);
+        _context.scale(1, -1);
 
-        // montando o render da Layer
-        var render = document.createElement('canvas');
+        // created the matrix transform
+        _transform = matrix.create();
 
-        render.id = types.math.uuid(9, 16);
-        render.width = viewPort.clientWidth;
-        render.height = viewPort.clientHeight;
+        // o centro inicial
+        _center = _center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
 
-        render.style.position = "absolute";
-        render.style.backgroundColor = 'transparent';
+        // os tamanhos que são fixos
+        size.height = viewPort.clientHeight;
+        size.width = viewPort.clientWidth;
+    }
 
-        // add em viewPort
-        viewPort.appendChild(render);
 
-        // add to public
-        canvas.context = render.getContext('2d');
-        canvas.transform = matrix.create()
+
+
+
+
+    function update() {
+
+
+        // clear context, +1 is needed on some browsers to really clear the borders
+        _context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
+
+        var layers = layer.list(),
+            l = layers.length;
+        while (l--) {
+            var shapes = layers[l].children.list(),
+                s = shapes.length;
+
+            // style of layer
+            _context.lineCap = layers[l].style.lineCap;
+            _context.lineJoin = layers[l].style.lineJoin;
+
+            while (s--) {
+                shapes[s].render(_context, _transform);
+            }
+        }
+        return this;
+    }
+
+
+
+
+
+    function zoomTo(zoom, center) {
+
+        var factor, motion;
+
+        factor = zoom / _zoom;
+
+        _transform.scale({
+            x: factor,
+            y: factor
+        }, _center);
+
+        _zoom = zoom;
+
+
+        var centerSubtract = center.subtract(_center);
+        centerSubtract = centerSubtract.negate();
+
+        var xxx = matrix.create();
+        xxx.translate(centerSubtract.x, centerSubtract.y);
+
+        _transform.concate(xxx);
+
+        _center = center;
+
+        update();
 
         return true;
     }
 
-    exports.initialize = initialize;
-    exports.canvas = canvas;
+    
+    
+    
+    function reset() {
+        zoomTo(1, point.create(size.width / 2, size.height / 2));
+    }
 
+
+    Object.defineProperty(exports, 'context', {
+        get: function () {
+            return _context;
+        }
+    });
+
+    Object.defineProperty(exports, 'transform', {
+        get: function () {
+            return _transform;
+        }
+    });
+
+    Object.defineProperty(exports, 'size', {
+        get: function () {
+            return size;
+        }
+    });
+
+    Object.defineProperty(exports, 'bounds', {
+        get: function () {
+            var scale = Math.sqrt(_transform.a * _transform.d);
+
+            return {
+                x: _transform.tx,
+                y: _transform.ty,
+                height: size.height * scale,
+                width: size.width * scale
+            }
+        }
+    });
+
+    Object.defineProperty(exports, 'center', {
+        get: function () {
+            return _center;
+        },
+        set: function (value) {
+
+            var centerSubtract = center.subtract(_center);
+            centerSubtract = centerSubtract.negate();
+
+            var xxx = matrix.create();
+            xxx.translate(centerSubtract.x, centerSubtract.y);
+
+            _transform.concate(xxx);
+
+            _center = value;
+
+            update();
+
+            return true;
+        }
+    });
+
+    Object.defineProperty(exports, 'zoom', {
+        get: function () {
+            return _zoom;
+        },
+        set: function (value) {
+
+            var factor, motion;
+
+            factor = value / _zoom;
+
+            _transform.scale({
+                x: factor,
+                y: factor
+            }, _center);
+
+            _zoom = value;
+
+            update();
+
+            return true;
+        }
+    });
+
+
+
+
+    exports.initialize = initialize;
+    exports.update = update;
+    exports.zoomTo = zoomTo;
+    
 });
 define("plane/utility/types", ['require', 'exports'], function (require, exports) {
 

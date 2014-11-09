@@ -7,7 +7,6 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
     var point = require('plane/structure/point');
 
     var viewPort = null,
-        select = null,
         view = null;
 
 
@@ -37,11 +36,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
     function initialize(config) {
 
         viewPort = config.viewPort;
-        select = config.select;
+//        select = config.select;
         view = config.view;
 
         var pointDown,
-            shapesSelect = select.shapes,
+//            shapesSelect = select.shapes,
             shapesOver = types.data.dictionary.create();
 
 
@@ -63,33 +62,33 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 return element > 0;
             });
 
-//            debugger;
-
-            // caso positivo realizamos a procura 
-            if (imageData && select.layer && select.layer.status != 'system') {
-                // apenas procuro na layer selecionada
-                var children = select.layer.children.list(),
-                    c = children.length;
-
-                while (c--) {
-                    if (children[c].contains(pointInCanvas, view.transform)) {
-                        shapesSelect.add(children[c].uuid, children[c]);
-//                        break; - lilo - teste de performance
-                    } else {
-                        shapesSelect.remove(children[c].uuid);
-                    }
-                }
-            } else { // caso negativo - limpamos os shapesSelect
-                shapesSelect.clear();
-            }
-
-            // customized event
-            event = {
-                type: 'onMouseDown',
-                point: pointMove,
-                shapes: shapesSelect.list(),
-                Now: new Date().toISOString()
-            };
+////            debugger;
+//
+//            // caso positivo realizamos a procura 
+//            if (imageData && select.layer && select.layer.status != 'system') {
+//                // apenas procuro na layer selecionada
+//                var children = select.layer.children.list(),
+//                    c = children.length;
+//
+//                while (c--) {
+//                    if (children[c].contains(pointInCanvas, view.transform)) {
+//                        shapesSelect.add(children[c].uuid, children[c]);
+////                        break; - lilo - teste de performance
+//                    } else {
+//                        shapesSelect.remove(children[c].uuid);
+//                    }
+//                }
+//            } else { // caso negativo - limpamos os shapesSelect
+//                shapesSelect.clear();
+//            }
+//
+//            // customized event
+//            event = {
+//                type: 'onMouseDown',
+//                point: pointMove,
+//                shapes: shapesSelect.list(),
+//                Now: new Date().toISOString()
+//            };
 
             var tools = store.list(),
                 t = tools.length;
