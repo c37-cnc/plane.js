@@ -1,5 +1,5 @@
 /*!
- * C37 in 09-11-2014 at 02:22:28 
+ * C37 in 10-11-2014 at 01:42:58 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1325,7 +1325,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 for (var prop in objectDxf) {
                     shape.create(objectDxf[prop]);
                 }
-                update();
+                view.update();
             }
         },
         fromJson: function (stringJson) {
@@ -1371,8 +1371,15 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return JSON.stringify(plane);
         }
     };
+    
 });
 define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -1449,7 +1456,7 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
             this.segments[this.segments.length - 1].x = xval1;
             this.segments[this.segments.length - 1].y = yval1;
-            
+
         },
         toObject: function () {
 
@@ -1480,21 +1487,48 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
 
 
-//            for (var i = 0; i < points.length; i += 2) {
-//                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
-//            }
-            
+            //            for (var i = 0; i < points.length; i += 2) {
+            //                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+            //            }
+
             for (var i = 0; i < this.segments.length; i += 2) {
                 var x = this.segments[i].x * scale + move.x;
                 var y = this.segments[i].y * scale + move.y;
 
                 context.lineTo(x, y);
             }
-            
+
 
             context.stroke();
 
+        },
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
+
+            return false;
+
         }
+
     };
 
 
@@ -1518,6 +1552,15 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 });
 define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, exports) {
 
+    var types = require('plane/utility/types');
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
+
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -1536,41 +1579,22 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+
+
         this.type = 'bezier-cubic';
         this.points = attrs.points;
+        
+        this.initialize();
     };
 
 
     BezierCubic.prototype = {
-        toObject: function () {
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                points: this.points.map(function (point) {
-                    return {
-                        a: [types.math.parseFloat(point.a.x, 5), types.math.parseFloat(point.a.y, 5)],
-                        b: [types.math.parseFloat(point.b.x, 5), types.math.parseFloat(point.b.y, 5)],
-                        c: [types.math.parseFloat(point.c.x, 5), types.math.parseFloat(point.c.y, 5)]
-                    }
-                })
-            };
-        },
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
+        initialize: function () {
 
             // https://github.com/MartinDoms/Splines/blob/master/cubicBezier.js
 
-            var pts = [],
-                lineSegments = 100;
+            var lineSegments = 100;
 
 
             var dot = function (v1, v2) {
@@ -1597,22 +1621,77 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
                     y: dy
                 };
             }
-
-
+            
             for (var j = 0; j < lineSegments + 1; j++) {
-                pts.push(cubicBezier(this.points, j / lineSegments));
+                this.segments.push(cubicBezier(this.points, j / lineSegments));
             }
 
 
-            for (var i = 0; i < pts.length; i += 2) {
-                context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
+        },
+        toObject: function () {
+            return {
+                uuid: this.uuid,
+                type: this.type,
+                name: this.name,
+                status: this.status,
+                points: this.points.map(function (point) {
+                    return {
+                        a: [types.math.parseFloat(point.a.x, 5), types.math.parseFloat(point.a.y, 5)],
+                        b: [types.math.parseFloat(point.b.x, 5), types.math.parseFloat(point.b.y, 5)],
+                        c: [types.math.parseFloat(point.c.x, 5), types.math.parseFloat(point.c.y, 5)]
+                    }
+                })
+            };
+        },
+        render: function (context, transform) {
+
+            context.beginPath();
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
+
+
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
             }
+            
             context.stroke();
 
+        },
+        contains: function (position, transform) {
 
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
 
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
+
+            return false;
 
         }
+
     }
 
 
@@ -1633,6 +1712,8 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
 
 });
 define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (require, exports) {
+
+    var point = require('plane/structure/point');
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -1707,9 +1788,20 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
             }
             context.stroke();
 
+        },
+        contains: function (position, transform) {
 
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+
+            return false;
 
         }
+
+
     }
 
 
@@ -1729,6 +1821,12 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
 
 });
 define("plane/shapes/circle", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -1807,7 +1905,34 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
             context.stroke();
 
 
+        },
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
+
+            return false;
+
         }
+
+
     }
 
 
@@ -1828,7 +1953,13 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
 define("plane/shapes/ellipse", ['require', 'exports'], function (require, exports) {
 
     var types = require('plane/utility/types');
-    
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -1863,7 +1994,7 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 
     Ellipse.prototype = {
         initialize: function () {
-        
+
             var startAngle = this.startAngle || 0;
             var endAngle = this.endAngle || (2.0 * Math.PI);
 
@@ -1921,8 +2052,8 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
                     x: item.x,
                     y: item.y
                 };
-            });            
-        
+            });
+
         },
         toObject: function () {
 
@@ -1968,9 +2099,32 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 
             context.stroke();
 
+        },
+        contains: function (position, transform) {
 
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
 
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
+
+            return false;
         }
+
     }
 
 
@@ -1989,6 +2143,11 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 
 });
 define("plane/shapes/line", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
 
     function Line(attrs) {
         this.uuid = attrs.uuid;
@@ -2018,16 +2177,16 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
         render: function (context, transform) {
 
             // possivel personalização
-            if (this.style) {
-                context.save();
+            //            if (this.style) {
+            //                context.save();
+            //
+            //                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+            //                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
+            //            }
 
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-            
-            
-//            debugger;
-            
+
+            //            debugger;
+
             context.beginPath();
 
             var scale = Math.sqrt(transform.a * transform.d);
@@ -2037,21 +2196,33 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
             };
 
 
-            // possivel personalização
-            context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
-            context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
+            //            // possivel personalização
+            //            context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
+            //            context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
 
             context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
             context.lineTo((this.points[1].x * scale) + move.x, (this.points[1].y * scale) + move.y);
 
             context.stroke();
-            
-            
+
+
 
             // possivel personalização
             if (this.style) {
                 context.restore();
             }
+
+        },
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+            
+            if (intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move))){
+                return true;
+            }
+
+            return false;
 
         }
     }
@@ -2073,6 +2244,9 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
 });
 define("plane/shapes/polygon", ['require', 'exports'], function (require, exports) {
 
+    var point = require('plane/structure/point');
+    
+    
     function Polygon(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -2120,7 +2294,17 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
             context.stroke();
 
         },
-        contains: function (zz, zzz) {}
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+
+            return false;
+
+        }
 
     }
 
@@ -2141,6 +2325,8 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
 });
 define("plane/shapes/polyline", ['require', 'exports'], function (require, exports) {
 
+    var point = require('plane/structure/point');
+    
     function Polyline(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -2189,7 +2375,19 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
             context.stroke();
 
 
+        },
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+
+            return false;
+
         }
+
     }
 
 
@@ -2210,6 +2408,9 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
 });
 define("plane/shapes/rectangle", ['require', 'exports'], function (require, exports) {
 
+    var point = require('plane/structure/point');
+    
+    
     function Rectangle(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -2250,9 +2451,19 @@ define("plane/shapes/rectangle", ['require', 'exports'], function (require, expo
 
             context.strokeRect((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.width * scale, this.height * scale);
 
+        },
+        contains: function (position, transform) {
 
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+
+            return false;
 
         }
+
     }
 
 
@@ -2273,12 +2484,12 @@ define("plane/shapes/rectangle", ['require', 'exports'], function (require, expo
 
 });
 define("plane/shapes/spline-catmull–rom", ['require', 'exports'], function (require, exports) {
-    
-    
+
+
     // http://jsbin.com/piyal/15/edit?js,output
-    
-    
-    
+
+
+
     function SplineCatmullRom(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -2288,31 +2499,38 @@ define("plane/shapes/spline-catmull–rom", ['require', 'exports'], function (re
         this.type = 'spline-catmull–rom';
         this.points = attrs.points;
     };
-    
-    
+
+
     SplineCatmullRom.prototype = {
-    
+
         render: function (context, transform) {
 
             context.beginPath();
-            
+
             var scale = Math.sqrt(transform.a * transform.d);
             var move = {
                 x: transform.tx,
                 y: transform.ty
             };
-            
-            
-            
-            
+        },
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+
+            return false;
 
         }
-    
+
+
     }
-    
-    
-    
-    
+
+
+
+
 
     function create(attrs) {
         if (typeof attrs == 'function') {
@@ -2528,6 +2746,17 @@ define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, e
 
 
             context.stroke();
+
+        },
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+
+            return false;
 
         }
 
@@ -3128,7 +3357,8 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
     var store = types.data.dictionary.create();
 
-    var point = require('plane/structure/point');
+    var layer = require('plane/structure/layer'),
+        point = require('plane/structure/point');
 
     var viewPort = null,
         view = null;
@@ -3160,11 +3390,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
     function initialize(config) {
 
         viewPort = config.viewPort;
-//        select = config.select;
+        //        select = config.select;
         view = config.view;
 
         var pointDown,
-//            shapesSelect = select.shapes,
+            //            shapesSelect = select.shapes,
             shapesOver = types.data.dictionary.create();
 
 
@@ -3173,7 +3403,8 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                 mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas),
-                pointMove = point.create(pointInView);
+                pointMove = point.create(pointInView),
+                shapesSelect = [];
 
             // to point
             pointInCanvas = point.create(pointInCanvas);
@@ -3186,33 +3417,30 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 return element > 0;
             });
 
-////            debugger;
-//
-//            // caso positivo realizamos a procura 
-//            if (imageData && select.layer && select.layer.status != 'system') {
-//                // apenas procuro na layer selecionada
-//                var children = select.layer.children.list(),
-//                    c = children.length;
-//
-//                while (c--) {
-//                    if (children[c].contains(pointInCanvas, view.transform)) {
-//                        shapesSelect.add(children[c].uuid, children[c]);
-////                        break; - lilo - teste de performance
-//                    } else {
-//                        shapesSelect.remove(children[c].uuid);
-//                    }
-//                }
-//            } else { // caso negativo - limpamos os shapesSelect
-//                shapesSelect.clear();
-//            }
-//
-//            // customized event
-//            event = {
-//                type: 'onMouseDown',
-//                point: pointMove,
-//                shapes: shapesSelect.list(),
-//                Now: new Date().toISOString()
-//            };
+            //            debugger;
+
+            // caso positivo realizamos a procura 
+            if (imageData && layer.active && layer.active.status != 'system') {
+                // apenas procuro na layer selecionada
+                var children = layer.active.children.list(),
+                    c = children.length;
+
+                while (c--) {
+                    if (children[c].contains(pointInCanvas, view.transform)) {
+                        shapesSelect.push(children[c]);
+                        //                        break; - lilo - teste de performance
+                    }
+                }
+            }
+
+
+            // customized event
+            event = {
+                type: 'onMouseDown',
+                point: pointMove,
+                shapes: shapesSelect,
+                Now: new Date().toISOString()
+            };
 
             var tools = store.list(),
                 t = tools.length;
@@ -3221,6 +3449,8 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                     tools[t].events.notify('onMouseDown', event);
                 }
             }
+
+
         }
 
         function onMouseUp(event) {
@@ -3254,55 +3484,55 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
         function onMouseMove(event) {
 
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas);
-
-            // to point para procura em contains
-            pointInCanvas = point.create(pointInCanvas);
-
-            // verifico se o local onde o ponto está possui alguma shape como imagem
-            var imageData = [].some.call(view.context.getImageData(mouseInCanvas.x, mouseInCanvas.y, 3, 3).data, function (element) {
-                return element > 0;
-            });
-
-            // caso positivo realizamos a procura 
-            if (imageData && select.layer && select.layer.status != 'system') {
-                // apenas procuro na layer selecionada
-                var children = select.layer.children.list(),
-                    c = children.length;
-
-                while (c--) {
-                    if (children[c].contains(pointInCanvas, view.transform)) {
-                        shapesOver.add(children[c].uuid, children[c]);
-//                        break; - lilo - teste de performance
-                    } else {
-                        shapesOver.remove(children[c].uuid);
-                    }
-                }
-            } else { // caso negativo - limpamos os shapesOver
-                shapesOver.clear();
-            }
-
-            // customized event
-            event = {
-                type: 'onMouseMove',
-                point: {
-                    inDocument: point.create(event.x, event.y),
-                    inCanvas: point.create(mouseInCanvas.x, mouseInCanvas.y),
-                    inView: point.create(pointInView)
-                },
-                shapes: shapesOver.list(),
-                Now: new Date().toISOString()
-            };
-
-            var tools = store.list(),
-                t = tools.length;
-            while (t--) {
-                if (tools[t].active) {
-                    tools[t].events.notify('onMouseMove', event);
-                }
-            }
+            //            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+            //                mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
+            //                pointInView = view.transform.inverseTransform(pointInCanvas);
+            //
+            //            // to point para procura em contains
+            //            pointInCanvas = point.create(pointInCanvas);
+            //
+            //            // verifico se o local onde o ponto está possui alguma shape como imagem
+            //            var imageData = [].some.call(view.context.getImageData(mouseInCanvas.x, mouseInCanvas.y, 3, 3).data, function (element) {
+            //                return element > 0;
+            //            });
+            //
+            //            // caso positivo realizamos a procura 
+            //            if (imageData && select.layer && select.layer.status != 'system') {
+            //                // apenas procuro na layer selecionada
+            //                var children = select.layer.children.list(),
+            //                    c = children.length;
+            //
+            //                while (c--) {
+            //                    if (children[c].contains(pointInCanvas, view.transform)) {
+            //                        shapesOver.add(children[c].uuid, children[c]);
+            //                        //                        break; - lilo - teste de performance
+            //                    } else {
+            //                        shapesOver.remove(children[c].uuid);
+            //                    }
+            //                }
+            //            } else { // caso negativo - limpamos os shapesOver
+            //                shapesOver.clear();
+            //            }
+            //
+            //            // customized event
+            //            event = {
+            //                type: 'onMouseMove',
+            //                point: {
+            //                    inDocument: point.create(event.x, event.y),
+            //                    inCanvas: point.create(mouseInCanvas.x, mouseInCanvas.y),
+            //                    inView: point.create(pointInView)
+            //                },
+            //                shapes: shapesOver.list(),
+            //                Now: new Date().toISOString()
+            //            };
+            //
+            //            var tools = store.list(),
+            //                t = tools.length;
+            //            while (t--) {
+            //                if (tools[t].active) {
+            //                    tools[t].events.notify('onMouseMove', event);
+            //                }
+            //            }
         }
 
         function onMouseLeave(event) {
@@ -3538,7 +3768,7 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         },
         set: function (value) {
 
-            var centerSubtract = center.subtract(_center);
+            var centerSubtract = value.subtract(_center);
             centerSubtract = centerSubtract.negate();
 
             var xxx = matrix.create();
@@ -3583,6 +3813,8 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
     exports.initialize = initialize;
     exports.update = update;
     exports.zoomTo = zoomTo;
+    exports.reset = reset;
+    
     
 });
 define("plane/utility/types", ['require', 'exports'], function (require, exports) {

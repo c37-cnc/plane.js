@@ -152,7 +152,7 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         },
         set: function (value) {
 
-            var centerSubtract = center.subtract(_center);
+            var centerSubtract = value.subtract(_center);
             centerSubtract = centerSubtract.negate();
 
             var xxx = matrix.create();
@@ -197,5 +197,7 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
     exports.initialize = initialize;
     exports.update = update;
     exports.zoomTo = zoomTo;
+    exports.reset = reset;
+    
     
 });

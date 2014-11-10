@@ -1,5 +1,7 @@
 define("plane/shapes/polyline", ['require', 'exports'], function (require, exports) {
 
+    var point = require('plane/structure/point');
+    
     function Polyline(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -48,7 +50,19 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
             context.stroke();
 
 
+        },
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+
+            return false;
+
         }
+
     }
 
 

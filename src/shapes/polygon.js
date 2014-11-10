@@ -1,5 +1,8 @@
 define("plane/shapes/polygon", ['require', 'exports'], function (require, exports) {
 
+    var point = require('plane/structure/point');
+    
+    
     function Polygon(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -47,7 +50,17 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
             context.stroke();
 
         },
-        contains: function (zz, zzz) {}
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+
+            return false;
+
+        }
 
     }
 

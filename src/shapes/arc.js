@@ -1,5 +1,11 @@
 define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -75,7 +81,7 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
             this.segments[this.segments.length - 1].x = xval1;
             this.segments[this.segments.length - 1].y = yval1;
-            
+
         },
         toObject: function () {
 
@@ -106,21 +112,48 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
 
 
-//            for (var i = 0; i < points.length; i += 2) {
-//                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
-//            }
-            
+            //            for (var i = 0; i < points.length; i += 2) {
+            //                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
+            //            }
+
             for (var i = 0; i < this.segments.length; i += 2) {
                 var x = this.segments[i].x * scale + move.x;
                 var y = this.segments[i].y * scale + move.y;
 
                 context.lineTo(x, y);
             }
-            
+
 
             context.stroke();
 
+        },
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
+
+            return false;
+
         }
+
     };
 
 

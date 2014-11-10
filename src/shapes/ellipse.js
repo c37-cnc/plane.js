@@ -1,7 +1,13 @@
 define("plane/shapes/ellipse", ['require', 'exports'], function (require, exports) {
 
     var types = require('plane/utility/types');
-    
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -36,7 +42,7 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 
     Ellipse.prototype = {
         initialize: function () {
-        
+
             var startAngle = this.startAngle || 0;
             var endAngle = this.endAngle || (2.0 * Math.PI);
 
@@ -94,8 +100,8 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
                     x: item.x,
                     y: item.y
                 };
-            });            
-        
+            });
+
         },
         toObject: function () {
 
@@ -141,9 +147,32 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 
             context.stroke();
 
+        },
+        contains: function (position, transform) {
 
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
 
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
+
+            return false;
         }
+
     }
 
 

@@ -1,5 +1,8 @@
 define("plane/shapes/rectangle", ['require', 'exports'], function (require, exports) {
 
+    var point = require('plane/structure/point');
+    
+    
     function Rectangle(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -40,9 +43,19 @@ define("plane/shapes/rectangle", ['require', 'exports'], function (require, expo
 
             context.strokeRect((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.width * scale, this.height * scale);
 
+        },
+        contains: function (position, transform) {
 
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+
+            return false;
 
         }
+
     }
 
 

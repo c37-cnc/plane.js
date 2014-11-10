@@ -111,7 +111,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 for (var prop in objectDxf) {
                     shape.create(objectDxf[prop]);
                 }
-                update();
+                view.update();
             }
         },
         fromJson: function (stringJson) {
@@ -157,4 +157,5 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return JSON.stringify(plane);
         }
     };
+    
 });

@@ -1,5 +1,14 @@
 define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, exports) {
 
+    var types = require('plane/utility/types');
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
+
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -18,41 +27,22 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+
+
         this.type = 'bezier-cubic';
         this.points = attrs.points;
+        
+        this.initialize();
     };
 
 
     BezierCubic.prototype = {
-        toObject: function () {
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                points: this.points.map(function (point) {
-                    return {
-                        a: [types.math.parseFloat(point.a.x, 5), types.math.parseFloat(point.a.y, 5)],
-                        b: [types.math.parseFloat(point.b.x, 5), types.math.parseFloat(point.b.y, 5)],
-                        c: [types.math.parseFloat(point.c.x, 5), types.math.parseFloat(point.c.y, 5)]
-                    }
-                })
-            };
-        },
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
+        initialize: function () {
 
             // https://github.com/MartinDoms/Splines/blob/master/cubicBezier.js
 
-            var pts = [],
-                lineSegments = 100;
+            var lineSegments = 100;
 
 
             var dot = function (v1, v2) {
@@ -79,22 +69,77 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
                     y: dy
                 };
             }
-
-
+            
             for (var j = 0; j < lineSegments + 1; j++) {
-                pts.push(cubicBezier(this.points, j / lineSegments));
+                this.segments.push(cubicBezier(this.points, j / lineSegments));
             }
 
 
-            for (var i = 0; i < pts.length; i += 2) {
-                context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
+        },
+        toObject: function () {
+            return {
+                uuid: this.uuid,
+                type: this.type,
+                name: this.name,
+                status: this.status,
+                points: this.points.map(function (point) {
+                    return {
+                        a: [types.math.parseFloat(point.a.x, 5), types.math.parseFloat(point.a.y, 5)],
+                        b: [types.math.parseFloat(point.b.x, 5), types.math.parseFloat(point.b.y, 5)],
+                        c: [types.math.parseFloat(point.c.x, 5), types.math.parseFloat(point.c.y, 5)]
+                    }
+                })
+            };
+        },
+        render: function (context, transform) {
+
+            context.beginPath();
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
+
+
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
             }
+            
             context.stroke();
 
+        },
+        contains: function (position, transform) {
 
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
 
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
+
+            return false;
 
         }
+
     }
 
 

@@ -1,5 +1,10 @@
 define("plane/shapes/line", ['require', 'exports'], function (require, exports) {
 
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
     function Line(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
@@ -28,16 +33,16 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
         render: function (context, transform) {
 
             // possivel personalização
-            if (this.style) {
-                context.save();
+            //            if (this.style) {
+            //                context.save();
+            //
+            //                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+            //                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
+            //            }
 
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-            
-            
-//            debugger;
-            
+
+            //            debugger;
+
             context.beginPath();
 
             var scale = Math.sqrt(transform.a * transform.d);
@@ -47,21 +52,33 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
             };
 
 
-            // possivel personalização
-            context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
-            context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
+            //            // possivel personalização
+            //            context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
+            //            context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
 
             context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
             context.lineTo((this.points[1].x * scale) + move.x, (this.points[1].y * scale) + move.y);
 
             context.stroke();
-            
-            
+
+
 
             // possivel personalização
             if (this.style) {
                 context.restore();
             }
+
+        },
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+            
+            if (intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move))){
+                return true;
+            }
+
+            return false;
 
         }
     }
