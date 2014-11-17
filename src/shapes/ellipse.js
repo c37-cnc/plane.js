@@ -119,6 +119,15 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
         },
         render: function (context, transform) {
 
+            // possivel personalização
+            if (this.style) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
+            }
+
+
             context.beginPath();
 
             var scale = Math.sqrt(transform.a * transform.d);
@@ -146,6 +155,13 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 
 
             context.stroke();
+
+
+            // possivel personalização
+            if (this.style) {
+                context.restore();
+            }
+
 
         },
         contains: function (position, transform) {

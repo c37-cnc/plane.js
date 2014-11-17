@@ -109,7 +109,7 @@
 
             plane.shape.create({
                 type: 'bezier-cubic',
-                points: [[60, 190], [120, 10], [550, 10], [520,190]]
+                points: [[60, 190], [120, 10], [550, 10], [520, 190]]
             });
 
 
@@ -241,9 +241,58 @@
 
             console.log(toolMove);
 
+            var shapesOver = [],
+                shapesSelect = [];
+
             toolMove.events.listen('onMouseMove', function (event) {
 
                 //                console.log(event);
+
+                shapesOver.forEach(function (shape) {
+                    if (shape.status != 'selected') {
+                        shape.style = null;
+                    }
+                });
+
+
+                if (event.shapes.length > 0) {
+
+                    shapesOver = shapesOver.concat(event.shapes);
+
+                    event.shapes.forEach(function (shape) {
+                        shape.style = {
+                            lineColor: 'rgb(61, 142, 193)'
+                        };
+                    });
+                }
+
+                plane.view.update();
+
+            });
+
+            toolMove.events.listen('onMouseDown', function (event) {
+
+                //                debugger;
+
+                shapesSelect.forEach(function (shape) {
+                    shape.style = null;
+                });
+
+
+                if (event.shapes.length > 0) {
+
+                    shapesSelect = shapesSelect.concat(event.shapes);
+
+                    event.shapes.forEach(function (shape) {
+                        shape.status = 'selected';
+                        shape.style = {
+                            lineColor: 'rgb(68, 121, 154)'
+                        };
+                    });
+                }
+
+                plane.view.update();
+
 
             });
 

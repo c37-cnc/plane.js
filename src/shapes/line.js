@@ -33,12 +33,12 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
         render: function (context, transform) {
 
             // possivel personalização
-            //            if (this.style) {
-            //                context.save();
-            //
-            //                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-            //                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            //            }
+            if (this.style) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
+            }
 
 
             //            debugger;
@@ -51,10 +51,6 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
                 y: transform.ty
             };
 
-
-            //            // possivel personalização
-            //            context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
-            //            context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
 
             context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
             context.lineTo((this.points[1].x * scale) + move.x, (this.points[1].y * scale) + move.y);
@@ -73,8 +69,8 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
 
             var scale = Math.sqrt(transform.a * transform.d);
             var move = point.create(transform.tx, transform.ty);
-            
-            if (intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move))){
+
+            if (intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move))) {
                 return true;
             }
 
