@@ -1,32 +1,34 @@
 define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, exports) {
 
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
+
     function SplineNurbs(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+
         this.type = 'spline-nurbs';
         this.degree = attrs.degree;
         this.knots = attrs.knots;
         this.points = attrs.points;
+
+        this.initialize();
+
     };
 
 
     SplineNurbs.prototype = {
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-            /*
+        initialize: function () {
+        
+        
+             /*
                     Finds knot vector span.
 
                     p : degree
@@ -186,18 +188,51 @@ define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, e
             //                debugger;
 
             //                                var xxx = getPoints(800, this.degree, this.knots, this.points);
-            var xxx = LEUWF3cpo(17, this.degree, this.knots, this.points);
+            this.segments = LEUWF3cpo(17, this.degree, this.knots, this.points);
+       
+        
+        
+        },
+        render: function (context, transform) {
+            
+            // possivel personalização
+            if (this.style) {
+                context.save();
 
-
-
-            context.moveTo(xxx[0].x * scale + move.x, xxx.y * scale + move.y);
-
-            for (var i = 0; i < xxx.length; i++) {
-                context.lineTo(xxx[i].x * scale + move.x, xxx[i].y * scale + move.y);
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
+            
+
+            context.beginPath();
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
 
 
+            
+            context.moveTo(this.segments[0].x * scale + move.x, this.segments[0].y * scale + move.y);
+            
+            for (var i = 0; i < this.segments.length; i += 2) {
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
+            }
+            
+            
+            context.closePath();
+            
             context.stroke();
+            
+            // possivel personalização
+            if (this.style) {
+                context.restore();
+            }
+            
 
         },
         contains: function (position, transform) {
@@ -206,7 +241,22 @@ define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, e
             var move = point.create(transform.tx, transform.ty);
 
 
-            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
 
             return false;
 

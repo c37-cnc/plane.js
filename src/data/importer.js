@@ -42,28 +42,24 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 {
                     var ellipse = '{ "type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2}, "radiusX": {3}, "startAngle": {4}, "endAngle": {5}, "angle": {6} },';
                     
-                    var p2 = {
-                        x: objectDxf.x1,
-                        y: objectDxf.y1
-                    };
-
                     var ratio = objectDxf.r;
-                    var startAngle = objectParse.startAngle;
-                    var endAngle = objectParse.endAngle || (2.0 * Math.PI);
-
+                    var startAngle = objectDxf.startAngle;
+                    var endAngle = objectDxf.endAngle || (2.0 * Math.PI);
+                    
+                    // clockwise || anticlockwise?
                     while (endAngle < startAngle) {
                         endAngle += 2.0 * Math.PI;
                     }
-
+                    
                     var radiusX = {
-                        x: 0 - p2.x,
-                        y: 0 - p2.y
+                        x: 0 - objectDxf.x1,
+                        y: 0 - objectDxf.y1
                     };
 
                     radiusX = Math.sqrt(radiusX.x * radiusX.x + radiusX.y * radiusX.y);
 
                     var radiusY = radiusX * ratio;
-                    var angle = Math.atan2(p2.y, p2.x);
+                    var angle = Math.atan2(objectDxf.y1, objectDxf.x1);
                     
                     
                     

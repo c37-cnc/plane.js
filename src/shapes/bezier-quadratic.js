@@ -1,7 +1,14 @@
 define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (require, exports) {
 
+    var types = require('plane/utility/types');
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
     var point = require('plane/structure/point');
 
+    
+    
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -20,24 +27,20 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+        
+        
         this.type = 'bezier-quadratic';
         this.points = attrs.points;
+        
+        this.initialize();
+        
     };
 
     BezierQuadratic.prototype = {
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-            var pts = [],
-                lineSegments = 100;
+        initialize: function () {
+        
+            var lineSegments = 100;
 
 
             var dot = function (v1, v2) {
@@ -65,15 +68,65 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
             }
 
             for (var j = 0; j < lineSegments + 1; j++) {
-                pts.push(quadraticBezier(this.points, j / lineSegments));
+                this.segments.push(quadraticBezier(this.points, j / lineSegments));
+            }
+        
+        
+        },
+        render: function (context, transform) {
+
+//            context.beginPath();
+//
+//            var scale = Math.sqrt(transform.a * transform.d);
+//            var move = {
+//                x: transform.tx,
+//                y: transform.ty
+//            };
+//
+//
+//
+//
+//
+//            for (var i = 0; i < pts.length; i += 2) {
+//                context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
+//            }
+//            context.stroke();
+            
+            
+
+            // possivel personalização
+            if (this.style) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
 
+            
+            context.beginPath();
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
 
 
-            for (var i = 0; i < pts.length; i += 2) {
-                context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
             }
+            
             context.stroke();
+
+            // possivel personalização
+            if (this.style) {
+                context.restore();
+            }            
 
         },
         contains: function (position, transform) {
@@ -81,8 +134,22 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
             var scale = Math.sqrt(transform.a * transform.d);
             var move = point.create(transform.tx, transform.ty);
 
+            var segmentA = null,
+                segmentB = null;
 
-            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
 
             return false;
 

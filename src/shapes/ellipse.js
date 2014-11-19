@@ -42,7 +42,10 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 
     Ellipse.prototype = {
         initialize: function () {
+            
+            
 
+            var angle = (this.startAngle != undefined && this.endAngle != undefined) ? this.angle : types.math.radians(this.angle) || 0;
             var startAngle = this.startAngle || 0;
             var endAngle = this.endAngle || (2.0 * Math.PI);
 
@@ -53,11 +56,7 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
             var radiusX = this.radiusX;
             var radiusY = this.radiusY;
 
-            var angle = types.math.radians(this.angle) || 0;
             var num18 = Math.PI / 60.0;
-
-
-            var polyline2 = [];
 
 
             var num = Math.cos(angle);
@@ -86,7 +85,7 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
                 };
 
                 // armazenando no array
-                polyline2.push(p3);
+                this.segments.push(p3);
 
                 // continuando até a volta completa
                 if (startAngle != endAngle)
@@ -95,12 +94,6 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
                     break;
             }
 
-            this.segments = polyline2.map(function (item) {
-                return {
-                    x: item.x,
-                    y: item.y
-                };
-            });
 
         },
         toObject: function () {
@@ -135,12 +128,6 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
                 x: transform.tx,
                 y: transform.ty
             };
-
-
-            //            debugger;
-
-
-
 
 
 

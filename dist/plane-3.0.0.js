@@ -1,5 +1,5 @@
 /*!
- * C37 in 11-11-2014 at 07:38:48 
+ * C37 in 19-11-2014 at 14:51:38 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -126,28 +126,24 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 {
                     var ellipse = '{ "type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2}, "radiusX": {3}, "startAngle": {4}, "endAngle": {5}, "angle": {6} },';
                     
-                    var p2 = {
-                        x: objectDxf.x1,
-                        y: objectDxf.y1
-                    };
-
                     var ratio = objectDxf.r;
-                    var startAngle = objectParse.startAngle;
-                    var endAngle = objectParse.endAngle || (2.0 * Math.PI);
-
+                    var startAngle = objectDxf.startAngle;
+                    var endAngle = objectDxf.endAngle || (2.0 * Math.PI);
+                    
+                    // clockwise || anticlockwise?
                     while (endAngle < startAngle) {
                         endAngle += 2.0 * Math.PI;
                     }
-
+                    
                     var radiusX = {
-                        x: 0 - p2.x,
-                        y: 0 - p2.y
+                        x: 0 - objectDxf.x1,
+                        y: 0 - objectDxf.y1
                     };
 
                     radiusX = Math.sqrt(radiusX.x * radiusX.x + radiusX.y * radiusX.y);
 
                     var radiusY = radiusX * ratio;
-                    var angle = Math.atan2(p2.y, p2.x);
+                    var angle = Math.atan2(objectDxf.y1, objectDxf.x1);
                     
                     
                     
@@ -403,6 +399,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 //	testPoint(path, path.bounds.topRight, false);
 //	testPoint(path, path.bounds.bottomLeft, false);
 //	testPoint(path, path.bounds.bottomRight, false);
+// http://www.kevlindev.com/gui/math/intersection/index.htm
 define("plane/geometric/intersection", ['require', 'exports'], function (require, exports) {
 
     var polynomial = require('plane/geometric/polynomial'),
@@ -1493,12 +1490,6 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
             };
 
 
-
-
-            //            for (var i = 0; i < points.length; i += 2) {
-            //                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
-            //            }
-
             for (var i = 0; i < this.segments.length; i += 2) {
                 var x = this.segments[i].x * scale + move.x;
                 var y = this.segments[i].y * scale + move.y;
@@ -1741,8 +1732,15 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
 });
 define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (require, exports) {
 
+    var types = require('plane/utility/types');
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
     var point = require('plane/structure/point');
 
+    
+    
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -1761,24 +1759,20 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+        
+        
         this.type = 'bezier-quadratic';
         this.points = attrs.points;
+        
+        this.initialize();
+        
     };
 
     BezierQuadratic.prototype = {
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-            var pts = [],
-                lineSegments = 100;
+        initialize: function () {
+        
+            var lineSegments = 100;
 
 
             var dot = function (v1, v2) {
@@ -1806,15 +1800,65 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
             }
 
             for (var j = 0; j < lineSegments + 1; j++) {
-                pts.push(quadraticBezier(this.points, j / lineSegments));
+                this.segments.push(quadraticBezier(this.points, j / lineSegments));
+            }
+        
+        
+        },
+        render: function (context, transform) {
+
+//            context.beginPath();
+//
+//            var scale = Math.sqrt(transform.a * transform.d);
+//            var move = {
+//                x: transform.tx,
+//                y: transform.ty
+//            };
+//
+//
+//
+//
+//
+//            for (var i = 0; i < pts.length; i += 2) {
+//                context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
+//            }
+//            context.stroke();
+            
+            
+
+            // possivel personalização
+            if (this.style) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
 
+            
+            context.beginPath();
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
 
 
-            for (var i = 0; i < pts.length; i += 2) {
-                context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
             }
+            
             context.stroke();
+
+            // possivel personalização
+            if (this.style) {
+                context.restore();
+            }            
 
         },
         contains: function (position, transform) {
@@ -1822,8 +1866,22 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
             var scale = Math.sqrt(transform.a * transform.d);
             var move = point.create(transform.tx, transform.ty);
 
+            var segmentA = null,
+                segmentB = null;
 
-            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
 
             return false;
 
@@ -2035,7 +2093,10 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 
     Ellipse.prototype = {
         initialize: function () {
+            
+            
 
+            var angle = (this.startAngle != undefined && this.endAngle != undefined) ? this.angle : types.math.radians(this.angle) || 0;
             var startAngle = this.startAngle || 0;
             var endAngle = this.endAngle || (2.0 * Math.PI);
 
@@ -2046,11 +2107,7 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
             var radiusX = this.radiusX;
             var radiusY = this.radiusY;
 
-            var angle = types.math.radians(this.angle) || 0;
             var num18 = Math.PI / 60.0;
-
-
-            var polyline2 = [];
 
 
             var num = Math.cos(angle);
@@ -2079,7 +2136,7 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
                 };
 
                 // armazenando no array
-                polyline2.push(p3);
+                this.segments.push(p3);
 
                 // continuando até a volta completa
                 if (startAngle != endAngle)
@@ -2088,12 +2145,6 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
                     break;
             }
 
-            this.segments = polyline2.map(function (item) {
-                return {
-                    x: item.x,
-                    y: item.y
-                };
-            });
 
         },
         toObject: function () {
@@ -2128,12 +2179,6 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
                 x: transform.tx,
                 y: transform.ty
             };
-
-
-            //            debugger;
-
-
-
 
 
 
@@ -2297,22 +2342,45 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
 });
 define("plane/shapes/polygon", ['require', 'exports'], function (require, exports) {
 
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
     var point = require('plane/structure/point');
-    
-    
+
+
     function Polygon(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+
         this.type = 'polygon';
         this.point = attrs.point;
         this.points = attrs.points;
         this.sides = attrs.sides;
+        this.radius = attrs.radius;
+
+        this.initialize();
     };
 
     Polygon.prototype = {
+        initialize: function () {
+
+            for (var i = 0; i < this.sides; i++) {
+                
+                var pointX = (this.radius * Math.cos(((Math.PI * 2) / this.sides) * i) + this.point.x),
+                    pointY = (this.radius * Math.sin(((Math.PI * 2) / this.sides) * i) + this.point.y);
+
+                this.segments.push({
+                    x: pointX,
+                    y: pointY
+                });
+            }
+
+
+        },
         toObject: function () {
 
             return {
@@ -2328,6 +2396,33 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
         },
         render: function (context, transform) {
 
+            //            context.beginPath();
+            //
+            //            var scale = Math.sqrt(transform.a * transform.d);
+            //            var move = {
+            //                x: transform.tx,
+            //                y: transform.ty
+            //            };
+            //
+            //
+            //            context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
+            //
+            //            this.points.forEach(function (point) {
+            //                context.lineTo((point.x * scale) + move.x, (point.y * scale) + move.y);
+            //            });
+            //            context.closePath();
+            //
+            //            context.stroke();
+
+
+            // possivel personalização
+            if (this.style) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
+            }
+
             context.beginPath();
 
             var scale = Math.sqrt(transform.a * transform.d);
@@ -2337,14 +2432,24 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
             };
 
 
-            context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
+            // ATENÇÃO PARA CALCULO DOS SEGMENTOS
+            context.moveTo((this.segments[0].x * scale) + move.x, (this.segments[0].y * scale) + move.y);
 
-            this.points.forEach(function (point) {
+            this.segments.forEach(function (point) {
                 context.lineTo((point.x * scale) + move.x, (point.y * scale) + move.y);
             });
             context.closePath();
+            // ATENÇÃO PARA CALCULO DOS SEGMENTOS
+
 
             context.stroke();
+
+
+            // possivel personalização
+            if (this.style) {
+                context.restore();
+            }
+
 
         },
         contains: function (position, transform) {
@@ -2353,7 +2458,22 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
             var move = point.create(transform.tx, transform.ty);
 
 
-            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
 
             return false;
 
@@ -2378,19 +2498,34 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
 });
 define("plane/shapes/polyline", ['require', 'exports'], function (require, exports) {
 
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
     var point = require('plane/structure/point');
-    
+
+
     function Polyline(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+
+
         this.type = 'polyline';
         this.points = attrs.points;
+
+        this.initialize();
     };
 
     Polyline.prototype = {
+        initialize: function () {
+        
+            this.segments = this.   points;
+        
+        
+        },
         toObject: function () {
 
             return {
@@ -2409,6 +2544,14 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
         },
         render: function (context, transform) {
 
+            // possivel personalização
+            if (this.style) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
+            }
+
             context.beginPath();
 
             var scale = Math.sqrt(transform.a * transform.d);
@@ -2418,15 +2561,33 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
             };
 
 
-            context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
 
-            this.points.forEach(function (point) {
+//            context.moveTo(this.segments[0].x * scale + move.x, this.segments[0].y * scale + move.y);
+//            
+//            for (var i = 0; i < this.segments.length; i += 2) {
+//                var x = this.segments[i].x * scale + move.x;
+//                var y = this.segments[i].y * scale + move.y;
+//
+//                context.lineTo(x, y);
+//            }
+
+
+            context.moveTo((this.segments[0].x * scale) + move.x, (this.segments[0].y * scale) + move.y);
+
+            this.segments.forEach(function (point) {
                 context.lineTo((point.x * scale) + move.x, (point.y * scale) + move.y);
             });
-
-
+            
+            
+            
+            
             context.stroke();
-
+            
+            
+            // possivel personalização
+            if (this.style) {
+                context.restore();
+            }
 
         },
         contains: function (position, transform) {
@@ -2435,7 +2596,22 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
             var move = point.create(transform.tx, transform.ty);
 
 
-            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
 
             return false;
 
@@ -2461,22 +2637,57 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
 });
 define("plane/shapes/rectangle", ['require', 'exports'], function (require, exports) {
 
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
     var point = require('plane/structure/point');
-    
-    
+
+
     function Rectangle(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+
         this.type = 'rectangle';
         this.point = attrs.point;
         this.height = attrs.height;
         this.width = attrs.width;
+
+        this.initialize();
+
     };
 
     Rectangle.prototype = {
+        initialize: function () {
+
+            this.segments.push({
+                x: this.point.x,
+                y: this.point.y
+            });
+            this.segments.push({
+                x: this.point.x,
+                y: this.point.y + this.height
+            });
+            this.segments.push({
+                x: this.point.x + this.width,
+                y: this.point.y + this.height
+            });
+            this.segments.push({
+                x: this.point.x + this.width,
+                y: this.point.y
+            });
+            this.segments.push({
+                x: this.point.x,
+                y: this.point.y
+            });
+
+
+
+
+        },
         toObject: function () {
 
             return {
@@ -2493,6 +2704,14 @@ define("plane/shapes/rectangle", ['require', 'exports'], function (require, expo
         },
         render: function (context, transform) {
 
+            // possivel personalização
+            if (this.style) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
+            }
+
             context.beginPath();
 
             var scale = Math.sqrt(transform.a * transform.d);
@@ -2502,7 +2721,24 @@ define("plane/shapes/rectangle", ['require', 'exports'], function (require, expo
             };
 
 
-            context.strokeRect((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.width * scale, this.height * scale);
+            // ATENÇÃO PARA CALCULO DOS SEGMENTOS
+            for (var i = 0; i < this.segments.length; i += 1) {
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
+            }
+            // ATENÇÃO PARA CALCULO DOS SEGMENTOS
+
+
+            context.stroke();
+            
+            
+            // possivel personalização
+            if (this.style) {
+                context.restore();
+            }
+            
 
         },
         contains: function (position, transform) {
@@ -2511,7 +2747,22 @@ define("plane/shapes/rectangle", ['require', 'exports'], function (require, expo
             var move = point.create(transform.tx, transform.ty);
 
 
-            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
 
             return false;
 
@@ -2601,33 +2852,35 @@ define("plane/shapes/spline-catmull–rom", ['require', 'exports'], function (re
 });
 define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, exports) {
 
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
+
     function SplineNurbs(attrs) {
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.transform = attrs.transform;
         this.status = attrs.status;
 
+        this.segments = [];
+
         this.type = 'spline-nurbs';
         this.degree = attrs.degree;
         this.knots = attrs.knots;
         this.points = attrs.points;
+
+        this.initialize();
+
     };
 
 
     SplineNurbs.prototype = {
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-            /*
+        initialize: function () {
+        
+        
+             /*
                     Finds knot vector span.
 
                     p : degree
@@ -2787,18 +3040,51 @@ define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, e
             //                debugger;
 
             //                                var xxx = getPoints(800, this.degree, this.knots, this.points);
-            var xxx = LEUWF3cpo(17, this.degree, this.knots, this.points);
+            this.segments = LEUWF3cpo(17, this.degree, this.knots, this.points);
+       
+        
+        
+        },
+        render: function (context, transform) {
+            
+            // possivel personalização
+            if (this.style) {
+                context.save();
 
-
-
-            context.moveTo(xxx[0].x * scale + move.x, xxx.y * scale + move.y);
-
-            for (var i = 0; i < xxx.length; i++) {
-                context.lineTo(xxx[i].x * scale + move.x, xxx[i].y * scale + move.y);
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
+            
+
+            context.beginPath();
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
 
 
+            
+            context.moveTo(this.segments[0].x * scale + move.x, this.segments[0].y * scale + move.y);
+            
+            for (var i = 0; i < this.segments.length; i += 2) {
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
+            }
+            
+            
+            context.closePath();
+            
             context.stroke();
+            
+            // possivel personalização
+            if (this.style) {
+                context.restore();
+            }
+            
 
         },
         contains: function (position, transform) {
@@ -2807,7 +3093,22 @@ define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, e
             var move = point.create(transform.tx, transform.ty);
 
 
-            //            return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
 
             return false;
 
@@ -3349,15 +3650,8 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         case 'polygon':
             {
                 attrs.point = point.create(attrs.x, attrs.y);
-                attrs.points = [];
-
-                for (var i = 0; i < attrs.sides; i++) {
-
-                    var pointX = (attrs.radius * Math.cos(((Math.PI * 2) / attrs.sides) * i) + attrs.point.x),
-                        pointY = (attrs.radius * Math.sin(((Math.PI * 2) / attrs.sides) * i) + attrs.point.y);
-
-                    attrs['points'].push(point.create(pointX, pointY));
-                }
+                attrs.sides = attrs.sides;
+                attrs.radius = attrs.radius;
 
                 shape = polygon.create(attrs);
 

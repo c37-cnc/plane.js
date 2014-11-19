@@ -118,12 +118,6 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
             };
 
 
-
-
-            //            for (var i = 0; i < points.length; i += 2) {
-            //                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
-            //            }
-
             for (var i = 0; i < this.segments.length; i += 2) {
                 var x = this.segments[i].x * scale + move.x;
                 var y = this.segments[i].y * scale + move.y;

@@ -308,15 +308,8 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         case 'polygon':
             {
                 attrs.point = point.create(attrs.x, attrs.y);
-                attrs.points = [];
-
-                for (var i = 0; i < attrs.sides; i++) {
-
-                    var pointX = (attrs.radius * Math.cos(((Math.PI * 2) / attrs.sides) * i) + attrs.point.x),
-                        pointY = (attrs.radius * Math.sin(((Math.PI * 2) / attrs.sides) * i) + attrs.point.y);
-
-                    attrs['points'].push(point.create(pointX, pointY));
-                }
+                attrs.sides = attrs.sides;
+                attrs.radius = attrs.radius;
 
                 shape = polygon.create(attrs);
 

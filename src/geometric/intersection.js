@@ -1,3 +1,4 @@
+// http://www.kevlindev.com/gui/math/intersection/index.htm
 define("plane/geometric/intersection", ['require', 'exports'], function (require, exports) {
 
     var polynomial = require('plane/geometric/polynomial'),
