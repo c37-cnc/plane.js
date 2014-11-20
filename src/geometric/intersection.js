@@ -1,3 +1,4 @@
+// https://github.com/thelonious/js-intersections
 // http://www.kevlindev.com/gui/math/intersection/index.htm
 define("plane/geometric/intersection", ['require', 'exports'], function (require, exports) {
 

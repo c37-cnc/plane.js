@@ -132,51 +132,46 @@
                 width: 125,
                 height: 100
             });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 800,
-            //                y: 150,
-            //                radius: 50,
-            //                startAngle: 0,
-            //                endAngle: 180,
-            //                clockWise: true
-            //            });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 500,
-            //                y: 250,
-            //                radius: 50,
-            //                startAngle: 90,
-            //                endAngle: 180,
-            //                clockWise: false
-            //            });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 700,
-            //                y: 250,
-            //                radius: 50,
-            //                startAngle: 90,
-            //                endAngle: 270,
-            //                clockWise: false
-            //            });
+            plane.shape.create({
+                type: 'arc',
+                x: 800,
+                y: 150,
+                radius: 50,
+                startAngle: 0,
+                endAngle: 180
+            });
+            plane.shape.create({
+                type: 'arc',
+                x: 500,
+                y: 250,
+                radius: 50,
+                startAngle: 90,
+                endAngle: 180
+            });
+            plane.shape.create({
+                type: 'arc',
+                x: 700,
+                y: 250,
+                radius: 50,
+                startAngle: 90,
+                endAngle: 270
+            });
             plane.shape.create({
                 type: 'arc',
                 x: 1000,
                 y: 250,
                 radius: 50,
                 startAngle: 270,
-                endAngle: 90,
-                clockWise: true
+                endAngle: 90
             });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 1200,
-            //                y: 400,
-            //                radius: 30,
-            //                startAngle: 360,
-            //                endAngle: 90,
-            //                clockWise: true
-            //            });
+            plane.shape.create({
+                type: 'arc',
+                x: 1200,
+                y: 400,
+                radius: 30,
+                startAngle: 360,
+                endAngle: 90
+            });
             plane.shape.create({
                 type: 'circle',
                 x: 1200,
@@ -218,7 +213,7 @@
 
 
             var toolPan = plane.tool.create({
-                active: true
+                active: false
             });
 
             console.log(toolPan);
@@ -235,16 +230,14 @@
             });
 
 
-            var toolMove = plane.tool.create({
-                active: true
-            });
+            var toolSelect = plane.tool.create({
+                    active: true
+                }),
+                shapesOver = [],
+                shapesSelect = [],
+                selectRectangleFirstPoint
 
-            console.log(toolMove);
-
-            var shapesOver = [],
-                shapesSelect = [];
-
-            toolMove.events.listen('onMouseMove', function (event) {
+            toolSelect.events.listen('onMouseMove', function (event) {
 
                 //                console.log(event);
 
@@ -266,18 +259,36 @@
                     });
                 }
 
+
+                if (selectRectangleFirstPoint) {
+
+                    plane.layer.active.children.list().forEach(function (shape) {
+                        if (shape.status == 'temporary') {
+                            plane.layer.active.children.remove(shape.uuid);
+                        }
+                    });
+
+                    plane.shape.create({
+                        type: 'rectangle',
+                        x: selectRectangleFirstPoint.x,
+                        y: selectRectangleFirstPoint.y,
+                        height: event.point.inView.subtract(selectRectangleFirstPoint).y,
+                        width: event.point.inView.subtract(selectRectangleFirstPoint).x,
+                        status: 'temporary'
+                    });
+
+                }
+
+
                 plane.view.update();
 
             });
 
-            toolMove.events.listen('onMouseDown', function (event) {
-
-                //                debugger;
+            toolSelect.events.listen('onMouseDown', function (event) {
 
                 shapesSelect.forEach(function (shape) {
                     shape.style = null;
                 });
-
 
                 if (event.shapes.length > 0) {
 
@@ -291,8 +302,22 @@
                     });
                 }
 
-                plane.view.update();
 
+                if (selectRectangleFirstPoint) {
+
+                    plane.layer.active.children.list().forEach(function (shape) {
+                        if (shape.status == 'temporary') {
+                            plane.layer.active.children.find(shape.uuid).status = '';
+                        }
+                    });
+
+                    selectRectangleFirstPoint = null;
+
+                } else {
+                    selectRectangleFirstPoint = event.point;
+                }
+
+                plane.view.update();
 
             });
 

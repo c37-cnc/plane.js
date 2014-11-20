@@ -1,5 +1,5 @@
 /*!
- * C37 in 19-11-2014 at 14:51:38 
+ * C37 in 19-11-2014 at 21:22:22 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -399,6 +399,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 //	testPoint(path, path.bounds.topRight, false);
 //	testPoint(path, path.bounds.bottomLeft, false);
 //	testPoint(path, path.bounds.bottomRight, false);
+// https://github.com/thelonious/js-intersections
 // http://www.kevlindev.com/gui/math/intersection/index.htm
 define("plane/geometric/intersection", ['require', 'exports'], function (require, exports) {
 
