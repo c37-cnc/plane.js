@@ -253,13 +253,13 @@
 
 
                 plane.layer.active.children.list().forEach(function (shape) {
-                    if (shape.type == 'line' && shape.intersectsWithRect({
+                    if ((shape.type == 'line' || shape.type == 'arc') && shape.intersectsWithRect({
                         x: event.pointFirst.x,
                         y: event.pointFirst.y,
                         height: event.pointLast.subtract(event.pointFirst).y,
                         width: event.pointLast.subtract(event.pointFirst).x,
                     })) {
-                        
+
                         console.log('selecionado!!!');
 
                     }

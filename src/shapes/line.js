@@ -93,34 +93,6 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
     }
 
 
-    function between(min, p, max) {
-
-        if (min < max) {
-            if (p > min && p < max) {
-                return true;
-            }
-        }
-
-        if (min > max) {
-            if (p > max && p < min) {
-                return true;
-            }
-        }
-
-        if (p == min || p == max) {
-            return true;
-        }
-
-        return false;
-    }
-
-    function point_in_rectagnle(x, y, left, top, right, bottom) {
-
-        if (between(left, x, right) && between(top, y, bottom)) {
-            return true;
-        }
-        return false;
-    }
 
     function triangleArea(A, B, C) {
         return (C.x * B.y - B.x * C.y) - (C.x * A.y - A.x * C.y) + (B.x * A.y - A.x * B.y);
@@ -153,29 +125,8 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
             return true;
         }
 
-        //        if (point_in_rectagnle(points[0].x, points[0].y, bl, tl, tr, br)) {
-        //            return true;
-        //        }
-        //
-        //        if (point_in_rectagnle(points[1].x, points[1].y, bl, tl, tr, br)) {
-        //            return true;
-        //        }
-
-
-
-
         return false;
 
-
-        //        result.appendPoints(inter1.points);
-        //        result.appendPoints(inter2.points);
-        //        result.appendPoints(inter3.points);
-        //        result.appendPoints(inter4.points);
-        //
-        //        if (result.points.length > 0) {
-        //            result.status = 'Intersection';
-        //        }
-        //        return result;
     };
 
     function intersectLinePolygon(a1, a2, points) {

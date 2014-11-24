@@ -127,13 +127,13 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
 
             context.stroke();
-            
-            
+
+
             // possivel personalização
             if (this.style) {
                 context.restore();
             }
-            
+
 
         },
         contains: function (position, transform) {
@@ -161,11 +161,103 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
             return false;
 
+        },
+        intersectsWithRect: function (rect) {
+
+            //            debugger;
+
+            var tl = point.create(rect.x, rect.y + rect.height),
+                tr = point.create(rect.x + rect.width, rect.y + rect.height),
+                bl = point.create(rect.x, rect.y),
+                br = point.create(rect.x + rect.width, rect.y);
+
+            //            debugger;
+
+            if (intersectPolygonRectangle(this.segments, tl, tr, bl, br)) {
+                return true;
+            }
+
+
+
+            return false;
+
         }
 
     };
 
 
+    function triangleArea(A, B, C) {
+        return (C.x * B.y - B.x * C.y) - (C.x * A.y - A.x * C.y) + (B.x * A.y - A.x * B.y);
+    };
+
+    function isInsideSquare(A, B, C, D, P) {
+        if (triangleArea(A, B, P) > 0 || triangleArea(B, C, P) > 0 || triangleArea(C, D, P) > 0 || triangleArea(D, A, P) > 0) {
+            return false;
+        }
+        return true;
+    };
+
+    function isInside(x, y, z1, z2, z3, z4) {
+//        var x1 = Math.min(z1, z3);
+//        var x2 = Math.max(z1, z3);
+//        var y1 = Math.min(z2, z4);
+//        var y2 = Math.max(z2, z4);
+        var x1 = z1.minimum(z3);
+        var x2 = z1.maximum(z3);
+        var y1 = z2.minimum(z4);
+        var y2 = z2.maximum(z4);
+        
+        if ((x1.x <= x) && (x <= x2.x) && (y1.y <= y) && (y <= y2.y)) {
+//            console.log(x1 + "," + x + "," + x2);
+//            console.log(y1 + "," + y + "," + y2);
+            return true;
+        } else {
+            return false;
+        };
+    };
+
+    function intersectPolygonRectangle(points, tl, tr, bl, br) {
+
+        //                debugger;
+
+        var inter1 = intersectLinePolygon(tl, tr, points),
+            inter2 = intersectLinePolygon(tr, br, points),
+            inter3 = intersectLinePolygon(br, bl, points),
+            inter4 = intersectLinePolygon(bl, tl, points);
+
+        if (inter1 || inter2 || inter3 || inter4) {
+            return true;
+        }
+
+        for (var i = 0; i < points.length; i++) {
+            if (isInside(points[i].x, points[i].y, bl, tl, tr, br)) {
+                return true;
+            }
+//            if (isInsideSquare(bl, tl, tr, br, points[i])) {
+//                return true;
+//            }
+        }
+
+
+
+        return false;
+
+    };
+
+    function intersectLinePolygon(a1, a2, points) {
+        var result = [],
+            length = points.length;
+
+        for (var i = 0; i < length; i++) {
+            var b1 = points[i],
+                b2 = points[(i + 1) % length];
+
+            if (intersection.lineLine(a1, a2, b1, b2)) {
+                return true;
+            }
+        }
+        return false;
+    };
 
 
 
