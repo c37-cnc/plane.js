@@ -30,6 +30,36 @@ define("plane/geometric/intersection", ['require', 'exports'], function (require
         );
     };
 
+    function lineLine(a1, a2, b1, b2) {
+        
+//        debugger;
+        
+        var result,
+            uaT = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x),
+            ubT = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x),
+            uB = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
+        if (uB !== 0) {
+            var ua = uaT / uB,
+                ub = ubT / uB;
+            if (0 <= ua && ua <= 1 && 0 <= ub && ub <= 1) {
+//                result = new Intersection('Intersection');
+                result = [];
+                result.push(point.create(a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y)));
+            } else {
+                result = false;
+//                result = new Intersection();
+            }
+        } else {
+            if (uaT === 0 || ubT === 0) {
+                result = false;
+//                result = new Intersection('Coincident');
+            } else {
+                result = false;
+//                result = new Intersection('Parallel');
+            }
+        }
+        return result;
+    };
 
     function circleLine(c, r, a1, a2) {
         var result,
@@ -272,4 +302,5 @@ define("plane/geometric/intersection", ['require', 'exports'], function (require
     exports.circleArc = circleArc;
     exports.circleEllipse = circleEllipse;
     exports.circleBezier = circleBezier;
+    exports.lineLine = lineLine;
 });

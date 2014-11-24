@@ -35,7 +35,13 @@ define("plane/structure/point", ['require', 'exports'], function (require, expor
                 this.x + (point.x - this.x) * value,
                 this.y + (point.y - this.y) * value
             );
-        }
+        },
+        minimum: function (point) {
+            return new Point(Math.min(this.x, point.x), Math.min(this.y, point.y));
+        },
+        maximum: function (point) {
+            return new Point(Math.max(this.x, point.x), Math.max(this.y, point.y));
+        },
     };
 
     function create() {

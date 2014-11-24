@@ -76,8 +76,122 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
 
             return false;
 
+        },
+        intersectsWithRect: function (rect) {
+
+            //            debugger;
+
+            var tl = point.create(rect.x, rect.y + rect.height),
+                tr = point.create(rect.x + rect.width, rect.y + rect.height),
+                bl = point.create(rect.x, rect.y),
+                br = point.create(rect.x + rect.width, rect.y);
+
+
+            return intersectPolygonRectangle(this.points, tl, tr, bl, br);
+
         }
     }
+
+
+    function between(min, p, max) {
+
+        if (min < max) {
+            if (p > min && p < max) {
+                return true;
+            }
+        }
+
+        if (min > max) {
+            if (p > max && p < min) {
+                return true;
+            }
+        }
+
+        if (p == min || p == max) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function point_in_rectagnle(x, y, left, top, right, bottom) {
+
+        if (between(left, x, right) && between(top, y, bottom)) {
+            return true;
+        }
+        return false;
+    }
+
+    function triangleArea(A, B, C) {
+        return (C.x * B.y - B.x * C.y) - (C.x * A.y - A.x * C.y) + (B.x * A.y - A.x * B.y);
+    };
+
+    function isInsideSquare(A, B, C, D, P) {
+        if (triangleArea(A, B, P) > 0 || triangleArea(B, C, P) > 0 || triangleArea(C, D, P) > 0 || triangleArea(D, A, P) > 0) {
+            return false;
+        }
+        return true;
+    };
+
+
+    function intersectPolygonRectangle(points, tl, tr, bl, br) {
+        var inter1 = intersectLinePolygon(tl, tr, points),
+            inter2 = intersectLinePolygon(tr, br, points),
+            inter3 = intersectLinePolygon(br, bl, points),
+            inter4 = intersectLinePolygon(bl, tl, points);
+
+        if (inter1 || inter2 || inter3 || inter4) {
+            return true;
+        }
+
+
+        if (isInsideSquare(tl, tr, br, bl, points[0])) {
+            return true;
+        }
+
+        if (isInsideSquare(tl, tr, br, bl, points[1])) {
+            return true;
+        }
+
+        //        if (point_in_rectagnle(points[0].x, points[0].y, bl, tl, tr, br)) {
+        //            return true;
+        //        }
+        //
+        //        if (point_in_rectagnle(points[1].x, points[1].y, bl, tl, tr, br)) {
+        //            return true;
+        //        }
+
+
+
+
+        return false;
+
+
+        //        result.appendPoints(inter1.points);
+        //        result.appendPoints(inter2.points);
+        //        result.appendPoints(inter3.points);
+        //        result.appendPoints(inter4.points);
+        //
+        //        if (result.points.length > 0) {
+        //            result.status = 'Intersection';
+        //        }
+        //        return result;
+    };
+
+    function intersectLinePolygon(a1, a2, points) {
+        var result = [],
+            length = points.length;
+
+        for (var i = 0; i < length; i++) {
+            var b1 = points[i],
+                b2 = points[(i + 1) % length];
+
+            if (intersection.lineLine(a1, a2, b1, b2)) {
+                return true;
+            }
+        }
+        return false;
+    };
 
 
     function create(attrs) {

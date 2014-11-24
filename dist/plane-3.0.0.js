@@ -1,5 +1,5 @@
 /*!
- * C37 in 19-11-2014 at 21:22:22 
+ * C37 in 24-11-2014 at 03:10:40 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -431,6 +431,36 @@ define("plane/geometric/intersection", ['require', 'exports'], function (require
         );
     };
 
+    function lineLine(a1, a2, b1, b2) {
+        
+//        debugger;
+        
+        var result,
+            uaT = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x),
+            ubT = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x),
+            uB = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
+        if (uB !== 0) {
+            var ua = uaT / uB,
+                ub = ubT / uB;
+            if (0 <= ua && ua <= 1 && 0 <= ub && ub <= 1) {
+//                result = new Intersection('Intersection');
+                result = [];
+                result.push(point.create(a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y)));
+            } else {
+                result = false;
+//                result = new Intersection();
+            }
+        } else {
+            if (uaT === 0 || ubT === 0) {
+                result = false;
+//                result = new Intersection('Coincident');
+            } else {
+                result = false;
+//                result = new Intersection('Parallel');
+            }
+        }
+        return result;
+    };
 
     function circleLine(c, r, a1, a2) {
         var result,
@@ -673,6 +703,7 @@ define("plane/geometric/intersection", ['require', 'exports'], function (require
     exports.circleArc = circleArc;
     exports.circleEllipse = circleEllipse;
     exports.circleBezier = circleBezier;
+    exports.lineLine = lineLine;
 });
 define("plane/geometric/matrix", ['require', 'exports'], function (require, exports) {
 
@@ -2323,8 +2354,122 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
 
             return false;
 
+        },
+        intersectsWithRect: function (rect) {
+
+            //            debugger;
+
+            var tl = point.create(rect.x, rect.y + rect.height),
+                tr = point.create(rect.x + rect.width, rect.y + rect.height),
+                bl = point.create(rect.x, rect.y),
+                br = point.create(rect.x + rect.width, rect.y);
+
+
+            return intersectPolygonRectangle(this.points, tl, tr, bl, br);
+
         }
     }
+
+
+    function between(min, p, max) {
+
+        if (min < max) {
+            if (p > min && p < max) {
+                return true;
+            }
+        }
+
+        if (min > max) {
+            if (p > max && p < min) {
+                return true;
+            }
+        }
+
+        if (p == min || p == max) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function point_in_rectagnle(x, y, left, top, right, bottom) {
+
+        if (between(left, x, right) && between(top, y, bottom)) {
+            return true;
+        }
+        return false;
+    }
+
+    function triangleArea(A, B, C) {
+        return (C.x * B.y - B.x * C.y) - (C.x * A.y - A.x * C.y) + (B.x * A.y - A.x * B.y);
+    };
+
+    function isInsideSquare(A, B, C, D, P) {
+        if (triangleArea(A, B, P) > 0 || triangleArea(B, C, P) > 0 || triangleArea(C, D, P) > 0 || triangleArea(D, A, P) > 0) {
+            return false;
+        }
+        return true;
+    };
+
+
+    function intersectPolygonRectangle(points, tl, tr, bl, br) {
+        var inter1 = intersectLinePolygon(tl, tr, points),
+            inter2 = intersectLinePolygon(tr, br, points),
+            inter3 = intersectLinePolygon(br, bl, points),
+            inter4 = intersectLinePolygon(bl, tl, points);
+
+        if (inter1 || inter2 || inter3 || inter4) {
+            return true;
+        }
+
+
+        if (isInsideSquare(tl, tr, br, bl, points[0])) {
+            return true;
+        }
+
+        if (isInsideSquare(tl, tr, br, bl, points[1])) {
+            return true;
+        }
+
+        //        if (point_in_rectagnle(points[0].x, points[0].y, bl, tl, tr, br)) {
+        //            return true;
+        //        }
+        //
+        //        if (point_in_rectagnle(points[1].x, points[1].y, bl, tl, tr, br)) {
+        //            return true;
+        //        }
+
+
+
+
+        return false;
+
+
+        //        result.appendPoints(inter1.points);
+        //        result.appendPoints(inter2.points);
+        //        result.appendPoints(inter3.points);
+        //        result.appendPoints(inter4.points);
+        //
+        //        if (result.points.length > 0) {
+        //            result.status = 'Intersection';
+        //        }
+        //        return result;
+    };
+
+    function intersectLinePolygon(a1, a2, points) {
+        var result = [],
+            length = points.length;
+
+        for (var i = 0; i < length; i++) {
+            var b1 = points[i],
+                b2 = points[(i + 1) % length];
+
+            if (intersection.lineLine(a1, a2, b1, b2)) {
+                return true;
+            }
+        }
+        return false;
+    };
 
 
     function create(attrs) {
@@ -3323,7 +3468,13 @@ define("plane/structure/point", ['require', 'exports'], function (require, expor
                 this.x + (point.x - this.x) * value,
                 this.y + (point.y - this.y) * value
             );
-        }
+        },
+        minimum: function (point) {
+            return new Point(Math.min(this.x, point.x), Math.min(this.y, point.y));
+        },
+        maximum: function (point) {
+            return new Point(Math.max(this.x, point.x), Math.max(this.y, point.y));
+        },
     };
 
     function create() {

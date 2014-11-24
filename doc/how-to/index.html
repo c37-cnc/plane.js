@@ -231,68 +231,55 @@
 
 
             var toolSelect = plane.tool.create({
-                    active: true
-                }),
-                shapesOver = [],
-                shapesSelect = [],
-                selectRectangleFirstPoint
+                active: true
+            });
 
-            toolSelect.events.listen('onMouseMove', function (event) {
+            toolSelect.events.listen('onMouseDrag', function (event) {
 
-                //                console.log(event);
-
-                shapesOver.forEach(function (shape) {
-                    if (shape.status != 'selected') {
-                        shape.style = null;
+                plane.layer.active.children.list().forEach(function (shape) {
+                    if (shape.status == 'temporary') {
+                        plane.layer.active.children.remove(shape.uuid);
                     }
                 });
 
-
-                if (event.shapes.length > 0) {
-
-                    shapesOver = shapesOver.concat(event.shapes);
-
-                    event.shapes.forEach(function (shape) {
-                        shape.style = {
-                            lineColor: 'rgb(61, 142, 193)'
-                        };
-                    });
-                }
+                plane.shape.create({
+                    type: 'rectangle',
+                    x: event.pointFirst.x,
+                    y: event.pointFirst.y,
+                    height: event.pointLast.subtract(event.pointFirst).y,
+                    width: event.pointLast.subtract(event.pointFirst).x,
+                    status: 'temporary'
+                });
 
 
-                if (selectRectangleFirstPoint) {
+                plane.layer.active.children.list().forEach(function (shape) {
+                    if (shape.type == 'line' && shape.intersectsWithRect({
+                        x: event.pointFirst.x,
+                        y: event.pointFirst.y,
+                        height: event.pointLast.subtract(event.pointFirst).y,
+                        width: event.pointLast.subtract(event.pointFirst).x,
+                    })) {
+                        
+                        console.log('selecionado!!!');
 
-                    plane.layer.active.children.list().forEach(function (shape) {
-                        if (shape.status == 'temporary') {
-                            plane.layer.active.children.remove(shape.uuid);
-                        }
-                    });
+                    }
 
-                    plane.shape.create({
-                        type: 'rectangle',
-                        x: selectRectangleFirstPoint.x,
-                        y: selectRectangleFirstPoint.y,
-                        height: event.point.inView.subtract(selectRectangleFirstPoint).y,
-                        width: event.point.inView.subtract(selectRectangleFirstPoint).x,
-                        status: 'temporary'
-                    });
 
-                }
+                });
 
 
                 plane.view.update();
-
             });
 
             toolSelect.events.listen('onMouseDown', function (event) {
 
-                shapesSelect.forEach(function (shape) {
-                    shape.style = null;
+                plane.layer.active.children.list().forEach(function (shape) {
+                    if (shape.status == 'temporary') {
+                        plane.layer.active.children.remove(shape.uuid);
+                    }
                 });
 
                 if (event.shapes.length > 0) {
-
-                    shapesSelect = shapesSelect.concat(event.shapes);
 
                     event.shapes.forEach(function (shape) {
                         shape.status = 'selected';
@@ -300,21 +287,6 @@
                             lineColor: 'rgb(68, 121, 154)'
                         };
                     });
-                }
-
-
-                if (selectRectangleFirstPoint) {
-
-                    plane.layer.active.children.list().forEach(function (shape) {
-                        if (shape.status == 'temporary') {
-                            plane.layer.active.children.find(shape.uuid).status = '';
-                        }
-                    });
-
-                    selectRectangleFirstPoint = null;
-
-                } else {
-                    selectRectangleFirstPoint = event.point;
                 }
 
                 plane.view.update();
