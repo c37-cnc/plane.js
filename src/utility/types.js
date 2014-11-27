@@ -221,6 +221,19 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
 
     }
 
+    var conversion = {
+        // http://javascriptweblog.wordpress.com/2011/08/08/fixing-the-javascript-typeof-operator/
+        toType: function (obj) {
+            return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
+        },
+        toJson: function (obj) {
+            return '';
+        },
+        toObject: function (obj) {
+            return {};
+        }
+    }
+
     var object = {
         inherits: function (f, p) {
             f.prototype = new p();
@@ -242,7 +255,9 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
                     o[prop] = p[prop];
                 }
             }
-            return o;
+            return this;
+            // 2014.11.27 2047 - lilo - method chaining
+            // return o;
         },
         /*
          * Copy the enumerable properties of p to o, and return o
@@ -345,4 +360,5 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
     exports.data = data;
     exports.date = date;
     exports.object = object;
+    exports.conversion = conversion;
 });
