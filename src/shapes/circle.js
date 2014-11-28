@@ -3,8 +3,10 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
 
+    var types = require('plane/utility/types');
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -17,124 +19,69 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
      * @class Circle
      * @constructor
      */
-    function Circle(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var Circle = types.object.inherits(function Circle(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
-        this.type = 'circle';
-        this.point = attrs.point;
-        this.radius = attrs.radius;
+        this.center = null;
+        this.radius = null;
 
-        this.initialize();
-    };
+        this.initialize(attrs);
 
-    Circle.prototype = {
-        initialize: function () {
+    }, object.Shape);
 
-            // em numero de partes - 58 
-            var num1 = Math.PI / 58;
-            var size = Math.abs(2.0 * Math.PI / num1) + 2;
-            var index = 0;
-            var num2 = 0.0;
+    Circle.prototype.calculeSegments = function () {
 
-            while (index < size - 1) {
-                this.segments.push({
-                    x: this.point.x + this.radius * Math.cos(num2),
-                    y: this.point.y + this.radius * Math.sin(num2)
-                });
-                ++index;
-                num2 += num1;
-            }
+        // em numero de partes - 58 
+        var num1 = Math.PI / 58;
+        var size = Math.abs(2.0 * Math.PI / num1) + 2;
+        var index = 0;
+        var num2 = 0.0;
 
-        },
-        toObject: function () {
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                x: types.math.parseFloat(this.point.x, 5),
-                y: types.math.parseFloat(this.point.y, 5),
-                radius: types.math.parseFloat(this.radius, 5)
-            };
-        },
-        render: function (context, transform) {
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-            for (var i = 0; i < this.segments.length; i += 2) {
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-            context.stroke();
-
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-
-
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
-
+        while (index < size - 1) {
+            this.segments.push({
+                x: this.center.x + this.radius * Math.cos(num2),
+                y: this.center.y + this.radius * Math.sin(num2)
+            });
+            ++index;
+            num2 += num1;
         }
 
+        return true;
 
     }
 
 
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Circle - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.center = point.create(attrs.center);
+
+        // 4 - criando um novo shape do tipo arco
         return new Circle(attrs);
     };
 

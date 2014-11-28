@@ -29,6 +29,56 @@ define("plane/geometric/intersection", ['require', 'exports'], function (require
             AD * DF - AF * AF
         );
     };
+    
+    
+    function isInside(x, y, z1, z2, z3, z4) {
+        var x1 = z1.minimum(z3);
+        var x2 = z1.maximum(z3);
+        var y1 = z2.minimum(z4);
+        var y2 = z2.maximum(z4);
+
+        return ((x1.x <= x) && (x <= x2.x) && (y1.y <= y) && (y <= y2.y));
+    };
+
+    function segmentsRectangle(segments, tl, tr, bl, br) {
+
+        var inter1 = intersectSegmentsLine(tl, tr, segments),
+            inter2 = intersectSegmentsLine(tr, br, segments),
+            inter3 = intersectSegmentsLine(br, bl, segments),
+            inter4 = intersectSegmentsLine(bl, tl, segments);
+
+        if (inter1 || inter2 || inter3 || inter4) {
+            return true;
+        }
+
+        for (var i = 0; i < segments.length; i++) {
+            if (isInside(segments[i].x, segments[i].y, bl, tl, tr, br)) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    function intersectSegmentsLine(a1, a2, points) {
+        var result = [],
+            length = points.length;
+
+        for (var i = 0; i < length; i++) {
+            var b1 = points[i],
+                b2 = points[(i + 1) % length];
+
+            if (lineLine(a1, a2, b1, b2)) {
+                return true;
+            }
+        }
+        return false;
+    };
+    
+    
+    
+    
+    
 
     function lineLine(a1, a2, b1, b2) {
         
@@ -303,4 +353,5 @@ define("plane/geometric/intersection", ['require', 'exports'], function (require
     exports.circleEllipse = circleEllipse;
     exports.circleBezier = circleBezier;
     exports.lineLine = lineLine;
+    exports.segmentsRectangle = segmentsRectangle;
 });

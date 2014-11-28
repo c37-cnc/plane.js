@@ -1,5 +1,5 @@
 /*!
- * C37 in 27-11-2014 at 20:58:32 
+ * C37 in 28-11-2014 at 15:34:40 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -430,6 +430,56 @@ define("plane/geometric/intersection", ['require', 'exports'], function (require
             AD * DF - AF * AF
         );
     };
+    
+    
+    function isInside(x, y, z1, z2, z3, z4) {
+        var x1 = z1.minimum(z3);
+        var x2 = z1.maximum(z3);
+        var y1 = z2.minimum(z4);
+        var y2 = z2.maximum(z4);
+
+        return ((x1.x <= x) && (x <= x2.x) && (y1.y <= y) && (y <= y2.y));
+    };
+
+    function segmentsRectangle(segments, tl, tr, bl, br) {
+
+        var inter1 = intersectSegmentsLine(tl, tr, segments),
+            inter2 = intersectSegmentsLine(tr, br, segments),
+            inter3 = intersectSegmentsLine(br, bl, segments),
+            inter4 = intersectSegmentsLine(bl, tl, segments);
+
+        if (inter1 || inter2 || inter3 || inter4) {
+            return true;
+        }
+
+        for (var i = 0; i < segments.length; i++) {
+            if (isInside(segments[i].x, segments[i].y, bl, tl, tr, br)) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    function intersectSegmentsLine(a1, a2, points) {
+        var result = [],
+            length = points.length;
+
+        for (var i = 0; i < length; i++) {
+            var b1 = points[i],
+                b2 = points[(i + 1) % length];
+
+            if (lineLine(a1, a2, b1, b2)) {
+                return true;
+            }
+        }
+        return false;
+    };
+    
+    
+    
+    
+    
 
     function lineLine(a1, a2, b1, b2) {
         
@@ -704,6 +754,7 @@ define("plane/geometric/intersection", ['require', 'exports'], function (require
     exports.circleEllipse = circleEllipse;
     exports.circleBezier = circleBezier;
     exports.lineLine = lineLine;
+    exports.segmentsRectangle = segmentsRectangle;
 });
 define("plane/geometric/matrix", ['require', 'exports'], function (require, exports) {
 
@@ -1407,17 +1458,23 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
-
-    var object = require('plane/structure/object');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
 
     var types = require('plane/utility/types');
 
 
-
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
     var Arc = types.object.inherits(function Arc(attrs) {
-
-        // atributos primitivos
 
         /**
          * A Universally unique identifier for
@@ -1447,6 +1504,7 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
     Arc.prototype.calculeSegments = function () {
 
         var end = this.endAngle - this.startAngle;
+        
         if (end < 0.0) {
             end += 360.0;
         }
@@ -1480,277 +1538,28 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
         this.segments[this.segments.length - 1].x = xval1;
         this.segments[this.segments.length - 1].y = yval1;
-
-
+        
+        return true;
+        
     }
-
-
-    //   var Arc = types.object.inherits(function Arc(attrs) {
-    //        /**
-    //         * A Universally unique identifier for
-    //         * a single instance of Object
-    //         *
-    //         * @property uuid
-    //         * @type String
-    //         * @default 'uuid'
-    //         */
-    //        this.uuid = attrs.uuid;
-    //        this.name = attrs.name;
-    //        this.transform = attrs.transform;
-    //        this.status = attrs.status;
-    //
-    //        this.type = 'arc';
-    //        this.point = attrs.point;
-    //        this.radius = attrs.radius;
-    //        this.startAngle = attrs.startAngle;
-    //        this.endAngle = attrs.endAngle;
-    //        this.clockWise = attrs.clockWise;
-    //    }, Shape);
-
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Shapes
-     * @extends Shape
-     * @class Arc
-     * @constructor
-     */
-    //    function Arc(attrs) {
-    //        /**
-    //         * A Universally unique identifier for
-    //         * a single instance of Object
-    //         *
-    //         * @property uuid
-    //         * @type String
-    //         * @default 'uuid'
-    //         */
-    //        this.uuid = attrs.uuid;
-    //        this.name = attrs.name;
-    //        this.transform = attrs.transform;
-    //        this.status = attrs.status;
-    //
-    //        this.segments = [];
-    //
-    //        this.type = 'arc';
-    //        this.point = attrs.point;
-    //        this.radius = attrs.radius;
-    //        this.startAngle = attrs.startAngle;
-    //        this.endAngle = attrs.endAngle;
-    //        this.clockWise = attrs.clockWise;
-    //
-    //        this.initialize();
-    //    };
-
-
-    //    Arc.prototype = {
-    //        initialize: function () {
-    //
-    //            var end = this.endAngle - this.startAngle;
-    //            if (end < 0.0) {
-    //                end += 360.0;
-    //            }
-    //
-    //            // .7 resolution
-    //            var num1 = .7 / 180.0 * Math.PI;
-    //            var num2 = this.startAngle / 180.0 * Math.PI;
-    //            var num3 = end / 180.0 * Math.PI;
-    //
-    //            if (num3 < 0.0)
-    //                num1 = -num1;
-    //            var size = Math.abs(num3 / num1) + 2;
-    //
-    //            var index = 0;
-    //            var num4 = num2;
-    //            while (index < size - 1) {
-    //
-    //                var xval = this.point.x + this.radius * Math.cos(num4);
-    //                var yval = this.point.y + this.radius * Math.sin(num4);
-    //
-    //                this.segments.push({
-    //                    x: xval,
-    //                    y: yval
-    //                });
-    //                ++index;
-    //                num4 += num1;
-    //            }
-    //
-    //            var xval1 = this.point.x + this.radius * Math.cos(num2 + num3);
-    //            var yval1 = this.point.y + this.radius * Math.sin(num2 + num3);
-    //
-    //            this.segments[this.segments.length - 1].x = xval1;
-    //            this.segments[this.segments.length - 1].y = yval1;
-    //
-    //        },
-    //        toObject: function () {
-    //
-    //            return {
-    //                uuid: this.uuid,
-    //                type: this.type,
-    //                name: this.name,
-    //                status: this.status,
-    //                x: types.math.parseFloat(this.point.x, 5),
-    //                y: types.math.parseFloat(this.point.y, 5),
-    //                radius: types.math.parseFloat(this.radius, 5),
-    //                startAngle: types.math.parseFloat(this.startAngle, 5),
-    //                endAngle: types.math.parseFloat(this.endAngle, 5),
-    //                clockWise: this.clockWise
-    //            };
-    //
-    //        },
-    //        render: function (context, transform) {
-    //
-    //            // possivel personalização
-    //            if (this.style) {
-    //                context.save();
-    //
-    //                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-    //                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-    //            }
-    //
-    //            context.beginPath();
-    //
-    //            var scale = Math.sqrt(transform.a * transform.d);
-    //            var move = {
-    //                x: transform.tx,
-    //                y: transform.ty
-    //            };
-    //
-    //
-    //            for (var i = 0; i < this.segments.length; i += 2) {
-    //                var x = this.segments[i].x * scale + move.x;
-    //                var y = this.segments[i].y * scale + move.y;
-    //
-    //                context.lineTo(x, y);
-    //            }
-    //
-    //
-    //            context.stroke();
-    //
-    //
-    //            // possivel personalização
-    //            if (this.style) {
-    //                context.restore();
-    //            }
-    //
-    //
-    //        },
-    //        contains: function (position, transform) {
-    //
-    //            var scale = Math.sqrt(transform.a * transform.d);
-    //            var move = point.create(transform.tx, transform.ty);
-    //
-    //
-    //            var segmentA = null,
-    //                segmentB = null;
-    //
-    //            for (var i = 0; i < this.segments.length; i++) {
-    //
-    //                if (i + 1 == this.segments.length) {
-    //                    segmentA = this.segments[i];
-    //                    segmentB = this.segments[0];
-    //                } else {
-    //                    segmentA = this.segments[i];
-    //                    segmentB = this.segments[i + 1];
-    //                }
-    //
-    //                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-    //                    return true;
-    //            }
-    //
-    //            return false;
-    //
-    //        },
-    //        intersectsWithRect: function (rect) {
-    //
-    //            //            debugger;
-    //
-    //            var tl = point.create(rect.x, rect.y + rect.height),
-    //                tr = point.create(rect.x + rect.width, rect.y + rect.height),
-    //                bl = point.create(rect.x, rect.y),
-    //                br = point.create(rect.x + rect.width, rect.y);
-    //
-    //            //            debugger;
-    //
-    //            if (intersectPolygonRectangle(this.segments, tl, tr, bl, br)) {
-    //                return true;
-    //            }
-    //
-    //
-    //
-    //            return false;
-    //
-    //        }
-    //
-    //    };
-
-
-    function isInside(x, y, z1, z2, z3, z4) {
-        var x1 = z1.minimum(z3);
-        var x2 = z1.maximum(z3);
-        var y1 = z2.minimum(z4);
-        var y2 = z2.maximum(z4);
-
-        return ((x1.x <= x) && (x <= x2.x) && (y1.y <= y) && (y <= y2.y));
-    };
-
-    function intersectPolygonRectangle(points, tl, tr, bl, br) {
-
-        var inter1 = intersectLinePolygon(tl, tr, points),
-            inter2 = intersectLinePolygon(tr, br, points),
-            inter3 = intersectLinePolygon(br, bl, points),
-            inter4 = intersectLinePolygon(bl, tl, points);
-
-        if (inter1 || inter2 || inter3 || inter4) {
-            return true;
-        }
-
-        for (var i = 0; i < points.length; i++) {
-            if (isInside(points[i].x, points[i].y, bl, tl, tr, br)) {
-                return true;
-            }
-        }
-
-        return false;
-    };
-
-    function intersectLinePolygon(a1, a2, points) {
-        var result = [],
-            length = points.length;
-
-        for (var i = 0; i < length; i++) {
-            var b1 = points[i],
-                b2 = points[(i + 1) % length];
-
-            if (intersection.lineLine(a1, a2, b1, b2)) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-
 
 
     function create(attrs) {
         // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        
+        // 1 - verificações de quais atributos são usados
 
-        // 2 - validações dos atributos
+
+        // 2 - validações dos atributos deste tipo
 
 
         // 3 - conversões dos atributos
         attrs.center = point.create(attrs.center);
 
-        // 4 - crio um novo arco
+        // 4 - criando um novo shape do tipo arco
         return new Arc(attrs);
     };
 
@@ -1759,13 +1568,13 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 });
 define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
-
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
 
+    var types = require('plane/utility/types');
 
 
     /**
@@ -1780,151 +1589,89 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
      * @constructor
      */
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-    function BezierCubic(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var BezierCubic = types.object.inherits(function BezierCubic(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
-
-        this.type = 'bezier-cubic';
         this.points = attrs.points;
-        
-        this.initialize();
-    };
+
+        this.initialize(attrs);
+
+    }, object.Shape);
 
 
-    BezierCubic.prototype = {
-        initialize: function () {
+    // https://github.com/MartinDoms/Splines/blob/master/cubicBezier.js
+    BezierCubic.prototype.calculeSegments = function () {
 
-            // https://github.com/MartinDoms/Splines/blob/master/cubicBezier.js
+        var lineSegments = 100;
 
-            var lineSegments = 100;
-
-
-            var dot = function (v1, v2) {
-                var sum = 0;
-                for (var i = 0; i < v1.length; i++) {
-                    sum += v1[i] * v2[i];
-                }
-                return sum;
-            };
-
-            var cubicBezier = function (points, t) {
-                var p0 = points[0];
-                var p1 = points[1];
-                var p2 = points[2];
-                var p3 = points[3];
-                var t3 = t * t * t;
-                var t2 = t * t;
-
-                var dx = dot([p0.x, p1.x, p2.x, p3.x], [(1 - t) * (1 - t) * (1 - t), 3 * (1 - t) * (1 - t) * t, 3 * (1 - t) * t2, t3]);
-                var dy = dot([p0.y, p1.y, p2.y, p3.y], [(1 - t) * (1 - t) * (1 - t), 3 * (1 - t) * (1 - t) * t, 3 * (1 - t) * t2, t3]);
-
-                return {
-                    x: dx,
-                    y: dy
-                };
+        var dot = function (v1, v2) {
+            var sum = 0;
+            for (var i = 0; i < v1.length; i++) {
+                sum += v1[i] * v2[i];
             }
-            
-            for (var j = 0; j < lineSegments + 1; j++) {
-                this.segments.push(cubicBezier(this.points, j / lineSegments));
-            }
+            return sum;
+        };
 
+        var cubicBezier = function (points, t) {
+            var p0 = points[0];
+            var p1 = points[1];
+            var p2 = points[2];
+            var p3 = points[3];
+            var t3 = t * t * t;
+            var t2 = t * t;
 
-        },
-        toObject: function () {
+            var dx = dot([p0.x, p1.x, p2.x, p3.x], [(1 - t) * (1 - t) * (1 - t), 3 * (1 - t) * (1 - t) * t, 3 * (1 - t) * t2, t3]);
+            var dy = dot([p0.y, p1.y, p2.y, p3.y], [(1 - t) * (1 - t) * (1 - t), 3 * (1 - t) * (1 - t) * t, 3 * (1 - t) * t2, t3]);
+
             return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                points: this.points.map(function (point) {
-                    return {
-                        a: [types.math.parseFloat(point.a.x, 5), types.math.parseFloat(point.a.y, 5)],
-                        b: [types.math.parseFloat(point.b.x, 5), types.math.parseFloat(point.b.y, 5)],
-                        c: [types.math.parseFloat(point.c.x, 5), types.math.parseFloat(point.c.y, 5)]
-                    }
-                })
+                x: dx,
+                y: dy
             };
-        },
-        render: function (context, transform) {
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-            
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-            
-            context.stroke();
-
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
-
         }
 
+        for (var j = 0; j < lineSegments + 1; j++) {
+            this.segments.push(cubicBezier(this.points, j / lineSegments));
+        }
+
+        return true;
     }
 
 
-
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Bezier Cubic - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.points[0] = point.create(attrs.points[0]);
+        attrs.points[1] = point.create(attrs.points[1]);
+        attrs.points[2] = point.create(attrs.points[2]);
+        attrs.points[3] = point.create(attrs.points[3]);
+
+
+        // 4 - criando um novo shape do tipo arco
         return new BezierCubic(attrs);
     };
 
@@ -1933,15 +1680,15 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
 });
 define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
-
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
 
-    
-    
+    var types = require('plane/utility/types');
+
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -1954,153 +1701,87 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
      * @constructor
      */
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-    function BezierQuadratic(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var BezierQuadratic = types.object.inherits(function BezierQuadratic(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
-        
-        
-        this.type = 'bezier-quadratic';
+        this.status = null;
+        this.style = null;
+
         this.points = attrs.points;
-        
-        this.initialize();
-        
-    };
 
-    BezierQuadratic.prototype = {
-        initialize: function () {
-        
-            var lineSegments = 100;
+        this.initialize(attrs);
+
+    }, object.Shape);
 
 
-            var dot = function (v1, v2) {
-                var sum = 0;
-                for (var i = 0; i < v1.length; i++) {
-                    sum += v1[i] * v2[i];
-                }
-                return sum;
+    // https://github.com/MartinDoms/Splines/blob/master/quadraticBezier.js
+    BezierQuadratic.prototype.calculeSegments = function () {
+
+        var lineSegments = 100;
+
+        var dot = function (v1, v2) {
+            var sum = 0;
+            for (var i = 0; i < v1.length; i++) {
+                sum += v1[i] * v2[i];
             }
-
-            var quadraticBezier = function (points, t) {
-                var p0 = points[0];
-                var p1 = points[1];
-                var p2 = points[2];
-                var t3 = t * t * t;
-                var t2 = t * t;
-
-                var dx = dot([p0.x, p1.x, p2.x], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
-                var dy = dot([p0.y, p1.y, p2.y], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
-
-                return {
-                    x: dx,
-                    y: dy
-                };
-            }
-
-            for (var j = 0; j < lineSegments + 1; j++) {
-                this.segments.push(quadraticBezier(this.points, j / lineSegments));
-            }
-        
-        
-        },
-        render: function (context, transform) {
-
-//            context.beginPath();
-//
-//            var scale = Math.sqrt(transform.a * transform.d);
-//            var move = {
-//                x: transform.tx,
-//                y: transform.ty
-//            };
-//
-//
-//
-//
-//
-//            for (var i = 0; i < pts.length; i += 2) {
-//                context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
-//            }
-//            context.stroke();
-            
-            
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-            
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-            
-            context.stroke();
-
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }            
-
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
-
+            return sum;
         }
 
+        var quadraticBezier = function (points, t) {
+            var p0 = points[0];
+            var p1 = points[1];
+            var p2 = points[2];
+            var t3 = t * t * t;
+            var t2 = t * t;
 
+            var dx = dot([p0.x, p1.x, p2.x], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
+            var dy = dot([p0.y, p1.y, p2.y], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
+
+            return {
+                x: dx,
+                y: dy
+            };
+        }
+
+        for (var j = 0; j < lineSegments + 1; j++) {
+            this.segments.push(quadraticBezier(this.points, j / lineSegments));
+        }
+
+        return true;
     }
 
 
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Bezier Quadratic - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.points[0] = point.create(attrs.points[0]);
+        attrs.points[1] = point.create(attrs.points[1]);
+        attrs.points[2] = point.create(attrs.points[2]);
+
+
+        // 4 - criando um novo shape do tipo arco
         return new BezierQuadratic(attrs);
     };
 
@@ -2112,8 +1793,10 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
 
+    var types = require('plane/utility/types');
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -2126,124 +1809,69 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
      * @class Circle
      * @constructor
      */
-    function Circle(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var Circle = types.object.inherits(function Circle(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
-        this.type = 'circle';
-        this.point = attrs.point;
-        this.radius = attrs.radius;
+        this.center = null;
+        this.radius = null;
 
-        this.initialize();
-    };
+        this.initialize(attrs);
 
-    Circle.prototype = {
-        initialize: function () {
+    }, object.Shape);
 
-            // em numero de partes - 58 
-            var num1 = Math.PI / 58;
-            var size = Math.abs(2.0 * Math.PI / num1) + 2;
-            var index = 0;
-            var num2 = 0.0;
+    Circle.prototype.calculeSegments = function () {
 
-            while (index < size - 1) {
-                this.segments.push({
-                    x: this.point.x + this.radius * Math.cos(num2),
-                    y: this.point.y + this.radius * Math.sin(num2)
-                });
-                ++index;
-                num2 += num1;
-            }
+        // em numero de partes - 58 
+        var num1 = Math.PI / 58;
+        var size = Math.abs(2.0 * Math.PI / num1) + 2;
+        var index = 0;
+        var num2 = 0.0;
 
-        },
-        toObject: function () {
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                x: types.math.parseFloat(this.point.x, 5),
-                y: types.math.parseFloat(this.point.y, 5),
-                radius: types.math.parseFloat(this.radius, 5)
-            };
-        },
-        render: function (context, transform) {
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-            for (var i = 0; i < this.segments.length; i += 2) {
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-            context.stroke();
-
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-
-
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
-
+        while (index < size - 1) {
+            this.segments.push({
+                x: this.center.x + this.radius * Math.cos(num2),
+                y: this.center.y + this.radius * Math.sin(num2)
+            });
+            ++index;
+            num2 += num1;
         }
 
+        return true;
 
     }
 
 
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Circle - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.center = point.create(attrs.center);
+
+        // 4 - criando um novo shape do tipo arco
         return new Circle(attrs);
     };
 
@@ -2252,12 +1880,13 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
 });
 define("plane/shapes/ellipse", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
-
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
 
 
     /**
@@ -2271,174 +1900,107 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
      * @class Ellipse
      * @constructor
      */
-    function Ellipse(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var Ellipse = types.object.inherits(function Ellipse(attrs) {
 
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
-        this.type = 'ellipse';
-        this.point = attrs.point;
-        this.radiusY = attrs.radiusY;
-        this.radiusX = attrs.radiusX;
-        this.startAngle = attrs.startAngle;
-        this.endAngle = attrs.endAngle;
-        this.angle = attrs.angle;
+        this.center = null;
+        this.radiusY = null;
+        this.radiusX = null;
 
+        this.angle = null;
+        this.startAngle = null;
+        this.endAngle = null;
 
-        this.initialize();
-    };
+        this.initialize(attrs);
 
-    Ellipse.prototype = {
-        initialize: function () {
-            
-            
+    }, object.Shape);
 
-            var angle = (this.startAngle != undefined && this.endAngle != undefined) ? this.angle : types.math.radians(this.angle) || 0;
-            var startAngle = this.startAngle || 0;
-            var endAngle = this.endAngle || (2.0 * Math.PI);
+    Ellipse.prototype.calculeSegments = function () {
 
-            while (endAngle < startAngle) {
-                endAngle += 2.0 * Math.PI;
-            }
+        var angle = (this.startAngle != undefined && this.endAngle != undefined) ? this.angle : types.math.radians(this.angle) || 0;
+        var startAngle = this.startAngle || 0;
+        var endAngle = this.endAngle || (2.0 * Math.PI);
 
-            var radiusX = this.radiusX;
-            var radiusY = this.radiusY;
-
-            var num18 = Math.PI / 60.0;
-
-
-            var num = Math.cos(angle);
-            var num12 = Math.sin(angle);
-
-
-            while (true) {
-                if (startAngle > endAngle) {
-                    num18 -= startAngle - endAngle;
-                    startAngle = endAngle;
-                }
-                var p3 = {
-                    x: radiusX * Math.cos(startAngle),
-                    y: radiusY * Math.sin(startAngle)
-                };
-                // p3 *= matrix4x4F;
-                // aplicando a matrix para a rotação
-                p3 = {
-                    x: p3.x * num + p3.y * -num12,
-                    y: p3.x * num12 + p3.y * num
-                }
-                // o ponto de centro + o item da ellipse
-                p3 = {
-                    x: this.point.x + p3.x,
-                    y: this.point.y + p3.y
-                };
-
-                // armazenando no array
-                this.segments.push(p3);
-
-                // continuando até a volta completa
-                if (startAngle != endAngle)
-                    startAngle += num18;
-                else
-                    break;
-            }
-
-
-        },
-        toObject: function () {
-
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                x: types.math.parseFloat(this.point.x, 5),
-                y: types.math.parseFloat(this.point.y, 5),
-                radiusX: types.math.parseFloat(this.radiusX, 5),
-                radiusY: types.math.parseFloat(this.radiusY, 5)
-            };
-
-        },
-        render: function (context, transform) {
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-
-
-            context.stroke();
-
-
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-
-
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
+        while (endAngle < startAngle) {
+            endAngle += 2.0 * Math.PI;
         }
+
+        var radiusX = this.radiusX;
+        var radiusY = this.radiusY;
+
+        var num18 = Math.PI / 60.0;
+
+
+        var num = Math.cos(angle);
+        var num12 = Math.sin(angle);
+
+
+        while (true) {
+            if (startAngle > endAngle) {
+                num18 -= startAngle - endAngle;
+                startAngle = endAngle;
+            }
+            var p3 = {
+                x: radiusX * Math.cos(startAngle),
+                y: radiusY * Math.sin(startAngle)
+            };
+            // p3 *= matrix4x4F;
+            // aplicando a matrix para a rotação
+            p3 = {
+                x: p3.x * num + p3.y * -num12,
+                y: p3.x * num12 + p3.y * num
+            }
+            // o ponto de centro + o item da ellipse
+            p3 = {
+                x: this.center.x + p3.x,
+                y: this.center.y + p3.y
+            };
+
+            // armazenando no array
+            this.segments.push(p3);
+
+            // continuando até a volta completa
+            if (startAngle != endAngle)
+                startAngle += num18;
+            else
+                break;
+        }
+
+        return true;
 
     }
 
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Ellipse - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.center = point.create(attrs.center);
+
+        // 4 - criando um novo shape do tipo arco
         return new Ellipse(attrs);
     };
 
@@ -2450,156 +2012,81 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
 
-    function Line(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
-
-        this.type = 'line';
-        this.points = attrs.points;
-        this.style = attrs.style;
-    };
+    var types = require('plane/utility/types');
 
 
-    Line.prototype = {
-        toObject: function () {
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Line = types.object.inherits(function Line(attrs) {
 
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                a: [types.math.parseFloat(this.points[0].x, 5), types.math.parseFloat(this.points[0].y, 5)],
-                b: [types.math.parseFloat(this.points[1].x, 5), types.math.parseFloat(this.points[1].y, 5)]
-            };
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
-        },
-        render: function (context, transform) {
+        this.segments = [];
+        this.status = null;
+        this.style = null;
 
-            // possivel personalização
-            if (this.style) {
-                context.save();
+        this.from = null;
+        this.to = null;
 
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
+        this.initialize(attrs);
 
+    }, object.Shape);
 
-            //            debugger;
+    Line.prototype.calculeSegments = function () {
 
-            context.beginPath();
+        this.segments.push({
+            x: this.from.x,
+            y: this.from.y
+        });
+        this.segments.push({
+            x: this.to.x,
+            y: this.to.y
+        });
 
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
+        return true;
 
-
-            context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
-            context.lineTo((this.points[1].x * scale) + move.x, (this.points[1].y * scale) + move.y);
-
-            context.stroke();
-
-
-
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-            if (intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move))) {
-                return true;
-            }
-
-            return false;
-
-        },
-        intersectsWithRect: function (rect) {
-
-            //            debugger;
-
-            var tl = point.create(rect.x, rect.y + rect.height),
-                tr = point.create(rect.x + rect.width, rect.y + rect.height),
-                bl = point.create(rect.x, rect.y),
-                br = point.create(rect.x + rect.width, rect.y);
-
-
-            return intersectPolygonRectangle(this.points, tl, tr, bl, br);
-
-        }
     }
 
 
 
-    function triangleArea(A, B, C) {
-        return (C.x * B.y - B.x * C.y) - (C.x * A.y - A.x * C.y) + (B.x * A.y - A.x * B.y);
-    };
-
-    function isInsideSquare(A, B, C, D, P) {
-        if (triangleArea(A, B, P) > 0 || triangleArea(B, C, P) > 0 || triangleArea(C, D, P) > 0 || triangleArea(D, A, P) > 0) {
-            return false;
-        }
-        return true;
-    };
-
-
-    function intersectPolygonRectangle(points, tl, tr, bl, br) {
-        var inter1 = intersectLinePolygon(tl, tr, points),
-            inter2 = intersectLinePolygon(tr, br, points),
-            inter3 = intersectLinePolygon(br, bl, points),
-            inter4 = intersectLinePolygon(bl, tl, points);
-
-        if (inter1 || inter2 || inter3 || inter4) {
-            return true;
-        }
-
-
-        if (isInsideSquare(tl, tr, br, bl, points[0])) {
-            return true;
-        }
-
-        if (isInsideSquare(tl, tr, br, bl, points[1])) {
-            return true;
-        }
-
-        return false;
-
-    };
-
-    function intersectLinePolygon(a1, a2, points) {
-        var result = [],
-            length = points.length;
-
-        for (var i = 0; i < length; i++) {
-            var b1 = points[i],
-                b2 = points[(i + 1) % length];
-
-            if (intersection.lineLine(a1, a2, b1, b2)) {
-                return true;
-            }
-        }
-        return false;
-    };
-
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.from = point.create(attrs.from);
+        attrs.to = point.create(attrs.to);
+
+        // 4 - criando um novo shape do tipo arco
         return new Line(attrs);
     };
 
@@ -2611,151 +2098,82 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
 
 
-    function Polygon(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Polygon = types.object.inherits(function Polygon(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
-        this.type = 'polygon';
-        this.point = attrs.point;
-        this.points = attrs.points;
-        this.sides = attrs.sides;
-        this.radius = attrs.radius;
+        this.center = null;
+        this.sides = null;
+        this.radius = null;
 
-        this.initialize();
-    };
+        this.initialize(attrs);
 
-    Polygon.prototype = {
-        initialize: function () {
+    }, object.Shape);
 
-            for (var i = 0; i < this.sides; i++) {
-                
-                var pointX = (this.radius * Math.cos(((Math.PI * 2) / this.sides) * i) + this.point.x),
-                    pointY = (this.radius * Math.sin(((Math.PI * 2) / this.sides) * i) + this.point.y);
+    Polygon.prototype.calculeSegments = function () {
 
-                this.segments.push({
-                    x: pointX,
-                    y: pointY
-                });
-            }
+        for (var i = 0; i <= this.sides; i++) {
 
+            var pointX = (this.radius * Math.cos(((Math.PI * 2) / this.sides) * i) + this.center.x),
+                pointY = (this.radius * Math.sin(((Math.PI * 2) / this.sides) * i) + this.center.y);
 
-        },
-        toObject: function () {
-
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                x: types.math.parseFloat(this.point.x, 5),
-                y: types.math.parseFloat(this.point.y, 5),
-                sides: this.sides
-            };
-
-        },
-        render: function (context, transform) {
-
-            //            context.beginPath();
-            //
-            //            var scale = Math.sqrt(transform.a * transform.d);
-            //            var move = {
-            //                x: transform.tx,
-            //                y: transform.ty
-            //            };
-            //
-            //
-            //            context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
-            //
-            //            this.points.forEach(function (point) {
-            //                context.lineTo((point.x * scale) + move.x, (point.y * scale) + move.y);
-            //            });
-            //            context.closePath();
-            //
-            //            context.stroke();
-
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-            // ATENÇÃO PARA CALCULO DOS SEGMENTOS
-            context.moveTo((this.segments[0].x * scale) + move.x, (this.segments[0].y * scale) + move.y);
-
-            this.segments.forEach(function (point) {
-                context.lineTo((point.x * scale) + move.x, (point.y * scale) + move.y);
+            this.segments.push({
+                x: pointX,
+                y: pointY
             });
-            context.closePath();
-            // ATENÇÃO PARA CALCULO DOS SEGMENTOS
-
-
-            context.stroke();
-
-
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-
-
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
-
         }
+
+        return true;
 
     }
 
 
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Polygon - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.center = point.create(attrs.center);
+
+        // 4 - criando um novo shape do tipo arco
         return new Polygon(attrs);
     };
 
@@ -2767,286 +2185,169 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
 
 
-    function Polyline(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Polyline = types.object.inherits(function Polyline(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
+        this.points = null;
 
-        this.type = 'polyline';
-        this.points = attrs.points;
+        this.initialize(attrs);
 
-        this.initialize();
-    };
-
-    Polyline.prototype = {
-        initialize: function () {
+    }, object.Shape);
+    
+    Polyline.prototype.calculeSegments = function(){
         
-            this.segments = this.   points;
+        this.segments = this.points;
         
+        return true;
         
-        },
-        toObject: function () {
-
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                points: this.points.map(function (point) {
-                    return {
-                        x: types.math.parseFloat(point.x, 5),
-                        y: types.math.parseFloat(point.y, 5)
-                    }
-                })
-            };
-
-        },
-        render: function (context, transform) {
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-//            context.moveTo(this.segments[0].x * scale + move.x, this.segments[0].y * scale + move.y);
-//            
-//            for (var i = 0; i < this.segments.length; i += 2) {
-//                var x = this.segments[i].x * scale + move.x;
-//                var y = this.segments[i].y * scale + move.y;
-//
-//                context.lineTo(x, y);
-//            }
-
-
-            context.moveTo((this.segments[0].x * scale) + move.x, (this.segments[0].y * scale) + move.y);
-
-            this.segments.forEach(function (point) {
-                context.lineTo((point.x * scale) + move.x, (point.y * scale) + move.y);
-            });
-            
-            
-            
-            
-            context.stroke();
-            
-            
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
-
-        }
-
     }
 
 
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.points = attrs.points.map(function(item){
+            return point.create(item);
+        });
+
+        // 4 - criando um novo shape do tipo arco
         return new Polyline(attrs);
     };
 
     exports.create = create;
-
 });
 define("plane/shapes/rectangle", ['require', 'exports'], function (require, exports) {
 
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
 
 
-    function Rectangle(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Rectangle = types.object.inherits(function Rectangle(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
-        this.type = 'rectangle';
-        this.point = attrs.point;
-        this.height = attrs.height;
-        this.width = attrs.width;
+        this.from = null;
+        this.to = null;
 
-        this.initialize();
+        this.initialize(attrs);
 
-    };
+    }, object.Shape);
 
-    Rectangle.prototype = {
-        initialize: function () {
+    Rectangle.prototype.calculeSegments = function () {
 
-            this.segments.push({
-                x: this.point.x,
-                y: this.point.y
-            });
-            this.segments.push({
-                x: this.point.x,
-                y: this.point.y + this.height
-            });
-            this.segments.push({
-                x: this.point.x + this.width,
-                y: this.point.y + this.height
-            });
-            this.segments.push({
-                x: this.point.x + this.width,
-                y: this.point.y
-            });
-            this.segments.push({
-                x: this.point.x,
-                y: this.point.y
-            });
+        this.segments.push({
+            x: this.from.x,
+            y: this.from.y
+        });
+        this.segments.push({
+            x: this.from.x,
+            y: this.to.y
+        });
+        this.segments.push({
+            x: this.to.x,
+            y: this.to.y
+        });
+        this.segments.push({
+            x: this.to.x,
+            y: this.from.y
+        });
+        this.segments.push({
+            x: this.from.x,
+            y: this.from.y
+        });
 
-
-
-
-        },
-        toObject: function () {
-
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                x: types.math.parseFloat(this.point.x, 5),
-                y: types.math.parseFloat(this.point.y, 5),
-                height: types.math.parseFloat(this.height, 5),
-                width: types.math.parseFloat(this.width, 5)
-            };
-
-        },
-        render: function (context, transform) {
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-            // ATENÇÃO PARA CALCULO DOS SEGMENTOS
-            for (var i = 0; i < this.segments.length; i += 1) {
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-            // ATENÇÃO PARA CALCULO DOS SEGMENTOS
-
-
-            context.stroke();
-            
-            
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-            
-
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
-
-        }
+        return true;
 
     }
 
 
-
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.from = point.create(attrs.from);
+        attrs.to = point.create(attrs.to);
+
+        // 4 - criando um novo shape do tipo arco
         return new Rectangle(attrs);
     };
 
@@ -3553,6 +2854,11 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
 });
 define("plane/structure/object", ['require', 'exports'], function (require, exports) {
 
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
     var types = require('plane/utility/types');
 
     /**
@@ -3574,36 +2880,115 @@ define("plane/structure/object", ['require', 'exports'], function (require, expo
             // o nome do shape
             attrs.name = types.string.format('{0} - {1}', [attrs.type, attrs.uuid]);
 
-            debugger;
-
+            // completando os campos do shape
             types.object.extend(this, attrs);
 
-
-
-//            this.calculeSegments();
-
-            return true;
-        },
-        contains: function () {
+            // calculando os segmentos
+            this.calculeSegments();
 
             return true;
         },
-        intersect: function () {
+        contains: function (position, transform) {
 
-            return true;
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
+
+            return false;
+
         },
-        render: function () {
+        intersect: function (rectangle) {
 
-            return true;
+            if (this.status != 'temporary') {
+                var tl = point.create(rectangle.x, rectangle.y + rectangle.height),
+                    tr = point.create(rectangle.x + rectangle.width, rectangle.y + rectangle.height),
+                    bl = point.create(rectangle.x, rectangle.y),
+                    br = point.create(rectangle.x + rectangle.width, rectangle.y);
+
+                return intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
+            }
+            return false;
+
+        },
+        render: function (context, transform) {
+
+            // possivel personalização
+            if (this.style) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
+            }
+
+            context.beginPath();
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
+
+
+            for (var i = 0; i < this.segments.length; i++) {
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
+            }
+
+
+            context.stroke();
+
+
+            // possivel personalização
+            if (this.style) {
+                context.restore();
+            }
+
+
         },
         toObject: function () {
 
+            // converto para object os campos utilizando parseFloat
+
+            //            return {
+            //                uuid: this.uuid,
+            //                type: this.type,
+            //                name: this.name,
+            //                status: this.status,
+            //                x: types.math.parseFloat(this.point.x, 5),
+            //                y: types.math.parseFloat(this.point.y, 5),
+            //                radius: types.math.parseFloat(this.radius, 5),
+            //                startAngle: types.math.parseFloat(this.startAngle, 5),
+            //                endAngle: types.math.parseFloat(this.endAngle, 5),
+            //                clockWise: this.clockWise
+            //            };
+
             return true;
         }
-
-
-
     };
+
+
+
+
+
 
     exports.Shape = Shape;
 
@@ -3683,17 +3068,32 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     var point = require('plane/structure/point'),
         layer = require('plane/structure/layer');
 
-    var arc = require('plane/shapes/arc'),
-        bezierCubic = require('plane/shapes/bezier-cubic'),
-        bezierQuadratic = require('plane/shapes/bezier-quadratic'),
-        circle = require('plane/shapes/circle'),
-        ellipse = require('plane/shapes/ellipse'),
-        line = require('plane/shapes/line'),
-        polygon = require('plane/shapes/polygon'),
-        polyline = require('plane/shapes/polyline'),
-        rectangle = require('plane/shapes/rectangle'),
-        splineCatmullRom = require('plane/shapes/spline-catmull–rom'),
-        splineNurbs = require('plane/shapes/spline-nurbs');
+    var shapeType = {
+        'arc': require('plane/shapes/arc'),
+        'bezier-cubic': require('plane/shapes/bezier-cubic'),
+        'bezier-quadratic': require('plane/shapes/bezier-quadratic'),
+        'circle': require('plane/shapes/circle'),
+        'ellipse': require('plane/shapes/ellipse'),
+        'line': require('plane/shapes/line'),
+        'polygon': require('plane/shapes/polygon'),
+        'polyline': require('plane/shapes/polyline'),
+        'rectangle': require('plane/shapes/rectangle'),
+//        splineCatmullRom: require('plane/shapes/spline-catmull–rom'),
+//        splineNurbs: require('plane/shapes/spline-nurbs')
+    };
+
+
+    //    var arc = require('plane/shapes/arc'),
+    //        bezierCubic = require('plane/shapes/bezier-cubic'),
+    //        bezierQuadratic = require('plane/shapes/bezier-quadratic'),
+    //        circle = require('plane/shapes/circle'),
+    //        ellipse = require('plane/shapes/ellipse'),
+    //        line = require('plane/shapes/line'),
+    //        polygon = require('plane/shapes/polygon'),
+    //        polyline = require('plane/shapes/polyline'),
+    //        rectangle = require('plane/shapes/rectangle'),
+    //        splineCatmullRom = require('plane/shapes/spline-catmull–rom'),
+    //        splineNurbs = require('plane/shapes/spline-nurbs');
 
 
 
@@ -3713,123 +3113,125 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         }
 
 
-        var shape;
-
         // atributos 
         attrs = types.object.merge({
             uuid: types.math.uuid(9, 16),
         }, attrs);
 
-        switch (attrs.type) {
-        case 'arc':
-            {
-                shape = arc.create(types.object.merge({
-                    uuid: types.math.uuid(9, 16),
-                }, attrs));
 
-                break;
-            }
-        case 'line':
-            {
-                attrs.points = [point.create(attrs.a[0], attrs.a[1]), point.create(attrs.b[0], attrs.b[1])];
+        var shape = shapeType[attrs.type].create(attrs);;
 
-                shape = line.create(attrs);
 
-                break;
-            }
-        case 'bezier-cubic':
-            {
-                attrs.points[0] = point.create(attrs.points[0][0], attrs.points[0][1]);
-                attrs.points[1] = point.create(attrs.points[1][0], attrs.points[1][1]);
-                attrs.points[2] = point.create(attrs.points[2][0], attrs.points[2][1]);
-                attrs.points[3] = point.create(attrs.points[3][0], attrs.points[3][1]);
 
-                shape = bezierCubic.create(attrs);
-
-                break;
-            }
-        case 'bezier-quadratic':
-            {
-                attrs.points[0] = point.create(attrs.points[0][0], attrs.points[0][1]);
-                attrs.points[1] = point.create(attrs.points[1][0], attrs.points[1][1]);
-                attrs.points[2] = point.create(attrs.points[2][0], attrs.points[2][1]);
-
-                shape = bezierQuadratic.create(attrs);
-
-                break;
-            }
-        case 'rectangle':
-            {
-                attrs.point = point.create(attrs.x, attrs.y);
-                attrs.height = attrs.height;
-                attrs.width = attrs.width;
-
-                shape = rectangle.create(attrs);
-
-                break;
-            }
-        case 'circle':
-            {
-                attrs.point = point.create(attrs.x, attrs.y);
-                attrs.radius = attrs.radius;
-
-                shape = circle.create(attrs);
-
-                break;
-            }
-        case 'ellipse':
-            {
-                attrs.point = point.create(attrs.x, attrs.y);
-                attrs.radiusY = attrs.radiusY;
-                attrs.radiusX = attrs.radiusX;
-
-                shape = ellipse.create(attrs);
-
-                break;
-            }
-        case 'polygon':
-            {
-                attrs.point = point.create(attrs.x, attrs.y);
-                attrs.sides = attrs.sides;
-                attrs.radius = attrs.radius;
-
-                shape = polygon.create(attrs);
-
-                break;
-            }
-        case 'polyline':
-            {
-                for (var i = 0; i < attrs.points.length; i++) {
-                    attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
-                }
-
-                shape = polyline.create(attrs);
-
-                break;
-            }
-        case 'spline':
-            {
-                for (var i = 0; i < attrs.points.length; i++) {
-                    attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
-                }
-
-                shape = splineNurbs.create(attrs);
-
-                break;
-            }
-        default:
-            break;
-        }
+//
+//
+//        switch (attrs.type) {
+//        case 'arc':
+//            {
+//                shape = arc.create(types.object.merge({
+//                    uuid: types.math.uuid(9, 16),
+//                }, attrs));
+//
+//                break;
+//            }
+//        case 'line':
+//            {
+//                attrs.points = [point.create(attrs.a[0], attrs.a[1]), point.create(attrs.b[0], attrs.b[1])];
+//
+//                shape = line.create(attrs);
+//
+//                break;
+//            }
+//        case 'bezier-cubic':
+//            {
+//                attrs.points[0] = point.create(attrs.points[0][0], attrs.points[0][1]);
+//                attrs.points[1] = point.create(attrs.points[1][0], attrs.points[1][1]);
+//                attrs.points[2] = point.create(attrs.points[2][0], attrs.points[2][1]);
+//                attrs.points[3] = point.create(attrs.points[3][0], attrs.points[3][1]);
+//
+//                shape = bezierCubic.create(attrs);
+//
+//                break;
+//            }
+//        case 'bezier-quadratic':
+//            {
+//                attrs.points[0] = point.create(attrs.points[0][0], attrs.points[0][1]);
+//                attrs.points[1] = point.create(attrs.points[1][0], attrs.points[1][1]);
+//                attrs.points[2] = point.create(attrs.points[2][0], attrs.points[2][1]);
+//
+//                shape = bezierQuadratic.create(attrs);
+//
+//                break;
+//            }
+//        case 'rectangle':
+//            {
+//                attrs.point = point.create(attrs.x, attrs.y);
+//                attrs.height = attrs.height;
+//                attrs.width = attrs.width;
+//
+//                shape = rectangle.create(attrs);
+//
+//                break;
+//            }
+//        case 'circle':
+//            {
+//                attrs.point = point.create(attrs.x, attrs.y);
+//                attrs.radius = attrs.radius;
+//
+//                shape = circle.create(attrs);
+//
+//                break;
+//            }
+//        case 'ellipse':
+//            {
+//                attrs.point = point.create(attrs.x, attrs.y);
+//                attrs.radiusY = attrs.radiusY;
+//                attrs.radiusX = attrs.radiusX;
+//
+//                shape = ellipse.create(attrs);
+//
+//                break;
+//            }
+//        case 'polygon':
+//            {
+//                attrs.point = point.create(attrs.x, attrs.y);
+//                attrs.sides = attrs.sides;
+//                attrs.radius = attrs.radius;
+//
+//                shape = polygon.create(attrs);
+//
+//                break;
+//            }
+//        case 'polyline':
+//            {
+//                for (var i = 0; i < attrs.points.length; i++) {
+//                    attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
+//                }
+//
+//                shape = polyline.create(attrs);
+//
+//                break;
+//            }
+//        case 'spline':
+//            {
+//                for (var i = 0; i < attrs.points.length; i++) {
+//                    attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
+//                }
+//
+//                shape = splineNurbs.create(attrs);
+//
+//                break;
+//            }
+//        default:
+//            break;
+//        }
+        
+        
 
         // adicionando o novo shape na layer ativa
         return layer.active.children.add(shape.uuid, shape);
     }
 
-
-//    var type  = {
-//        'arc': 'arc',
-//        'bezier-cubic': 'bezier-cubic'
-//    };
 
     function remove(value) {}
 
@@ -3845,7 +3247,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     exports.remove = remove;
     exports.list = list;
     exports.find = find;
-//    exports.type = type;
 });
 define("plane/structure/tool", ['require', 'exports'], function (require, exports) {
 

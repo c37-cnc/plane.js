@@ -1,14 +1,14 @@
 define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
-
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
 
-    
-    
+    var types = require('plane/utility/types');
+
+
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
      * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
@@ -21,153 +21,87 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
      * @constructor
      */
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-    function BezierQuadratic(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var BezierQuadratic = types.object.inherits(function BezierQuadratic(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
-        
-        
-        this.type = 'bezier-quadratic';
+        this.status = null;
+        this.style = null;
+
         this.points = attrs.points;
-        
-        this.initialize();
-        
-    };
 
-    BezierQuadratic.prototype = {
-        initialize: function () {
-        
-            var lineSegments = 100;
+        this.initialize(attrs);
+
+    }, object.Shape);
 
 
-            var dot = function (v1, v2) {
-                var sum = 0;
-                for (var i = 0; i < v1.length; i++) {
-                    sum += v1[i] * v2[i];
-                }
-                return sum;
+    // https://github.com/MartinDoms/Splines/blob/master/quadraticBezier.js
+    BezierQuadratic.prototype.calculeSegments = function () {
+
+        var lineSegments = 100;
+
+        var dot = function (v1, v2) {
+            var sum = 0;
+            for (var i = 0; i < v1.length; i++) {
+                sum += v1[i] * v2[i];
             }
-
-            var quadraticBezier = function (points, t) {
-                var p0 = points[0];
-                var p1 = points[1];
-                var p2 = points[2];
-                var t3 = t * t * t;
-                var t2 = t * t;
-
-                var dx = dot([p0.x, p1.x, p2.x], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
-                var dy = dot([p0.y, p1.y, p2.y], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
-
-                return {
-                    x: dx,
-                    y: dy
-                };
-            }
-
-            for (var j = 0; j < lineSegments + 1; j++) {
-                this.segments.push(quadraticBezier(this.points, j / lineSegments));
-            }
-        
-        
-        },
-        render: function (context, transform) {
-
-//            context.beginPath();
-//
-//            var scale = Math.sqrt(transform.a * transform.d);
-//            var move = {
-//                x: transform.tx,
-//                y: transform.ty
-//            };
-//
-//
-//
-//
-//
-//            for (var i = 0; i < pts.length; i += 2) {
-//                context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
-//            }
-//            context.stroke();
-            
-            
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-            
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-            
-            context.stroke();
-
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }            
-
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
-
+            return sum;
         }
 
+        var quadraticBezier = function (points, t) {
+            var p0 = points[0];
+            var p1 = points[1];
+            var p2 = points[2];
+            var t3 = t * t * t;
+            var t2 = t * t;
 
+            var dx = dot([p0.x, p1.x, p2.x], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
+            var dy = dot([p0.y, p1.y, p2.y], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
+
+            return {
+                x: dx,
+                y: dy
+            };
+        }
+
+        for (var j = 0; j < lineSegments + 1; j++) {
+            this.segments.push(quadraticBezier(this.points, j / lineSegments));
+        }
+
+        return true;
     }
 
 
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Bezier Quadratic - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.points[0] = point.create(attrs.points[0]);
+        attrs.points[1] = point.create(attrs.points[1]);
+        attrs.points[2] = point.create(attrs.points[2]);
+
+
+        // 4 - criando um novo shape do tipo arco
         return new BezierQuadratic(attrs);
     };
 

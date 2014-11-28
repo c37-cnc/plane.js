@@ -1,11 +1,12 @@
 define("plane/shapes/ellipse", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
-
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
 
 
     /**
@@ -19,174 +20,107 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
      * @class Ellipse
      * @constructor
      */
-    function Ellipse(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var Ellipse = types.object.inherits(function Ellipse(attrs) {
 
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
-        this.type = 'ellipse';
-        this.point = attrs.point;
-        this.radiusY = attrs.radiusY;
-        this.radiusX = attrs.radiusX;
-        this.startAngle = attrs.startAngle;
-        this.endAngle = attrs.endAngle;
-        this.angle = attrs.angle;
+        this.center = null;
+        this.radiusY = null;
+        this.radiusX = null;
 
+        this.angle = null;
+        this.startAngle = null;
+        this.endAngle = null;
 
-        this.initialize();
-    };
+        this.initialize(attrs);
 
-    Ellipse.prototype = {
-        initialize: function () {
-            
-            
+    }, object.Shape);
 
-            var angle = (this.startAngle != undefined && this.endAngle != undefined) ? this.angle : types.math.radians(this.angle) || 0;
-            var startAngle = this.startAngle || 0;
-            var endAngle = this.endAngle || (2.0 * Math.PI);
+    Ellipse.prototype.calculeSegments = function () {
 
-            while (endAngle < startAngle) {
-                endAngle += 2.0 * Math.PI;
-            }
+        var angle = (this.startAngle != undefined && this.endAngle != undefined) ? this.angle : types.math.radians(this.angle) || 0;
+        var startAngle = this.startAngle || 0;
+        var endAngle = this.endAngle || (2.0 * Math.PI);
 
-            var radiusX = this.radiusX;
-            var radiusY = this.radiusY;
-
-            var num18 = Math.PI / 60.0;
-
-
-            var num = Math.cos(angle);
-            var num12 = Math.sin(angle);
-
-
-            while (true) {
-                if (startAngle > endAngle) {
-                    num18 -= startAngle - endAngle;
-                    startAngle = endAngle;
-                }
-                var p3 = {
-                    x: radiusX * Math.cos(startAngle),
-                    y: radiusY * Math.sin(startAngle)
-                };
-                // p3 *= matrix4x4F;
-                // aplicando a matrix para a rotação
-                p3 = {
-                    x: p3.x * num + p3.y * -num12,
-                    y: p3.x * num12 + p3.y * num
-                }
-                // o ponto de centro + o item da ellipse
-                p3 = {
-                    x: this.point.x + p3.x,
-                    y: this.point.y + p3.y
-                };
-
-                // armazenando no array
-                this.segments.push(p3);
-
-                // continuando até a volta completa
-                if (startAngle != endAngle)
-                    startAngle += num18;
-                else
-                    break;
-            }
-
-
-        },
-        toObject: function () {
-
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                x: types.math.parseFloat(this.point.x, 5),
-                y: types.math.parseFloat(this.point.y, 5),
-                radiusX: types.math.parseFloat(this.radiusX, 5),
-                radiusY: types.math.parseFloat(this.radiusY, 5)
-            };
-
-        },
-        render: function (context, transform) {
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-
-
-            context.stroke();
-
-
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-
-
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
+        while (endAngle < startAngle) {
+            endAngle += 2.0 * Math.PI;
         }
+
+        var radiusX = this.radiusX;
+        var radiusY = this.radiusY;
+
+        var num18 = Math.PI / 60.0;
+
+
+        var num = Math.cos(angle);
+        var num12 = Math.sin(angle);
+
+
+        while (true) {
+            if (startAngle > endAngle) {
+                num18 -= startAngle - endAngle;
+                startAngle = endAngle;
+            }
+            var p3 = {
+                x: radiusX * Math.cos(startAngle),
+                y: radiusY * Math.sin(startAngle)
+            };
+            // p3 *= matrix4x4F;
+            // aplicando a matrix para a rotação
+            p3 = {
+                x: p3.x * num + p3.y * -num12,
+                y: p3.x * num12 + p3.y * num
+            }
+            // o ponto de centro + o item da ellipse
+            p3 = {
+                x: this.center.x + p3.x,
+                y: this.center.y + p3.y
+            };
+
+            // armazenando no array
+            this.segments.push(p3);
+
+            // continuando até a volta completa
+            if (startAngle != endAngle)
+                startAngle += num18;
+            else
+                break;
+        }
+
+        return true;
 
     }
 
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Ellipse - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.center = point.create(attrs.center);
+
+        // 4 - criando um novo shape do tipo arco
         return new Ellipse(attrs);
     };
 

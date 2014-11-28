@@ -3,137 +3,75 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
 
 
-    function Polyline(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Polyline = types.object.inherits(function Polyline(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
+        this.points = null;
 
-        this.type = 'polyline';
-        this.points = attrs.points;
+        this.initialize(attrs);
 
-        this.initialize();
-    };
-
-    Polyline.prototype = {
-        initialize: function () {
+    }, object.Shape);
+    
+    Polyline.prototype.calculeSegments = function(){
         
-            this.segments = this.   points;
+        this.segments = this.points;
         
+        return true;
         
-        },
-        toObject: function () {
-
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                points: this.points.map(function (point) {
-                    return {
-                        x: types.math.parseFloat(point.x, 5),
-                        y: types.math.parseFloat(point.y, 5)
-                    }
-                })
-            };
-
-        },
-        render: function (context, transform) {
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-//            context.moveTo(this.segments[0].x * scale + move.x, this.segments[0].y * scale + move.y);
-//            
-//            for (var i = 0; i < this.segments.length; i += 2) {
-//                var x = this.segments[i].x * scale + move.x;
-//                var y = this.segments[i].y * scale + move.y;
-//
-//                context.lineTo(x, y);
-//            }
-
-
-            context.moveTo((this.segments[0].x * scale) + move.x, (this.segments[0].y * scale) + move.y);
-
-            this.segments.forEach(function (point) {
-                context.lineTo((point.x * scale) + move.x, (point.y * scale) + move.y);
-            });
-            
-            
-            
-            
-            context.stroke();
-            
-            
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
-
-        }
-
     }
 
 
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.points = attrs.points.map(function(item){
+            return point.create(item);
+        });
+
+        // 4 - criando um novo shape do tipo arco
         return new Polyline(attrs);
     };
 
     exports.create = create;
-
 });

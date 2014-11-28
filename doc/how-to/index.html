@@ -94,95 +94,79 @@
 
             plane.layer.create();
 
-            plane.shape.create({
-                type: 'rectangle',
-                x: 0,
-                y: 0,
-                width: viewPort.clientWidth,
-                height: viewPort.clientHeight
-            });
 
-            plane.shape.create({
-                type: 'bezier-quadratic',
-                points: [[60, 190], [260, 10], [550, 120]]
-            });
-
-            plane.shape.create({
-                type: 'bezier-cubic',
-                points: [[60, 190], [120, 10], [550, 10], [520, 190]]
-            });
-
-
-            plane.shape.create({
-                type: 'line',
-                a: [350, 350],
-                b: [600, 50]
-            });
-            plane.shape.create({
-                type: 'polygon',
-                x: 300,
-                y: 500,
-                radius: 70,
-                sides: 5
-            });
-            plane.shape.create({
-                type: 'rectangle',
-                x: 300,
-                y: 10,
-                width: 125,
-                height: 100
-            });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 800,
-            //                y: 150,
-            //                radius: 50,
-            //                startAngle: 0,
-            //                endAngle: 180
-            //            });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 500,
-            //                y: 250,
-            //                radius: 50,
-            //                startAngle: 90,
-            //                endAngle: 180
-            //            });
-            //            plane.shape.create({
-            //                type: 'arc',
-            //                x: 700,
-            //                y: 250,
-            //                radius: 50,
-            //                startAngle: 90,
-            //                endAngle: 270
-            //            });
             plane.shape.create({
                 type: 'arc',
-                center: [1000, 250],
+                center: [700, 250],
                 radius: 50,
-                startAngle: 270,
-                endAngle: 90
+                startAngle: 90,
+                endAngle: 270
             });
             plane.shape.create({
                 type: 'arc',
-                center: [1200, 400],
+                center: [1200, 300],
                 radius: 30,
                 startAngle: 360,
                 endAngle: 90
             });
+
+            plane.shape.create({
+                type: 'bezier-cubic',
+                points: [[60, 190], [80, 10], [500, 10], [520, 190]]
+            });
+
+            plane.shape.create({
+                type: 'bezier-quadratic',
+                points: [[700, 100], [860, 0], [1000, 100]]
+            });
+
             plane.shape.create({
                 type: 'circle',
-                x: 1200,
-                y: 100,
+                center: [1200, 100],
                 radius: 50
             });
+
             plane.shape.create({
                 type: 'ellipse',
-                x: 1000,
-                y: 100,
-                radiusY: 25,
-                radiusX: 50
+                center: [400, 300],
+                radiusY: 50,
+                radiusX: 100
             });
+
+            plane.shape.create({
+                type: 'line',
+                from: [150, 450],
+                to: [600, 500]
+            });
+
+            plane.shape.create({
+                type: 'polygon',
+                center: [900, 400],
+                radius: 70,
+                sides: 5
+            });
+
+            plane.shape.create({
+                type: 'polyline',
+                points: [[700, 100], [860, 0], [1000, 100]]
+            });
+            plane.shape.create({
+                type: 'polyline',
+                points: [[60, 190], [80, 10], [500, 10], [520, 190]]
+            });
+
+            plane.shape.create({
+                type: 'rectangle',
+                from: [0, 0],
+                to: [viewPort.clientWidth, viewPort.clientHeight]
+            });
+            plane.shape.create({
+                type: 'rectangle',
+                from: [1350, 100],
+                to: [1550, 300]
+            });
+
+
 
             plane.view.update();
 
@@ -242,16 +226,14 @@
 
                 plane.shape.create({
                     type: 'rectangle',
-                    x: event.pointFirst.x,
-                    y: event.pointFirst.y,
-                    height: event.pointLast.subtract(event.pointFirst).y,
-                    width: event.pointLast.subtract(event.pointFirst).x,
+                    from: [event.pointFirst.x, event.pointFirst.y],
+                    to: [event.pointLast.x, event.pointLast.y],
                     status: 'temporary'
                 });
 
 
                 plane.layer.active.children.list().forEach(function (shape) {
-                    if ((shape.type == 'line' || shape.type == 'arc') && shape.intersectsWithRect({
+                    if (shape.intersect({
                         x: event.pointFirst.x,
                         y: event.pointFirst.y,
                         height: event.pointLast.subtract(event.pointFirst).y,
