@@ -7,50 +7,29 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
         function toJson(objectDxf) {
 
             switch (objectDxf.type) {
-            case 'line':
+            case 'arc':
                 {
-                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
-                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
-                }
-            case 'spline':
-                {
-                    if (objectDxf.points) {
-                        var spline = '{"type": "spline", "degree": {0}, "knots": [{1}], "points": [{2}]},',
-                            points = '';
-
-                        for (var i = 0; i < objectDxf.points.length; i++) {
-
-                            var point = i == objectDxf.points.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
-
-                        }
-                        return types.string.format(spline, [objectDxf.degree, objectDxf.knots.join(), points]);
-                    }
-                    return '';
+                    var arc = '{"type": "arc", "center": [{0}, {1}], "radius": {2}, "startAngle": {3}, "endAngle": {4} },';
+                    return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1]);
                 }
             case 'circle':
                 {
-                    var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} },';
+                    var circle = '{ "type": "circle", "center": [{0}, {1}], "radius": {2} },';
                     return types.string.format(circle, [objectDxf.x, objectDxf.y, objectDxf.r]);
-                }
-            case 'arc':
-                {
-                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2}, "startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
-                    return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1, false]);
                 }
             case 'ellipse':
                 {
-                    var ellipse = '{ "type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2}, "radiusX": {3}, "startAngle": {4}, "endAngle": {5}, "angle": {6} },';
-                    
+                    var ellipse = '{ "type": "ellipse", "center": [{0}, {1}], "radiusY": {2}, "radiusX": {3}, "startAngle": {4}, "endAngle": {5}, "angle": {6} },';
+
                     var ratio = objectDxf.r;
                     var startAngle = objectDxf.startAngle;
                     var endAngle = objectDxf.endAngle || (2.0 * Math.PI);
-                    
+
                     // clockwise || anticlockwise?
                     while (endAngle < startAngle) {
                         endAngle += 2.0 * Math.PI;
                     }
-                    
+
                     var radiusX = {
                         x: 0 - objectDxf.x1,
                         y: 0 - objectDxf.y1
@@ -60,10 +39,15 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
                     var radiusY = radiusX * ratio;
                     var angle = Math.atan2(objectDxf.y1, objectDxf.x1);
-                    
-                    
-                    
+
+
+
                     return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, endAngle, angle]);
+                }
+            case 'line':
+                {
+                    var line = '{ "type": "line", "from": [{0}, {1}], "to": [{2}, {3}] },';
+                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
                 }
             case 'lwpolyline':
                 {
@@ -94,6 +78,22 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
                         }
                         return types.string.format(polyline, [points]);
+                    }
+                    return '';
+                }
+            case 'spline':
+                {
+                    if (objectDxf.points) {
+                        var spline = '{"type": "spline", "degree": {0}, "knots": [{1}], "points": [{2}]},',
+                            points = '';
+
+                        for (var i = 0; i < objectDxf.points.length; i++) {
+
+                            var point = i == objectDxf.points.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
+                            points += types.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
+
+                        }
+                        return types.string.format(spline, [objectDxf.degree, objectDxf.knots.join(), points]);
                     }
                     return '';
                 }

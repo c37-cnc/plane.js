@@ -18,24 +18,8 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         'polygon': require('plane/shapes/polygon'),
         'polyline': require('plane/shapes/polyline'),
         'rectangle': require('plane/shapes/rectangle'),
-//        splineCatmullRom: require('plane/shapes/spline-catmull–rom'),
-//        splineNurbs: require('plane/shapes/spline-nurbs')
+        'spline': require('plane/shapes/spline')
     };
-
-
-    //    var arc = require('plane/shapes/arc'),
-    //        bezierCubic = require('plane/shapes/bezier-cubic'),
-    //        bezierQuadratic = require('plane/shapes/bezier-quadratic'),
-    //        circle = require('plane/shapes/circle'),
-    //        ellipse = require('plane/shapes/ellipse'),
-    //        line = require('plane/shapes/line'),
-    //        polygon = require('plane/shapes/polygon'),
-    //        polyline = require('plane/shapes/polyline'),
-    //        rectangle = require('plane/shapes/rectangle'),
-    //        splineCatmullRom = require('plane/shapes/spline-catmull–rom'),
-    //        splineNurbs = require('plane/shapes/spline-nurbs');
-
-
 
 
 
@@ -61,112 +45,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
         var shape = shapeType[attrs.type].create(attrs);;
 
-
-
-//
-//
-//        switch (attrs.type) {
-//        case 'arc':
-//            {
-//                shape = arc.create(types.object.merge({
-//                    uuid: types.math.uuid(9, 16),
-//                }, attrs));
-//
-//                break;
-//            }
-//        case 'line':
-//            {
-//                attrs.points = [point.create(attrs.a[0], attrs.a[1]), point.create(attrs.b[0], attrs.b[1])];
-//
-//                shape = line.create(attrs);
-//
-//                break;
-//            }
-//        case 'bezier-cubic':
-//            {
-//                attrs.points[0] = point.create(attrs.points[0][0], attrs.points[0][1]);
-//                attrs.points[1] = point.create(attrs.points[1][0], attrs.points[1][1]);
-//                attrs.points[2] = point.create(attrs.points[2][0], attrs.points[2][1]);
-//                attrs.points[3] = point.create(attrs.points[3][0], attrs.points[3][1]);
-//
-//                shape = bezierCubic.create(attrs);
-//
-//                break;
-//            }
-//        case 'bezier-quadratic':
-//            {
-//                attrs.points[0] = point.create(attrs.points[0][0], attrs.points[0][1]);
-//                attrs.points[1] = point.create(attrs.points[1][0], attrs.points[1][1]);
-//                attrs.points[2] = point.create(attrs.points[2][0], attrs.points[2][1]);
-//
-//                shape = bezierQuadratic.create(attrs);
-//
-//                break;
-//            }
-//        case 'rectangle':
-//            {
-//                attrs.point = point.create(attrs.x, attrs.y);
-//                attrs.height = attrs.height;
-//                attrs.width = attrs.width;
-//
-//                shape = rectangle.create(attrs);
-//
-//                break;
-//            }
-//        case 'circle':
-//            {
-//                attrs.point = point.create(attrs.x, attrs.y);
-//                attrs.radius = attrs.radius;
-//
-//                shape = circle.create(attrs);
-//
-//                break;
-//            }
-//        case 'ellipse':
-//            {
-//                attrs.point = point.create(attrs.x, attrs.y);
-//                attrs.radiusY = attrs.radiusY;
-//                attrs.radiusX = attrs.radiusX;
-//
-//                shape = ellipse.create(attrs);
-//
-//                break;
-//            }
-//        case 'polygon':
-//            {
-//                attrs.point = point.create(attrs.x, attrs.y);
-//                attrs.sides = attrs.sides;
-//                attrs.radius = attrs.radius;
-//
-//                shape = polygon.create(attrs);
-//
-//                break;
-//            }
-//        case 'polyline':
-//            {
-//                for (var i = 0; i < attrs.points.length; i++) {
-//                    attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
-//                }
-//
-//                shape = polyline.create(attrs);
-//
-//                break;
-//            }
-//        case 'spline':
-//            {
-//                for (var i = 0; i < attrs.points.length; i++) {
-//                    attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
-//                }
-//
-//                shape = splineNurbs.create(attrs);
-//
-//                break;
-//            }
-//        default:
-//            break;
-//        }
-        
-        
 
         // adicionando o novo shape na layer ativa
         return layer.active.children.add(shape.uuid, shape);

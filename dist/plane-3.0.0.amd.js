@@ -1,5 +1,5 @@
 /*!
- * C37 in 06-11-2014 at 02:34:10 
+ * C37 in 29-11-2014 at 12:22:48 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -78,28 +78,24 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 {
                     var ellipse = '{ "type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2}, "radiusX": {3}, "startAngle": {4}, "endAngle": {5}, "angle": {6} },';
                     
-                    var p2 = {
-                        x: objectDxf.x1,
-                        y: objectDxf.y1
-                    };
-
                     var ratio = objectDxf.r;
-                    var startAngle = objectParse.startAngle;
-                    var endAngle = objectParse.endAngle || (2.0 * Math.PI);
-
+                    var startAngle = objectDxf.startAngle;
+                    var endAngle = objectDxf.endAngle || (2.0 * Math.PI);
+                    
+                    // clockwise || anticlockwise?
                     while (endAngle < startAngle) {
                         endAngle += 2.0 * Math.PI;
                     }
-
+                    
                     var radiusX = {
-                        x: 0 - p2.x,
-                        y: 0 - p2.y
+                        x: 0 - objectDxf.x1,
+                        y: 0 - objectDxf.y1
                     };
 
                     radiusX = Math.sqrt(radiusX.x * radiusX.x + radiusX.y * radiusX.y);
 
                     var radiusY = radiusX * ratio;
-                    var angle = Math.atan2(p2.y, p2.x);
+                    var angle = Math.atan2(objectDxf.y1, objectDxf.x1);
                     
                     
                     
@@ -355,6 +351,8 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 //	testPoint(path, path.bounds.topRight, false);
 //	testPoint(path, path.bounds.bottomLeft, false);
 //	testPoint(path, path.bounds.bottomRight, false);
+// https://github.com/thelonious/js-intersections
+// http://www.kevlindev.com/gui/math/intersection/index.htm
 define("plane/geometric/intersection", ['require', 'exports'], function (require, exports) {
 
     var polynomial = require('plane/geometric/polynomial'),
@@ -384,7 +382,87 @@ define("plane/geometric/intersection", ['require', 'exports'], function (require
             AD * DF - AF * AF
         );
     };
+    
+    
+    function isInside(x, y, z1, z2, z3, z4) {
+        var x1 = z1.minimum(z3);
+        var x2 = z1.maximum(z3);
+        var y1 = z2.minimum(z4);
+        var y2 = z2.maximum(z4);
 
+        return ((x1.x <= x) && (x <= x2.x) && (y1.y <= y) && (y <= y2.y));
+    };
+
+    function segmentsRectangle(segments, tl, tr, bl, br) {
+
+        var inter1 = intersectSegmentsLine(tl, tr, segments),
+            inter2 = intersectSegmentsLine(tr, br, segments),
+            inter3 = intersectSegmentsLine(br, bl, segments),
+            inter4 = intersectSegmentsLine(bl, tl, segments);
+
+        if (inter1 || inter2 || inter3 || inter4) {
+            return true;
+        }
+
+        for (var i = 0; i < segments.length; i++) {
+            if (isInside(segments[i].x, segments[i].y, bl, tl, tr, br)) {
+                return true;
+            }
+        }
+
+        return false;
+    };
+
+    function intersectSegmentsLine(a1, a2, points) {
+        var result = [],
+            length = points.length;
+
+        for (var i = 0; i < length; i++) {
+            var b1 = points[i],
+                b2 = points[(i + 1) % length];
+
+            if (lineLine(a1, a2, b1, b2)) {
+                return true;
+            }
+        }
+        return false;
+    };
+    
+    
+    
+    
+    
+
+    function lineLine(a1, a2, b1, b2) {
+        
+//        debugger;
+        
+        var result,
+            uaT = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x),
+            ubT = (a2.x - a1.x) * (a1.y - b1.y) - (a2.y - a1.y) * (a1.x - b1.x),
+            uB = (b2.y - b1.y) * (a2.x - a1.x) - (b2.x - b1.x) * (a2.y - a1.y);
+        if (uB !== 0) {
+            var ua = uaT / uB,
+                ub = ubT / uB;
+            if (0 <= ua && ua <= 1 && 0 <= ub && ub <= 1) {
+//                result = new Intersection('Intersection');
+                result = [];
+                result.push(point.create(a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y)));
+            } else {
+                result = false;
+//                result = new Intersection();
+            }
+        } else {
+            if (uaT === 0 || ubT === 0) {
+                result = false;
+//                result = new Intersection('Coincident');
+            } else {
+                result = false;
+//                result = new Intersection('Parallel');
+            }
+        }
+        return result;
+    };
 
     function circleLine(c, r, a1, a2) {
         var result,
@@ -627,6 +705,8 @@ define("plane/geometric/intersection", ['require', 'exports'], function (require
     exports.circleArc = circleArc;
     exports.circleEllipse = circleEllipse;
     exports.circleBezier = circleBezier;
+    exports.lineLine = lineLine;
+    exports.segmentsRectangle = segmentsRectangle;
 });
 define("plane/geometric/matrix", ['require', 'exports'], function (require, exports) {
 
@@ -1177,7 +1257,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
         point = require('plane/structure/point'),
         shape = require('plane/structure/shape'),
         group = require('plane/structure/group'),
-        tool = require('plane/structure/tool');
+        tool = require('plane/structure/tool'),
+        view = require('plane/structure/view');
 
     var importer = require('plane/data/importer'),
         exporter = require('plane/data/exporter');
@@ -1201,54 +1282,33 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
 
         // montando o render de Plane
-        var render = document.createElement('canvas');
+        var canvas = document.createElement('canvas');
 
-        render.id = types.math.uuid(9, 16);
-        render.width = viewPort.clientWidth;
-        render.height = viewPort.clientHeight;
+        canvas.id = types.math.uuid(9, 16);
+        canvas.width = viewPort.clientWidth;
+        canvas.height = viewPort.clientHeight;
 
-        render.style.position = "absolute";
-        render.style.backgroundColor = 'transparent';
+        canvas.style.position = "absolute";
+        canvas.style.backgroundColor = 'transparent';
 
         // add em viewPort HTMLElement
-        viewPort.appendChild(render);
+        viewPort.appendChild(canvas);
 
 
         // initialize view
-
-        // add to private view
-        _view.context = render.getContext('2d');
-
-        // sistema cartesiano de coordenadas
-        _view.context.translate(0, viewPort.clientHeight);
-        _view.context.scale(1, -1);
-
-        // created the matrix transform
-        _view.transform = matrix.create();
-
-        // o centro inicial
-        _view.center = _view.center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
-
-        // os tamanhos que são fixos
-        _view.size.height = viewPort.clientHeight;
-        _view.size.width = viewPort.clientWidth;
-
-
-        // initialize structure
-        layer.initialize({
-            select: select
+        view.initialize({
+            viewPort: viewPort,
+            context : canvas.getContext('2d')
         });
-        shape.initialize({
-            select: select
-        });
+        // initialize tool
         tool.initialize({
             viewPort: viewPort,
-            select: select,
-            view: _view
+            view: view
         });
 
         return true;
     }
+    
 
     function clear() {
 
@@ -1261,207 +1321,22 @@ define("plane", ['require', 'exports'], function (require, exports) {
         return true;
     }
 
-    function update() {
-
-        var context = _view.context,
-            transform = _view.transform;
-
-        // clear context, +1 is needed on some browsers to really clear the borders
-        context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
-
-        var layers = layer.list(),
-            l = layers.length;
-        while (l--) {
-            var shapes = layers[l].children.list(),
-                s = shapes.length;
-
-            // style of layer
-            context.lineCap = layers[l].style.lineCap;
-            context.lineJoin = layers[l].style.lineJoin;
-
-            while (s--) {
-                shapes[s].render(context, transform);
-            }
-        }
-        return this;
-    }
-
-    // private view
-    var _view = {
-        context: null,
-        transform: null,
-        zoom: 1,
-        center: point.create(0, 0),
-        size: {
-            height: 0,
-            width: 0
-        },
-        bounds: {
-            x: 0,
-            y: 0,
-            height: 0,
-            width: 0
-        }
-    };
-
-    // public view
-    var view = {
-        get zoom() {
-            return _view.zoom;
-        },
-        set zoom(zoom) {
-
-            var factor, motion;
-
-            factor = zoom / _view.zoom;
-
-            _view.transform.scale({
-                x: factor,
-                y: factor
-            }, _view.center);
-
-            _view.zoom = zoom;
-
-
-            update();
-
-            return true;
-        },
-        zoomTo: function (zoom, center) {
-
-            var factor, motion;
-
-            factor = zoom / _view.zoom;
-
-            _view.transform.scale({
-                x: factor,
-                y: factor
-            }, _view.center);
-
-            _view.zoom = zoom;
-
-
-
-            var centerSubtract = center.subtract(_view.center);
-            centerSubtract = centerSubtract.negate();
-
-            var xxx = matrix.create();
-            xxx.translate(centerSubtract.x, centerSubtract.y);
-
-            _view.transform.concate(xxx);
-
-            _view.center = center;
-
-
-
-            update();
-
-            return true;
-        },
-        get center() {
-            return _view.center;
-        },
-        set center(center) {
-
-            //            debugger;
-
-            var centerSubtract = center.subtract(_view.center);
-            centerSubtract = centerSubtract.negate();
-
-            var xxx = matrix.create();
-            xxx.translate(centerSubtract.x, centerSubtract.y);
-
-            _view.transform.concate(xxx);
-
-            _view.center = center;
-
-            update();
-
-            return true;
-        },
-        get bounds() {
-
-            var scale = Math.sqrt(_view.transform.a * _view.transform.d);
-
-            return {
-                x: _view.transform.tx,
-                y: _view.transform.ty,
-                height: _view.size.height * scale,
-                width: _view.size.width * scale
-            }
-        },
-        get size() {
-            return _view.size;
-        },
-        get transform() {
-            return _view.transform;
-        },
-        reset: function () {
-            this.zoomTo(1, point.create(_view.size.width / 2, _view.size.height / 2));
-        }
-    };
-
-
-
-    var select = (function () {
-
-        var _layer = null,
-            _shapes = types.data.dictionary.create(),
-            _groups = types.data.dictionary.create();
-
-        return {
-            get layer() {
-                return _layer;
-            },
-            set layer(uuid) {
-                this.events.notify('onDeactivated', {
-                    type: 'onDeactivated',
-                    layer: _layer
-                });
-
-                _layer = layer.find(uuid);
-                _shapes.clear();
-                _groups.clear();
-
-                this.events.notify('onActivated', {
-                    type: 'onActivated',
-                    layer: _layer
-                });
-            },
-            get shapes() {
-                return _shapes;
-            },
-            set shapes(shape) {
-                return _shapes.add(shape.uuid, shape);
-            },
-            get groups() {
-                return _groups.list();
-            },
-            set groups(group) {
-                return _groups.add(group.uuid, group);
-            },
-            events: types.object.event.create()
-        }
-    })();
+ 
+    
+    
 
 
 
     exports.initialize = initialize;
-    exports.update = update;
     exports.clear = clear;
 
-    exports.view = view
-    exports.select = select;
+    exports.view = view;
 
     exports.point = point;
     exports.shape = shape;
     exports.group = group;
-    exports.layer = {
-        create: layer.create,
-        list: layer.list,
-        find: layer.find,
-        remove: layer.remove
-    };
+
+    exports.layer = layer;
     exports.tool = {
         create: tool.create,
         list: tool.list,
@@ -1482,7 +1357,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 for (var prop in objectDxf) {
                     shape.create(objectDxf[prop]);
                 }
-                update();
+                view.update();
             }
         },
         fromJson: function (stringJson) {
@@ -1528,8 +1403,18 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return JSON.stringify(plane);
         }
     };
+    
 });
 define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
+
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -1537,12 +1422,12 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
      * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
      * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
      *
-     * @namespace Shapes
-     * @extends Shape
-     * @class Arc
+     * @namespace Shape
+     * @class Shape
      * @constructor
      */
-    function Arc(attrs) {
+    var Arc = types.object.inherits(function Arc(attrs) {
+
         /**
          * A Universally unique identifier for
          * a single instance of Object
@@ -1551,122 +1436,82 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
          * @type String
          * @default 'uuid'
          */
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
-        this.type = 'arc';
-        this.point = attrs.point;
-        this.radius = attrs.radius;
-        this.startAngle = attrs.startAngle;
-        this.endAngle = attrs.endAngle;
-        this.clockWise = attrs.clockWise;
+        this.center = null;
+        this.radius = null;
+        this.startAngle = null;
+        this.endAngle = null;
 
-        this.initialize();
-    };
+        this.initialize(attrs);
 
+    }, object.Shape);
 
-    Arc.prototype = {
-        initialize: function () {
+    Arc.prototype.calculeSegments = function () {
 
-            var end = this.endAngle - this.startAngle;
-            if (end < 0.0) {
-                end += 360.0;
-            }
-
-            // .7 resolution
-            var num1 = .7 / 180.0 * Math.PI;
-            var num2 = this.startAngle / 180.0 * Math.PI;
-            var num3 = end / 180.0 * Math.PI;
-
-            if (num3 < 0.0)
-                num1 = -num1;
-            var size = Math.abs(num3 / num1) + 2;
-
-            var index = 0;
-            var num4 = num2;
-            while (index < size - 1) {
-
-                var xval = this.point.x + this.radius * Math.cos(num4);
-                var yval = this.point.y + this.radius * Math.sin(num4);
-
-                this.segments.push({
-                    x: xval,
-                    y: yval
-                });
-                ++index;
-                num4 += num1;
-            }
-
-            var xval1 = this.point.x + this.radius * Math.cos(num2 + num3);
-            var yval1 = this.point.y + this.radius * Math.sin(num2 + num3);
-
-            this.segments[this.segments.length - 1].x = xval1;
-            this.segments[this.segments.length - 1].y = yval1;
-            
-        },
-        toObject: function () {
-
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                x: types.math.parseFloat(this.point.x, 5),
-                y: types.math.parseFloat(this.point.y, 5),
-                radius: types.math.parseFloat(this.radius, 5),
-                startAngle: types.math.parseFloat(this.startAngle, 5),
-                endAngle: types.math.parseFloat(this.endAngle, 5),
-                clockWise: this.clockWise
-            };
-
-        },
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-
-//            for (var i = 0; i < points.length; i += 2) {
-//                context.lineTo(points[i].x * scale + move.x, points[i].y * scale + move.y);
-//            }
-            
-            for (var i = 0; i < this.segments.length; i += 2) {
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-            
-
-            context.stroke();
-
+        var end = this.endAngle - this.startAngle;
+        
+        if (end < 0.0) {
+            end += 360.0;
         }
-    };
 
+        // .7 resolution
+        var num1 = .7 / 180.0 * Math.PI;
+        var num2 = this.startAngle / 180.0 * Math.PI;
+        var num3 = end / 180.0 * Math.PI;
 
+        if (num3 < 0.0)
+            num1 = -num1;
+        var size = Math.abs(num3 / num1) + 2;
 
+        var index = 0;
+        var num4 = num2;
+        while (index < size - 1) {
 
+            var xval = this.center.x + this.radius * Math.cos(num4);
+            var yval = this.center.y + this.radius * Math.sin(num4);
+
+            this.segments.push({
+                x: xval,
+                y: yval
+            });
+            ++index;
+            num4 += num1;
+        }
+
+        var xval1 = this.center.x + this.radius * Math.cos(num2 + num3);
+        var yval1 = this.center.y + this.radius * Math.sin(num2 + num3);
+
+        this.segments[this.segments.length - 1].x = xval1;
+        this.segments[this.segments.length - 1].y = yval1;
+        
+        return true;
+        
+    }
 
 
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.center = point.create(attrs.center);
+
+        // 4 - criando um novo shape do tipo arco
         return new Arc(attrs);
     };
 
@@ -1674,6 +1519,15 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
 });
 define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
+
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -1687,102 +1541,89 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
      * @constructor
      */
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-    function BezierCubic(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var BezierCubic = types.object.inherits(function BezierCubic(attrs) {
 
-        this.type = 'bezier-cubic';
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
+
+        this.segments = [];
+        this.status = null;
+        this.style = null;
+
         this.points = attrs.points;
-    };
+
+        this.initialize(attrs);
+
+    }, object.Shape);
 
 
-    BezierCubic.prototype = {
-        toObject: function () {
+    // https://github.com/MartinDoms/Splines/blob/master/cubicBezier.js
+    BezierCubic.prototype.calculeSegments = function () {
+
+        var lineSegments = 100;
+
+        var dot = function (v1, v2) {
+            var sum = 0;
+            for (var i = 0; i < v1.length; i++) {
+                sum += v1[i] * v2[i];
+            }
+            return sum;
+        };
+
+        var cubicBezier = function (points, t) {
+            var p0 = points[0];
+            var p1 = points[1];
+            var p2 = points[2];
+            var p3 = points[3];
+            var t3 = t * t * t;
+            var t2 = t * t;
+
+            var dx = dot([p0.x, p1.x, p2.x, p3.x], [(1 - t) * (1 - t) * (1 - t), 3 * (1 - t) * (1 - t) * t, 3 * (1 - t) * t2, t3]);
+            var dy = dot([p0.y, p1.y, p2.y, p3.y], [(1 - t) * (1 - t) * (1 - t), 3 * (1 - t) * (1 - t) * t, 3 * (1 - t) * t2, t3]);
+
             return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                points: this.points.map(function (point) {
-                    return {
-                        a: [types.math.parseFloat(point.a.x, 5), types.math.parseFloat(point.a.y, 5)],
-                        b: [types.math.parseFloat(point.b.x, 5), types.math.parseFloat(point.b.y, 5)],
-                        c: [types.math.parseFloat(point.c.x, 5), types.math.parseFloat(point.c.y, 5)]
-                    }
-                })
+                x: dx,
+                y: dy
             };
-        },
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-            // https://github.com/MartinDoms/Splines/blob/master/cubicBezier.js
-
-            var pts = [],
-                lineSegments = 100;
-
-
-            var dot = function (v1, v2) {
-                var sum = 0;
-                for (var i = 0; i < v1.length; i++) {
-                    sum += v1[i] * v2[i];
-                }
-                return sum;
-            };
-
-            var cubicBezier = function (points, t) {
-                var p0 = points[0];
-                var p1 = points[1];
-                var p2 = points[2];
-                var p3 = points[3];
-                var t3 = t * t * t;
-                var t2 = t * t;
-
-                var dx = dot([p0.x, p1.x, p2.x, p3.x], [(1 - t) * (1 - t) * (1 - t), 3 * (1 - t) * (1 - t) * t, 3 * (1 - t) * t2, t3]);
-                var dy = dot([p0.y, p1.y, p2.y, p3.y], [(1 - t) * (1 - t) * (1 - t), 3 * (1 - t) * (1 - t) * t, 3 * (1 - t) * t2, t3]);
-
-                return {
-                    x: dx,
-                    y: dy
-                };
-            }
-
-
-            for (var j = 0; j < lineSegments + 1; j++) {
-                pts.push(cubicBezier(this.points, j / lineSegments));
-            }
-
-
-            for (var i = 0; i < pts.length; i += 2) {
-                context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
-            }
-            context.stroke();
-
-
-
-
         }
+
+        for (var j = 0; j < lineSegments + 1; j++) {
+            this.segments.push(cubicBezier(this.points, j / lineSegments));
+        }
+
+        return true;
     }
 
 
-
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Bezier Cubic - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.points[0] = point.create(attrs.points[0]);
+        attrs.points[1] = point.create(attrs.points[1]);
+        attrs.points[2] = point.create(attrs.points[2]);
+        attrs.points[3] = point.create(attrs.points[3]);
+
+
+        // 4 - criando um novo shape do tipo arco
         return new BezierCubic(attrs);
     };
 
@@ -1790,6 +1631,15 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
 
 });
 define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
+
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -1803,82 +1653,87 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
      * @constructor
      */
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-    function BezierQuadratic(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var BezierQuadratic = types.object.inherits(function BezierQuadratic(attrs) {
 
-        this.type = 'bezier-quadratic';
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
+
+        this.segments = [];
+        this.status = null;
+        this.style = null;
+
         this.points = attrs.points;
-    };
 
-    BezierQuadratic.prototype = {
-        render: function (context, transform) {
+        this.initialize(attrs);
 
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
+    }, object.Shape);
 
 
-            var pts = [],
-                lineSegments = 100;
+    // https://github.com/MartinDoms/Splines/blob/master/quadraticBezier.js
+    BezierQuadratic.prototype.calculeSegments = function () {
 
+        var lineSegments = 100;
 
-            var dot = function (v1, v2) {
-                var sum = 0;
-                for (var i = 0; i < v1.length; i++) {
-                    sum += v1[i] * v2[i];
-                }
-                return sum;
+        var dot = function (v1, v2) {
+            var sum = 0;
+            for (var i = 0; i < v1.length; i++) {
+                sum += v1[i] * v2[i];
             }
-
-            var quadraticBezier = function (points, t) {
-                var p0 = points[0];
-                var p1 = points[1];
-                var p2 = points[2];
-                var t3 = t * t * t;
-                var t2 = t * t;
-
-                var dx = dot([p0.x, p1.x, p2.x], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
-                var dy = dot([p0.y, p1.y, p2.y], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
-
-                return {
-                    x: dx,
-                    y: dy
-                };
-            }
-
-            for (var j = 0; j < lineSegments + 1; j++) {
-                pts.push(quadraticBezier(this.points, j / lineSegments));
-            }
-
-
-
-            for (var i = 0; i < pts.length; i += 2) {
-                context.lineTo(pts[i].x * scale + move.x, pts[i].y * scale + move.y);
-            }
-            context.stroke();
-
-
-
+            return sum;
         }
+
+        var quadraticBezier = function (points, t) {
+            var p0 = points[0];
+            var p1 = points[1];
+            var p2 = points[2];
+            var t3 = t * t * t;
+            var t2 = t * t;
+
+            var dx = dot([p0.x, p1.x, p2.x], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
+            var dy = dot([p0.y, p1.y, p2.y], [(1 - t) * (1 - t), 2 * t * (1 - t), t2]);
+
+            return {
+                x: dx,
+                y: dy
+            };
+        }
+
+        for (var j = 0; j < lineSegments + 1; j++) {
+            this.segments.push(quadraticBezier(this.points, j / lineSegments));
+        }
+
+        return true;
     }
 
 
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Bezier Quadratic - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.points[0] = point.create(attrs.points[0]);
+        attrs.points[1] = point.create(attrs.points[1]);
+        attrs.points[2] = point.create(attrs.points[2]);
+
+
+        // 4 - criando um novo shape do tipo arco
         return new BezierQuadratic(attrs);
     };
 
@@ -1886,6 +1741,14 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
 
 });
 define("plane/shapes/circle", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -1898,84 +1761,69 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
      * @class Circle
      * @constructor
      */
-    function Circle(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var Circle = types.object.inherits(function Circle(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
-        this.type = 'circle';
-        this.point = attrs.point;
-        this.radius = attrs.radius;
+        this.center = null;
+        this.radius = null;
 
-        this.initialize();
-    };
+        this.initialize(attrs);
 
-    Circle.prototype = {
-        initialize: function () {
+    }, object.Shape);
 
-            // em numero de partes - 58 
-            var num1 = Math.PI / 58;
-            var size = Math.abs(2.0 * Math.PI / num1) + 2;
-            var index = 0;
-            var num2 = 0.0;
+    Circle.prototype.calculeSegments = function () {
 
-            while (index < size - 1) {
-                this.segments.push({
-                    x: this.point.x + this.radius * Math.cos(num2),
-                    y: this.point.y + this.radius * Math.sin(num2)
-                });
-                ++index;
-                num2 += num1;
-            }
+        // em numero de partes - 58 
+        var num1 = Math.PI / 58;
+        var size = Math.abs(2.0 * Math.PI / num1) + 2;
+        var index = 0;
+        var num2 = 0.0;
 
-        },
-        toObject: function () {
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                x: types.math.parseFloat(this.point.x, 5),
-                y: types.math.parseFloat(this.point.y, 5),
-                radius: types.math.parseFloat(this.radius, 5)
-            };
-        },
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-            for (var i = 0; i < this.segments.length; i += 2) {
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-            context.stroke();
-
-
+        while (index < size - 1) {
+            this.segments.push({
+                x: this.center.x + this.radius * Math.cos(num2),
+                y: this.center.y + this.radius * Math.sin(num2)
+            });
+            ++index;
+            num2 += num1;
         }
+
+        return true;
+
     }
 
 
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Circle - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.center = point.create(attrs.center);
+
+        // 4 - criando um novo shape do tipo arco
         return new Circle(attrs);
     };
 
@@ -1983,6 +1831,15 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
 
 });
 define("plane/shapes/ellipse", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
+
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -1995,148 +1852,107 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
      * @class Ellipse
      * @constructor
      */
-    function Ellipse(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var Ellipse = types.object.inherits(function Ellipse(attrs) {
 
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
         this.segments = [];
+        this.status = null;
+        this.style = null;
 
-        this.type = 'ellipse';
-        this.point = attrs.point;
-        this.radiusY = attrs.radiusY;
-        this.radiusX = attrs.radiusX;
-        this.startAngle = attrs.startAngle;
-        this.endAngle = attrs.endAngle;
-        this.angle = attrs.angle;
+        this.center = null;
+        this.radiusY = null;
+        this.radiusX = null;
 
+        this.angle = null;
+        this.startAngle = null;
+        this.endAngle = null;
 
-        this.initialize();
-    };
+        this.initialize(attrs);
 
-    Ellipse.prototype = {
-        initialize: function () {
-        
-            var startAngle = this.startAngle || 0;
-            var endAngle = this.endAngle || (2.0 * Math.PI);
+    }, object.Shape);
 
-            while (endAngle < startAngle) {
-                endAngle += 2.0 * Math.PI;
-            }
+    Ellipse.prototype.calculeSegments = function () {
 
-            var radiusX = this.radiusX;
-            var radiusY = this.radiusY;
+        var angle = (this.startAngle != undefined && this.endAngle != undefined) ? this.angle : types.math.radians(this.angle) || 0;
+        var startAngle = this.startAngle || 0;
+        var endAngle = this.endAngle || (2.0 * Math.PI);
 
-            var angle = this.angle || 0;
-            var num18 = Math.PI / 60.0;
-
-
-            var polyline2 = [];
-
-
-            var num = Math.cos(angle);
-            var num12 = Math.sin(angle);
-
-
-            while (true) {
-                if (startAngle > endAngle) {
-                    num18 -= startAngle - endAngle;
-                    startAngle = endAngle;
-                }
-                var p3 = {
-                    x: radiusX * Math.cos(startAngle),
-                    y: radiusY * Math.sin(startAngle)
-                };
-                // p3 *= matrix4x4F;
-                // aplicando a matrix para a rotação
-                p3 = {
-                    x: p3.x * num + p3.y * -num12,
-                    y: p3.x * num12 + p3.y * num
-                }
-                // o ponto de centro + o item da ellipse
-                p3 = {
-                    x: this.point.x + p3.x,
-                    y: this.point.y + p3.y
-                };
-
-                // armazenando no array
-                polyline2.push(p3);
-
-                // continuando até a volta completa
-                if (startAngle != endAngle)
-                    startAngle += num18;
-                else
-                    break;
-            }
-
-            this.segments = polyline2.map(function (item) {
-                return {
-                    x: item.x,
-                    y: item.y
-                };
-            });            
-        
-        },
-        toObject: function () {
-
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                x: types.math.parseFloat(this.point.x, 5),
-                y: types.math.parseFloat(this.point.y, 5),
-                radiusX: types.math.parseFloat(this.radiusX, 5),
-                radiusY: types.math.parseFloat(this.radiusY, 5)
-            };
-
-        },
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-            //            debugger;
-
-
-
-
-
-
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-
-
-            context.stroke();
-
-
-
+        while (endAngle < startAngle) {
+            endAngle += 2.0 * Math.PI;
         }
+
+        var radiusX = this.radiusX;
+        var radiusY = this.radiusY;
+
+        var num18 = Math.PI / 60.0;
+
+
+        var num = Math.cos(angle);
+        var num12 = Math.sin(angle);
+
+
+        while (true) {
+            if (startAngle > endAngle) {
+                num18 -= startAngle - endAngle;
+                startAngle = endAngle;
+            }
+            var p3 = {
+                x: radiusX * Math.cos(startAngle),
+                y: radiusY * Math.sin(startAngle)
+            };
+            // p3 *= matrix4x4F;
+            // aplicando a matrix para a rotação
+            p3 = {
+                x: p3.x * num + p3.y * -num12,
+                y: p3.x * num12 + p3.y * num
+            }
+            // o ponto de centro + o item da ellipse
+            p3 = {
+                x: this.center.x + p3.x,
+                y: this.center.y + p3.y
+            };
+
+            // armazenando no array
+            this.segments.push(p3);
+
+            // continuando até a volta completa
+            if (startAngle != endAngle)
+                startAngle += num18;
+            else
+                break;
+        }
+
+        return true;
+
     }
 
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Ellipse - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.center = point.create(attrs.center);
+
+        // 4 - criando um novo shape do tipo arco
         return new Ellipse(attrs);
     };
 
@@ -2145,81 +1961,84 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 });
 define("plane/shapes/line", ['require', 'exports'], function (require, exports) {
 
-    function Line(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
 
-        this.type = 'line';
-        this.points = attrs.points;
-        this.style = attrs.style;
-    };
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
+
+    var types = require('plane/utility/types');
 
 
-    Line.prototype = {
-        toObject: function () {
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Line = types.object.inherits(function Line(attrs) {
 
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                a: [types.math.parseFloat(this.points[0].x, 5), types.math.parseFloat(this.points[0].y, 5)],
-                b: [types.math.parseFloat(this.points[1].x, 5), types.math.parseFloat(this.points[1].y, 5)]
-            };
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
-        },
-        render: function (context, transform) {
+        this.segments = [];
+        this.status = null;
+        this.style = null;
 
-            // possivel personalização
-            if (this.style) {
-                context.save();
+        this.from = null;
+        this.to = null;
 
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-            
-            
-//            debugger;
-            
-            context.beginPath();
+        this.initialize(attrs);
 
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
+    }, object.Shape);
 
+    Line.prototype.calculeSegments = function () {
 
-            // possivel personalização
-            context.lineWidth = (this.style && this.style.lineWidth) ? this.style.lineWidth : context.lineWidth;
-            context.strokeStyle = (this.style && this.style.lineColor) ? this.style.lineColor : context.strokeStyle;
+        this.segments.push({
+            x: this.from.x,
+            y: this.from.y
+        });
+        this.segments.push({
+            x: this.to.x,
+            y: this.to.y
+        });
 
-            context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
-            context.lineTo((this.points[1].x * scale) + move.x, (this.points[1].y * scale) + move.y);
+        return true;
 
-            context.stroke();
-            
-            
-
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-
-        }
     }
 
 
+
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.from = point.create(attrs.from);
+        attrs.to = point.create(attrs.to);
+
+        // 4 - criando um novo shape do tipo arco
         return new Line(attrs);
     };
 
@@ -2228,66 +2047,85 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
 });
 define("plane/shapes/polygon", ['require', 'exports'], function (require, exports) {
 
-    function Polygon(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
 
-        this.type = 'polygon';
-        this.point = attrs.point;
-        this.points = attrs.points;
-        this.sides = attrs.sides;
-    };
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
 
-    Polygon.prototype = {
-        toObject: function () {
-
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                x: types.math.parseFloat(this.point.x, 5),
-                y: types.math.parseFloat(this.point.y, 5),
-                sides: this.sides
-            };
-
-        },
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
+    var types = require('plane/utility/types');
 
 
-            context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Polygon = types.object.inherits(function Polygon(attrs) {
 
-            this.points.forEach(function (point) {
-                context.lineTo((point.x * scale) + move.x, (point.y * scale) + move.y);
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
+
+        this.segments = [];
+        this.status = null;
+        this.style = null;
+
+        this.center = null;
+        this.sides = null;
+        this.radius = null;
+
+        this.initialize(attrs);
+
+    }, object.Shape);
+
+    Polygon.prototype.calculeSegments = function () {
+
+        for (var i = 0; i <= this.sides; i++) {
+
+            var pointX = (this.radius * Math.cos(((Math.PI * 2) / this.sides) * i) + this.center.x),
+                pointY = (this.radius * Math.sin(((Math.PI * 2) / this.sides) * i) + this.center.y);
+
+            this.segments.push({
+                x: pointX,
+                y: pointY
             });
-            context.closePath();
+        }
 
-            context.stroke();
-
-        },
-        contains: function (zz, zzz) {}
+        return true;
 
     }
 
 
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Polygon - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.center = point.create(attrs.center);
+
+        // 4 - criando um novo shape do tipo arco
         return new Polygon(attrs);
     };
 
@@ -2296,222 +2134,228 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
 });
 define("plane/shapes/polyline", ['require', 'exports'], function (require, exports) {
 
-    function Polyline(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
 
-        this.type = 'polyline';
-        this.points = attrs.points;
-    };
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
 
-    Polyline.prototype = {
-        toObject: function () {
-
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                points: this.points.map(function (point) {
-                    return {
-                        x: types.math.parseFloat(point.x, 5),
-                        y: types.math.parseFloat(point.y, 5)
-                    }
-                })
-            };
-
-        },
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
+    var types = require('plane/utility/types');
 
 
-            context.moveTo((this.points[0].x * scale) + move.x, (this.points[0].y * scale) + move.y);
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Polyline = types.object.inherits(function Polyline(attrs) {
 
-            this.points.forEach(function (point) {
-                context.lineTo((point.x * scale) + move.x, (point.y * scale) + move.y);
-            });
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
+        this.segments = [];
+        this.status = null;
+        this.style = null;
 
-            context.stroke();
+        this.points = null;
 
+        this.initialize(attrs);
 
-        }
+    }, object.Shape);
+    
+    Polyline.prototype.calculeSegments = function(){
+        
+        this.segments = this.points;
+        
+        return true;
+        
     }
 
 
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.points = attrs.points.map(function(item){
+            return point.create(item);
+        });
+
+        // 4 - criando um novo shape do tipo arco
         return new Polyline(attrs);
     };
 
     exports.create = create;
-
 });
 define("plane/shapes/rectangle", ['require', 'exports'], function (require, exports) {
 
-    function Rectangle(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
 
-        this.type = 'rectangle';
-        this.point = attrs.point;
-        this.height = attrs.height;
-        this.width = attrs.width;
-    };
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
 
-    Rectangle.prototype = {
-        toObject: function () {
-
-            return {
-                uuid: this.uuid,
-                type: this.type,
-                name: this.name,
-                status: this.status,
-                x: types.math.parseFloat(this.point.x, 5),
-                y: types.math.parseFloat(this.point.y, 5),
-                height: types.math.parseFloat(this.height, 5),
-                width: types.math.parseFloat(this.width, 5)
-            };
-
-        },
-        render: function (context, transform) {
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
+    var types = require('plane/utility/types');
 
 
-            context.strokeRect((this.point.x * scale) + move.x, (this.point.y * scale) + move.y, this.width * scale, this.height * scale);
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Rectangle = types.object.inherits(function Rectangle(attrs) {
 
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
+        this.segments = [];
+        this.status = null;
+        this.style = null;
 
-        }
+        this.from = null;
+        this.to = null;
+
+        this.initialize(attrs);
+
+    }, object.Shape);
+
+    Rectangle.prototype.calculeSegments = function () {
+
+        this.segments.push({
+            x: this.from.x,
+            y: this.from.y
+        });
+        this.segments.push({
+            x: this.from.x,
+            y: this.to.y
+        });
+        this.segments.push({
+            x: this.to.x,
+            y: this.to.y
+        });
+        this.segments.push({
+            x: this.to.x,
+            y: this.from.y
+        });
+        this.segments.push({
+            x: this.from.x,
+            y: this.from.y
+        });
+
+        return true;
+
     }
 
 
-
-
     function create(attrs) {
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.from = point.create(attrs.from);
+        attrs.to = point.create(attrs.to);
+
+        // 4 - criando um novo shape do tipo arco
         return new Rectangle(attrs);
     };
 
     exports.create = create;
 
 });
-define("plane/shapes/spline-catmull–rom", ['require', 'exports'], function (require, exports) {
-    
-    
-    // http://jsbin.com/piyal/15/edit?js,output
-    
-    
-    
-    function SplineCatmullRom(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
+define("plane/shapes/spline", ['require', 'exports'], function (require, exports) {
 
-        this.type = 'spline-catmull–rom';
-        this.points = attrs.points;
-    };
-    
-    
-    SplineCatmullRom.prototype = {
-    
-        render: function (context, transform) {
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
 
-            context.beginPath();
-            
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-            
-            
-            
-            
+    var point = require('plane/structure/point'),
+        object = require('plane/structure/object');
 
-        }
-    
-    }
-    
-    
-    
-    
+    var types = require('plane/utility/types');
 
-    function create(attrs) {
-        if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Spline = types.object.inherits(function Spline(attrs) {
 
-        return new SplineCatmullRom(attrs);
-    };
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
 
-    exports.create = create;
+        this.segments = [];
+        this.status = null;
+        this.style = null;
 
-});
-define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, exports) {
-
-    function SplineNurbs(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.transform = attrs.transform;
-        this.status = attrs.status;
-
-        this.type = 'spline-nurbs';
         this.degree = attrs.degree;
         this.knots = attrs.knots;
         this.points = attrs.points;
-    };
 
+        this.initialize(attrs);
 
-    SplineNurbs.prototype = {
-        render: function (context, transform) {
+    }, object.Shape);
 
-            context.beginPath();
+    Spline.prototype.calculeSegments = function () {
 
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-
-            /*
+        /*
                     Finds knot vector span.
 
                     p : degree
@@ -2520,36 +2364,36 @@ define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, e
 
                     returns the span
                 */
-            var findSpan = function (p, u, U) {
-                var n = U.length - p - 1;
+        var findSpan = function (p, u, U) {
+            var n = U.length - p - 1;
 
-                if (u >= U[n]) {
-                    return n - 1;
-                }
-
-                if (u <= U[p]) {
-                    return p;
-                }
-
-                var low = p;
-                var high = n;
-                var mid = Math.floor((low + high) / 2);
-
-                while (u < U[mid] || u >= U[mid + 1]) {
-
-                    if (u < U[mid]) {
-                        high = mid;
-                    } else {
-                        low = mid;
-                    }
-
-                    mid = Math.floor((low + high) / 2);
-                }
-
-                return mid;
+            if (u >= U[n]) {
+                return n - 1;
             }
 
-            /*
+            if (u <= U[p]) {
+                return p;
+            }
+
+            var low = p;
+            var high = n;
+            var mid = Math.floor((low + high) / 2);
+
+            while (u < U[mid] || u >= U[mid + 1]) {
+
+                if (u < U[mid]) {
+                    high = mid;
+                } else {
+                    low = mid;
+                }
+
+                mid = Math.floor((low + high) / 2);
+            }
+
+            return mid;
+        }
+
+        /*
                     Calculate basis functions. See The NURBS Book, page 70, algorithm A2.2
 
                     span : span in which u lies
@@ -2559,35 +2403,35 @@ define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, e
 
                     returns array[p+1] with basis functions values.
                 */
-            var calcBasisFunctions = function (span, u, p, U) {
-                var N = [];
-                var left = [];
-                var right = [];
-                N[0] = 1.0;
+        var calcBasisFunctions = function (span, u, p, U) {
+            var N = [];
+            var left = [];
+            var right = [];
+            N[0] = 1.0;
 
-                for (var j = 1; j <= p; ++j) {
+            for (var j = 1; j <= p; ++j) {
 
-                    left[j] = u - U[span + 1 - j];
-                    right[j] = U[span + j] - u;
+                left[j] = u - U[span + 1 - j];
+                right[j] = U[span + j] - u;
 
-                    var saved = 0.0;
+                var saved = 0.0;
 
-                    for (var r = 0; r < j; ++r) {
+                for (var r = 0; r < j; ++r) {
 
-                        var rv = right[r + 1];
-                        var lv = left[j - r];
-                        var temp = N[r] / (rv + lv);
-                        N[r] = saved + rv * temp;
-                        saved = lv * temp;
-                    }
-
-                    N[j] = saved;
+                    var rv = right[r + 1];
+                    var lv = left[j - r];
+                    var temp = N[r] / (rv + lv);
+                    N[r] = saved + rv * temp;
+                    saved = lv * temp;
                 }
 
-                return N;
+                N[j] = saved;
             }
 
-            /*
+            return N;
+        }
+
+        /*
                     Calculate B-Spline curve points. See The NURBS Book, page 82, algorithm A3.1.
 
                     p : degree of B-Spline
@@ -2597,112 +2441,104 @@ define("plane/shapes/spline-nurbs", ['require', 'exports'], function (require, e
 
                     returns point for given u
                 */
-            var calcBSplinePoint = function (p, U, P, u) {
-                var span = findSpan(p, u, U);
-                var N = calcBasisFunctions(span, u, p, U);
-                //                    var C = new THREE.Vector4(0, 0, 0, 0);
-                var C = {
-                    x: 0,
-                    y: 0
-                };
+        var calcBSplinePoint = function (p, U, P, u) {
+            var span = findSpan(p, u, U);
+            var N = calcBasisFunctions(span, u, p, U);
+            //                    var C = new THREE.Vector4(0, 0, 0, 0);
+            var C = {
+                x: 0,
+                y: 0
+            };
 
-                for (var j = 0; j <= p; ++j) {
-                    var point = P[span - p + j];
-                    var Nj = N[j];
-                    //                        var wNj = point.w * Nj;
-                    C.x += point.x * Nj;
-                    C.y += point.y * Nj;
-                    //                        C.z += point.z * wNj;
-                    //                        C.w += point.w * Nj;
-                }
-
-                return C;
+            for (var j = 0; j <= p; ++j) {
+                var point = P[span - p + j];
+                var Nj = N[j];
+                //                        var wNj = point.w * Nj;
+                C.x += point.x * Nj;
+                C.y += point.y * Nj;
+                //                        C.z += point.z * wNj;
+                //                        C.w += point.w * Nj;
             }
 
-
-            var getPoint = function (t, degree, knots, points) {
-
-                var u = knots[0] + t * (knots[knots.length - 1] - knots[0]); // linear mapping t->u
-
-                // following results in (wx, wy, wz, w) homogeneous point
-                var hpoint = calcBSplinePoint(degree, knots, points, u);
-
-                //                    if (hpoint.w != 1.0) { // project to 3D space: (wx, wy, wz, w) -> (x, y, z, 1)
-                //                        hpoint.divideScalar(hpoint.w);
-                //                    }
-
-                //                    return new THREE.Vector3(hpoint.x, hpoint.y, hpoint.z);
-                return {
-                    x: hpoint.x,
-                    y: hpoint.y
-                };
-            }
-
-            var getPoints = function (divisions, degree, knots, points) {
-
-                var d, pts = [];
-
-                for (d = 0; d <= divisions; d++) {
-
-                    pts.push(getPoint(d / divisions, degree, knots, points));
-
-                }
-                return pts;
-            }
-
-            var LEUWF3cpo = function (_param1, degree, knots, points) {
-
-                var point3Farray = [];
-
-                for (var index1 = 0; index1 < knots.length - 1; ++index1) {
-                    var num1 = knots[index1];
-                    var num2 = knots[index1 + 1];
-
-                    if (num2 > num1) {
-                        for (var index2 = 0; index2 <= (_param1 == 0 ? 12 : _param1); ++index2) {
-                            var p = calcBSplinePoint(degree, knots, points, num1 + (num2 - num1) * index2 / (_param1 == 0 ? 12.0 : _param1));
-                            point3Farray.push(p);
-                        }
-                    }
-                }
-                return point3Farray;
-            }
-
-            //                debugger;
-
-            //                                var xxx = getPoints(800, this.degree, this.knots, this.points);
-            var xxx = LEUWF3cpo(17, this.degree, this.knots, this.points);
-
-
-
-            context.moveTo(xxx[0].x * scale + move.x, xxx.y * scale + move.y);
-
-            for (var i = 0; i < xxx.length; i++) {
-                context.lineTo(xxx[i].x * scale + move.x, xxx[i].y * scale + move.y);
-            }
-
-
-            context.stroke();
-
+            return C;
         }
 
 
+        var getPoint = function (t, degree, knots, points) {
+
+            var u = knots[0] + t * (knots[knots.length - 1] - knots[0]); // linear mapping t->u
+
+            // following results in (wx, wy, wz, w) homogeneous point
+            var hpoint = calcBSplinePoint(degree, knots, points, u);
+
+            //                    if (hpoint.w != 1.0) { // project to 3D space: (wx, wy, wz, w) -> (x, y, z, 1)
+            //                        hpoint.divideScalar(hpoint.w);
+            //                    }
+
+            //                    return new THREE.Vector3(hpoint.x, hpoint.y, hpoint.z);
+            return {
+                x: hpoint.x,
+                y: hpoint.y
+            };
+        }
+
+        var getPoints = function (divisions, degree, knots, points) {
+
+            var d, pts = [];
+
+            for (d = 0; d <= divisions; d++) {
+
+                pts.push(getPoint(d / divisions, degree, knots, points));
+
+            }
+            return pts;
+        }
+
+        var LEUWF3cpo = function (_param1, degree, knots, points) {
+
+            var point3Farray = [];
+
+            for (var index1 = 0; index1 < knots.length - 1; ++index1) {
+                var num1 = knots[index1];
+                var num2 = knots[index1 + 1];
+
+                if (num2 > num1) {
+                    for (var index2 = 0; index2 <= (_param1 == 0 ? 12 : _param1); ++index2) {
+                        var p = calcBSplinePoint(degree, knots, points, num1 + (num2 - num1) * index2 / (_param1 == 0 ? 12.0 : _param1));
+                        point3Farray.push(p);
+                    }
+                }
+            }
+            return point3Farray;
+        }
+
+        this.segments = LEUWF3cpo(17, this.degree, this.knots, this.points);
+
+
+        return true;
 
     }
 
 
-
-
-
-    function create(attrs) {
+    function create(attrs) { 
+        // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Spline - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // 1 - verificações de quais atributos são usados
 
-        return new SplineNurbs(attrs);
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.points = attrs.points.map(function(item){
+            return point.create(item);
+        });
+
+        // 4 - criando um novo shape do tipo arco
+        return new Spline(attrs);
     };
 
     exports.create = create;
@@ -2734,7 +2570,7 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
 
     var store = types.data.dictionary.create();
 
-    var select = null;
+    var _active = null;
 
 
     function Layer(attrs) {
@@ -2757,16 +2593,6 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
             })
         };
     }
-
-
-    function initialize(config) {
-
-        select = config.select;
-
-
-
-        return true;
-    };
 
 
 
@@ -2800,7 +2626,7 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
         store.add(layer.uuid, layer);
 
         // colocando nova layer como selecionada
-        select.layer = layer.uuid;
+        this.active = layer.uuid;
 
         return this;
     }
@@ -2814,29 +2640,203 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
     }
 
     function remove(uuid) {
-        if(uuid){
+        if (uuid) {
             return store.remove(uuid);
         } else {
-            store.list().forEach(function(layer){
-                if (layer.status != 'system'){
+            store.list().forEach(function (layer) {
+                if (layer.status != 'system') {
                     store.remove(layer.uuid);
                 }
             });
             return true;
         }
-//        return uuid ? store.remove(uuid) : store.clear();
+        //        return uuid ? store.remove(uuid) : store.clear();
     }
 
 
 
-    exports.initialize = initialize;
+
+    function active(uuid) {
+        return uuid ? active = store.find(uuid) : active;
+    }
+
+
+    Object.defineProperty(exports, 'active', {
+        get: function () {
+            return _active;
+
+        },
+        set: function (uuid) {
+
+            this.events.notify('onDeactivated', {
+                type: 'onDeactivated',
+                layer: _active
+            });
+
+            _active = store.find(uuid);
+
+            this.events.notify('onActivated', {
+                type: 'onActivated',
+                layer: _active
+            });
+
+        }
+    });
+
+
+    exports.events = types.object.event.create();
+
+
 
     exports.create = create;
     exports.list = list;
     exports.find = find;
     exports.remove = remove;
 });
+define("plane/structure/object", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
+    var types = require('plane/utility/types');
+
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    function Shape() {};
+
+
+    Shape.prototype = {
+        initialize: function (attrs) {
+
+            // o nome do shape
+            attrs.name = types.string.format('{0} - {1}', [attrs.type, attrs.uuid]);
+
+            // completando os campos do shape
+            types.object.extend(this, attrs);
+
+            // calculando os segmentos
+            this.calculeSegments();
+
+            return true;
+        },
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
+
+            return false;
+
+        },
+        intersect: function (rectangle) {
+
+            if (this.status != 'temporary') {
+                var tl = point.create(rectangle.x, rectangle.y + rectangle.height),
+                    tr = point.create(rectangle.x + rectangle.width, rectangle.y + rectangle.height),
+                    bl = point.create(rectangle.x, rectangle.y),
+                    br = point.create(rectangle.x + rectangle.width, rectangle.y);
+
+                return intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
+            }
+            return false;
+
+        },
+        render: function (context, transform) {
+
+            // possivel personalização
+            if (this.style) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
+            }
+
+            context.beginPath();
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
+
+
+            for (var i = 0; i < this.segments.length; i++) {
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
+            }
+
+
+            context.stroke();
+
+
+            // possivel personalização
+            if (this.style) {
+                context.restore();
+            }
+
+
+        },
+        toObject: function () {
+
+            // converto para object os campos utilizando parseFloat
+
+            //            return {
+            //                uuid: this.uuid,
+            //                type: this.type,
+            //                name: this.name,
+            //                status: this.status,
+            //                x: types.math.parseFloat(this.point.x, 5),
+            //                y: types.math.parseFloat(this.point.y, 5),
+            //                radius: types.math.parseFloat(this.radius, 5),
+            //                startAngle: types.math.parseFloat(this.startAngle, 5),
+            //                endAngle: types.math.parseFloat(this.endAngle, 5),
+            //                clockWise: this.clockWise
+            //            };
+
+            return true;
+        }
+    };
+
+
+
+
+
+
+    exports.Shape = Shape;
+
+});
 define("plane/structure/point", ['require', 'exports'], function (require, exports) {
+
+    var types = require('plane/utility/types');
 
     function Point(x, y) {
         this.x = x;
@@ -2873,15 +2873,23 @@ define("plane/structure/point", ['require', 'exports'], function (require, expor
                 this.x + (point.x - this.x) * value,
                 this.y + (point.y - this.y) * value
             );
-        }
+        },
+        minimum: function (point) {
+            return new Point(Math.min(this.x, point.x), Math.min(this.y, point.y));
+        },
+        maximum: function (point) {
+            return new Point(Math.max(this.x, point.x), Math.max(this.y, point.y));
+        },
     };
 
     function create() {
 
         if (arguments.length == 2 && (arguments[0] != null && arguments[1] != null)) {
             return new Point(arguments[0], arguments[1]);
-        } else if (arguments.length == 1 && typeof arguments == 'object' && (arguments[0].x != null && arguments[0].y != null)) {
+        } else if (arguments.length == 1 && (types.conversion.toType(arguments[0]) == 'object') && (arguments[0].x != null && arguments[0].y != null)) {
             return new Point(arguments[0].x, arguments[0].y);
+        } else if (arguments.length == 1 && (types.conversion.toType(arguments[0]) == 'array') && (arguments[0].length == 2)) {
+            return new Point(arguments[0][0], arguments[0][1]);
         }
 
         throw new Error('Point - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -2901,359 +2909,48 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     var point = require('plane/structure/point'),
         layer = require('plane/structure/layer');
 
-    var arc = require('plane/shapes/arc'),
-        bezierCubic = require('plane/shapes/bezier-cubic'),
-        bezierQuadratic = require('plane/shapes/bezier-quadratic'),
-        circle = require('plane/shapes/circle'),
-        ellipse = require('plane/shapes/ellipse'),
-        line = require('plane/shapes/line'),
-        polygon = require('plane/shapes/polygon'),
-        polyline = require('plane/shapes/polyline'),
-        rectangle = require('plane/shapes/rectangle'),
-        splineCatmullRom = require('plane/shapes/spline-catmull–rom'),
-        splineNurbs = require('plane/shapes/spline-nurbs');
-
-    var select = null;
-
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Structure
-     * @class Shape
-     * @constructor
-     */
-    function Shape() {};
-
-    Shape.prototype = {
-        rotateTo: function (angle) {
-
-            return true;
-        },
-        scaleTo: function (factor) {
-
-
-            if (this.type == 'arc') {
-
-                this.point.x *= factor;
-                this.point.y *= factor;
-                this.radius *= factor;
-
-            } else if (this.type == 'circle') {
-
-                this.point.x *= factor;
-                this.point.y *= factor;
-                this.radius *= factor;
-
-            } else if (this.type == 'ellipse') {
-
-                this.point.x *= factor;
-                this.point.y *= factor;
-                this.radiusX *= factor;
-                this.radiusY *= factor;
-
-            } else if (this.type == 'line') {
-
-                for (var i = 0; i <= this.points.length - 1; i++) {
-                    this.points[i] = this.points[i].multiply(factor);
-                };
-
-            } else if (this.type == 'polygon') {
-
-                this.point.x *= factor;
-                this.point.y *= factor;
-
-                this.points.forEach(function (point) {
-                    point.x *= factor;
-                    point.y *= factor;
-                });
-
-            } else if (this.type == 'polyline') {
-
-                this.points.forEach(function (point) {
-                    point.x *= factor;
-                    point.y *= factor;
-                });
-
-            } else if (this.type == 'spline') {
-
-                this.points.forEach(function (point) {
-                    point.x *= factor;
-                    point.y *= factor;
-                });
-
-            } else if (this.type == 'rectangle') {
-
-                this.point.x *= factor;
-                this.point.y *= factor;
-                this.height *= factor;
-                this.width *= factor;
-
-            }
-
-
-        },
-        moveTo: function (value) {
-
-            if (this.point) {
-                this.point = this.point.sum(value);
-            }
-            if (this.points && this.type != 'bezier-quadratic') {
-                for (var i = 0; i <= this.points.length - 1; i++) {
-                    this.points[i] = this.points[i].sum(value);
-                }
-            }
-            if (this.points && this.type == 'bezier-quadratic') {
-                for (var i = 0; i <= this.points.length - 1; i++) {
-                    this.points[i].a = this.points[i].a.sum(value);
-                    this.points[i].b = this.points[i].b.sum(value);
-                    this.points[i].c = this.points[i].c.sum(value);
-                }
-            }
-
-            return true;
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-            if (this.type == 'arc') {
-
-                return intersection.circleArc(position, 4, this.point.multiply(scale).sum(move), this.radius * scale, this.startAngle, this.endAngle, this.clockWise);
-
-            } else if (this.type == 'bezier-quadratic') {
-
-                for (var i = 0; i < this.points.length; i++) {
-                    if (intersection.circleBezier(this.points[i].a, this.points[i].b, this.points[i].c, point, 4, 4))
-                        return true;
-                }
-
-            } else if (this.type == 'circle') {
-
-                var xxx = this.point.multiply(scale).sum(move);
-
-                return intersection.circleCircle(position, 4, xxx, this.radius * scale);
-
-            } else if (this.type == 'ellipse') {
-
-                return intersection.circleEllipse(position, 4, 4, this.point.multiply(scale).sum(move), this.radiusY * scale, this.radiusX * scale);
-
-            } else if (this.type == 'line') {
-
-                return intersection.circleLine(position, 4, this.points[0].multiply(scale).sum(move), this.points[1].multiply(scale).sum(move));
-
-            } else if (this.type == 'polygon') {
-
-                var pointA = null,
-                    pointB = null;
-
-                for (var i = 0; i < this.points.length; i++) {
-
-                    if (i + 1 == this.points.length) {
-                        pointA = this.points[i];
-                        pointB = this.points[0];
-                    } else {
-                        pointA = this.points[i];
-                        pointB = this.points[i + 1];
-                    }
-
-                    if (intersection.circleLine(position, 4, point.create(pointA.x * scale + move.x, pointA.y * scale + move.y), point.create(pointB.x * scale + move.x, pointB.y * scale + move.y)))
-                        return true;
-                }
-
-            } else if (this.type == 'polyline') {
-
-                var pointA = null,
-                    pointB = null;
-
-                for (var i = 0; i < this.points.length; i++) {
-
-                    if (i + 1 == this.points.length) {
-                        pointA = this.points[i];
-                        pointB = this.points[0];
-                    } else {
-                        pointA = this.points[i];
-                        pointB = this.points[i + 1];
-                    }
-
-                    if (intersection.circleLine(position, 4, point.create(pointA.x * scale + move.x, pointA.y * scale + move.y), point.create(pointB.x * scale + move.x, pointB.y * scale + move.y)))
-                        return true;
-                }
-
-            } else if (this.type == 'rectangle') {
-
-                var xxx = this.point.multiply(scale).sum(move);
-
-                return intersection.circleRectangle(position, 4, this.point.multiply(scale).sum(move), this.height * scale, this.width * scale);
-
-            }
-
-            return false;
-
-        },
+    var shapeType = {
+        'arc': require('plane/shapes/arc'),
+        'bezier-cubic': require('plane/shapes/bezier-cubic'),
+        'bezier-quadratic': require('plane/shapes/bezier-quadratic'),
+        'circle': require('plane/shapes/circle'),
+        'ellipse': require('plane/shapes/ellipse'),
+        'line': require('plane/shapes/line'),
+        'polygon': require('plane/shapes/polygon'),
+        'polyline': require('plane/shapes/polyline'),
+        'rectangle': require('plane/shapes/rectangle'),
+        'spline': require('plane/shapes/spline')
     };
 
 
-
-
-
-
-
-
-
-    function initialize(config) {
-
-        select = config.select;
-
-
-
-        return true;
-    };
 
 
     function create(attrs) {
+
+        // verificação para a chamada da função
         if ((typeof attrs == "function") || (attrs == null)) {
             throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
+
+        // verifição para o tipo de shape
         if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier-cubic', 'bezier-quadratic', 'spline'].indexOf(attrs.type) == -1) {
             throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-        if (((attrs.type != 'polyline') && (attrs.type != 'bezier-quadratic') && (attrs.type != 'bezier-cubic') &&
-            (attrs.type != 'spline') && (attrs.type != 'line')) && ((attrs.x == undefined) || (attrs.y == undefined))) {
-            throw new Error('shape - create - x and y is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
 
-        var uuid = types.math.uuid(9, 16),
-            shape = null;
 
         // atributos 
         attrs = types.object.merge({
-            uuid: uuid,
-            name: 'shape '.concat(uuid),
-            style: null,
-            transform: matrix.create(),
-            status: null
+            uuid: types.math.uuid(9, 16),
         }, attrs);
 
-        switch (attrs.type) {
-        case 'line':
-            {
-                attrs.points = [point.create(attrs.a[0], attrs.a[1]), point.create(attrs.b[0], attrs.b[1])];
 
-                shape = line.create(attrs);
+        var shape = shapeType[attrs.type].create(attrs);;
 
-                break;
-            }
-        case 'bezier-cubic':
-            {
-                attrs.points[0] = point.create(attrs.points[0][0], attrs.points[0][1]);
-                attrs.points[1] = point.create(attrs.points[1][0], attrs.points[1][1]);
-                attrs.points[2] = point.create(attrs.points[2][0], attrs.points[2][1]);
-                attrs.points[3] = point.create(attrs.points[3][0], attrs.points[3][1]);
-
-                shape = bezierCubic.create(attrs);
-
-                break;
-            }
-        case 'bezier-quadratic':
-            {
-                attrs.points[0] = point.create(attrs.points[0][0], attrs.points[0][1]);
-                attrs.points[1] = point.create(attrs.points[1][0], attrs.points[1][1]);
-                attrs.points[2] = point.create(attrs.points[2][0], attrs.points[2][1]);
-
-                shape = bezierQuadratic.create(attrs);
-
-                break;
-            }
-        case 'rectangle':
-            {
-                attrs.point = point.create(attrs.x, attrs.y);
-                attrs.height = attrs.height;
-                attrs.width = attrs.width;
-
-                shape = rectangle.create(attrs);
-
-                break;
-            }
-        case 'arc':
-            {
-                attrs.point = point.create(attrs.x, attrs.y);
-                attrs.radius = attrs.radius;
-                attrs.startAngle = attrs.startAngle;
-                attrs.endAngle = attrs.endAngle;
-                attrs.clockWise = attrs.clockWise;
-
-                shape = arc.create(attrs);
-
-                break;
-            }
-        case 'circle':
-            {
-                attrs.point = point.create(attrs.x, attrs.y);
-                attrs.radius = attrs.radius;
-
-                shape = circle.create(attrs);
-
-                break;
-            }
-        case 'ellipse':
-            {
-                attrs.point = point.create(attrs.x, attrs.y);
-                attrs.radiusY = attrs.radiusY;
-                attrs.radiusX = attrs.radiusX;
-
-                shape = ellipse.create(attrs);
-
-                break;
-            }
-        case 'polygon':
-            {
-                attrs.point = point.create(attrs.x, attrs.y);
-                attrs.points = [];
-
-                for (var i = 0; i < attrs.sides; i++) {
-
-                    var pointX = (attrs.radius * Math.cos(((Math.PI * 2) / attrs.sides) * i) + attrs.point.x),
-                        pointY = (attrs.radius * Math.sin(((Math.PI * 2) / attrs.sides) * i) + attrs.point.y);
-
-                    attrs['points'].push(point.create(pointX, pointY));
-                }
-
-                shape = polygon.create(attrs);
-
-                break;
-            }
-        case 'polyline':
-            {
-                for (var i = 0; i < attrs.points.length; i++) {
-                    attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
-                }
-
-                shape = polyline.create(attrs);
-
-                break;
-            }
-        case 'spline':
-            {
-                for (var i = 0; i < attrs.points.length; i++) {
-                    attrs.points[i] = point.create(attrs.points[i].x, attrs.points[i].y);
-                }
-
-                shape = splineNurbs.create(attrs);
-
-                break;
-            }
-        default:
-            break;
-        }
 
         // adicionando o novo shape na layer ativa
-        return select.layer.children.add(shape.uuid, shape);
+        return layer.active.children.add(shape.uuid, shape);
     }
+
 
     function remove(value) {}
 
@@ -3263,7 +2960,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
 
 
-    exports.initialize = initialize;
+
 
     exports.create = create;
     exports.remove = remove;
@@ -3276,10 +2973,10 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
     var store = types.data.dictionary.create();
 
-    var point = require('plane/structure/point');
+    var layer = require('plane/structure/layer'),
+        point = require('plane/structure/point');
 
     var viewPort = null,
-        select = null,
         view = null;
 
 
@@ -3309,12 +3006,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
     function initialize(config) {
 
         viewPort = config.viewPort;
-        select = config.select;
+        //        select = config.select;
         view = config.view;
 
-        var pointDown,
-            shapesSelect = select.shapes,
-            shapesOver = types.data.dictionary.create();
+        var pointDown;
+            
 
 
         function onMouseDown(event) {
@@ -3322,7 +3018,8 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                 mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas),
-                pointMove = point.create(pointInView);
+                pointMove = point.create(pointInView),
+                shapesSelect = [];
 
             // to point
             pointInCanvas = point.create(pointInCanvas);
@@ -3335,31 +3032,27 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 return element > 0;
             });
 
-//            debugger;
+            //            debugger;
 
             // caso positivo realizamos a procura 
-            if (imageData && select.layer && select.layer.status != 'system') {
+            if (imageData && layer.active && layer.active.status != 'system') {
                 // apenas procuro na layer selecionada
-                var children = select.layer.children.list(),
+                var children = layer.active.children.list(),
                     c = children.length;
 
                 while (c--) {
                     if (children[c].contains(pointInCanvas, view.transform)) {
-                        shapesSelect.add(children[c].uuid, children[c]);
-//                        break; - lilo - teste de performance
-                    } else {
-                        shapesSelect.remove(children[c].uuid);
+                        shapesSelect.push(children[c]);
+                        //                        break; - lilo - teste de performance
                     }
                 }
-            } else { // caso negativo - limpamos os shapesSelect
-                shapesSelect.clear();
             }
 
             // customized event
             event = {
                 type: 'onMouseDown',
                 point: pointMove,
-                shapes: shapesSelect.list(),
+                shapes: shapesSelect,
                 Now: new Date().toISOString()
             };
 
@@ -3370,6 +3063,8 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                     tools[t].events.notify('onMouseDown', event);
                 }
             }
+
+
         }
 
         function onMouseUp(event) {
@@ -3405,7 +3100,8 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                 mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas);
+                pointInView = view.transform.inverseTransform(pointInCanvas),
+                shapesOver = [];
 
             // to point para procura em contains
             pointInCanvas = point.create(pointInCanvas);
@@ -3416,21 +3112,17 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             });
 
             // caso positivo realizamos a procura 
-            if (imageData && select.layer && select.layer.status != 'system') {
+            if (imageData && layer.active && layer.active.status != 'system') {
                 // apenas procuro na layer selecionada
-                var children = select.layer.children.list(),
+                var children = layer.active.children.list(),
                     c = children.length;
 
                 while (c--) {
                     if (children[c].contains(pointInCanvas, view.transform)) {
-                        shapesOver.add(children[c].uuid, children[c]);
-//                        break; - lilo - teste de performance
-                    } else {
-                        shapesOver.remove(children[c].uuid);
+                        shapesOver.push(children[c]);
+                        //                        break; - lilo - teste de performance
                     }
                 }
-            } else { // caso negativo - limpamos os shapesOver
-                shapesOver.clear();
             }
 
             // customized event
@@ -3441,7 +3133,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                     inCanvas: point.create(mouseInCanvas.x, mouseInCanvas.y),
                     inView: point.create(pointInView)
                 },
-                shapes: shapesOver.list(),
+                shapes: shapesOver,
                 Now: new Date().toISOString()
             };
 
@@ -3535,232 +3227,206 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 });
 define("plane/structure/view", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
-
     var matrix = require('plane/geometric/matrix');
 
+    var layer = require('plane/structure/layer'),
+        point = require('plane/structure/point');
+
+
+
     var viewPort = null,
-        canvas = {
-            context: null,
-            transform: null
+        _context = null,
+        _transform = null,
+        _zoom = 1,
+        _center = point.create(0, 0),
+        size = {
+            height: 0,
+            width: 0
+        },
+        bounds = {
+            x: 0,
+            y: 0,
+            height: 0,
+            width: 0
         };
 
 
-    var view = (function () {
-
-        var transform = matrix.create(),
-            viewPort = null,
-            _zoom = 1,
-            center = {
-                x: 0,
-                y: 0
-            },
-            bounds = {
-                bottom: 0,
-                height: 0,
-                left: 0,
-                right: 0,
-                top: 0,
-                width: 0
-            },
-            size = {
-                height: 0,
-                width: 0
-            };
-
-        return {
-            initialize: function (config) {
-
-                viewPort = config.viewPort;
-
-                bounds.height = viewPort.clientHeight;
-                bounds.width = viewPort.clientWidth;
-
-                center.x = viewPort.clientWidth / 2;
-                center.y = viewPort.clientHeight / 2;
-
-                size.height = viewPort.clientHeight;
-                size.width = viewPort.clientWidth;
-
-                return true;
-            },
-            // zoom level
-            get zoom() {
-                return _zoom;
-                //                return Math.sqrt(transform.a * transform.d);
-            },
-            set zoom(value) {
-
-                this.zoomTo(value, {
-                    x: 0,
-                    y: 0
-                });
-
-                return true;
-            },
-
-            /**
-             * Descrição para o metodo zoomTo
-             *
-             * @method zoomTo
-             * @param factor {Number} fator de zoom aplicado
-             * @param point {Object} local onde o zoom será aplicado
-             * @return {Boolean} Copy of ...
-             */
-            //            zoomTo: function (factor, point) {
-            zoomTo: function (zoom, point) {
-
-                //                                debugger;
-
-                var factor, motion;
-
-                factor = zoom / _zoom;
-
-                transform.scale({
-                    x: factor,
-                    y: factor
-                }, point);
-
-                motion = {
-                    x: transform.tx,
-                    y: transform.ty
-                }
-
-                _zoom = zoom;
-
-
-                //                var zoom, motion;
-                //
-                //                zoom = factor > 0 ? (1.041666666666667 / Math.sqrt(transform.a * transform.d)) : (.96 / Math.sqrt(transform.a * transform.d));
-                //
-                //                transform.scale({
-                //                    x: zoom,
-                //                    y: zoom
-                //                }, point);
-                //
-                //                motion = {
-                //                    x: transform.tx,
-                //                    y: transform.ty
-                //                }
-
-
-
-
-                // High Performance - JavaScript - Loops - Page 65
-                //                var layers = layer.list(),
-                //                    l = layer.list().length;
-                //                while (l--) {
-                //                    var shapes = layers[l].shapes.list(),
-                //                        s = shapes.length;
-                //                    while (s--) {
-                //                        shapes[s].scaleTo(this.zoom);
-                //                        shapes[s].moveTo({
-                //                            x: transform.tx,
-                //                            y: transform.ty
-                //                        });
-                //                    }
-                //                }
-
-                // movimentando todos os shapes de todas as layers
-                var layers = layer.list(),
-                    l = layer.list().length - 1;
-                do {
-                    var shapes = layers[l].shapes.list(),
-                        s = shapes.length - 1;
-                    do {
-                        shapes[s].scaleTo(zoom);
-                        shapes[s].moveTo(motion);
-                    } while (s--);
-                } while (l--);
-                layer.update();
-
-                //                                layer.update(transform);
-
-                return true;
-            },
-            moveTo: function (value) { // absolute
-
-
-
-                return true;
-            },
-            center: {
-                get position() {
-                    return center;
-                },
-                add: function (value) { // relative
-
-                    return true;
-                },
-                reset: function () {
-
-                    // goto center initial
-
-                    return true;
-                }
-            },
-            get bounds() {
-
-                //                debugger;                
-
-                //                var bound = this.size;
-                //                var iii = transform.inverted()._transformBounds(bound);
-                //                var fff = this.size;
-
-
-                return bounds;
-            },
-            get size() {
-                return size;
-            },
-            reset: function () {
-
-                transform.reset();
-
-                zoom = 1;
-
-                bounds.height = viewPort.clientHeight;
-                bounds.width = viewPort.clientWidth;
-
-                center.x = viewPort.clientWidth / 2;
-                center.y = viewPort.clientHeight / 2;
-
-                size.height = viewPort.clientHeight;
-                size.width = viewPort.clientWidth;
-
-                return true;
-            }
-        }
-    })();
 
 
     function initialize(config) {
 
         viewPort = config.viewPort;
+        _context = config.context;
+        
+        // sistema cartesiano de coordenadas
+        _context.translate(0, viewPort.clientHeight);
+        _context.scale(1, -1);
 
-        // montando o render da Layer
-        var render = document.createElement('canvas');
+        // created the matrix transform
+        _transform = matrix.create();
 
-        render.id = types.math.uuid(9, 16);
-        render.width = viewPort.clientWidth;
-        render.height = viewPort.clientHeight;
+        // o centro inicial
+        _center = _center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
 
-        render.style.position = "absolute";
-        render.style.backgroundColor = 'transparent';
+        // os tamanhos que são fixos
+        size.height = viewPort.clientHeight;
+        size.width = viewPort.clientWidth;
+    }
 
-        // add em viewPort
-        viewPort.appendChild(render);
 
-        // add to public
-        canvas.context = render.getContext('2d');
-        canvas.transform = matrix.create()
+
+
+
+
+    function update() {
+
+
+        // clear context, +1 is needed on some browsers to really clear the borders
+        _context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
+
+        var layers = layer.list(),
+            l = layers.length;
+        while (l--) {
+            var shapes = layers[l].children.list(),
+                s = shapes.length;
+
+            // style of layer
+            _context.lineCap = layers[l].style.lineCap;
+            _context.lineJoin = layers[l].style.lineJoin;
+
+            while (s--) {
+                shapes[s].render(_context, _transform);
+            }
+        }
+        return this;
+    }
+
+
+
+
+
+    function zoomTo(zoom, center) {
+
+        var factor, motion;
+
+        factor = zoom / _zoom;
+
+        _transform.scale({
+            x: factor,
+            y: factor
+        }, _center);
+
+        _zoom = zoom;
+
+
+        var centerSubtract = center.subtract(_center);
+        centerSubtract = centerSubtract.negate();
+
+        var xxx = matrix.create();
+        xxx.translate(centerSubtract.x, centerSubtract.y);
+
+        _transform.concate(xxx);
+
+        _center = center;
+
+        update();
 
         return true;
     }
 
-    exports.initialize = initialize;
-    exports.canvas = canvas;
+    
+    
+    
+    function reset() {
+        zoomTo(1, point.create(size.width / 2, size.height / 2));
+    }
 
+
+    Object.defineProperty(exports, 'context', {
+        get: function () {
+            return _context;
+        }
+    });
+
+    Object.defineProperty(exports, 'transform', {
+        get: function () {
+            return _transform;
+        }
+    });
+
+    Object.defineProperty(exports, 'size', {
+        get: function () {
+            return size;
+        }
+    });
+
+    Object.defineProperty(exports, 'bounds', {
+        get: function () {
+            var scale = Math.sqrt(_transform.a * _transform.d);
+
+            return {
+                x: _transform.tx,
+                y: _transform.ty,
+                height: size.height * scale,
+                width: size.width * scale
+            }
+        }
+    });
+
+    Object.defineProperty(exports, 'center', {
+        get: function () {
+            return _center;
+        },
+        set: function (value) {
+
+            var centerSubtract = value.subtract(_center);
+            centerSubtract = centerSubtract.negate();
+
+            var xxx = matrix.create();
+            xxx.translate(centerSubtract.x, centerSubtract.y);
+
+            _transform.concate(xxx);
+
+            _center = value;
+
+            update();
+
+            return true;
+        }
+    });
+
+    Object.defineProperty(exports, 'zoom', {
+        get: function () {
+            return _zoom;
+        },
+        set: function (value) {
+
+            var factor, motion;
+
+            factor = value / _zoom;
+
+            _transform.scale({
+                x: factor,
+                y: factor
+            }, _center);
+
+            _zoom = value;
+
+            update();
+
+            return true;
+        }
+    });
+
+
+
+
+    exports.initialize = initialize;
+    exports.update = update;
+    exports.zoomTo = zoomTo;
+    exports.reset = reset;
+    
+    
 });
 define("plane/utility/types", ['require', 'exports'], function (require, exports) {
 
@@ -3985,6 +3651,19 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
 
     }
 
+    var conversion = {
+        // http://javascriptweblog.wordpress.com/2011/08/08/fixing-the-javascript-typeof-operator/
+        toType: function (obj) {
+            return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
+        },
+        toJson: function (obj) {
+            return '';
+        },
+        toObject: function (obj) {
+            return {};
+        }
+    }
+
     var object = {
         inherits: function (f, p) {
             f.prototype = new p();
@@ -4006,7 +3685,9 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
                     o[prop] = p[prop];
                 }
             }
-            return o;
+            return this;
+            // 2014.11.27 2047 - lilo - method chaining
+            // return o;
         },
         /*
          * Copy the enumerable properties of p to o, and return o
@@ -4109,4 +3790,5 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
     exports.data = data;
     exports.date = date;
     exports.object = object;
+    exports.conversion = conversion;
 });
