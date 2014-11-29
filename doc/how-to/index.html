@@ -331,6 +331,80 @@
             });
 
 
+            var toolSpline = plane.tool.create({
+                    active: true
+                }),
+                toolSplinePoints = [];
+
+            function clamp(x, a, b) {
+                return (x < a) ? a : ((x > b) ? b : x);
+            }
+
+            toolSpline.events.listen('onActive', function (event) {
+
+                toolSplinePoints = [];
+                xxx = [];
+
+                document.getElementById('toolSpline').classList.add('selected');
+            });
+
+            toolSpline.events.listen('onMouseMove', function (event) {
+
+                if (toolSplinePoints.length > 1) {
+
+                    toolSplinePoints = toolSplinePoints.filter(function (item) {
+                        return item.type == 'click';
+                    });
+//                    toolSplinePoints.push({
+//                        x: event.point.inView.x,
+//                        y: event.point.inView.y,
+//                        type: 'move'
+//                    });
+
+
+                    plane.layer.active.children.list().forEach(function (shape) {
+                        if (shape.status == 'temporary') {
+                            plane.layer.active.children.remove(shape.uuid);
+                        }
+                    });
+
+                    var nurbsControlPoints = toolSplinePoints,
+                        nurbsKnots = [],
+                        nurbsDegree = 3;
+
+                    for (var i = 0; i <= nurbsDegree; i++) {
+                        nurbsKnots.push(0);
+                    }
+                    for (var i = 0, j = nurbsControlPoints.length; i < j; i++) {
+                        var knot = (i + 1) / (j - nurbsDegree);
+                        nurbsKnots.push(clamp(knot, 0, 1));
+                    }
+
+
+                    plane.shape.create({
+                        type: 'spline',
+                        degree: nurbsDegree,
+                        knots: nurbsKnots,
+                        points: nurbsControlPoints,
+                        status: 'temporary'
+                    });
+
+                    plane.view.update();
+                }
+
+            });
+            toolSpline.events.listen('onMouseDown', function (event) {
+                toolSplinePoints.push({
+                    x: event.point.x,
+                    y: event.point.y,
+                    type: 'click'
+                });
+//                toolSplinePoints.push(event.point);
+            });
+
+
+
+
 
             var toolClick = plane.tool.create({
                 active: true
