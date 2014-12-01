@@ -52,7 +52,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // initialize view
         view.initialize({
             viewPort: viewPort,
-            context : canvas.getContext('2d')
+            context: canvas.getContext('2d')
         });
         // initialize tool
         tool.initialize({
@@ -62,7 +62,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         return true;
     }
-    
+
 
     function clear() {
 
@@ -75,9 +75,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
         return true;
     }
 
- 
-    
-    
+
+
+
 
 
 
@@ -91,12 +91,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     exports.group = group;
 
     exports.layer = layer;
-    exports.tool = {
-        create: tool.create,
-        list: tool.list,
-        find: tool.find,
-        remove: tool.remove
-    };
+    exports.tool = tool;
 
     exports.importer = {
         fromDxf: function (stringDxf) {
@@ -157,5 +152,5 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return JSON.stringify(plane);
         }
     };
-    
+
 });

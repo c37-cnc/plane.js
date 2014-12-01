@@ -1,5 +1,5 @@
 /*!
- * C37 in 29-11-2014 at 12:22:48 
+ * C37 in 01-12-2014 at 00:22:59 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -43,50 +43,29 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
         function toJson(objectDxf) {
 
             switch (objectDxf.type) {
-            case 'line':
+            case 'arc':
                 {
-                    var line = '{ "type": "line", "a": [{0}, {1}], "b": [{2}, {3}] },';
-                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
-                }
-            case 'spline':
-                {
-                    if (objectDxf.points) {
-                        var spline = '{"type": "spline", "degree": {0}, "knots": [{1}], "points": [{2}]},',
-                            points = '';
-
-                        for (var i = 0; i < objectDxf.points.length; i++) {
-
-                            var point = i == objectDxf.points.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
-
-                        }
-                        return types.string.format(spline, [objectDxf.degree, objectDxf.knots.join(), points]);
-                    }
-                    return '';
+                    var arc = '{"type": "arc", "center": [{0}, {1}], "radius": {2}, "startAngle": {3}, "endAngle": {4} },';
+                    return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1]);
                 }
             case 'circle':
                 {
-                    var circle = '{ "type": "circle", "x": {0}, "y": {1}, "radius": {2} },';
+                    var circle = '{ "type": "circle", "center": [{0}, {1}], "radius": {2} },';
                     return types.string.format(circle, [objectDxf.x, objectDxf.y, objectDxf.r]);
-                }
-            case 'arc':
-                {
-                    var arc = '{"type": "arc", "x": {0}, "y": {1}, "radius": {2}, "startAngle": {3}, "endAngle": {4}, "clockWise": {5} },';
-                    return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1, false]);
                 }
             case 'ellipse':
                 {
-                    var ellipse = '{ "type": "ellipse", "x": {0}, "y": {1}, "radiusY": {2}, "radiusX": {3}, "startAngle": {4}, "endAngle": {5}, "angle": {6} },';
-                    
+                    var ellipse = '{ "type": "ellipse", "center": [{0}, {1}], "radiusY": {2}, "radiusX": {3}, "startAngle": {4}, "endAngle": {5}, "angle": {6} },';
+
                     var ratio = objectDxf.r;
                     var startAngle = objectDxf.startAngle;
                     var endAngle = objectDxf.endAngle || (2.0 * Math.PI);
-                    
+
                     // clockwise || anticlockwise?
                     while (endAngle < startAngle) {
                         endAngle += 2.0 * Math.PI;
                     }
-                    
+
                     var radiusX = {
                         x: 0 - objectDxf.x1,
                         y: 0 - objectDxf.y1
@@ -96,10 +75,15 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
                     var radiusY = radiusX * ratio;
                     var angle = Math.atan2(objectDxf.y1, objectDxf.x1);
-                    
-                    
-                    
+
+
+
                     return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, endAngle, angle]);
+                }
+            case 'line':
+                {
+                    var line = '{ "type": "line", "from": [{0}, {1}], "to": [{2}, {3}] },';
+                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
                 }
             case 'lwpolyline':
                 {
@@ -130,6 +114,22 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
                         }
                         return types.string.format(polyline, [points]);
+                    }
+                    return '';
+                }
+            case 'spline':
+                {
+                    if (objectDxf.points) {
+                        var spline = '{"type": "spline", "degree": {0}, "knots": [{1}], "points": [{2}]},',
+                            points = '';
+
+                        for (var i = 0; i < objectDxf.points.length; i++) {
+
+                            var point = i == objectDxf.points.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
+                            points += types.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
+
+                        }
+                        return types.string.format(spline, [objectDxf.degree, objectDxf.knots.join(), points]);
                     }
                     return '';
                 }
@@ -2977,7 +2977,8 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         point = require('plane/structure/point');
 
     var viewPort = null,
-        view = null;
+        view = null,
+        mouseDown = null;
 
 
     function Tool(attrs) {
@@ -3006,56 +3007,24 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
     function initialize(config) {
 
         viewPort = config.viewPort;
-        //        select = config.select;
         view = config.view;
-
-        var pointDown;
-            
 
 
         function onMouseDown(event) {
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas),
-                pointMove = point.create(pointInView),
-                shapesSelect = [];
-
-            // to point
-            pointInCanvas = point.create(pointInCanvas);
-
-            // dizendo que o mouse preenche o evento down
-            pointDown = point.create(pointInView);
-
-            // verifico se o local onde o ponto está possui alguma shape como imagem
-            var imageData = [].some.call(view.context.getImageData(mouseInCanvas.x, mouseInCanvas.y, 3, 3).data, function (element) {
-                return element > 0;
-            });
-
-            //            debugger;
-
-            // caso positivo realizamos a procura 
-            if (imageData && layer.active && layer.active.status != 'system') {
-                // apenas procuro na layer selecionada
-                var children = layer.active.children.list(),
-                    c = children.length;
-
-                while (c--) {
-                    if (children[c].contains(pointInCanvas, view.transform)) {
-                        shapesSelect.push(children[c]);
-                        //                        break; - lilo - teste de performance
-                    }
-                }
-            }
+                // dizendo que o mouse preenche o evento down
+                mouseDown = point.create(pointInView);
 
             // customized event
             event = {
                 type: 'onMouseDown',
-                point: pointMove,
-                shapes: shapesSelect,
+                point: mouseDown,
                 Now: new Date().toISOString()
             };
 
+            // propagação do evento para tools ativas
             var tools = store.list(),
                 t = tools.length;
             while (t--) {
@@ -3064,24 +3033,23 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 }
             }
 
-
         }
 
         function onMouseUp(event) {
-            pointDown = null;
+            mouseDown = null;
         }
 
         // Mouse Drag com o evento Mouse Move
         function onMouseDrag(event) {
             // se Mouse Down preenchido 
-            if (pointDown) {
+            if (mouseDown) {
                 var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                     pointInView = view.transform.inverseTransform(pointInCanvas);
 
                 // http://paperjs.org/reference/toolevent/#point
                 event = {
                     type: 'onMouseDrag',
-                    pointFirst: pointDown,
+                    pointFirst: mouseDown,
                     pointLast: point.create(pointInView),
                     now: new Date().toISOString()
                 }
@@ -3100,30 +3068,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                 mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas),
-                shapesOver = [];
+                pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // to point para procura em contains
             pointInCanvas = point.create(pointInCanvas);
 
-            // verifico se o local onde o ponto está possui alguma shape como imagem
-            var imageData = [].some.call(view.context.getImageData(mouseInCanvas.x, mouseInCanvas.y, 3, 3).data, function (element) {
-                return element > 0;
-            });
-
-            // caso positivo realizamos a procura 
-            if (imageData && layer.active && layer.active.status != 'system') {
-                // apenas procuro na layer selecionada
-                var children = layer.active.children.list(),
-                    c = children.length;
-
-                while (c--) {
-                    if (children[c].contains(pointInCanvas, view.transform)) {
-                        shapesOver.push(children[c]);
-                        //                        break; - lilo - teste de performance
-                    }
-                }
-            }
 
             // customized event
             event = {
@@ -3133,7 +3082,6 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                     inCanvas: point.create(mouseInCanvas.x, mouseInCanvas.y),
                     inView: point.create(pointInView)
                 },
-                shapes: shapesOver,
                 Now: new Date().toISOString()
             };
 
@@ -3147,7 +3095,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         }
 
         function onMouseLeave(event) {
-            //            pointDown = null;
+            //            mouseDown = null;
         }
 
         function onMouseWheel(event) {
@@ -3192,7 +3140,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
         attrs = types.object.merge({
             uuid: uuid,
-            name: 'Tool '.concat(uuid),
+            name: 'tool - '.concat(uuid),
             events: types.object.event.create(),
             active: false
         }, attrs);

@@ -4,7 +4,7 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -41,7 +41,7 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
     
     Polyline.prototype.calculeSegments = function(){
         

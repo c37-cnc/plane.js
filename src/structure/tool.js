@@ -4,11 +4,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
     var store = types.data.dictionary.create();
 
-    var layer = require('plane/structure/layer'),
-        point = require('plane/structure/point');
+    var point = require('plane/structure/point');
 
     var viewPort = null,
-        view = null;
+        view = null,
+        mouseDown = null;
 
 
     function Tool(attrs) {
@@ -37,56 +37,25 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
     function initialize(config) {
 
         viewPort = config.viewPort;
-        //        select = config.select;
         view = config.view;
-
-        var pointDown;
-            
 
 
         function onMouseDown(event) {
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas),
-                pointMove = point.create(pointInView),
-                shapesSelect = [];
-
-            // to point
-            pointInCanvas = point.create(pointInCanvas);
+                pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // dizendo que o mouse preenche o evento down
-            pointDown = point.create(pointInView);
-
-            // verifico se o local onde o ponto está possui alguma shape como imagem
-            var imageData = [].some.call(view.context.getImageData(mouseInCanvas.x, mouseInCanvas.y, 3, 3).data, function (element) {
-                return element > 0;
-            });
-
-            //            debugger;
-
-            // caso positivo realizamos a procura 
-            if (imageData && layer.active && layer.active.status != 'system') {
-                // apenas procuro na layer selecionada
-                var children = layer.active.children.list(),
-                    c = children.length;
-
-                while (c--) {
-                    if (children[c].contains(pointInCanvas, view.transform)) {
-                        shapesSelect.push(children[c]);
-                        //                        break; - lilo - teste de performance
-                    }
-                }
-            }
+            mouseDown = point.create(pointInView);
 
             // customized event
             event = {
                 type: 'onMouseDown',
-                point: pointMove,
-                shapes: shapesSelect,
+                point: mouseDown,
                 Now: new Date().toISOString()
             };
 
+            // propagação do evento para tools ativas
             var tools = store.list(),
                 t = tools.length;
             while (t--) {
@@ -95,24 +64,24 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 }
             }
 
-
         }
 
         function onMouseUp(event) {
-            pointDown = null;
+            mouseDown = null;
         }
 
-        // Mouse Drag com o evento Mouse Move
+        // Mouse Drag vinculado ao o evento Mouse Move do componente <canvas>
         function onMouseDrag(event) {
             // se Mouse Down preenchido 
-            if (pointDown) {
+            if (mouseDown) {
+
                 var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                     pointInView = view.transform.inverseTransform(pointInCanvas);
 
                 // http://paperjs.org/reference/toolevent/#point
                 event = {
                     type: 'onMouseDrag',
-                    pointFirst: pointDown,
+                    pointFirst: mouseDown,
                     pointLast: point.create(pointInView),
                     now: new Date().toISOString()
                 }
@@ -130,41 +99,18 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         function onMouseMove(event) {
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas),
-                shapesOver = [];
+                pointInView = view.transform.inverseTransform(pointInCanvas);
 
-            // to point para procura em contains
-            pointInCanvas = point.create(pointInCanvas);
-
-            // verifico se o local onde o ponto está possui alguma shape como imagem
-            var imageData = [].some.call(view.context.getImageData(mouseInCanvas.x, mouseInCanvas.y, 3, 3).data, function (element) {
-                return element > 0;
-            });
-
-            // caso positivo realizamos a procura 
-            if (imageData && layer.active && layer.active.status != 'system') {
-                // apenas procuro na layer selecionada
-                var children = layer.active.children.list(),
-                    c = children.length;
-
-                while (c--) {
-                    if (children[c].contains(pointInCanvas, view.transform)) {
-                        shapesOver.push(children[c]);
-                        //                        break; - lilo - teste de performance
-                    }
-                }
-            }
+            pointInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y);
 
             // customized event
             event = {
                 type: 'onMouseMove',
                 point: {
                     inDocument: point.create(event.x, event.y),
-                    inCanvas: point.create(mouseInCanvas.x, mouseInCanvas.y),
+                    inCanvas: point.create(pointInCanvas),
                     inView: point.create(pointInView)
                 },
-                shapes: shapesOver,
                 Now: new Date().toISOString()
             };
 
@@ -178,7 +124,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         }
 
         function onMouseLeave(event) {
-            //            pointDown = null;
+            mouseDown = null;
         }
 
         function onMouseWheel(event) {
@@ -203,11 +149,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             }
         }
 
-
+        // vinculando os eventos ao component html 
         viewPort.onmousedown = onMouseDown;
         viewPort.onmouseup = onMouseUp;
-        viewPort.addEventListener('mousemove', onMouseMove, false);
         viewPort.addEventListener('mousemove', onMouseDrag, false);
+        viewPort.addEventListener('mousemove', onMouseMove, false);
         viewPort.onmouseleave = onMouseLeave;
         viewPort.onmousewheel = onMouseWheel;
 
@@ -223,7 +169,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
         attrs = types.object.merge({
             uuid: uuid,
-            name: 'Tool '.concat(uuid),
+            name: 'tool - '.concat(uuid),
             events: types.object.event.create(),
             active: false
         }, attrs);

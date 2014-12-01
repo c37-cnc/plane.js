@@ -4,7 +4,7 @@ define("plane/shapes/spline", ['require', 'exports'], function (require, exports
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -43,7 +43,7 @@ define("plane/shapes/spline", ['require', 'exports'], function (require, exports
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
 
     Spline.prototype.calculeSegments = function () {
 

@@ -119,9 +119,6 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
 
 
     exports.events = types.object.event.create();
-
-
-
     exports.create = create;
     exports.list = list;
     exports.find = find;

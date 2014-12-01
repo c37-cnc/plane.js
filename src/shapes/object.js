@@ -1,4 +1,4 @@
-define("plane/structure/object", ['require', 'exports'], function (require, exports) {
+define("plane/shapes/object", ['require', 'exports'], function (require, exports) {
 
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
@@ -17,10 +17,9 @@ define("plane/structure/object", ['require', 'exports'], function (require, expo
      * @class Shape
      * @constructor
      */
-    function Shape() {};
+    function Base() {};
 
-
-    Shape.prototype = {
+    Base.prototype = {
         initialize: function (attrs) {
 
             // o nome do shape
@@ -133,9 +132,6 @@ define("plane/structure/object", ['require', 'exports'], function (require, expo
 
 
 
-
-
-
-    exports.Shape = Shape;
+    exports.Base = Base;
 
 });

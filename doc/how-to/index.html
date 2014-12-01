@@ -202,9 +202,6 @@
             var toolZoomWheel = plane.tool.create({
                 active: true
             });
-
-            console.log(toolZoomWheel);
-
             toolZoomWheel.events.listen('onMouseWheel', function (event) {
 
                 var position = event.point,
@@ -217,16 +214,12 @@
 
                 plane.view.zoomTo(zoomNew, centerNew);
 
-                console.log(plane.view.bounds);
             });
 
 
             var toolPan = plane.tool.create({
                 active: false
             });
-
-            console.log(toolPan);
-
             toolPan.events.listen('onMouseDrag', function (event) {
 
                 var moveFactor = event.pointFirst.subtract(event.pointLast);
@@ -242,7 +235,45 @@
             var toolSelect = plane.tool.create({
                 active: true
             });
+            toolSelect.events.listen('onMouseDown', function (event) {
 
+                plane.layer.active.children.list().forEach(function (shape) {
+                    if (shape.status == 'temporary') {
+                        plane.layer.active.children.remove(shape.uuid);
+                    }
+                });
+
+                plane.view.update();
+
+
+                // caso positivo realizamos a procura 
+                //            if (imageData && layer.active && layer.active.status != 'system') {
+                //                // apenas procuro na layer selecionada
+                //                var children = layer.active.children.list(),
+                //                    c = children.length;
+                //
+                //                while (c--) {
+                //                    if (children[c].contains(pointInCanvas, view.transform)) {
+                //                        shapesSelect.push(children[c]);
+                //                        //                        break; - lilo - teste de performance
+                //                    }
+                //                }
+                //            }
+
+                //
+                //                if (event.shapes.length > 0) {
+                //
+                //                    event.shapes.forEach(function (shape) {
+                //                        shape.status = 'selected';
+                //                        shape.style = {
+                //                            lineColor: 'rgb(68, 121, 154)'
+                //                        };
+                //                    });
+                //                }
+                //
+                //                plane.view.update();
+
+            });
             toolSelect.events.listen('onMouseDrag', function (event) {
 
                 plane.layer.active.children.list().forEach(function (shape) {
@@ -267,72 +298,26 @@
                         width: event.pointLast.subtract(event.pointFirst).x,
                     })) {
 
-                        console.log('selecionado!!!');
+                        console.log(shape.name);
 
-                    }
-
-
-                });
-
-
-                plane.view.update();
-            });
-
-            toolSelect.events.listen('onMouseDown', function (event) {
-
-                plane.layer.active.children.list().forEach(function (shape) {
-                    if (shape.status == 'temporary') {
-                        plane.layer.active.children.remove(shape.uuid);
                     }
                 });
 
-                if (event.shapes.length > 0) {
-
-                    event.shapes.forEach(function (shape) {
-                        shape.status = 'selected';
-                        shape.style = {
-                            lineColor: 'rgb(68, 121, 154)'
-                        };
-                    });
-                }
-
                 plane.view.update();
 
-            });
-
-
-            var toolLine = plane.tool.create({
-                    active: false
-                }),
-                toolLineFirstPoint;
-
-            console.log(toolLine);
-
-            toolLine.events.listen('onMouseDown', function (event) {
-
-                console.log(event);
-
-                if (toolLineFirstPoint) {
-
-                    plane.shape.create({
-                        type: 'line',
-                        a: [toolLineFirstPoint.x, toolLineFirstPoint.y],
-                        b: [event.point.x, event.point.y]
-                    });
-
-                    plane.update();
-
-                    toolLineFirstPoint = null;
-
-                } else {
-                    toolLineFirstPoint = event.point;
-                }
 
             });
+
+
+
+
+
+
+
 
 
             var toolSpline = plane.tool.create({
-                    active: true
+                    active: false
                 }),
                 toolSplinePoints = [];
 
@@ -355,11 +340,11 @@
                     toolSplinePoints = toolSplinePoints.filter(function (item) {
                         return item.type == 'click';
                     });
-//                    toolSplinePoints.push({
-//                        x: event.point.inView.x,
-//                        y: event.point.inView.y,
-//                        type: 'move'
-//                    });
+                    //                    toolSplinePoints.push({
+                    //                        x: event.point.inView.x,
+                    //                        y: event.point.inView.y,
+                    //                        type: 'move'
+                    //                    });
 
 
                     plane.layer.active.children.list().forEach(function (shape) {
@@ -399,22 +384,11 @@
                     y: event.point.y,
                     type: 'click'
                 });
-//                toolSplinePoints.push(event.point);
+                //                toolSplinePoints.push(event.point);
             });
 
 
 
-
-
-            var toolClick = plane.tool.create({
-                active: true
-            });
-
-            toolClick.events.listen('onMouseDown', function (event) {
-
-                console.log(event);
-
-            });
 
 
 

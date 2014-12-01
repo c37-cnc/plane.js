@@ -25,7 +25,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
 
     function create(attrs) {
-
         // verificação para a chamada da função
         if ((typeof attrs == "function") || (attrs == null)) {
             throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -42,20 +41,19 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
             uuid: types.math.uuid(9, 16),
         }, attrs);
 
-
+        // criando pelo type
         var shape = shapeType[attrs.type].create(attrs);;
-
 
         // adicionando o novo shape na layer ativa
         return layer.active.children.add(shape.uuid, shape);
     }
 
 
-    function remove(value) {}
+    function remove(uuid) {}
 
     function list() {}
 
-    function find() {}
+    function find(uuid) {}
 
 
 
