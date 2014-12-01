@@ -1,5 +1,5 @@
 /*!
- * C37 in 01-12-2014 at 00:22:59 
+ * C37 in 01-12-2014 at 12:10:40 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1298,7 +1298,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // initialize view
         view.initialize({
             viewPort: viewPort,
-            context : canvas.getContext('2d')
+            context: canvas.getContext('2d')
         });
         // initialize tool
         tool.initialize({
@@ -1308,7 +1308,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         return true;
     }
-    
+
 
     function clear() {
 
@@ -1321,9 +1321,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
         return true;
     }
 
- 
-    
-    
+
+
+
 
 
 
@@ -1337,12 +1337,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     exports.group = group;
 
     exports.layer = layer;
-    exports.tool = {
-        create: tool.create,
-        list: tool.list,
-        find: tool.find,
-        remove: tool.remove
-    };
+    exports.tool = tool;
 
     exports.importer = {
         fromDxf: function (stringDxf) {
@@ -1403,7 +1398,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             return JSON.stringify(plane);
         }
     };
-    
+
 });
 define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
@@ -1411,7 +1406,7 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -1451,7 +1446,7 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
 
     Arc.prototype.calculeSegments = function () {
 
@@ -1524,7 +1519,7 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -1563,7 +1558,7 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
 
 
     // https://github.com/MartinDoms/Splines/blob/master/cubicBezier.js
@@ -1636,7 +1631,7 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -1675,7 +1670,7 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
 
 
     // https://github.com/MartinDoms/Splines/blob/master/quadraticBezier.js
@@ -1746,7 +1741,7 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -1784,7 +1779,7 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
 
     Circle.prototype.calculeSegments = function () {
 
@@ -1836,7 +1831,7 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -1880,7 +1875,7 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
 
     Ellipse.prototype.calculeSegments = function () {
 
@@ -1965,7 +1960,7 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -2003,7 +1998,7 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
 
     Line.prototype.calculeSegments = function () {
 
@@ -2045,13 +2040,150 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
     exports.create = create;
 
 });
+define("plane/shapes/object", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/geometric/intersection'),
+        matrix = require('plane/geometric/matrix');
+
+    var point = require('plane/structure/point');
+
+    var types = require('plane/utility/types');
+
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    function Base() {};
+
+    Base.prototype = {
+        initialize: function (attrs) {
+
+            // o nome do shape
+            attrs.name = types.string.format('{0} - {1}', [attrs.type, attrs.uuid]);
+
+            // completando os campos do shape
+            types.object.extend(this, attrs);
+
+            // calculando os segmentos
+            this.calculeSegments();
+
+            return true;
+        },
+        contains: function (position, transform) {
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = point.create(transform.tx, transform.ty);
+
+
+            var segmentA = null,
+                segmentB = null;
+
+            for (var i = 0; i < this.segments.length; i++) {
+
+                if (i + 1 == this.segments.length) {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[0];
+                } else {
+                    segmentA = this.segments[i];
+                    segmentB = this.segments[i + 1];
+                }
+
+                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
+                    return true;
+            }
+
+            return false;
+
+        },
+        intersect: function (rectangle) {
+
+            if (this.status != 'temporary') {
+                var tl = point.create(rectangle.x, rectangle.y + rectangle.height),
+                    tr = point.create(rectangle.x + rectangle.width, rectangle.y + rectangle.height),
+                    bl = point.create(rectangle.x, rectangle.y),
+                    br = point.create(rectangle.x + rectangle.width, rectangle.y);
+
+                return intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
+            }
+            return false;
+
+        },
+        render: function (context, transform) {
+
+            // possivel personalização
+            if (this.style) {
+                context.save();
+
+                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
+            }
+
+            context.beginPath();
+
+            var scale = Math.sqrt(transform.a * transform.d);
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
+
+
+            for (var i = 0; i < this.segments.length; i++) {
+                var x = this.segments[i].x * scale + move.x;
+                var y = this.segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
+            }
+
+
+            context.stroke();
+
+
+            // possivel personalização
+            if (this.style) {
+                context.restore();
+            }
+
+
+        },
+        toObject: function () {
+
+            // converto para object os campos utilizando parseFloat
+
+            //            return {
+            //                uuid: this.uuid,
+            //                type: this.type,
+            //                name: this.name,
+            //                status: this.status,
+            //                x: types.math.parseFloat(this.point.x, 5),
+            //                y: types.math.parseFloat(this.point.y, 5),
+            //                radius: types.math.parseFloat(this.radius, 5),
+            //                startAngle: types.math.parseFloat(this.startAngle, 5),
+            //                endAngle: types.math.parseFloat(this.endAngle, 5),
+            //                clockWise: this.clockWise
+            //            };
+
+            return true;
+        }
+    };
+
+
+
+    exports.Base = Base;
+
+});
 define("plane/shapes/polygon", ['require', 'exports'], function (require, exports) {
 
     var intersection = require('plane/geometric/intersection'),
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -2090,7 +2222,7 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
 
     Polygon.prototype.calculeSegments = function () {
 
@@ -2138,7 +2270,7 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -2175,7 +2307,7 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
     
     Polyline.prototype.calculeSegments = function(){
         
@@ -2215,7 +2347,7 @@ define("plane/shapes/rectangle", ['require', 'exports'], function (require, expo
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -2253,7 +2385,7 @@ define("plane/shapes/rectangle", ['require', 'exports'], function (require, expo
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
 
     Rectangle.prototype.calculeSegments = function () {
 
@@ -2312,7 +2444,7 @@ define("plane/shapes/spline", ['require', 'exports'], function (require, exports
         matrix = require('plane/geometric/matrix');
 
     var point = require('plane/structure/point'),
-        object = require('plane/structure/object');
+        object = require('plane/shapes/object');
 
     var types = require('plane/utility/types');
 
@@ -2351,7 +2483,7 @@ define("plane/shapes/spline", ['require', 'exports'], function (require, exports
 
         this.initialize(attrs);
 
-    }, object.Shape);
+    }, object.Base);
 
     Spline.prototype.calculeSegments = function () {
 
@@ -2548,7 +2680,25 @@ define("plane/structure/group", ['require', 'exports'], function (require, expor
 
     function Group() {};
 
-    Group.prototype = {};
+    Group.prototype = {
+        initialize: function (attrs) {
+
+            return true;
+        },
+        contains: function (position, transform) {
+
+            return false;
+        },
+        intersect: function (rectangle) {
+
+            return true;
+        },
+        toObject: function () {
+
+            return true;
+        }
+        
+    };
 
     function create(attrs) {
         if (typeof attrs == 'function') {
@@ -2685,154 +2835,10 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
 
 
     exports.events = types.object.event.create();
-
-
-
     exports.create = create;
     exports.list = list;
     exports.find = find;
     exports.remove = remove;
-});
-define("plane/structure/object", ['require', 'exports'], function (require, exports) {
-
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
-
-    var point = require('plane/structure/point');
-
-    var types = require('plane/utility/types');
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Shape
-     * @class Shape
-     * @constructor
-     */
-    function Shape() {};
-
-
-    Shape.prototype = {
-        initialize: function (attrs) {
-
-            // o nome do shape
-            attrs.name = types.string.format('{0} - {1}', [attrs.type, attrs.uuid]);
-
-            // completando os campos do shape
-            types.object.extend(this, attrs);
-
-            // calculando os segmentos
-            this.calculeSegments();
-
-            return true;
-        },
-        contains: function (position, transform) {
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = point.create(transform.tx, transform.ty);
-
-
-            var segmentA = null,
-                segmentB = null;
-
-            for (var i = 0; i < this.segments.length; i++) {
-
-                if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[0];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
-                }
-
-                if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
-                    return true;
-            }
-
-            return false;
-
-        },
-        intersect: function (rectangle) {
-
-            if (this.status != 'temporary') {
-                var tl = point.create(rectangle.x, rectangle.y + rectangle.height),
-                    tr = point.create(rectangle.x + rectangle.width, rectangle.y + rectangle.height),
-                    bl = point.create(rectangle.x, rectangle.y),
-                    br = point.create(rectangle.x + rectangle.width, rectangle.y);
-
-                return intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
-            }
-            return false;
-
-        },
-        render: function (context, transform) {
-
-            // possivel personalização
-            if (this.style) {
-                context.save();
-
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
-            }
-
-            context.beginPath();
-
-            var scale = Math.sqrt(transform.a * transform.d);
-            var move = {
-                x: transform.tx,
-                y: transform.ty
-            };
-
-
-            for (var i = 0; i < this.segments.length; i++) {
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
-
-                context.lineTo(x, y);
-            }
-
-
-            context.stroke();
-
-
-            // possivel personalização
-            if (this.style) {
-                context.restore();
-            }
-
-
-        },
-        toObject: function () {
-
-            // converto para object os campos utilizando parseFloat
-
-            //            return {
-            //                uuid: this.uuid,
-            //                type: this.type,
-            //                name: this.name,
-            //                status: this.status,
-            //                x: types.math.parseFloat(this.point.x, 5),
-            //                y: types.math.parseFloat(this.point.y, 5),
-            //                radius: types.math.parseFloat(this.radius, 5),
-            //                startAngle: types.math.parseFloat(this.startAngle, 5),
-            //                endAngle: types.math.parseFloat(this.endAngle, 5),
-            //                clockWise: this.clockWise
-            //            };
-
-            return true;
-        }
-    };
-
-
-
-
-
-
-    exports.Shape = Shape;
-
 });
 define("plane/structure/point", ['require', 'exports'], function (require, exports) {
 
@@ -2926,7 +2932,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
 
     function create(attrs) {
-
         // verificação para a chamada da função
         if ((typeof attrs == "function") || (attrs == null)) {
             throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -2943,20 +2948,19 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
             uuid: types.math.uuid(9, 16),
         }, attrs);
 
-
+        // criando pelo type
         var shape = shapeType[attrs.type].create(attrs);;
-
 
         // adicionando o novo shape na layer ativa
         return layer.active.children.add(shape.uuid, shape);
     }
 
 
-    function remove(value) {}
+    function remove(uuid) {}
 
     function list() {}
 
-    function find() {}
+    function find(uuid) {}
 
 
 
@@ -2973,8 +2977,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
     var store = types.data.dictionary.create();
 
-    var layer = require('plane/structure/layer'),
-        point = require('plane/structure/point');
+    var point = require('plane/structure/point');
 
     var viewPort = null,
         view = null,
@@ -3013,9 +3016,10 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         function onMouseDown(event) {
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas),
-                // dizendo que o mouse preenche o evento down
-                mouseDown = point.create(pointInView);
+                pointInView = view.transform.inverseTransform(pointInCanvas);
+
+            // dizendo que o mouse preenche o evento down
+            mouseDown = point.create(pointInView);
 
             // customized event
             event = {
@@ -3039,10 +3043,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             mouseDown = null;
         }
 
-        // Mouse Drag com o evento Mouse Move
+        // Mouse Drag vinculado ao o evento Mouse Move do componente <canvas>
         function onMouseDrag(event) {
             // se Mouse Down preenchido 
             if (mouseDown) {
+
                 var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                     pointInView = view.transform.inverseTransform(pointInCanvas);
 
@@ -3067,19 +3072,16 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         function onMouseMove(event) {
 
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                mouseInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
-            // to point para procura em contains
-            pointInCanvas = point.create(pointInCanvas);
-
+            pointInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y);
 
             // customized event
             event = {
                 type: 'onMouseMove',
                 point: {
                     inDocument: point.create(event.x, event.y),
-                    inCanvas: point.create(mouseInCanvas.x, mouseInCanvas.y),
+                    inCanvas: point.create(pointInCanvas),
                     inView: point.create(pointInView)
                 },
                 Now: new Date().toISOString()
@@ -3095,7 +3097,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         }
 
         function onMouseLeave(event) {
-            //            mouseDown = null;
+            mouseDown = null;
         }
 
         function onMouseWheel(event) {
@@ -3120,11 +3122,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             }
         }
 
-
+        // vinculando os eventos ao component html 
         viewPort.onmousedown = onMouseDown;
         viewPort.onmouseup = onMouseUp;
-        viewPort.addEventListener('mousemove', onMouseMove, false);
         viewPort.addEventListener('mousemove', onMouseDrag, false);
+        viewPort.addEventListener('mousemove', onMouseMove, false);
         viewPort.onmouseleave = onMouseLeave;
         viewPort.onmousewheel = onMouseWheel;
 
