@@ -5,6 +5,7 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
     var layer = require('plane/structure/layer'),
         point = require('plane/structure/point');
 
+    var types = require('plane/utility/types');
 
 
     var viewPort = null,
@@ -30,7 +31,7 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
 
         viewPort = config.viewPort;
         _context = config.context;
-        
+
         // sistema cartesiano de coordenadas
         _context.translate(0, viewPort.clientHeight);
         _context.scale(1, -1);
@@ -44,10 +45,8 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         // os tamanhos que são fixos
         size.height = viewPort.clientHeight;
         size.width = viewPort.clientWidth;
+
     }
-
-
-
 
 
 
@@ -107,9 +106,9 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         return true;
     }
 
-    
-    
-    
+
+
+
     function reset() {
         zoomTo(1, point.create(size.width / 2, size.height / 2));
     }
@@ -191,13 +190,11 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         }
     });
 
-
-
+    
 
     exports.initialize = initialize;
     exports.update = update;
     exports.zoomTo = zoomTo;
     exports.reset = reset;
-    
-    
+
 });

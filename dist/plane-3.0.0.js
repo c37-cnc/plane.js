@@ -1,5 +1,5 @@
 /*!
- * C37 in 01-12-2014 at 12:10:40 
+ * C37 in 03-12-2014 at 00:31:46 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1354,6 +1354,26 @@ define("plane", ['require', 'exports'], function (require, exports) {
             view: view
         });
 
+
+        window.onresize = function () {
+
+            canvas.width = viewPort.clientWidth;
+            canvas.height = viewPort.clientHeight;
+
+            // sistema cartesiano de coordenadas
+            canvas.getContext('2d').translate(0, viewPort.clientHeight);
+            canvas.getContext('2d').scale(1, -1);
+
+            view.update();
+
+
+            events.notify('onResize', {
+                '???': '???',
+                '!!!': '!!!'
+            });
+        };
+
+
         return true;
     }
 
@@ -1370,12 +1390,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
     }
 
 
-
+    var events = types.object.event.create();
 
 
 
 
     exports.initialize = initialize;
+    exports.events = events;
     exports.clear = clear;
 
     exports.view = view;
@@ -3230,6 +3251,7 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
     var layer = require('plane/structure/layer'),
         point = require('plane/structure/point');
 
+    var types = require('plane/utility/types');
 
 
     var viewPort = null,
@@ -3255,7 +3277,7 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
 
         viewPort = config.viewPort;
         _context = config.context;
-        
+
         // sistema cartesiano de coordenadas
         _context.translate(0, viewPort.clientHeight);
         _context.scale(1, -1);
@@ -3269,10 +3291,8 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         // os tamanhos que são fixos
         size.height = viewPort.clientHeight;
         size.width = viewPort.clientWidth;
+
     }
-
-
-
 
 
 
@@ -3332,9 +3352,9 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         return true;
     }
 
-    
-    
-    
+
+
+
     function reset() {
         zoomTo(1, point.create(size.width / 2, size.height / 2));
     }
@@ -3416,15 +3436,13 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         }
     });
 
-
-
+    
 
     exports.initialize = initialize;
     exports.update = update;
     exports.zoomTo = zoomTo;
     exports.reset = reset;
-    
-    
+
 });
 define("plane/utility/types", ['require', 'exports'], function (require, exports) {
 

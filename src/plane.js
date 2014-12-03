@@ -60,6 +60,26 @@ define("plane", ['require', 'exports'], function (require, exports) {
             view: view
         });
 
+
+        window.onresize = function () {
+
+            canvas.width = viewPort.clientWidth;
+            canvas.height = viewPort.clientHeight;
+
+            // sistema cartesiano de coordenadas
+            canvas.getContext('2d').translate(0, viewPort.clientHeight);
+            canvas.getContext('2d').scale(1, -1);
+
+            view.update();
+
+
+            events.notify('onResize', {
+                '???': '???',
+                '!!!': '!!!'
+            });
+        };
+
+
         return true;
     }
 
@@ -76,12 +96,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
     }
 
 
-
+    var events = types.object.event.create();
 
 
 
 
     exports.initialize = initialize;
+    exports.events = events;
     exports.clear = clear;
 
     exports.view = view;
