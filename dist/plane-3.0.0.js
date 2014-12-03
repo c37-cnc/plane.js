@@ -1,5 +1,5 @@
 /*!
- * C37 in 03-12-2014 at 00:31:46 
+ * C37 in 03-12-2014 at 00:45:40 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1346,32 +1346,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // initialize view
         view.initialize({
             viewPort: viewPort,
-            context: canvas.getContext('2d')
+            canvas: canvas
         });
         // initialize tool
         tool.initialize({
             viewPort: viewPort,
             view: view
         });
-
-
-        window.onresize = function () {
-
-            canvas.width = viewPort.clientWidth;
-            canvas.height = viewPort.clientHeight;
-
-            // sistema cartesiano de coordenadas
-            canvas.getContext('2d').translate(0, viewPort.clientHeight);
-            canvas.getContext('2d').scale(1, -1);
-
-            view.update();
-
-
-            events.notify('onResize', {
-                '???': '???',
-                '!!!': '!!!'
-            });
-        };
 
 
         return true;
@@ -1390,13 +1371,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
     }
 
 
-    var events = types.object.event.create();
 
 
 
 
     exports.initialize = initialize;
-    exports.events = events;
     exports.clear = clear;
 
     exports.view = view;
@@ -3065,7 +3044,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             set: function (value) {
                 this.events.notify(value ? 'onActive' : 'onDeactive', {
                     type: value ? 'onActive' : 'onDeactive',
-                    Now: new Date().toISOString()
+                    now: new Date().toISOString()
 
                 });
                 this._active = value;
@@ -3094,7 +3073,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             event = {
                 type: 'onMouseDown',
                 point: mouseDown,
-                Now: new Date().toISOString()
+                now: new Date().toISOString()
             };
 
             // propagação do evento para tools ativas
@@ -3153,7 +3132,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                     inCanvas: point.create(pointInCanvas),
                     inView: point.create(pointInView)
                 },
-                Now: new Date().toISOString()
+                now: new Date().toISOString()
             };
 
             var tools = store.list(),
@@ -3255,6 +3234,7 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
 
 
     var viewPort = null,
+        canvas = null,
         _context = null,
         _transform = null,
         _zoom = 1,
@@ -3276,7 +3256,8 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
     function initialize(config) {
 
         viewPort = config.viewPort;
-        _context = config.context;
+        canvas = config.canvas;
+        _context = canvas.getContext('2d');
 
         // sistema cartesiano de coordenadas
         _context.translate(0, viewPort.clientHeight);
@@ -3291,6 +3272,30 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         // os tamanhos que são fixos
         size.height = viewPort.clientHeight;
         size.width = viewPort.clientWidth;
+
+
+        window.onresize = function () {
+
+            canvas.width = viewPort.clientWidth;
+            canvas.height = viewPort.clientHeight;
+
+            // os tamanhos que são fixos
+            size.height = viewPort.clientHeight;
+            size.width = viewPort.clientWidth;
+
+
+            // sistema cartesiano de coordenadas
+            canvas.getContext('2d').translate(0, viewPort.clientHeight);
+            canvas.getContext('2d').scale(1, -1);
+
+            update();
+
+            events.notify('onResize', {
+                size: size,
+                now: new Date().toISOString()
+            });
+        };
+
 
     }
 
@@ -3436,12 +3441,15 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         }
     });
 
-    
+
+    var events = types.object.event.create();
+
 
     exports.initialize = initialize;
     exports.update = update;
     exports.zoomTo = zoomTo;
     exports.reset = reset;
+    exports.events = events;
 
 });
 define("plane/utility/types", ['require', 'exports'], function (require, exports) {

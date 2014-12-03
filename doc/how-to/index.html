@@ -196,8 +196,8 @@
 
 
             plane.view.update();
-            
-            
+
+
             var toolZoomWheel = plane.tool.create({
                 active: true
             });
@@ -308,6 +308,9 @@
             });
 
 
+            plane.view.events.listen('onResize', function (events) {
+                console.log(events);
+            });
 
 
 

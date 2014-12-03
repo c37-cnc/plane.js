@@ -23,7 +23,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             set: function (value) {
                 this.events.notify(value ? 'onActive' : 'onDeactive', {
                     type: value ? 'onActive' : 'onDeactive',
-                    Now: new Date().toISOString()
+                    now: new Date().toISOString()
 
                 });
                 this._active = value;
@@ -52,7 +52,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             event = {
                 type: 'onMouseDown',
                 point: mouseDown,
-                Now: new Date().toISOString()
+                now: new Date().toISOString()
             };
 
             // propagação do evento para tools ativas
@@ -111,7 +111,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                     inCanvas: point.create(pointInCanvas),
                     inView: point.create(pointInView)
                 },
-                Now: new Date().toISOString()
+                now: new Date().toISOString()
             };
 
             var tools = store.list(),

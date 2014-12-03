@@ -9,6 +9,7 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
 
 
     var viewPort = null,
+        canvas = null,
         _context = null,
         _transform = null,
         _zoom = 1,
@@ -30,7 +31,8 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
     function initialize(config) {
 
         viewPort = config.viewPort;
-        _context = config.context;
+        canvas = config.canvas;
+        _context = canvas.getContext('2d');
 
         // sistema cartesiano de coordenadas
         _context.translate(0, viewPort.clientHeight);
@@ -45,6 +47,30 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         // os tamanhos que são fixos
         size.height = viewPort.clientHeight;
         size.width = viewPort.clientWidth;
+
+
+        window.onresize = function () {
+
+            canvas.width = viewPort.clientWidth;
+            canvas.height = viewPort.clientHeight;
+
+            // os tamanhos que são fixos
+            size.height = viewPort.clientHeight;
+            size.width = viewPort.clientWidth;
+
+
+            // sistema cartesiano de coordenadas
+            canvas.getContext('2d').translate(0, viewPort.clientHeight);
+            canvas.getContext('2d').scale(1, -1);
+
+            update();
+
+            events.notify('onResize', {
+                size: size,
+                now: new Date().toISOString()
+            });
+        };
+
 
     }
 
@@ -190,11 +216,14 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
         }
     });
 
-    
+
+    var events = types.object.event.create();
+
 
     exports.initialize = initialize;
     exports.update = update;
     exports.zoomTo = zoomTo;
     exports.reset = reset;
+    exports.events = events;
 
 });
