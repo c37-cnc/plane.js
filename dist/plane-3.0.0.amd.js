@@ -1,5 +1,5 @@
 /*!
- * C37 in 03-12-2014 at 00:45:40 
+ * C37 in 03-12-2014 at 03:06:41 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3024,7 +3024,10 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             // customized event
             event = {
                 type: 'onMouseDown',
-                point: mouseDown,
+                point: {
+                    inCanvas: point.create(pointInCanvas),
+                    inView: point.create(pointInView)
+                },
                 now: new Date().toISOString()
             };
 
@@ -3041,6 +3044,21 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
         function onMouseUp(event) {
             mouseDown = null;
+            
+            // customized event
+            event = {
+                type: 'onMouseUp',
+                now: new Date().toISOString()
+            };
+
+            // propagação do evento para tools ativas
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseUp', event);
+                }
+            }
         }
 
         // Mouse Drag vinculado ao o evento Mouse Move do componente <canvas>
