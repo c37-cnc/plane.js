@@ -45,7 +45,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         var shape = shapeType[attrs.type].create(attrs);;
 
         // adicionando o novo shape na layer ativa
-        return layer.active.children.add(shape.uuid, shape);
+        layer.active.children.add(shape.uuid, shape);
+        
+        return shape;
     }
 
 

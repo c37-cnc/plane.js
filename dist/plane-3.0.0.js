@@ -1,5 +1,5 @@
 /*!
- * C37 in 04-12-2014 at 07:15:27 
+ * C37 in 04-12-2014 at 12:54:56 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -2168,6 +2168,9 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
             if (this.style) {
                 context.save();
 
+                if (this.style.lineDash){
+                    context.setLineDash([5, 2]);
+                }
                 context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
                 context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
@@ -3000,7 +3003,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         var shape = shapeType[attrs.type].create(attrs);;
 
         // adicionando o novo shape na layer ativa
-        return layer.active.children.add(shape.uuid, shape);
+        layer.active.children.add(shape.uuid, shape);
+        
+        return shape;
     }
 
 

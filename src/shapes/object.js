@@ -78,6 +78,9 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
             if (this.style) {
                 context.save();
 
+                if (this.style.lineDash){
+                    context.setLineDash([5, 2]);
+                }
                 context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
                 context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
