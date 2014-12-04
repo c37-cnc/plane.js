@@ -1,5 +1,5 @@
 /*!
- * C37 in 04-12-2014 at 04:36:50 
+ * C37 in 04-12-2014 at 05:22:24 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -2756,7 +2756,7 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
         // parametros para a nova Layer
         attrs = types.object.merge({
             uuid: uuid,
-            name: 'New Layer '.concat(uuid),
+            name: 'Layer '.concat(uuid),
             style: {
                 lineCap: 'butt',
                 lineJoin: 'miter',

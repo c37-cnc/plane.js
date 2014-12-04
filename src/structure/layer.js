@@ -40,7 +40,7 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
         // parametros para a nova Layer
         attrs = types.object.merge({
             uuid: uuid,
-            name: 'New Layer '.concat(uuid),
+            name: 'Layer '.concat(uuid),
             style: {
                 lineCap: 'butt',
                 lineJoin: 'miter',
