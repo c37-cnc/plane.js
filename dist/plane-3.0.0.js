@@ -1,5 +1,5 @@
 /*!
- * C37 in 04-12-2014 at 05:22:24 
+ * C37 in 04-12-2014 at 07:15:27 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -2853,12 +2853,6 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
 
 
 
-
-    function active(uuid) {
-        return uuid ? active = store.find(uuid) : active;
-    }
-
-
     Object.defineProperty(exports, 'active', {
         get: function () {
             return _active;
@@ -2866,17 +2860,23 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
         },
         set: function (uuid) {
 
-            this.events.notify('onDeactivated', {
-                type: 'onDeactivated',
-                layer: _active
-            });
+            // não propagar eventos quando realizar mudanças para Layer do sistema
+            if ((_active) && (_active.status != 'system') && (store.find(uuid)) && store.find(uuid).status != 'system') {
+                this.events.notify('onDeactive', {
+                    type: 'onDeactive',
+                    layer: _active
+                });
+            }
 
             _active = store.find(uuid);
 
-            this.events.notify('onActivated', {
-                type: 'onActivated',
-                layer: _active
-            });
+            // não propagar eventos quando realizar mudanças para Layer do sistema
+            if ((_active) && (_active.status != 'system') && (store.find(uuid)) && store.find(uuid).status != 'system') {
+                this.events.notify('onActive', {
+                    type: 'onActive',
+                    layer: _active
+                });
+            }
 
         }
     });
