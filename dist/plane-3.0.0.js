@@ -1,5 +1,5 @@
 /*!
- * C37 in 03-12-2014 at 03:06:41 
+ * C37 in 04-12-2014 at 04:36:50 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3073,6 +3073,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             event = {
                 type: 'onMouseDown',
                 point: {
+                    inDocument: point.create(event.x, event.y),
                     inCanvas: point.create(pointInCanvas),
                     inView: point.create(pointInView)
                 },
@@ -3091,11 +3092,20 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         }
 
         function onMouseUp(event) {
+
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas);
+
             mouseDown = null;
             
             // customized event
             event = {
                 type: 'onMouseUp',
+                point: {
+                    inDocument: point.create(event.x, event.y),
+                    inCanvas: point.create(pointInCanvas),
+                    inView: point.create(pointInView)
+                },
                 now: new Date().toISOString()
             };
 

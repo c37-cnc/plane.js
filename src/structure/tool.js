@@ -52,6 +52,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             event = {
                 type: 'onMouseDown',
                 point: {
+                    inDocument: point.create(event.x, event.y),
                     inCanvas: point.create(pointInCanvas),
                     inView: point.create(pointInView)
                 },
@@ -70,11 +71,20 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         }
 
         function onMouseUp(event) {
+
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas);
+
             mouseDown = null;
             
             // customized event
             event = {
                 type: 'onMouseUp',
+                point: {
+                    inDocument: point.create(event.x, event.y),
+                    inCanvas: point.create(pointInCanvas),
+                    inView: point.create(pointInView)
+                },
                 now: new Date().toISOString()
             };
 
