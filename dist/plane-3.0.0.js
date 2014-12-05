@@ -1,5 +1,5 @@
 /*!
- * C37 in 05-12-2014 at 10:09:12 
+ * C37 in 05-12-2014 at 11:36:09 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3015,6 +3015,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
     function remove(param) {
         
+        // param null || undefined == return
+        if ((param == null) || (param == undefined)) return;
+        
         // param como string == uuid
         if (types.conversion.toType(param) == 'string') {
             return layer.active.children.remove(param);
@@ -3033,6 +3036,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     }
 
     function find(param) {
+
+        // param null || undefined == return
+        if ((param == null) || (param == undefined)) return;
 
         // param como string == uuid
         if (types.conversion.toType(param) == 'string') {
@@ -3108,13 +3114,13 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
         // usado para calcudo da posição do mouse
         viewPort = config.viewPort;
-        
+
         // usado para obter a matrix (transform) 
         view = config.view;
 
-        
-        function onKeyDown(event){
-            
+
+        function onKeyDown(event) {
+
             // customized event
             event = {
                 type: 'onKeyDown',
@@ -3130,7 +3136,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                     tools[t].events.notify('onKeyDown', event);
                 }
             }
-            
+
         }
 
         function onMouseDown(event) {
@@ -3199,20 +3205,27 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                     pointInView = view.transform.inverseTransform(pointInCanvas);
 
-                // http://paperjs.org/reference/toolevent/#point
-                event = {
-                    type: 'onMouseDrag',
-                    pointFirst: mouseDown,
-                    pointLast: point.create(pointInView),
-                    now: new Date().toISOString()
-                }
+                var pointFirst = mouseDown,
+                    pointLast = point.create(pointInView);
 
-                var tools = store.list(),
-                    t = tools.length;
-                while (t--) {
-                    if (tools[t].active) {
-                        tools[t].events.notify('onMouseDrag', event);
+                // os pontos de inicio e fim devem ser diferentes para o evento ser disparado
+                if ((pointFirst.x != pointLast.x) || (pointFirst.y != pointLast.y)) {
+
+                    event = {
+                        type: 'onMouseDrag',
+                        pointFirst: mouseDown,
+                        pointLast: point.create(pointInView),
+                        now: new Date().toISOString()
                     }
+
+                    var tools = store.list(),
+                        t = tools.length;
+                    while (t--) {
+                        if (tools[t].active) {
+                            tools[t].events.notify('onMouseDrag', event);
+                        }
+                    }
+                    
                 }
             }
         }

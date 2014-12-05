@@ -54,6 +54,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
     function remove(param) {
         
+        // param null || undefined == return
+        if ((param == null) || (param == undefined)) return;
+        
         // param como string == uuid
         if (types.conversion.toType(param) == 'string') {
             return layer.active.children.remove(param);
@@ -72,6 +75,9 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     }
 
     function find(param) {
+
+        // param null || undefined == return
+        if ((param == null) || (param == undefined)) return;
 
         // param como string == uuid
         if (types.conversion.toType(param) == 'string') {
