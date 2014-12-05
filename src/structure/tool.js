@@ -8,6 +8,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
     var viewPort = null,
         view = null,
+        // usado para calculo do evento onMouseDrag
         mouseDown = null;
 
 
@@ -21,12 +22,15 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 return this._active || false;
             },
             set: function (value) {
-                this.events.notify(value ? 'onActive' : 'onDeactive', {
-                    type: value ? 'onActive' : 'onDeactive',
-                    now: new Date().toISOString()
+                // só altero quando o estado é diferente, isso para não gerar eventos não desejados
+                if (this._active != value) {
+                    this.events.notify(value ? 'onActive' : 'onDeactive', {
+                        type: value ? 'onActive' : 'onDeactive',
+                        now: new Date().toISOString()
 
-                });
-                this._active = value;
+                    });
+                    this._active = value;
+                }
             }
         });
 
@@ -36,9 +40,32 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
     function initialize(config) {
 
+        // usado para calcudo da posição do mouse
         viewPort = config.viewPort;
+        
+        // usado para obter a matrix (transform) 
         view = config.view;
 
+        
+        function onKeyDown(event){
+            
+            // customized event
+            event = {
+                type: 'onKeyDown',
+                key: types.string.fromKeyPress(event.keyCode),
+                now: new Date().toISOString()
+            };
+
+            // propagação do evento para tools ativas
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onKeyDown', event);
+                }
+            }
+            
+        }
 
         function onMouseDown(event) {
 
@@ -179,6 +206,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         }
 
         // vinculando os eventos ao component html 
+        window.addEventListener('keydown', onKeyDown, false);
         viewPort.onmousedown = onMouseDown;
         viewPort.onmouseup = onMouseUp;
         viewPort.addEventListener('mousemove', onMouseDrag, false);

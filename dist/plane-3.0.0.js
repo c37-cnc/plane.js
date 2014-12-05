@@ -1,5 +1,5 @@
 /*!
- * C37 in 05-12-2014 at 07:47:54 
+ * C37 in 05-12-2014 at 09:49:23 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3071,6 +3071,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
     var viewPort = null,
         view = null,
+        // usado para calculo do evento onMouseDrag
         mouseDown = null;
 
 
@@ -3084,12 +3085,15 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 return this._active || false;
             },
             set: function (value) {
-                this.events.notify(value ? 'onActive' : 'onDeactive', {
-                    type: value ? 'onActive' : 'onDeactive',
-                    now: new Date().toISOString()
+                // só altero quando o estado é diferente, isso para não gerar eventos não desejados
+                if (this._active != value) {
+                    this.events.notify(value ? 'onActive' : 'onDeactive', {
+                        type: value ? 'onActive' : 'onDeactive',
+                        now: new Date().toISOString()
 
-                });
-                this._active = value;
+                    });
+                    this._active = value;
+                }
             }
         });
 
@@ -3099,9 +3103,32 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
     function initialize(config) {
 
+        // usado para calcudo da posição do mouse
         viewPort = config.viewPort;
+        
+        // usado para obter a matrix (transform) 
         view = config.view;
 
+        
+        function onKeyDown(event){
+            
+            // customized event
+            event = {
+                type: 'onKeyDown',
+                key: types.string.fromKeyPress(event.keyCode),
+                now: new Date().toISOString()
+            };
+
+            // propagação do evento para tools ativas
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onKeyDown', event);
+                }
+            }
+            
+        }
 
         function onMouseDown(event) {
 
@@ -3242,6 +3269,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         }
 
         // vinculando os eventos ao component html 
+        window.addEventListener('keydown', onKeyDown, false);
         viewPort.onmousedown = onMouseDown;
         viewPort.onmouseup = onMouseUp;
         viewPort.addEventListener('mousemove', onMouseDrag, false);
@@ -3586,6 +3614,105 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
         },
         contains: function () {
             return String.prototype.indexOf.apply(this, arguments) !== -1;
+        },
+        fromKeyPress: function (keyCode) {
+
+            var keys = {
+                '8': 'Backspace',
+                '9': 'Tab',
+
+                '13': 'Enter',
+                '16': 'Shift',
+                '17': 'Control',
+                '18': 'Alt',
+                '19': 'Pause/Break',
+
+                '20': 'CapsLock',
+                '27': 'Esc',
+
+                '32': 'Spacebar',
+                '33': 'PageUp',
+                '34': 'PageDown',
+                '35': 'End',
+                '36': 'Home',
+                '37': 'LeftArrow',
+                '38': 'UpArrow',
+                '39': 'RightArrow',
+
+                '40': 'DownArrow',
+                '45': 'Insert',
+                '46': 'Delete',
+                '48': '0',
+                '49': '1',
+
+                '50': '2',
+                '51': '3',
+                '52': '4',
+                '53': '5',
+                '54': '6',
+                '55': '7',
+                '56': '8',
+                '57': '9',
+
+                '65': 'A',
+                '66': 'B',
+                '67': 'C',
+                '68': 'D',
+                '69': 'E',
+
+                '70': 'F',
+                '71': 'G',
+                '72': 'H',
+                '73': 'I',
+                '74': 'J',
+                '75': 'K',
+                '76': 'L',
+                '77': 'M',
+                '78': 'N',
+                '79': 'O',
+
+                '80': 'P',
+                '81': 'Q',
+                '82': 'R',
+                '83': 'S',
+                '84': 'T',
+                '85': 'U',
+                '86': 'V',
+                '87': 'W',
+                '88': 'X',
+                '89': 'Y',
+
+                '90': 'Z',
+
+                '112': 'F1',
+                '113': 'F2',
+                '114': 'F3',
+                '115': 'F4',
+                '116': 'F5',
+                '117': 'F6',
+                '118': 'F7',
+                '119': 'F8',
+
+                '120': 'F9',
+                '121': 'F10',
+                '122': 'F11',
+                '123': 'F12',
+                '124': 'F13',
+
+                '144': 'NumLock',
+                '145': 'ScrollLock',
+
+                '186': ';:',
+                '187': '+=',
+                '189': '-_',
+
+                '191': '/?',
+                '192': '`~',
+
+
+            };
+
+            return keys[keyCode];
         }
 
     }
