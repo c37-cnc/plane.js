@@ -61,10 +61,10 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
         },
         intersect: function (rectangle) {
 
-            var tl = point.create(rectangle.x, rectangle.y + rectangle.height),
-                tr = point.create(rectangle.x + rectangle.width, rectangle.y + rectangle.height),
-                bl = point.create(rectangle.x, rectangle.y),
-                br = point.create(rectangle.x + rectangle.width, rectangle.y);
+            var tl = point.create(rectangle.from.x, rectangle.to.y), // top left
+                tr = point.create(rectangle.to.x, rectangle.to.y), // top right
+                bl = point.create(rectangle.from.x, rectangle.from.y), // bottom left
+                br = point.create(rectangle.to.x, rectangle.from.y); // bottom right
 
             return intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
 

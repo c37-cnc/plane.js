@@ -1,5 +1,5 @@
 /*!
- * C37 in 05-12-2014 at 11:48:36 
+ * C37 in 05-12-2014 at 12:10:21 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -2151,10 +2151,10 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
         },
         intersect: function (rectangle) {
 
-            var tl = point.create(rectangle.x, rectangle.y + rectangle.height),
-                tr = point.create(rectangle.x + rectangle.width, rectangle.y + rectangle.height),
-                bl = point.create(rectangle.x, rectangle.y),
-                br = point.create(rectangle.x + rectangle.width, rectangle.y);
+            var tl = point.create(rectangle.from.x, rectangle.to.y), // top left
+                tr = point.create(rectangle.to.x, rectangle.to.y), // top right
+                bl = point.create(rectangle.from.x, rectangle.from.y), // bottom left
+                br = point.create(rectangle.to.x, rectangle.from.y); // bottom right
 
             return intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
 
