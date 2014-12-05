@@ -49,7 +49,11 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     }
 
     function update(shape) {
-        return layer.active.children.update(shape.uuid, shape);
+        
+        remove(shape);
+        create(shape);
+        
+        return true;
     }
 
     function remove(param) {

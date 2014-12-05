@@ -1,5 +1,5 @@
 /*!
- * C37 in 05-12-2014 at 14:06:36 
+ * C37 in 05-12-2014 at 20:16:54 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3007,7 +3007,11 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     }
 
     function update(shape) {
-        return layer.active.children.update(shape.uuid, shape);
+        
+        remove(shape);
+        create(shape);
+        
+        return true;
     }
 
     function remove(param) {
