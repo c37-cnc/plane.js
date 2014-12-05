@@ -60,7 +60,7 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
         store.add(layer.uuid, layer);
 
         // colocando nova layer como selecionada
-        this.active = layer.uuid;
+        _active = layer;
 
         return this;
     }
@@ -96,24 +96,27 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
         },
         set: function (uuid) {
 
-            // não propagar eventos quando realizar mudanças para Layer do sistema
-            if ((_active) && (_active.status != 'system') && (store.find(uuid)) && store.find(uuid).status != 'system') {
-                this.events.notify('onDeactive', {
-                    type: 'onDeactive',
-                    layer: _active
-                });
+            // só altero a layer quando é diferente, isso para não gerar eventos não desejados
+            if (_active.uuid != uuid) {
+                // não propagar eventos quando realizar mudanças para Layer do sistema
+                if ((_active) && (_active.status != 'system') && (store.find(uuid)) && store.find(uuid).status != 'system') {
+                    this.events.notify('onDeactive', {
+                        type: 'onDeactive',
+                        layer: _active
+                    });
+                }
+
+                _active = store.find(uuid);
+
+                // não propagar eventos quando realizar mudanças para Layer do sistema
+                if ((_active) && (_active.status != 'system') && (store.find(uuid)) && store.find(uuid).status != 'system') {
+                    this.events.notify('onActive', {
+                        type: 'onActive',
+                        layer: _active
+                    });
+                }
             }
-
-            _active = store.find(uuid);
-
-            // não propagar eventos quando realizar mudanças para Layer do sistema
-            if ((_active) && (_active.status != 'system') && (store.find(uuid)) && store.find(uuid).status != 'system') {
-                this.events.notify('onActive', {
-                    type: 'onActive',
-                    layer: _active
-                });
-            }
-
+            
         }
     });
 
