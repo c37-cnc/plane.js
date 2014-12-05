@@ -76,7 +76,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             mouseDown = null;
-            
+
             // customized event
             event = {
                 type: 'onMouseUp',
@@ -129,7 +129,8 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
-            pointInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y);
+            // 2014.12.05 - lilo - cópia de código errado - VERIFICAR!
+            // pointInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y);
 
             // customized event
             event = {
