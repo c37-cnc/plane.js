@@ -1,5 +1,5 @@
 /*!
- * C37 in 05-12-2014 at 11:36:09 
+ * C37 in 05-12-2014 at 11:48:36 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -2151,15 +2151,12 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
         },
         intersect: function (rectangle) {
 
-            if (this.status != 'temporary') {
-                var tl = point.create(rectangle.x, rectangle.y + rectangle.height),
-                    tr = point.create(rectangle.x + rectangle.width, rectangle.y + rectangle.height),
-                    bl = point.create(rectangle.x, rectangle.y),
-                    br = point.create(rectangle.x + rectangle.width, rectangle.y);
+            var tl = point.create(rectangle.x, rectangle.y + rectangle.height),
+                tr = point.create(rectangle.x + rectangle.width, rectangle.y + rectangle.height),
+                bl = point.create(rectangle.x, rectangle.y),
+                br = point.create(rectangle.x + rectangle.width, rectangle.y);
 
-                return intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
-            }
-            return false;
+            return intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
 
         },
         render: function (context, transform) {
@@ -2168,7 +2165,7 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
             if (this.style) {
                 context.save();
 
-                if (this.style.lineDash){
+                if (this.style.lineDash) {
                     context.setLineDash([5, 2]);
                 }
                 context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
