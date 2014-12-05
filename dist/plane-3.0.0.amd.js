@@ -1,5 +1,5 @@
 /*!
- * C37 in 04-12-2014 at 12:54:56 
+ * C37 in 05-12-2014 at 07:47:54 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -2932,8 +2932,6 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     };
 
 
-
-
     function create(attrs) {
         // verificação para a chamada da função
         if ((typeof attrs == "function") || (attrs == null)) {
@@ -2956,25 +2954,64 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
         // adicionando o novo shape na layer ativa
         layer.active.children.add(shape.uuid, shape);
-        
+
         return shape;
     }
 
+    function update(shape) {
+        return layer.active.children.find(shape.uuid) = shape;
+    }
 
-    function remove(uuid) {}
+    function remove(param) {
+        
+        // param como string == uuid
+        if (types.conversion.toType(param) == 'string') {
+            return layer.active.children.remove(param);
+        }
 
-    function list() {}
+        // param como object == shape
+        if (types.conversion.toType(param) == 'object') {
+            return layer.active.children.remove(param.uuid);
+        }
 
-    function find(uuid) {}
+        throw new Error('Shape - remove - param is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+    }
+
+    function list() {
+        return layer.active.children.list();
+    }
+
+    function find(param) {
+
+        // param como string == uuid
+        if (types.conversion.toType(param) == 'string') {
+            return layer.active.children.find(param);
+        }
+
+        // param como object == shape
+        if (types.conversion.toType(param) == 'object') {
+            return layer.active.children.find(param.uuid);
+        }
+
+        throw new Error('Shape - find - param is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+    }
+
+    function search(query) {
+        return '';
+    }
+
+
 
 
 
 
 
     exports.create = create;
+    exports.update = update;
     exports.remove = remove;
     exports.list = list;
     exports.find = find;
+    exports.search = search;
 });
 define("plane/structure/tool", ['require', 'exports'], function (require, exports) {
 
@@ -3054,7 +3091,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             mouseDown = null;
-            
+
             // customized event
             event = {
                 type: 'onMouseUp',
@@ -3107,7 +3144,8 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
-            pointInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y);
+            // 2014.12.05 - lilo - cópia de código errado - VERIFICAR!
+            // pointInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y);
 
             // customized event
             event = {
