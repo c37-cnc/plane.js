@@ -1,5 +1,5 @@
 /*!
- * C37 in 05-12-2014 at 12:10:21 
+ * C37 in 05-12-2014 at 14:06:36 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3007,7 +3007,7 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
     }
 
     function update(shape) {
-        return layer.active.children.find(shape.uuid) = shape;
+        return layer.active.children.update(shape.uuid, shape);
     }
 
     function remove(param) {
@@ -3772,7 +3772,10 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
 
             Dictionary.prototype = {
                 add: function (key, value) {
-                    this.store[key] = value;
+                    return this.store[key] = value;
+                },
+                update: function (key, value) {
+                    return this.store[key] = value;
                 },
                 find: function (key) {
                     return this.store[key];

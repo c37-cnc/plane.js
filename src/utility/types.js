@@ -206,7 +206,10 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
 
             Dictionary.prototype = {
                 add: function (key, value) {
-                    this.store[key] = value;
+                    return this.store[key] = value;
+                },
+                update: function (key, value) {
+                    return this.store[key] = value;
                 },
                 find: function (key) {
                     return this.store[key];
