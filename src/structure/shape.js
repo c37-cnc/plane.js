@@ -48,7 +48,10 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         return shape;
     }
 
+    
     function update(shape) {
+    
+        // neste momento realizo a exclução para inicializar o shape de forma correta
         
         remove(shape);
         create(shape);
