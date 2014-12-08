@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-12-2014 at 05:22:59 
+ * C37 in 08-12-2014 at 15:38:47 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3173,6 +3173,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
         function onKeyDown(event) {
 
+            // se backspace desabilito o evento default 'retornar para a pagina anterior'
+            if (event.keyCode == 8){
+                event.preventDefault();
+            }
+            
             // customized event
             event = {
                 type: 'onKeyDown',
