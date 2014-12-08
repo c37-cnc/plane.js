@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-12-2014 at 01:16:28 
+ * C37 in 08-12-2014 at 01:36:28 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -2947,6 +2947,9 @@ define("plane/structure/point", ['require', 'exports'], function (require, expor
         maximum: function (point) {
             return new Point(Math.max(this.x, point.x), Math.max(this.y, point.y));
         },
+        equals: function(point){
+            return (this.x == point.x) && (this.y == point.y);
+        }
     };
 
     function create() {

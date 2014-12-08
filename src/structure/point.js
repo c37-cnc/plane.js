@@ -44,6 +44,9 @@ define("plane/structure/point", ['require', 'exports'], function (require, expor
         maximum: function (point) {
             return new Point(Math.max(this.x, point.x), Math.max(this.y, point.y));
         },
+        equals: function(point){
+            return (this.x == point.x) && (this.y == point.y);
+        }
     };
 
     function create() {
