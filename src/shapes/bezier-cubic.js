@@ -102,8 +102,10 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
         attrs.points[2] = point.create(attrs.points[2]);
         attrs.points[3] = point.create(attrs.points[3]);
 
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
 
-        // 4 - criando um novo shape do tipo arco
+        // 5 - criando um novo shape do tipo arco
         return new BezierCubic(attrs);
     };
 

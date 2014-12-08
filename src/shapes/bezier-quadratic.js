@@ -100,8 +100,10 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
         attrs.points[1] = point.create(attrs.points[1]);
         attrs.points[2] = point.create(attrs.points[2]);
 
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
 
-        // 4 - criando um novo shape do tipo arco
+        // 5 - criando um novo shape do tipo arco
         return new BezierQuadratic(attrs);
     };
 

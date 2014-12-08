@@ -77,7 +77,10 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
         attrs.from = point.create(attrs.from);
         attrs.to = point.create(attrs.to);
 
-        // 4 - criando um novo shape do tipo arco
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
         return new Line(attrs);
     };
 

@@ -120,7 +120,10 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
         // 3 - conversões dos atributos
         attrs.center = point.create(attrs.center);
 
-        // 4 - criando um novo shape do tipo arco
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
         return new Ellipse(attrs);
     };
 

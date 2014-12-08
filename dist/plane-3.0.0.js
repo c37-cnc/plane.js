@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-12-2014 at 02:27:55 
+ * C37 in 08-12-2014 at 05:22:59 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1553,8 +1553,11 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
         // 3 - conversões dos atributos
         attrs.center = point.create(attrs.center);
+        
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
 
-        // 4 - criando um novo shape do tipo arco
+        // 5 - criando um novo shape do tipo arco
         return new Arc(attrs);
     };
 
@@ -1665,8 +1668,10 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
         attrs.points[2] = point.create(attrs.points[2]);
         attrs.points[3] = point.create(attrs.points[3]);
 
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
 
-        // 4 - criando um novo shape do tipo arco
+        // 5 - criando um novo shape do tipo arco
         return new BezierCubic(attrs);
     };
 
@@ -1775,8 +1780,10 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
         attrs.points[1] = point.create(attrs.points[1]);
         attrs.points[2] = point.create(attrs.points[2]);
 
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
 
-        // 4 - criando um novo shape do tipo arco
+        // 5 - criando um novo shape do tipo arco
         return new BezierQuadratic(attrs);
     };
 
@@ -1876,7 +1883,10 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
         // 3 - conversões dos atributos
         attrs.center = point.create(attrs.center);
 
-        // 4 - criando um novo shape do tipo arco
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
         return new Circle(attrs);
     };
 
@@ -2005,7 +2015,10 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
         // 3 - conversões dos atributos
         attrs.center = point.create(attrs.center);
 
-        // 4 - criando um novo shape do tipo arco
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
         return new Ellipse(attrs);
     };
 
@@ -2091,7 +2104,10 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
         attrs.from = point.create(attrs.from);
         attrs.to = point.create(attrs.to);
 
-        // 4 - criando um novo shape do tipo arco
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
         return new Line(attrs);
     };
 
@@ -2322,7 +2338,10 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
         // 3 - conversões dos atributos
         attrs.center = point.create(attrs.center);
 
-        // 4 - criando um novo shape do tipo arco
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
         return new Polygon(attrs);
     };
 
@@ -2400,7 +2419,10 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
             return point.create(item);
         });
 
-        // 4 - criando um novo shape do tipo arco
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
         return new Polyline(attrs);
     };
 
@@ -2496,7 +2518,10 @@ define("plane/shapes/rectangle", ['require', 'exports'], function (require, expo
         attrs.from = point.create(attrs.from);
         attrs.to = point.create(attrs.to);
 
-        // 4 - criando um novo shape do tipo arco
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
         return new Rectangle(attrs);
     };
 
@@ -2734,7 +2759,10 @@ define("plane/shapes/spline", ['require', 'exports'], function (require, exports
             return point.create(item);
         });
 
-        // 4 - criando um novo shape do tipo arco
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
         return new Spline(attrs);
     };
 
@@ -3237,12 +3265,13 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                     pointLast = point.create(pointInView);
 
                 // os pontos de inicio e fim devem ser diferentes para o evento ser disparado
-                if ((pointFirst.x != pointLast.x) || (pointFirst.y != pointLast.y)) {
+//                if ((pointFirst.x != pointLast.x) || (pointFirst.y != pointLast.y)) {
+                if (!pointFirst.equals(pointLast)) {
 
                     event = {
                         type: 'onMouseDrag',
-                        pointFirst: mouseDown,
-                        pointLast: point.create(pointInView),
+                        pointFirst: pointFirst,
+                        pointLast: pointLast,
                         now: new Date().toISOString()
                     }
 

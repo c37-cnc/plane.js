@@ -141,12 +141,13 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                     pointLast = point.create(pointInView);
 
                 // os pontos de inicio e fim devem ser diferentes para o evento ser disparado
-                if ((pointFirst.x != pointLast.x) || (pointFirst.y != pointLast.y)) {
+//                if ((pointFirst.x != pointLast.x) || (pointFirst.y != pointLast.y)) {
+                if (!pointFirst.equals(pointLast)) {
 
                     event = {
                         type: 'onMouseDrag',
-                        pointFirst: mouseDown,
-                        pointLast: point.create(pointInView),
+                        pointFirst: pointFirst,
+                        pointLast: pointLast,
                         now: new Date().toISOString()
                     }
 

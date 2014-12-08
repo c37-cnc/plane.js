@@ -103,8 +103,11 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
         // 3 - conversões dos atributos
         attrs.center = point.create(attrs.center);
+        
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
 
-        // 4 - criando um novo shape do tipo arco
+        // 5 - criando um novo shape do tipo arco
         return new Arc(attrs);
     };
 
