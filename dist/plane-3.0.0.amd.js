@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-12-2014 at 01:36:28 
+ * C37 in 08-12-2014 at 02:27:55 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -2130,6 +2130,11 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
                 if (this.style.lineDash) {
                     context.setLineDash([5, 2]);
                 }
+                if (this.style.fillColor){
+                    context.fillStyle = this.style.fillColor;
+                    context.strokeStyle = this.style.fillColor;
+                }
+                
                 context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
                 context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
@@ -2155,10 +2160,12 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
 
 
             // possivel personalização
+            if (this.style && this.style.fillColor) {
+                context.fill();
+            }
             if (this.style) {
                 context.restore();
             }
-
 
         },
         toObject: function () {

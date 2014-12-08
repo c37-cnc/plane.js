@@ -78,6 +78,11 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
                 if (this.style.lineDash) {
                     context.setLineDash([5, 2]);
                 }
+                if (this.style.fillColor){
+                    context.fillStyle = this.style.fillColor;
+                    context.strokeStyle = this.style.fillColor;
+                }
+                
                 context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
                 context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
@@ -103,10 +108,12 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
 
 
             // possivel personalização
+            if (this.style && this.style.fillColor) {
+                context.fill();
+            }
             if (this.style) {
                 context.restore();
             }
-
 
         },
         toObject: function () {
