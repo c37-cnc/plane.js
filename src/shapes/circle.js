@@ -64,6 +64,16 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
         return true;
 
     }
+    
+    Circle.prototype.isInside = function (point) {
+        
+        var distanceX = point.x - this.center.x,
+            distanceY = point.y - this.center.y;
+        
+        return ((distanceX * distanceX) + (distanceY * distanceY)) <= (this.radius * this.radius);
+        
+    }
+    
 
 
     function create(attrs) {

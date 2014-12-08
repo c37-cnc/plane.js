@@ -167,6 +167,7 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
     var graphic = {
 
         mousePosition: function (element, x, y) {
+
             var bb = element.getBoundingClientRect();
 
             x = (x - bb.left) * (element.clientWidth / bb.width);
@@ -174,7 +175,7 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
 
             // tradução para o sistema de coordenadas cartesiano
             y = (y - element.clientHeight) * -1;
-            // ATENÇÃO - quando context.transform() a inversão não é feita
+            // Y - INVERTIDO
 
             return {
                 x: x,
@@ -182,17 +183,18 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
             };
         },
 
-        canvasPosition: function (element, x, y) {
-            var bb = element.getBoundingClientRect();
-
-            x = (x - bb.left) * (element.clientWidth / bb.width);
-            y = (y - bb.top) * (element.clientHeight / bb.height);
-
-            return {
-                x: x,
-                y: y
-            };
-        }
+        //        ATENÇÃO - quando context.transform() a inversão não é feita
+        //        canvasPosition: function (element, x, y) {
+        //            var bb = element.getBoundingClientRect();
+        //
+        //            x = (x - bb.left) * (element.clientWidth / bb.width);
+        //            y = (y - bb.top) * (element.clientHeight / bb.height);
+        //
+        //            return {
+        //                x: x,
+        //                y: y
+        //            };
+        //        }
 
     }
 

@@ -73,14 +73,17 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // dizendo que o mouse preenche o evento down
-            mouseDown = point.create(pointInView);
+            mouseDown = pointInView;
 
             // customized event
             event = {
                 type: 'onMouseDown',
                 point: {
+                    // o ponto do mouse dentro do html document
                     inDocument: point.create(event.x, event.y),
+                    // o ponto do mouse dentro do componente html canvas
                     inCanvas: point.create(pointInCanvas),
+                    // o ponto do mouse dentro de plane.view
                     inView: point.create(pointInView)
                 },
                 now: new Date().toISOString()
@@ -102,6 +105,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
+            // limpo está variável que é o controle para disparar o evento onMouseDrag
             mouseDown = null;
 
             // customized event
@@ -133,7 +137,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                     pointInView = view.transform.inverseTransform(pointInCanvas);
 
-                var pointFirst = mouseDown,
+                var pointFirst = point.create(mouseDown),
                     pointLast = point.create(pointInView);
 
                 // os pontos de inicio e fim devem ser diferentes para o evento ser disparado

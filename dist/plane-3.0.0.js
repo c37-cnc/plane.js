@@ -1,5 +1,5 @@
 /*!
- * C37 in 05-12-2014 at 20:16:54 
+ * C37 in 08-12-2014 at 01:16:28 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -1849,6 +1849,16 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
         return true;
 
     }
+    
+    Circle.prototype.isInside = function (point) {
+        
+        var distanceX = point.x - this.center.x,
+            distanceY = point.y - this.center.y;
+        
+        return ((distanceX * distanceX) + (distanceY * distanceY)) <= (this.radius * this.radius);
+        
+    }
+    
 
 
     function create(attrs) {
@@ -3006,7 +3016,10 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         return shape;
     }
 
+    
     function update(shape) {
+    
+        // neste momento realizo a exclução para inicializar o shape de forma correta
         
         remove(shape);
         create(shape);
@@ -3146,14 +3159,17 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // dizendo que o mouse preenche o evento down
-            mouseDown = point.create(pointInView);
+            mouseDown = pointInView;
 
             // customized event
             event = {
                 type: 'onMouseDown',
                 point: {
+                    // o ponto do mouse dentro do html document
                     inDocument: point.create(event.x, event.y),
+                    // o ponto do mouse dentro do componente html canvas
                     inCanvas: point.create(pointInCanvas),
+                    // o ponto do mouse dentro de plane.view
                     inView: point.create(pointInView)
                 },
                 now: new Date().toISOString()
@@ -3175,6 +3191,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
+            // limpo está variável que é o controle para disparar o evento onMouseDrag
             mouseDown = null;
 
             // customized event
@@ -3206,7 +3223,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
                     pointInView = view.transform.inverseTransform(pointInCanvas);
 
-                var pointFirst = mouseDown,
+                var pointFirst = point.create(mouseDown),
                     pointLast = point.create(pointInView);
 
                 // os pontos de inicio e fim devem ser diferentes para o evento ser disparado
@@ -3737,6 +3754,7 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
     var graphic = {
 
         mousePosition: function (element, x, y) {
+
             var bb = element.getBoundingClientRect();
 
             x = (x - bb.left) * (element.clientWidth / bb.width);
@@ -3744,7 +3762,7 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
 
             // tradução para o sistema de coordenadas cartesiano
             y = (y - element.clientHeight) * -1;
-            // ATENÇÃO - quando context.transform() a inversão não é feita
+            // Y - INVERTIDO
 
             return {
                 x: x,
@@ -3752,17 +3770,18 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
             };
         },
 
-        canvasPosition: function (element, x, y) {
-            var bb = element.getBoundingClientRect();
-
-            x = (x - bb.left) * (element.clientWidth / bb.width);
-            y = (y - bb.top) * (element.clientHeight / bb.height);
-
-            return {
-                x: x,
-                y: y
-            };
-        }
+        //        ATENÇÃO - quando context.transform() a inversão não é feita
+        //        canvasPosition: function (element, x, y) {
+        //            var bb = element.getBoundingClientRect();
+        //
+        //            x = (x - bb.left) * (element.clientWidth / bb.width);
+        //            y = (y - bb.top) * (element.clientHeight / bb.height);
+        //
+        //            return {
+        //                x: x,
+        //                y: y
+        //            };
+        //        }
 
     }
 
