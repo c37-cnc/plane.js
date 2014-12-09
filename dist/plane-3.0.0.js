@@ -1,5 +1,5 @@
 /*!
- * C37 in 09-12-2014 at 02:53:59 
+ * C37 in 09-12-2014 at 04:55:27 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3210,6 +3210,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             // customized event
             event = {
                 type: 'onMouseDown',
+                target: event.target,
                 point: {
                     // o ponto do mouse dentro do html document
                     inDocument: point.create(event.x, event.y),

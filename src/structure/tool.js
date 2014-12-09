@@ -86,6 +86,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             // customized event
             event = {
                 type: 'onMouseDown',
+                target: event.target,
                 point: {
                     // o ponto do mouse dentro do html document
                     inDocument: point.create(event.x, event.y),
