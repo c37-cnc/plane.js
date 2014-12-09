@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-12-2014 at 15:38:47 
+ * C37 in 09-12-2014 at 02:53:59 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3126,13 +3126,16 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         function onKeyDown(event) {
 
             // se backspace desabilito o evento default 'retornar para a pagina anterior'
-            if (event.keyCode == 8){
+            if (event.keyCode == 8) {
                 event.preventDefault();
             }
-            
+
             // customized event
             event = {
                 type: 'onKeyDown',
+                altKey: event.altKey,
+                ctrlKey: event.ctrlKey,
+                shiftKey: event.shiftKey,
                 key: types.string.fromKeyPress(event.keyCode),
                 now: new Date().toISOString()
             };
@@ -3222,7 +3225,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                     pointLast = point.create(pointInView);
 
                 // os pontos de inicio e fim devem ser diferentes para o evento ser disparado
-//                if ((pointFirst.x != pointLast.x) || (pointFirst.y != pointLast.y)) {
+                //                if ((pointFirst.x != pointLast.x) || (pointFirst.y != pointLast.y)) {
                 if (!pointFirst.equals(pointLast)) {
 
                     event = {
@@ -3239,7 +3242,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                             tools[t].events.notify('onMouseDrag', event);
                         }
                     }
-                    
+
                 }
             }
         }

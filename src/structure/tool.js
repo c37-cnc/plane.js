@@ -50,13 +50,16 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
         function onKeyDown(event) {
 
             // se backspace desabilito o evento default 'retornar para a pagina anterior'
-            if (event.keyCode == 8){
+            if (event.keyCode == 8) {
                 event.preventDefault();
             }
-            
+
             // customized event
             event = {
                 type: 'onKeyDown',
+                altKey: event.altKey,
+                ctrlKey: event.ctrlKey,
+                shiftKey: event.shiftKey,
                 key: types.string.fromKeyPress(event.keyCode),
                 now: new Date().toISOString()
             };
@@ -146,7 +149,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                     pointLast = point.create(pointInView);
 
                 // os pontos de inicio e fim devem ser diferentes para o evento ser disparado
-//                if ((pointFirst.x != pointLast.x) || (pointFirst.y != pointLast.y)) {
+                //                if ((pointFirst.x != pointLast.x) || (pointFirst.y != pointLast.y)) {
                 if (!pointFirst.equals(pointLast)) {
 
                     event = {
@@ -163,7 +166,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                             tools[t].events.notify('onMouseDrag', event);
                         }
                     }
-                    
+
                 }
             }
         }
