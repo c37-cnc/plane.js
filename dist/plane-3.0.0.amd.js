@@ -1,5 +1,5 @@
 /*!
- * C37 in 09-12-2014 at 04:55:27 
+ * C37 in 10-12-2014 at 09:15:30 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3231,8 +3231,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
                     event = {
                         type: 'onMouseDrag',
-                        pointFirst: pointFirst,
-                        pointLast: pointLast,
+                        point: {
+                            inDocument: point.create(event.x, event.y),
+                            first: pointFirst,
+                            last: pointLast,
+                        },
                         now: new Date().toISOString()
                     }
 

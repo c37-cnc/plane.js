@@ -155,8 +155,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
                     event = {
                         type: 'onMouseDrag',
-                        pointFirst: pointFirst,
-                        pointLast: pointLast,
+                        point: {
+                            inDocument: point.create(event.x, event.y),
+                            first: pointFirst,
+                            last: pointLast,
+                        },
                         now: new Date().toISOString()
                     }
 
