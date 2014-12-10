@@ -1,5 +1,5 @@
 /*!
- * C37 in 10-12-2014 at 09:15:30 
+ * C37 in 10-12-2014 at 09:28:19 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3233,6 +3233,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                         type: 'onMouseDrag',
                         point: {
                             inDocument: point.create(event.x, event.y),
+                            inCanvas: point.create(pointInCanvas),
                             first: pointFirst,
                             last: pointLast,
                         },

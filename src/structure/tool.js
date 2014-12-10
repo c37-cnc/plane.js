@@ -157,6 +157,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                         type: 'onMouseDrag',
                         point: {
                             inDocument: point.create(event.x, event.y),
+                            inCanvas: point.create(pointInCanvas),
                             first: pointFirst,
                             last: pointLast,
                         },
