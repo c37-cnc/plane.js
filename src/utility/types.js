@@ -341,6 +341,7 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
     var object = {
         inherits: function (f, p) {
             f.prototype = new p();
+            f.constructor = f;
             return f;
         },
         /*
