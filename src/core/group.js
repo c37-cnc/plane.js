@@ -1,4 +1,4 @@
-define("plane/structure/group", ['require', 'exports'], function (require, exports) {
+define("plane/core/group", ['require', 'exports'], function (require, exports) {
 
     function Group() {};
 

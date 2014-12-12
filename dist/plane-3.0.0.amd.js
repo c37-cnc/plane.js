@@ -1,11 +1,891 @@
 /*!
- * C37 in 10-12-2014 at 09:28:19 
+ * C37 in 12-12-2014 at 09:53:19 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
  *
- * Copyright - C37 http://c37.co - 2014
+ * Copyright - C37 - http://c37.co - 2014
  */
+define("plane/core/group", ['require', 'exports'], function (require, exports) {
+
+    function Group() {};
+
+    Group.prototype = {
+        initialize: function (attrs) {
+
+            return true;
+        },
+        contains: function (position, transform) {
+
+            return false;
+        },
+        intersect: function (rectangle) {
+
+            return true;
+        },
+        toObject: function () {
+
+            return true;
+        }
+        
+    };
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações dos atributos 
+        // 2 - crio um novo group
+
+        return new Group();
+    };
+
+    exports.create = create;
+
+});
+define("plane/core/layer", ['require', 'exports'], function (require, exports) {
+
+    var types = require('utility');
+
+    var store = types.data.dictionary.create();
+
+    var _active = null;
+
+
+    function Layer(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.status = attrs.status;
+        this.style = attrs.style;
+        this.children = attrs.children;
+        this.events = attrs.events;
+    };
+
+    Layer.prototype.toObject = function () {
+        return {
+            uuid: this.uuid,
+            name: this.name,
+            status: this.status,
+            style: this.style,
+            children: this.children.list().map(function (shape) {
+                return shape.toObject();
+            })
+        };
+    }
+
+
+
+    function create(attrs) {
+        if ((typeof attrs == "function")) {
+            throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        var uuid = types.math.uuid(9, 16);
+
+        // parametros para a nova Layer
+        attrs = types.object.merge({
+            uuid: uuid,
+            name: 'Layer '.concat(uuid),
+            style: {
+                lineCap: 'butt',
+                lineJoin: 'miter',
+                lineWidth: .7,
+                lineColor: 'rgb(0, 0, 0)',
+            },
+            status: 'visible',
+            children: types.data.dictionary.create(),
+            events: types.object.event.create()
+        }, attrs);
+        // parametros para a nova Layer
+
+        // nova Layer
+        var layer = new Layer(attrs);
+
+        // armazenando 
+        store.add(layer.uuid, layer);
+
+        // colocando nova layer como selecionada
+        _active = layer;
+
+        return this;
+    }
+
+    function list() {
+        return store.list();
+    }
+
+    function find(uuid) {
+        return store.find(uuid);
+    }
+
+    function remove(uuid) {
+        if (uuid) {
+            return store.remove(uuid);
+        } else {
+            store.list().forEach(function (layer) {
+                if (layer.status != 'system') {
+                    store.remove(layer.uuid);
+                }
+            });
+            return true;
+        }
+        //        return uuid ? store.remove(uuid) : store.clear();
+    }
+
+
+
+    Object.defineProperty(exports, 'active', {
+        get: function () {
+            return _active;
+
+        },
+        set: function (value) {
+
+
+            
+
+
+            
+            
+            
+
+            throw new Error('Layer - active - parameter is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+
+
+
+            // só altero a layer quando é diferente, isso para não gerar eventos não desejados
+            if (_active.uuid != uuid) {
+                // não propagar eventos quando realizar mudanças para Layer do sistema
+                if ((_active) && (_active.status != 'system') && (store.find(uuid)) && store.find(uuid).status != 'system') {
+                    this.events.notify('onDeactive', {
+                        type: 'onDeactive',
+                        layer: _active
+                    });
+                }
+
+                _active = store.find(uuid);
+
+                // não propagar eventos quando realizar mudanças para Layer do sistema
+                if ((_active) && (_active.status != 'system') && (store.find(uuid)) && store.find(uuid).status != 'system') {
+                    this.events.notify('onActive', {
+                        type: 'onActive',
+                        layer: _active
+                    });
+                }
+            }
+
+        }
+    });
+
+
+    exports.events = types.object.event.create();
+    exports.create = create;
+    exports.list = list;
+    exports.find = find;
+    exports.remove = remove;
+});
+define("plane/core/point", ['require', 'exports'], function (require, exports) {
+
+    var types = require('utility');
+
+    function Point(x, y) {
+        this.x = x;
+        this.y = y;
+    };
+
+    Point.prototype = {
+        sum: function (point) {
+            return new Point(this.x + point.x, this.y + point.y);
+        },
+        subtract: function (point) {
+            return new Point(this.x - point.x, this.y - point.y);
+        },
+        negate: function () {
+            return new Point(-this.x, -this.y);
+        },
+        multiply: function (value) {
+            return new Point(this.x * value, this.y * value);
+        },
+        distanceTo: function (point) {
+            var dx = this.x - point.x;
+            var dy = this.y - point.y;
+
+            return Math.sqrt(dx * dx + dy * dy);
+        },
+        midTo: function (point) {
+            return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
+        },
+        angleTo: function (point) {
+            return Math.atan2(point.y - this.y, point.x - this.x);
+        },
+        interpolationLinear: function (point, value) {
+            return new Point(
+                this.x + (point.x - this.x) * value,
+                this.y + (point.y - this.y) * value
+            );
+        },
+        minimum: function (point) {
+            return new Point(Math.min(this.x, point.x), Math.min(this.y, point.y));
+        },
+        maximum: function (point) {
+            return new Point(Math.max(this.x, point.x), Math.max(this.y, point.y));
+        },
+        equals: function(point){
+            return (this.x == point.x) && (this.y == point.y);
+        }
+    };
+
+    function create() {
+
+        if (arguments.length == 2 && (arguments[0] != null && arguments[1] != null)) {
+            return new Point(arguments[0], arguments[1]);
+        } else if (arguments.length == 1 && (types.conversion.toType(arguments[0]) == 'object') && (arguments[0].x != null && arguments[0].y != null)) {
+            return new Point(arguments[0].x, arguments[0].y);
+        } else if (arguments.length == 1 && (types.conversion.toType(arguments[0]) == 'array') && (arguments[0].length == 2)) {
+            return new Point(arguments[0][0], arguments[0][1]);
+        }
+
+        throw new Error('Point - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+
+    };
+
+    exports.create = create;
+
+});
+define("plane/core/shape", ['require', 'exports'], function (require, exports) {
+
+    var types = require('utility');
+
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
+
+    var point = require('plane/core/point'),
+        layer = require('plane/core/layer');
+
+    var shapeType = {
+        'arc': require('plane/object/arc'),
+        'bezier-cubic': require('plane/object/bezier-cubic'),
+        'bezier-quadratic': require('plane/object/bezier-quadratic'),
+        'circle': require('plane/object/circle'),
+        'ellipse': require('plane/object/ellipse'),
+        'line': require('plane/object/line'),
+        'polygon': require('plane/object/polygon'),
+        'polyline': require('plane/object/polyline'),
+        'rectangle': require('plane/object/rectangle'),
+        'spline': require('plane/object/spline')
+    };
+
+
+    function create(attrs) {
+        // verificação para a chamada da função
+        if ((typeof attrs == "function") || (attrs == null)) {
+            throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // verifição para o tipo de shape
+        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier-cubic', 'bezier-quadratic', 'spline'].indexOf(attrs.type) == -1) {
+            throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+
+        // atributos 
+        attrs = types.object.merge({
+            uuid: types.math.uuid(9, 16),
+        }, attrs);
+
+        // criando pelo type
+        var shape = shapeType[attrs.type].create(attrs);;
+
+        // adicionando o novo shape na layer ativa
+        layer.active.children.add(shape.uuid, shape);
+
+        return shape;
+    }
+
+    
+    function update(shape) {
+    
+        // neste momento realizo a exclução para inicializar o shape de forma correta
+        
+        remove(shape);
+        create(shape);
+        
+        return true;
+    }
+
+    function remove(param) {
+        
+        // param null || undefined == return
+        if ((param == null) || (param == undefined)) return;
+        
+        // param como string == uuid
+        if (types.conversion.toType(param) == 'string') {
+            return layer.active.children.remove(param);
+        }
+
+        // param como object == shape
+        if (types.conversion.toType(param) == 'object') {
+            return layer.active.children.remove(param.uuid);
+        }
+
+        throw new Error('Shape - remove - param is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+    }
+
+    function list() {
+        return layer.active.children.list();
+    }
+
+    function find(param) {
+
+        // param null || undefined == return
+        if ((param == null) || (param == undefined)) return;
+
+        // param como string == uuid
+        if (types.conversion.toType(param) == 'string') {
+            return layer.active.children.find(param);
+        }
+
+        // param como object == shape
+        if (types.conversion.toType(param) == 'object') {
+            return layer.active.children.find(param.uuid);
+        }
+
+        throw new Error('Shape - find - param is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+    }
+
+    function search(query) {
+        return '';
+    }
+
+
+
+
+
+
+
+    exports.create = create;
+    exports.update = update;
+    exports.remove = remove;
+    exports.list = list;
+    exports.find = find;
+    exports.search = search;
+});
+define("plane/core/tool", ['require', 'exports'], function (require, exports) {
+
+    var types = require('utility');
+
+    var store = types.data.dictionary.create();
+
+    var point = require('plane/core/point');
+
+    var viewPort = null,
+        view = null,
+        // usado para calculo do evento onMouseDrag
+        mouseDown = null;
+
+
+    function Tool(attrs) {
+        this.uuid = attrs.uuid;
+        this.name = attrs.name;
+        this.events = attrs.events;
+
+        Object.defineProperty(this, 'active', {
+            get: function () {
+                return this._active || false;
+            },
+            set: function (value) {
+                // só altero quando o estado é diferente, isso para não gerar eventos não desejados
+                if (this._active != value) {
+                    this.events.notify(value ? 'onActive' : 'onDeactive', {
+                        type: value ? 'onActive' : 'onDeactive',
+                        now: new Date().toISOString()
+
+                    });
+                    this._active = value;
+                }
+            }
+        });
+
+        this.active = attrs.active;
+    };
+
+
+    function initialize(config) {
+
+        // usado para calcudo da posição do mouse
+        viewPort = config.viewPort;
+
+        // usado para obter a matrix (transform) 
+        view = config.view;
+
+
+        function onKeyDown(event) {
+
+            // se backspace desabilito o evento default 'retornar para a pagina anterior'
+            if (event.keyCode == 8) {
+                event.preventDefault();
+            }
+
+            // customized event
+            event = {
+                type: 'onKeyDown',
+                altKey: event.altKey,
+                ctrlKey: event.ctrlKey,
+                shiftKey: event.shiftKey,
+                key: types.string.fromKeyPress(event.keyCode),
+                now: new Date().toISOString()
+            };
+
+            // propagação do evento para tools ativas
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onKeyDown', event);
+                }
+            }
+
+        }
+
+        function onMouseDown(event) {
+
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas);
+
+            // dizendo que o mouse preenche o evento down
+            mouseDown = pointInView;
+
+            // customized event
+            event = {
+                type: 'onMouseDown',
+                target: event.target,
+                point: {
+                    // o ponto do mouse dentro do html document
+                    inDocument: point.create(event.x, event.y),
+                    // o ponto do mouse dentro do componente html canvas
+                    inCanvas: point.create(pointInCanvas),
+                    // o ponto do mouse dentro de plane.view
+                    inView: point.create(pointInView)
+                },
+                now: new Date().toISOString()
+            };
+
+            // propagação do evento para tools ativas
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseDown', event);
+                }
+            }
+
+        }
+
+        function onMouseUp(event) {
+
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas);
+
+            // limpo está variável que é o controle para disparar o evento onMouseDrag
+            mouseDown = null;
+
+            // customized event
+            event = {
+                type: 'onMouseUp',
+                point: {
+                    inDocument: point.create(event.x, event.y),
+                    inCanvas: point.create(pointInCanvas),
+                    inView: point.create(pointInView)
+                },
+                now: new Date().toISOString()
+            };
+
+            // propagação do evento para tools ativas
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseUp', event);
+                }
+            }
+        }
+
+        // Mouse Drag vinculado ao o evento Mouse Move do componente <canvas>
+        function onMouseDrag(event) {
+            // se Mouse Down preenchido 
+            if (mouseDown) {
+
+                var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                    pointInView = view.transform.inverseTransform(pointInCanvas);
+
+                var pointFirst = point.create(mouseDown),
+                    pointLast = point.create(pointInView);
+
+                // os pontos de inicio e fim devem ser diferentes para o evento ser disparado
+                //                if ((pointFirst.x != pointLast.x) || (pointFirst.y != pointLast.y)) {
+                if (!pointFirst.equals(pointLast)) {
+
+                    event = {
+                        type: 'onMouseDrag',
+                        point: {
+                            inDocument: point.create(event.x, event.y),
+                            inCanvas: point.create(pointInCanvas),
+                            first: pointFirst,
+                            last: pointLast,
+                        },
+                        now: new Date().toISOString()
+                    }
+
+                    var tools = store.list(),
+                        t = tools.length;
+                    while (t--) {
+                        if (tools[t].active) {
+                            tools[t].events.notify('onMouseDrag', event);
+                        }
+                    }
+
+                }
+            }
+        }
+
+        function onMouseMove(event) {
+
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas);
+
+            // 2014.12.05 - lilo - cópia de código errado - VERIFICAR!
+            // pointInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y);
+
+            // customized event
+            event = {
+                type: 'onMouseMove',
+                point: {
+                    inDocument: point.create(event.x, event.y),
+                    inCanvas: point.create(pointInCanvas),
+                    inView: point.create(pointInView)
+                },
+                now: new Date().toISOString()
+            };
+
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseMove', event);
+                }
+            }
+        }
+
+        function onMouseLeave(event) {
+            mouseDown = null;
+        }
+
+        function onMouseWheel(event) {
+
+            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                pointInView = view.transform.inverseTransform(pointInCanvas);
+
+            // customized event
+            event = {
+                type: 'onMouseWheel',
+                delta: event.deltaY,
+                point: point.create(pointInView),
+                now: new Date().toISOString()
+            };
+
+            var tools = store.list(),
+                t = tools.length;
+            while (t--) {
+                if (tools[t].active) {
+                    tools[t].events.notify('onMouseWheel', event);
+                }
+            }
+        }
+
+        // vinculando os eventos ao component html 
+        window.addEventListener('keydown', onKeyDown, false);
+        viewPort.onmousedown = onMouseDown;
+        viewPort.onmouseup = onMouseUp;
+        viewPort.addEventListener('mousemove', onMouseDrag, false);
+        viewPort.addEventListener('mousemove', onMouseMove, false);
+        viewPort.onmouseleave = onMouseLeave;
+        viewPort.onmousewheel = onMouseWheel;
+
+        return true;
+    }
+
+    function create(attrs) {
+        if (typeof attrs == 'function') {
+            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        var uuid = types.math.uuid(9, 16);
+
+        attrs = types.object.merge({
+            uuid: uuid,
+            name: 'tool - '.concat(uuid),
+            events: types.object.event.create(),
+            active: false
+        }, attrs);
+
+        // nova tool
+        var tool = new Tool(attrs)
+
+        store.add(tool.uuid, tool);
+
+        return tool;
+    }
+
+    function list() {
+        return store.list();
+    }
+
+    function find(uuid) {
+        return store.find(uuid);
+    }
+
+    function remove(uuid) {
+        return store.remove(uuid);
+    }
+
+
+    exports.initialize = initialize;
+
+    exports.create = create;
+    exports.list = list;
+    exports.find = find;
+    exports.remove = remove;
+});
+define("plane/core/view", ['require', 'exports'], function (require, exports) {
+
+    var matrix = require('plane/math/matrix');
+
+    var layer = require('plane/core/layer'),
+        point = require('plane/core/point');
+
+    var types = require('utility');
+
+
+    var viewPort = null,
+        canvas = null,
+        _context = null,
+        _transform = null,
+        _zoom = 1,
+        _center = point.create(0, 0),
+        size = {
+            height: 0,
+            width: 0
+        },
+        bounds = {
+            x: 0,
+            y: 0,
+            height: 0,
+            width: 0
+        };
+
+
+
+
+    function initialize(config) {
+
+        viewPort = config.viewPort;
+        canvas = config.canvas;
+        _context = canvas.getContext('2d');
+
+        // sistema cartesiano de coordenadas
+        _context.translate(0, viewPort.clientHeight);
+        _context.scale(1, -1);
+
+        // created the matrix transform
+        _transform = matrix.create();
+
+        // o centro inicial
+        _center = _center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
+
+        // os tamanhos que são fixos
+        size.height = viewPort.clientHeight;
+        size.width = viewPort.clientWidth;
+
+
+        window.onresize = function () {
+
+            canvas.width = viewPort.clientWidth;
+            canvas.height = viewPort.clientHeight;
+
+            // os tamanhos que são fixos
+            size.height = viewPort.clientHeight;
+            size.width = viewPort.clientWidth;
+
+
+            // sistema cartesiano de coordenadas
+            canvas.getContext('2d').translate(0, viewPort.clientHeight);
+            canvas.getContext('2d').scale(1, -1);
+
+            update();
+
+            events.notify('onResize', {
+                size: size,
+                now: new Date().toISOString()
+            });
+        };
+
+
+    }
+
+
+
+    function update() {
+
+
+        // clear context, +1 is needed on some browsers to really clear the borders
+        _context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
+
+        var layers = layer.list(),
+            l = layers.length;
+        while (l--) {
+            var shapes = layers[l].children.list(),
+                s = shapes.length;
+
+            // style of layer
+            _context.lineCap = layers[l].style.lineCap;
+            _context.lineJoin = layers[l].style.lineJoin;
+
+            while (s--) {
+                shapes[s].render(_context, _transform);
+            }
+        }
+        return this;
+    }
+
+
+
+
+
+    function zoomTo(zoom, center) {
+
+        var factor, motion;
+
+        factor = zoom / _zoom;
+
+        _transform.scale({
+            x: factor,
+            y: factor
+        }, _center);
+
+        _zoom = zoom;
+
+
+        var centerSubtract = center.subtract(_center);
+        centerSubtract = centerSubtract.negate();
+
+        var xxx = matrix.create();
+        xxx.translate(centerSubtract.x, centerSubtract.y);
+
+        _transform.concate(xxx);
+
+        _center = center;
+
+        update();
+
+        return true;
+    }
+
+
+
+
+    function reset() {
+        zoomTo(1, point.create(size.width / 2, size.height / 2));
+    }
+
+
+    Object.defineProperty(exports, 'context', {
+        get: function () {
+            return _context;
+        }
+    });
+
+    Object.defineProperty(exports, 'transform', {
+        get: function () {
+            return _transform;
+        }
+    });
+
+    Object.defineProperty(exports, 'size', {
+        get: function () {
+            return size;
+        }
+    });
+
+    Object.defineProperty(exports, 'bounds', {
+        get: function () {
+            var scale = Math.sqrt(_transform.a * _transform.d);
+
+            return {
+                x: _transform.tx,
+                y: _transform.ty,
+                height: size.height * scale,
+                width: size.width * scale
+            }
+        }
+    });
+
+    Object.defineProperty(exports, 'center', {
+        get: function () {
+            return _center;
+        },
+        set: function (value) {
+
+            var centerSubtract = value.subtract(_center);
+            centerSubtract = centerSubtract.negate();
+
+            var xxx = matrix.create();
+            xxx.translate(centerSubtract.x, centerSubtract.y);
+
+            _transform.concate(xxx);
+
+            _center = value;
+
+            update();
+
+            return true;
+        }
+    });
+
+    Object.defineProperty(exports, 'zoom', {
+        get: function () {
+            return _zoom;
+        },
+        set: function (value) {
+
+            var factor, motion;
+
+            factor = value / _zoom;
+
+            _transform.scale({
+                x: factor,
+                y: factor
+            }, _center);
+
+            _zoom = value;
+
+            update();
+
+            return true;
+        }
+    });
+
+
+    var events = types.object.event.create();
+
+
+    exports.initialize = initialize;
+    exports.update = update;
+    exports.zoomTo = zoomTo;
+    exports.reset = reset;
+    exports.events = events;
+
+});
 define("plane/data/exporter", ['require', 'exports'], function (require, exports) {
     
     function toSvg (){
@@ -36,7 +916,7 @@ define("plane/data/exporter", ['require', 'exports'], function (require, exports
 });
 define("plane/data/importer", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
+    var types = require('utility');
 
     function parseDxf(stringDxf) {
 
@@ -353,10 +1233,10 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 //	testPoint(path, path.bounds.bottomRight, false);
 // https://github.com/thelonious/js-intersections
 // http://www.kevlindev.com/gui/math/intersection/index.htm
-define("plane/geometric/intersection", ['require', 'exports'], function (require, exports) {
+define("plane/math/intersection", ['require', 'exports'], function (require, exports) {
 
-    var polynomial = require('plane/geometric/polynomial'),
-        point = require('plane/structure/point');
+    var polynomial = require('plane/math/polynomial'),
+        point = require('plane/core/point');
 
 
     function Bezout(e1, e2) {
@@ -708,7 +1588,7 @@ define("plane/geometric/intersection", ['require', 'exports'], function (require
     exports.lineLine = lineLine;
     exports.segmentsRectangle = segmentsRectangle;
 });
-define("plane/geometric/matrix", ['require', 'exports'], function (require, exports) {
+define("plane/math/matrix", ['require', 'exports'], function (require, exports) {
 
     // http://www.senocular.com/flash/tutorials/transformmatrix/
     // https://github.com/heygrady/transform/wiki/Calculating-2d-Matrices
@@ -897,7 +1777,7 @@ define("plane/geometric/matrix", ['require', 'exports'], function (require, expo
 
         },
         // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L113
-        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/shapes/group.class.js#L459
+        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/object/group.class.js#L459
 
         // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L565
         // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js#L451
@@ -1018,7 +1898,7 @@ define("plane/geometric/matrix", ['require', 'exports'], function (require, expo
     exports.create = create;
     exports.toPoint = toPoint;
 });
-define("plane/geometric/polynomial", ['require', 'exports'], function (require, exports) {
+define("plane/math/polynomial", ['require', 'exports'], function (require, exports) {
 
     function Polynomial(coefs) {
         this.coefs = new Array();
@@ -1244,171 +2124,15 @@ define("plane/geometric/polynomial", ['require', 'exports'], function (require, 
     exports.create = create;
 
 });
-define("plane", ['require', 'exports'], function (require, exports) {
+define("plane/object/arc", ['require', 'exports'], function (require, exports) {
 
-    var version = '3.0.0',
-        authors = ['lilo@c37.co', 'ser@c37.co'];
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var types = require('plane/utility/types');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var matrix = require('plane/geometric/matrix');
-
-    var layer = require('plane/structure/layer'),
-        point = require('plane/structure/point'),
-        shape = require('plane/structure/shape'),
-        group = require('plane/structure/group'),
-        tool = require('plane/structure/tool'),
-        view = require('plane/structure/view');
-
-    var importer = require('plane/data/importer'),
-        exporter = require('plane/data/exporter');
-
-    var viewPort = null;
-
-
-    function initialize(config) {
-        if (config == null) {
-            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-        if (typeof config == "function") {
-            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-        if (config.viewPort == null) {
-            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-
-        // save in variable viewPort
-        viewPort = config.viewPort;
-
-
-        // montando o render de Plane
-        var canvas = document.createElement('canvas');
-
-        canvas.id = types.math.uuid(9, 16);
-        canvas.width = viewPort.clientWidth;
-        canvas.height = viewPort.clientHeight;
-
-        canvas.style.position = "absolute";
-        canvas.style.backgroundColor = 'transparent';
-
-        // add em viewPort HTMLElement
-        viewPort.appendChild(canvas);
-
-
-        // initialize view
-        view.initialize({
-            viewPort: viewPort,
-            canvas: canvas
-        });
-        // initialize tool
-        tool.initialize({
-            viewPort: viewPort,
-            view: view
-        });
-
-
-        return true;
-    }
-
-
-    function clear() {
-
-        // reset all parameters in view
-        view.reset();
-
-        // remove em todas as layers
-        layer.remove();
-
-        return true;
-    }
-
-
-
-
-
-
-    exports.initialize = initialize;
-    exports.clear = clear;
-
-    exports.view = view;
-
-    exports.point = point;
-    exports.shape = shape;
-    exports.group = group;
-
-    exports.layer = layer;
-    exports.tool = tool;
-
-    exports.importer = {
-        fromDxf: function (stringDxf) {
-            // clear Plane
-            clear();
-
-            var stringJson = importer.parseDxf(stringDxf);
-            var objectDxf = JSON.parse(stringJson);
-
-            if (stringJson) {
-                layer.create();
-                for (var prop in objectDxf) {
-                    shape.create(objectDxf[prop]);
-                }
-                view.update();
-            }
-        },
-        fromJson: function (stringJson) {
-
-            var objectPlane = JSON.parse(stringJson);
-
-            clear();
-
-            objectPlane.layers.forEach(function (objectLayer) {
-
-                layer.create({
-                    uuid: objectLayer.uuid,
-                    name: objectLayer.name,
-                    status: objectLayer.status,
-                    style: objectLayer.style,
-                });
-
-                objectLayer.children.forEach(function (objectShape) {
-                    shape.create(objectShape);
-                });
-            });
-
-            view.zoomTo(objectPlane.zoom, point.create(objectPlane.center));
-
-            return true;
-        }
-    };
-
-
-    exports.exporter = {
-        toJson: function () {
-
-            var plane = {
-                center: _view.center,
-                zoom: _view.zoom,
-                layers: layer.list().map(function (layer) {
-                    return layer.status != 'system' ? layer.toObject() : null;
-                }).filter(function (layer) {
-                    return layer != undefined
-                })
-            }
-
-            return JSON.stringify(plane);
-        }
-    };
-
-});
-define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
-
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
-
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
-
-    var types = require('plane/utility/types');
+    var types = require('utility');
 
 
     /**
@@ -1446,7 +2170,7 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
     Arc.prototype.calculeSegments = function () {
 
@@ -1516,15 +2240,15 @@ define("plane/shapes/arc", ['require', 'exports'], function (require, exports) {
     exports.create = create;
 
 });
-define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, exports) {
+define("plane/object/bezier-cubic", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var types = require('utility');
 
 
     /**
@@ -1561,7 +2285,7 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
 
     // https://github.com/MartinDoms/Splines/blob/master/cubicBezier.js
@@ -1630,15 +2354,15 @@ define("plane/shapes/bezier-cubic", ['require', 'exports'], function (require, e
     exports.create = create;
 
 });
-define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (require, exports) {
+define("plane/object/bezier-quadratic", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var types = require('utility');
 
 
     /**
@@ -1675,7 +2399,7 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
 
     // https://github.com/MartinDoms/Splines/blob/master/quadraticBezier.js
@@ -1742,15 +2466,15 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
     exports.create = create;
 
 });
-define("plane/shapes/circle", ['require', 'exports'], function (require, exports) {
+define("plane/object/circle", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var types = require('utility');
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -1786,7 +2510,7 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
     Circle.prototype.calculeSegments = function () {
 
@@ -1845,15 +2569,15 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
     exports.create = create;
 
 });
-define("plane/shapes/ellipse", ['require', 'exports'], function (require, exports) {
+define("plane/object/ellipse", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var types = require('utility');
 
 
     /**
@@ -1895,7 +2619,7 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
     Ellipse.prototype.calculeSegments = function () {
 
@@ -1977,15 +2701,15 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
     exports.create = create;
 
 });
-define("plane/shapes/line", ['require', 'exports'], function (require, exports) {
+define("plane/object/line", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var types = require('utility');
 
 
     /**
@@ -2021,7 +2745,7 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
     Line.prototype.calculeSegments = function () {
 
@@ -2066,14 +2790,284 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
     exports.create = create;
 
 });
-define("plane/shapes/object", ['require', 'exports'], function (require, exports) {
+define("plane/object/polygon", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var types = require('utility');
+
+
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Polygon = types.object.inherits(function Polygon(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
+
+        this.segments = [];
+        this.status = null;
+        this.style = null;
+
+        this.center = null;
+        this.sides = null;
+        this.radius = null;
+
+        this.initialize(attrs);
+
+    }, shape.Base);
+
+    Polygon.prototype.calculeSegments = function () {
+
+        for (var i = 0; i <= this.sides; i++) {
+
+            var pointX = (this.radius * Math.cos(((Math.PI * 2) / this.sides) * i) + this.center.x),
+                pointY = (this.radius * Math.sin(((Math.PI * 2) / this.sides) * i) + this.center.y);
+
+            this.segments.push({
+                x: pointX,
+                y: pointY
+            });
+        }
+
+        return true;
+
+    }
+
+
+    function create(attrs) {
+        // 0 - verificação da chamada
+        if (typeof attrs == 'function') {
+            throw new Error('Polygon - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações de quais atributos são usados
+
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.center = point.create(attrs.center);
+
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
+        return new Polygon(attrs);
+    };
+
+    exports.create = create;
+
+});
+define("plane/object/polyline", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
+
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
+
+    var types = require('utility');
+
+
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Polyline = types.object.inherits(function Polyline(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
+
+        this.segments = [];
+        this.status = null;
+        this.style = null;
+
+        this.points = null;
+
+        this.initialize(attrs);
+
+    }, shape.Base);
+    
+    Polyline.prototype.calculeSegments = function(){
+        
+        this.segments = this.points;
+        
+        return true;
+        
+    }
+
+
+    function create(attrs) {
+        // 0 - verificação da chamada
+        if (typeof attrs == 'function') {
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações de quais atributos são usados
+
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.points = attrs.points.map(function(item){
+            return point.create(item);
+        });
+
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
+        return new Polyline(attrs);
+    };
+
+    exports.create = create;
+});
+define("plane/object/rectangle", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
+
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
+
+    var types = require('utility');
+
+
+    /**
+     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
+     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
+     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
+     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
+     *
+     * @namespace Shape
+     * @class Shape
+     * @constructor
+     */
+    var Rectangle = types.object.inherits(function Rectangle(attrs) {
+
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
+
+        this.segments = [];
+        this.status = null;
+        this.style = null;
+
+        this.from = null;
+        this.to = null;
+
+        this.initialize(attrs);
+
+    }, shape.Base);
+
+    Rectangle.prototype.calculeSegments = function () {
+
+        this.segments.push({
+            x: this.from.x,
+            y: this.from.y
+        });
+        this.segments.push({
+            x: this.from.x,
+            y: this.to.y
+        });
+        this.segments.push({
+            x: this.to.x,
+            y: this.to.y
+        });
+        this.segments.push({
+            x: this.to.x,
+            y: this.from.y
+        });
+        this.segments.push({
+            x: this.from.x,
+            y: this.from.y
+        });
+
+        return true;
+
+    }
+
+
+    function create(attrs) {
+        // 0 - verificação da chamada
+        if (typeof attrs == 'function') {
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+
+        // 1 - verificações de quais atributos são usados
+
+
+        // 2 - validações dos atributos deste tipo
+
+
+        // 3 - conversões dos atributos
+        attrs.from = point.create(attrs.from);
+        attrs.to = point.create(attrs.to);
+
+        // 4 - caso update de um shape não merge em segments
+        delete attrs['segments'];
+
+        // 5 - criando um novo shape do tipo arco
+        return new Rectangle(attrs);
+    };
+
+    exports.create = create;
+
+});
+define("plane/object/shape", ['require', 'exports'], function (require, exports) {
+
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
+
+    var point = require('plane/core/point');
+
+    var types = require('utility');
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -2210,285 +3204,15 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
     exports.Base = Base;
 
 });
-define("plane/shapes/polygon", ['require', 'exports'], function (require, exports) {
+define("plane/object/spline", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
-
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Shape
-     * @class Shape
-     * @constructor
-     */
-    var Polygon = types.object.inherits(function Polygon(attrs) {
-
-        /**
-         * A Universally unique identifier for
-         * a single instance of Object
-         *
-         * @property uuid
-         * @type String
-         * @default 'uuid'
-         */
-        this.uuid = null;
-        this.type = null;
-        this.name = null;
-
-        this.segments = [];
-        this.status = null;
-        this.style = null;
-
-        this.center = null;
-        this.sides = null;
-        this.radius = null;
-
-        this.initialize(attrs);
-
-    }, object.Base);
-
-    Polygon.prototype.calculeSegments = function () {
-
-        for (var i = 0; i <= this.sides; i++) {
-
-            var pointX = (this.radius * Math.cos(((Math.PI * 2) / this.sides) * i) + this.center.x),
-                pointY = (this.radius * Math.sin(((Math.PI * 2) / this.sides) * i) + this.center.y);
-
-            this.segments.push({
-                x: pointX,
-                y: pointY
-            });
-        }
-
-        return true;
-
-    }
-
-
-    function create(attrs) {
-        // 0 - verificação da chamada
-        if (typeof attrs == 'function') {
-            throw new Error('Polygon - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-
-        // 1 - verificações de quais atributos são usados
-
-
-        // 2 - validações dos atributos deste tipo
-
-
-        // 3 - conversões dos atributos
-        attrs.center = point.create(attrs.center);
-
-        // 4 - caso update de um shape não merge em segments
-        delete attrs['segments'];
-
-        // 5 - criando um novo shape do tipo arco
-        return new Polygon(attrs);
-    };
-
-    exports.create = create;
-
-});
-define("plane/shapes/polyline", ['require', 'exports'], function (require, exports) {
-
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
-
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
-
-    var types = require('plane/utility/types');
-
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Shape
-     * @class Shape
-     * @constructor
-     */
-    var Polyline = types.object.inherits(function Polyline(attrs) {
-
-        /**
-         * A Universally unique identifier for
-         * a single instance of Object
-         *
-         * @property uuid
-         * @type String
-         * @default 'uuid'
-         */
-        this.uuid = null;
-        this.type = null;
-        this.name = null;
-
-        this.segments = [];
-        this.status = null;
-        this.style = null;
-
-        this.points = null;
-
-        this.initialize(attrs);
-
-    }, object.Base);
-    
-    Polyline.prototype.calculeSegments = function(){
-        
-        this.segments = this.points;
-        
-        return true;
-        
-    }
-
-
-    function create(attrs) {
-        // 0 - verificação da chamada
-        if (typeof attrs == 'function') {
-            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-
-        // 1 - verificações de quais atributos são usados
-
-
-        // 2 - validações dos atributos deste tipo
-
-
-        // 3 - conversões dos atributos
-        attrs.points = attrs.points.map(function(item){
-            return point.create(item);
-        });
-
-        // 4 - caso update de um shape não merge em segments
-        delete attrs['segments'];
-
-        // 5 - criando um novo shape do tipo arco
-        return new Polyline(attrs);
-    };
-
-    exports.create = create;
-});
-define("plane/shapes/rectangle", ['require', 'exports'], function (require, exports) {
-
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
-
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
-
-    var types = require('plane/utility/types');
-
-
-    /**
-     * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
-     * nonummy nibh euismod tincidunt ut laoreet dolore magna aliquam erat
-     * volutpat. Ut wisi enim ad minim veniam, quis nostrud exerci tation
-     * ullamcorper suscipit lobortis nisl ut aliquip ex ea commodo consequat.
-     *
-     * @namespace Shape
-     * @class Shape
-     * @constructor
-     */
-    var Rectangle = types.object.inherits(function Rectangle(attrs) {
-
-        /**
-         * A Universally unique identifier for
-         * a single instance of Object
-         *
-         * @property uuid
-         * @type String
-         * @default 'uuid'
-         */
-        this.uuid = null;
-        this.type = null;
-        this.name = null;
-
-        this.segments = [];
-        this.status = null;
-        this.style = null;
-
-        this.from = null;
-        this.to = null;
-
-        this.initialize(attrs);
-
-    }, object.Base);
-
-    Rectangle.prototype.calculeSegments = function () {
-
-        this.segments.push({
-            x: this.from.x,
-            y: this.from.y
-        });
-        this.segments.push({
-            x: this.from.x,
-            y: this.to.y
-        });
-        this.segments.push({
-            x: this.to.x,
-            y: this.to.y
-        });
-        this.segments.push({
-            x: this.to.x,
-            y: this.from.y
-        });
-        this.segments.push({
-            x: this.from.x,
-            y: this.from.y
-        });
-
-        return true;
-
-    }
-
-
-    function create(attrs) {
-        // 0 - verificação da chamada
-        if (typeof attrs == 'function') {
-            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-
-        // 1 - verificações de quais atributos são usados
-
-
-        // 2 - validações dos atributos deste tipo
-
-
-        // 3 - conversões dos atributos
-        attrs.from = point.create(attrs.from);
-        attrs.to = point.create(attrs.to);
-
-        // 4 - caso update de um shape não merge em segments
-        delete attrs['segments'];
-
-        // 5 - criando um novo shape do tipo arco
-        return new Rectangle(attrs);
-    };
-
-    exports.create = create;
-
-});
-define("plane/shapes/spline", ['require', 'exports'], function (require, exports) {
-
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
-
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
-
-    var types = require('plane/utility/types');
+    var types = require('utility');
 
 
     /**
@@ -2525,7 +3249,7 @@ define("plane/shapes/spline", ['require', 'exports'], function (require, exports
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
     Spline.prototype.calculeSegments = function () {
 
@@ -2721,875 +3445,163 @@ define("plane/shapes/spline", ['require', 'exports'], function (require, exports
     exports.create = create;
 
 });
-define("plane/structure/group", ['require', 'exports'], function (require, exports) {
+define("plane", ['require', 'exports'], function (require, exports) {
 
-    function Group() {};
+    var version = '3.0.0',
+        authors = ['lilo@c37.co', 'ser@c37.co'];
 
-    Group.prototype = {
-        initialize: function (attrs) {
+    var types = require('utility');
 
-            return true;
-        },
-        contains: function (position, transform) {
+    var matrix = require('plane/math/matrix');
 
-            return false;
-        },
-        intersect: function (rectangle) {
+    var layer = require('plane/core/layer'),
+        point = require('plane/core/point'),
+        shape = require('plane/core/shape'),
+        group = require('plane/core/group'),
+        tool = require('plane/core/tool'), 
+        view = require('plane/core/view');
 
-            return true;
-        },
-        toObject: function () {
+    var importer = require('plane/data/importer'),
+        exporter = require('plane/data/exporter');
 
-            return true;
+    var viewPort = null;
+
+
+    function initialize(config) {
+        if (config == null) {
+            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (typeof config == "function") {
+            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        }
+        if (config.viewPort == null) {
+            throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
         
-    };
+        // save in variable viewPort
+        viewPort = config.viewPort;
 
-    function create(attrs) {
-        if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
 
-        // 1 - verificações dos atributos 
-        // 2 - crio um novo group
+        // montando o render de Plane
+        var canvas = document.createElement('canvas');
 
-        return new Group();
-    };
+        canvas.id = types.math.uuid(9, 16);
+        canvas.width = viewPort.clientWidth;
+        canvas.height = viewPort.clientHeight;
 
-    exports.create = create;
+        canvas.style.position = "absolute";
+        canvas.style.backgroundColor = 'transparent';
 
-});
-define("plane/structure/layer", ['require', 'exports'], function (require, exports) {
+        // add em viewPort HTMLElement
+        viewPort.appendChild(canvas);
 
-    var types = require('plane/utility/types');
 
-    var store = types.data.dictionary.create();
-
-    var _active = null;
-
-
-    function Layer(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.status = attrs.status;
-        this.style = attrs.style;
-        this.children = attrs.children;
-        this.events = attrs.events;
-    };
-
-    Layer.prototype.toObject = function () {
-        return {
-            uuid: this.uuid,
-            name: this.name,
-            status: this.status,
-            style: this.style,
-            children: this.children.list().map(function (shape) {
-                return shape.toObject();
-            })
-        };
-    }
-
-
-
-    function create(attrs) {
-        if ((typeof attrs == "function")) {
-            throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-
-        var uuid = types.math.uuid(9, 16);
-
-        // parametros para a nova Layer
-        attrs = types.object.merge({
-            uuid: uuid,
-            name: 'Layer '.concat(uuid),
-            style: {
-                lineCap: 'butt',
-                lineJoin: 'miter',
-                lineWidth: .7,
-                lineColor: 'rgb(0, 0, 0)',
-            },
-            status: 'visible',
-            children: types.data.dictionary.create(),
-            events: types.object.event.create()
-        }, attrs);
-        // parametros para a nova Layer
-
-        // nova Layer
-        var layer = new Layer(attrs);
-
-        // armazenando 
-        store.add(layer.uuid, layer);
-
-        // colocando nova layer como selecionada
-        _active = layer;
-
-        return this;
-    }
-
-    function list() {
-        return store.list();
-    }
-
-    function find(uuid) {
-        return store.find(uuid);
-    }
-
-    function remove(uuid) {
-        if (uuid) {
-            return store.remove(uuid);
-        } else {
-            store.list().forEach(function (layer) {
-                if (layer.status != 'system') {
-                    store.remove(layer.uuid);
-                }
-            });
-            return true;
-        }
-        //        return uuid ? store.remove(uuid) : store.clear();
-    }
-
-
-
-    Object.defineProperty(exports, 'active', {
-        get: function () {
-            return _active;
-
-        },
-        set: function (uuid) {
-
-            // só altero a layer quando é diferente, isso para não gerar eventos não desejados
-            if (_active.uuid != uuid) {
-                // não propagar eventos quando realizar mudanças para Layer do sistema
-                if ((_active) && (_active.status != 'system') && (store.find(uuid)) && store.find(uuid).status != 'system') {
-                    this.events.notify('onDeactive', {
-                        type: 'onDeactive',
-                        layer: _active
-                    });
-                }
-
-                _active = store.find(uuid);
-
-                // não propagar eventos quando realizar mudanças para Layer do sistema
-                if ((_active) && (_active.status != 'system') && (store.find(uuid)) && store.find(uuid).status != 'system') {
-                    this.events.notify('onActive', {
-                        type: 'onActive',
-                        layer: _active
-                    });
-                }
-            }
-            
-        }
-    });
-
-
-    exports.events = types.object.event.create();
-    exports.create = create;
-    exports.list = list;
-    exports.find = find;
-    exports.remove = remove;
-});
-define("plane/structure/point", ['require', 'exports'], function (require, exports) {
-
-    var types = require('plane/utility/types');
-
-    function Point(x, y) {
-        this.x = x;
-        this.y = y;
-    };
-
-    Point.prototype = {
-        sum: function (point) {
-            return new Point(this.x + point.x, this.y + point.y);
-        },
-        subtract: function (point) {
-            return new Point(this.x - point.x, this.y - point.y);
-        },
-        negate: function () {
-            return new Point(-this.x, -this.y);
-        },
-        multiply: function (value) {
-            return new Point(this.x * value, this.y * value);
-        },
-        distanceTo: function (point) {
-            var dx = this.x - point.x;
-            var dy = this.y - point.y;
-
-            return Math.sqrt(dx * dx + dy * dy);
-        },
-        midTo: function (point) {
-            return new Point(this.x + (point.x - this.x) / 2, this.y + (point.y - this.y) / 2);
-        },
-        angleTo: function (point) {
-            return Math.atan2(point.y - this.y, point.x - this.x);
-        },
-        interpolationLinear: function (point, value) {
-            return new Point(
-                this.x + (point.x - this.x) * value,
-                this.y + (point.y - this.y) * value
-            );
-        },
-        minimum: function (point) {
-            return new Point(Math.min(this.x, point.x), Math.min(this.y, point.y));
-        },
-        maximum: function (point) {
-            return new Point(Math.max(this.x, point.x), Math.max(this.y, point.y));
-        },
-        equals: function(point){
-            return (this.x == point.x) && (this.y == point.y);
-        }
-    };
-
-    function create() {
-
-        if (arguments.length == 2 && (arguments[0] != null && arguments[1] != null)) {
-            return new Point(arguments[0], arguments[1]);
-        } else if (arguments.length == 1 && (types.conversion.toType(arguments[0]) == 'object') && (arguments[0].x != null && arguments[0].y != null)) {
-            return new Point(arguments[0].x, arguments[0].y);
-        } else if (arguments.length == 1 && (types.conversion.toType(arguments[0]) == 'array') && (arguments[0].length == 2)) {
-            return new Point(arguments[0][0], arguments[0][1]);
-        }
-
-        throw new Error('Point - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-
-    };
-
-    exports.create = create;
-
-});
-define("plane/structure/shape", ['require', 'exports'], function (require, exports) {
-
-    var types = require('plane/utility/types');
-
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
-
-    var point = require('plane/structure/point'),
-        layer = require('plane/structure/layer');
-
-    var shapeType = {
-        'arc': require('plane/shapes/arc'),
-        'bezier-cubic': require('plane/shapes/bezier-cubic'),
-        'bezier-quadratic': require('plane/shapes/bezier-quadratic'),
-        'circle': require('plane/shapes/circle'),
-        'ellipse': require('plane/shapes/ellipse'),
-        'line': require('plane/shapes/line'),
-        'polygon': require('plane/shapes/polygon'),
-        'polyline': require('plane/shapes/polyline'),
-        'rectangle': require('plane/shapes/rectangle'),
-        'spline': require('plane/shapes/spline')
-    };
-
-
-    function create(attrs) {
-        // verificação para a chamada da função
-        if ((typeof attrs == "function") || (attrs == null)) {
-            throw new Error('shape - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-
-        // verifição para o tipo de shape
-        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier-cubic', 'bezier-quadratic', 'spline'].indexOf(attrs.type) == -1) {
-            throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-
-
-        // atributos 
-        attrs = types.object.merge({
-            uuid: types.math.uuid(9, 16),
-        }, attrs);
-
-        // criando pelo type
-        var shape = shapeType[attrs.type].create(attrs);;
-
-        // adicionando o novo shape na layer ativa
-        layer.active.children.add(shape.uuid, shape);
-
-        return shape;
-    }
-
-    
-    function update(shape) {
-    
-        // neste momento realizo a exclução para inicializar o shape de forma correta
-        
-        remove(shape);
-        create(shape);
-        
-        return true;
-    }
-
-    function remove(param) {
-        
-        // param null || undefined == return
-        if ((param == null) || (param == undefined)) return;
-        
-        // param como string == uuid
-        if (types.conversion.toType(param) == 'string') {
-            return layer.active.children.remove(param);
-        }
-
-        // param como object == shape
-        if (types.conversion.toType(param) == 'object') {
-            return layer.active.children.remove(param.uuid);
-        }
-
-        throw new Error('Shape - remove - param is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-    }
-
-    function list() {
-        return layer.active.children.list();
-    }
-
-    function find(param) {
-
-        // param null || undefined == return
-        if ((param == null) || (param == undefined)) return;
-
-        // param como string == uuid
-        if (types.conversion.toType(param) == 'string') {
-            return layer.active.children.find(param);
-        }
-
-        // param como object == shape
-        if (types.conversion.toType(param) == 'object') {
-            return layer.active.children.find(param.uuid);
-        }
-
-        throw new Error('Shape - find - param is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-    }
-
-    function search(query) {
-        return '';
-    }
-
-
-
-
-
-
-
-    exports.create = create;
-    exports.update = update;
-    exports.remove = remove;
-    exports.list = list;
-    exports.find = find;
-    exports.search = search;
-});
-define("plane/structure/tool", ['require', 'exports'], function (require, exports) {
-
-    var types = require('plane/utility/types');
-
-    var store = types.data.dictionary.create();
-
-    var point = require('plane/structure/point');
-
-    var viewPort = null,
-        view = null,
-        // usado para calculo do evento onMouseDrag
-        mouseDown = null;
-
-
-    function Tool(attrs) {
-        this.uuid = attrs.uuid;
-        this.name = attrs.name;
-        this.events = attrs.events;
-
-        Object.defineProperty(this, 'active', {
-            get: function () {
-                return this._active || false;
-            },
-            set: function (value) {
-                // só altero quando o estado é diferente, isso para não gerar eventos não desejados
-                if (this._active != value) {
-                    this.events.notify(value ? 'onActive' : 'onDeactive', {
-                        type: value ? 'onActive' : 'onDeactive',
-                        now: new Date().toISOString()
-
-                    });
-                    this._active = value;
-                }
-            }
+        // initialize view
+        view.initialize({
+            viewPort: viewPort,
+            canvas: canvas
+        });
+        // initialize tool
+        tool.initialize({
+            viewPort: viewPort,
+            view: view
         });
 
-        this.active = attrs.active;
+
+        return true;
+    }
+
+
+    function clear() {
+
+        // reset all parameters in view
+        view.reset();
+
+        // remove em todas as layers
+        layer.remove();
+
+        return true;
+    }
+
+
+
+
+
+
+    exports.initialize = initialize;
+    exports.clear = clear;
+
+    exports.view = view;
+
+    exports.point = point;
+    exports.shape = shape;
+    exports.group = group;
+
+    exports.layer = layer;
+    exports.tool = tool;
+
+    exports.importer = {
+        fromDxf: function (stringDxf) {
+            // clear Plane
+            clear();
+
+            var stringJson = importer.parseDxf(stringDxf);
+            var objectDxf = JSON.parse(stringJson);
+
+            if (stringJson) {
+                layer.create();
+                for (var prop in objectDxf) {
+                    shape.create(objectDxf[prop]);
+                }
+                view.update();
+            }
+        },
+        fromJson: function (stringJson) {
+
+            var objectPlane = JSON.parse(stringJson);
+
+            clear();
+
+            objectPlane.layers.forEach(function (objectLayer) {
+
+                layer.create({
+                    uuid: objectLayer.uuid,
+                    name: objectLayer.name,
+                    status: objectLayer.status,
+                    style: objectLayer.style,
+                });
+
+                objectLayer.children.forEach(function (objectShape) {
+                    shape.create(objectShape);
+                });
+            });
+
+            view.zoomTo(objectPlane.zoom, point.create(objectPlane.center));
+
+            return true;
+        }
     };
 
 
-    function initialize(config) {
+    exports.exporter = {
+        toJson: function () {
 
-        // usado para calcudo da posição do mouse
-        viewPort = config.viewPort;
-
-        // usado para obter a matrix (transform) 
-        view = config.view;
-
-
-        function onKeyDown(event) {
-
-            // se backspace desabilito o evento default 'retornar para a pagina anterior'
-            if (event.keyCode == 8) {
-                event.preventDefault();
+            var plane = {
+                center: _view.center,
+                zoom: _view.zoom,
+                layers: layer.list().map(function (layer) {
+                    return layer.status != 'system' ? layer.toObject() : null;
+                }).filter(function (layer) {
+                    return layer != undefined
+                })
             }
 
-            // customized event
-            event = {
-                type: 'onKeyDown',
-                altKey: event.altKey,
-                ctrlKey: event.ctrlKey,
-                shiftKey: event.shiftKey,
-                key: types.string.fromKeyPress(event.keyCode),
-                now: new Date().toISOString()
-            };
-
-            // propagação do evento para tools ativas
-            var tools = store.list(),
-                t = tools.length;
-            while (t--) {
-                if (tools[t].active) {
-                    tools[t].events.notify('onKeyDown', event);
-                }
-            }
-
+            return JSON.stringify(plane);
         }
-
-        function onMouseDown(event) {
-
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas);
-
-            // dizendo que o mouse preenche o evento down
-            mouseDown = pointInView;
-
-            // customized event
-            event = {
-                type: 'onMouseDown',
-                target: event.target,
-                point: {
-                    // o ponto do mouse dentro do html document
-                    inDocument: point.create(event.x, event.y),
-                    // o ponto do mouse dentro do componente html canvas
-                    inCanvas: point.create(pointInCanvas),
-                    // o ponto do mouse dentro de plane.view
-                    inView: point.create(pointInView)
-                },
-                now: new Date().toISOString()
-            };
-
-            // propagação do evento para tools ativas
-            var tools = store.list(),
-                t = tools.length;
-            while (t--) {
-                if (tools[t].active) {
-                    tools[t].events.notify('onMouseDown', event);
-                }
-            }
-
-        }
-
-        function onMouseUp(event) {
-
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas);
-
-            // limpo está variável que é o controle para disparar o evento onMouseDrag
-            mouseDown = null;
-
-            // customized event
-            event = {
-                type: 'onMouseUp',
-                point: {
-                    inDocument: point.create(event.x, event.y),
-                    inCanvas: point.create(pointInCanvas),
-                    inView: point.create(pointInView)
-                },
-                now: new Date().toISOString()
-            };
-
-            // propagação do evento para tools ativas
-            var tools = store.list(),
-                t = tools.length;
-            while (t--) {
-                if (tools[t].active) {
-                    tools[t].events.notify('onMouseUp', event);
-                }
-            }
-        }
-
-        // Mouse Drag vinculado ao o evento Mouse Move do componente <canvas>
-        function onMouseDrag(event) {
-            // se Mouse Down preenchido 
-            if (mouseDown) {
-
-                var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                    pointInView = view.transform.inverseTransform(pointInCanvas);
-
-                var pointFirst = point.create(mouseDown),
-                    pointLast = point.create(pointInView);
-
-                // os pontos de inicio e fim devem ser diferentes para o evento ser disparado
-                //                if ((pointFirst.x != pointLast.x) || (pointFirst.y != pointLast.y)) {
-                if (!pointFirst.equals(pointLast)) {
-
-                    event = {
-                        type: 'onMouseDrag',
-                        point: {
-                            inDocument: point.create(event.x, event.y),
-                            inCanvas: point.create(pointInCanvas),
-                            first: pointFirst,
-                            last: pointLast,
-                        },
-                        now: new Date().toISOString()
-                    }
-
-                    var tools = store.list(),
-                        t = tools.length;
-                    while (t--) {
-                        if (tools[t].active) {
-                            tools[t].events.notify('onMouseDrag', event);
-                        }
-                    }
-
-                }
-            }
-        }
-
-        function onMouseMove(event) {
-
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas);
-
-            // 2014.12.05 - lilo - cópia de código errado - VERIFICAR!
-            // pointInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y);
-
-            // customized event
-            event = {
-                type: 'onMouseMove',
-                point: {
-                    inDocument: point.create(event.x, event.y),
-                    inCanvas: point.create(pointInCanvas),
-                    inView: point.create(pointInView)
-                },
-                now: new Date().toISOString()
-            };
-
-            var tools = store.list(),
-                t = tools.length;
-            while (t--) {
-                if (tools[t].active) {
-                    tools[t].events.notify('onMouseMove', event);
-                }
-            }
-        }
-
-        function onMouseLeave(event) {
-            mouseDown = null;
-        }
-
-        function onMouseWheel(event) {
-
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
-                pointInView = view.transform.inverseTransform(pointInCanvas);
-
-            // customized event
-            event = {
-                type: 'onMouseWheel',
-                delta: event.deltaY,
-                point: point.create(pointInView),
-                now: new Date().toISOString()
-            };
-
-            var tools = store.list(),
-                t = tools.length;
-            while (t--) {
-                if (tools[t].active) {
-                    tools[t].events.notify('onMouseWheel', event);
-                }
-            }
-        }
-
-        // vinculando os eventos ao component html 
-        window.addEventListener('keydown', onKeyDown, false);
-        viewPort.onmousedown = onMouseDown;
-        viewPort.onmouseup = onMouseUp;
-        viewPort.addEventListener('mousemove', onMouseDrag, false);
-        viewPort.addEventListener('mousemove', onMouseMove, false);
-        viewPort.onmouseleave = onMouseLeave;
-        viewPort.onmousewheel = onMouseWheel;
-
-        return true;
-    }
-
-    function create(attrs) {
-        if (typeof attrs == 'function') {
-            throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-        }
-
-        var uuid = types.math.uuid(9, 16);
-
-        attrs = types.object.merge({
-            uuid: uuid,
-            name: 'tool - '.concat(uuid),
-            events: types.object.event.create(),
-            active: false
-        }, attrs);
-
-        // nova tool
-        var tool = new Tool(attrs)
-
-        store.add(tool.uuid, tool);
-
-        return tool;
-    }
-
-    function list() {
-        return store.list();
-    }
-
-    function find(uuid) {
-        return store.find(uuid);
-    }
-
-    function remove(uuid) {
-        return store.remove(uuid);
-    }
-
-
-    exports.initialize = initialize;
-
-    exports.create = create;
-    exports.list = list;
-    exports.find = find;
-    exports.remove = remove;
-});
-define("plane/structure/view", ['require', 'exports'], function (require, exports) {
-
-    var matrix = require('plane/geometric/matrix');
-
-    var layer = require('plane/structure/layer'),
-        point = require('plane/structure/point');
-
-    var types = require('plane/utility/types');
-
-
-    var viewPort = null,
-        canvas = null,
-        _context = null,
-        _transform = null,
-        _zoom = 1,
-        _center = point.create(0, 0),
-        size = {
-            height: 0,
-            width: 0
-        },
-        bounds = {
-            x: 0,
-            y: 0,
-            height: 0,
-            width: 0
-        };
-
-
-
-
-    function initialize(config) {
-
-        viewPort = config.viewPort;
-        canvas = config.canvas;
-        _context = canvas.getContext('2d');
-
-        // sistema cartesiano de coordenadas
-        _context.translate(0, viewPort.clientHeight);
-        _context.scale(1, -1);
-
-        // created the matrix transform
-        _transform = matrix.create();
-
-        // o centro inicial
-        _center = _center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
-
-        // os tamanhos que são fixos
-        size.height = viewPort.clientHeight;
-        size.width = viewPort.clientWidth;
-
-
-        window.onresize = function () {
-
-            canvas.width = viewPort.clientWidth;
-            canvas.height = viewPort.clientHeight;
-
-            // os tamanhos que são fixos
-            size.height = viewPort.clientHeight;
-            size.width = viewPort.clientWidth;
-
-
-            // sistema cartesiano de coordenadas
-            canvas.getContext('2d').translate(0, viewPort.clientHeight);
-            canvas.getContext('2d').scale(1, -1);
-
-            update();
-
-            events.notify('onResize', {
-                size: size,
-                now: new Date().toISOString()
-            });
-        };
-
-
-    }
-
-
-
-    function update() {
-
-
-        // clear context, +1 is needed on some browsers to really clear the borders
-        _context.clearRect(0, 0, viewPort.clientWidth + 1, viewPort.clientHeight + 1);
-
-        var layers = layer.list(),
-            l = layers.length;
-        while (l--) {
-            var shapes = layers[l].children.list(),
-                s = shapes.length;
-
-            // style of layer
-            _context.lineCap = layers[l].style.lineCap;
-            _context.lineJoin = layers[l].style.lineJoin;
-
-            while (s--) {
-                shapes[s].render(_context, _transform);
-            }
-        }
-        return this;
-    }
-
-
-
-
-
-    function zoomTo(zoom, center) {
-
-        var factor, motion;
-
-        factor = zoom / _zoom;
-
-        _transform.scale({
-            x: factor,
-            y: factor
-        }, _center);
-
-        _zoom = zoom;
-
-
-        var centerSubtract = center.subtract(_center);
-        centerSubtract = centerSubtract.negate();
-
-        var xxx = matrix.create();
-        xxx.translate(centerSubtract.x, centerSubtract.y);
-
-        _transform.concate(xxx);
-
-        _center = center;
-
-        update();
-
-        return true;
-    }
-
-
-
-
-    function reset() {
-        zoomTo(1, point.create(size.width / 2, size.height / 2));
-    }
-
-
-    Object.defineProperty(exports, 'context', {
-        get: function () {
-            return _context;
-        }
-    });
-
-    Object.defineProperty(exports, 'transform', {
-        get: function () {
-            return _transform;
-        }
-    });
-
-    Object.defineProperty(exports, 'size', {
-        get: function () {
-            return size;
-        }
-    });
-
-    Object.defineProperty(exports, 'bounds', {
-        get: function () {
-            var scale = Math.sqrt(_transform.a * _transform.d);
-
-            return {
-                x: _transform.tx,
-                y: _transform.ty,
-                height: size.height * scale,
-                width: size.width * scale
-            }
-        }
-    });
-
-    Object.defineProperty(exports, 'center', {
-        get: function () {
-            return _center;
-        },
-        set: function (value) {
-
-            var centerSubtract = value.subtract(_center);
-            centerSubtract = centerSubtract.negate();
-
-            var xxx = matrix.create();
-            xxx.translate(centerSubtract.x, centerSubtract.y);
-
-            _transform.concate(xxx);
-
-            _center = value;
-
-            update();
-
-            return true;
-        }
-    });
-
-    Object.defineProperty(exports, 'zoom', {
-        get: function () {
-            return _zoom;
-        },
-        set: function (value) {
-
-            var factor, motion;
-
-            factor = value / _zoom;
-
-            _transform.scale({
-                x: factor,
-                y: factor
-            }, _center);
-
-            _zoom = value;
-
-            update();
-
-            return true;
-        }
-    });
-
-
-    var events = types.object.event.create();
-
-
-    exports.initialize = initialize;
-    exports.update = update;
-    exports.zoomTo = zoomTo;
-    exports.reset = reset;
-    exports.events = events;
+    };
 
 });
-define("plane/utility/types", ['require', 'exports'], function (require, exports) {
+define("utility", ['require', 'exports'], function (require, exports) {
 
     var math = {
         uuid: function (length, radix) {
@@ -3932,6 +3944,7 @@ define("plane/utility/types", ['require', 'exports'], function (require, exports
     var object = {
         inherits: function (f, p) {
             f.prototype = new p();
+            f.constructor = f;
             return f;
         },
         /*

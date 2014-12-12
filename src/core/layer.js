@@ -1,8 +1,8 @@
-define("plane/structure/layer", ['require', 'exports'], function (require, exports) {
+define("plane/core/layer", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
-    var store = types.data.dictionary.create();
+    var store = utility.data.dictionary.create();
 
     var _active = null;
 
@@ -35,10 +35,10 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
             throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        var uuid = types.math.uuid(9, 16);
+        var uuid = utility.math.uuid(9, 16);
 
         // parametros para a nova Layer
-        attrs = types.object.merge({
+        attrs = utility.object.merge({
             uuid: uuid,
             name: 'Layer '.concat(uuid),
             style: {
@@ -48,8 +48,8 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
                 lineColor: 'rgb(0, 0, 0)',
             },
             status: 'visible',
-            children: types.data.dictionary.create(),
-            events: types.object.event.create()
+            children: utility.data.dictionary.create(),
+            events: utility.object.event.create()
         }, attrs);
         // parametros para a nova Layer
 
@@ -94,7 +94,19 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
             return _active;
 
         },
-        set: function (uuid) {
+        set: function (value) {
+
+
+            
+
+
+            
+            
+            
+
+            throw new Error('Layer - active - parameter is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+
+
 
             // só altero a layer quando é diferente, isso para não gerar eventos não desejados
             if (_active.uuid != uuid) {
@@ -116,12 +128,12 @@ define("plane/structure/layer", ['require', 'exports'], function (require, expor
                     });
                 }
             }
-            
+
         }
     });
 
 
-    exports.events = types.object.event.create();
+    exports.events = utility.object.event.create();
     exports.create = create;
     exports.list = list;
     exports.find = find;

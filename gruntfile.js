@@ -13,6 +13,7 @@ module.exports = function (grunt) {
         dirs: {
             dist: '<%= pkg.directories.dist %>',
             doc: '<%= pkg.directories.doc %>',
+            lib: '<%= pkg.directories.lib %>',
             src: '<%= pkg.directories.src %>',
             test: '<%= pkg.directories.test %>'
         },
@@ -23,19 +24,19 @@ module.exports = function (grunt) {
                 ' * <%= pkg.name %> version: <%= pkg.version %>\n' +
                 ' * licensed by Creative Commons Attribution-ShareAlike 3.0\n' +
                 ' *\n' +
-                ' * Copyright - C37 http://c37.co - 2014\n' +
+                ' * Copyright - C37 - http://c37.co - <%= grunt.template.today("yyyy") %>\n' +
                 ' */'
         },
         concat: {
             browser: {
-                src: ['<%= dirs.src %>/**/*.js', '!<%= dirs.src %>/utility/module.js'],
+                src: [ '<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'
             },
             amd: {
                 options: {
                     banner: '<%= meta.banner %>\n'
                 },
-                src: ['<%= dirs.src %>/**/*.js', '!<%= dirs.src %>/utility/module.js'],
+                src: [ '<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.amd.js'
             }
         },
@@ -80,7 +81,7 @@ module.exports = function (grunt) {
         },
         browser: {
             dist: {
-                src: ['<%= dirs.src %>/utility/module.js', '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'],
+                src: ['<%= dirs.lib %>/module.js', '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'],
                 dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js',
                 options: {
                     namespace: "plane"

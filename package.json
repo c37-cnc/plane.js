@@ -13,7 +13,7 @@
         "email": "lilo@c37.co"
     },
     "contributors": [{
-        "name": "Andréa Fabiana de Oliveira",
+        "name": "Andréa Fabiana Maciel",
         "email": "ser@c37.co"
     }],
     "main": "./src/main.js",
@@ -21,6 +21,7 @@
     "directories": {
         "dist": "./dist",
         "doc": "./doc",
+        "lib": "./lib",
         "src": "./src",
         "test": "./test"
     },

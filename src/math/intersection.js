@@ -1,9 +1,9 @@
 // https://github.com/thelonious/js-intersections
 // http://www.kevlindev.com/gui/math/intersection/index.htm
-define("plane/geometric/intersection", ['require', 'exports'], function (require, exports) {
+define("plane/math/intersection", ['require', 'exports'], function (require, exports) {
 
-    var polynomial = require('plane/geometric/polynomial'),
-        point = require('plane/structure/point');
+    var polynomial = require('plane/math/polynomial'),
+        point = require('plane/core/point');
 
 
     function Bezout(e1, e2) {

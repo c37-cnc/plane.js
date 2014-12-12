@@ -1,24 +1,24 @@
-define("plane/structure/shape", ['require', 'exports'], function (require, exports) {
+define("plane/core/shape", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        layer = require('plane/structure/layer');
+    var point = require('plane/core/point'),
+        layer = require('plane/core/layer');
 
     var shapeType = {
-        'arc': require('plane/shapes/arc'),
-        'bezier-cubic': require('plane/shapes/bezier-cubic'),
-        'bezier-quadratic': require('plane/shapes/bezier-quadratic'),
-        'circle': require('plane/shapes/circle'),
-        'ellipse': require('plane/shapes/ellipse'),
-        'line': require('plane/shapes/line'),
-        'polygon': require('plane/shapes/polygon'),
-        'polyline': require('plane/shapes/polyline'),
-        'rectangle': require('plane/shapes/rectangle'),
-        'spline': require('plane/shapes/spline')
+        'arc': require('plane/object/arc'),
+        'bezier-cubic': require('plane/object/bezier-cubic'),
+        'bezier-quadratic': require('plane/object/bezier-quadratic'),
+        'circle': require('plane/object/circle'),
+        'ellipse': require('plane/object/ellipse'),
+        'line': require('plane/object/line'),
+        'polygon': require('plane/object/polygon'),
+        'polyline': require('plane/object/polyline'),
+        'rectangle': require('plane/object/rectangle'),
+        'spline': require('plane/object/spline')
     };
 
 
@@ -35,8 +35,8 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
 
 
         // atributos 
-        attrs = types.object.merge({
-            uuid: types.math.uuid(9, 16),
+        attrs = utility.object.merge({
+            uuid: utility.math.uuid(9, 16),
         }, attrs);
 
         // criando pelo type
@@ -65,12 +65,12 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         if ((param == null) || (param == undefined)) return;
         
         // param como string == uuid
-        if (types.conversion.toType(param) == 'string') {
+        if (utility.conversion.toType(param) == 'string') {
             return layer.active.children.remove(param);
         }
 
         // param como object == shape
-        if (types.conversion.toType(param) == 'object') {
+        if (utility.conversion.toType(param) == 'object') {
             return layer.active.children.remove(param.uuid);
         }
 
@@ -87,12 +87,12 @@ define("plane/structure/shape", ['require', 'exports'], function (require, expor
         if ((param == null) || (param == undefined)) return;
 
         // param como string == uuid
-        if (types.conversion.toType(param) == 'string') {
+        if (utility.conversion.toType(param) == 'string') {
             return layer.active.children.find(param);
         }
 
         // param como object == shape
-        if (types.conversion.toType(param) == 'object') {
+        if (utility.conversion.toType(param) == 'object') {
             return layer.active.children.find(param.uuid);
         }
 

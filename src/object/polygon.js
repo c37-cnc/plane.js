@@ -1,12 +1,12 @@
-define("plane/shapes/line", ['require', 'exports'], function (require, exports) {
+define("plane/object/polygon", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
 
     /**
@@ -19,7 +19,7 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
      * @class Shape
      * @constructor
      */
-    var Line = types.object.inherits(function Line(attrs) {
+    var Polygon = utility.object.inherits(function Polygon(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -37,34 +37,36 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
         this.status = null;
         this.style = null;
 
-        this.from = null;
-        this.to = null;
+        this.center = null;
+        this.sides = null;
+        this.radius = null;
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
-    Line.prototype.calculeSegments = function () {
+    Polygon.prototype.calculeSegments = function () {
 
-        this.segments.push({
-            x: this.from.x,
-            y: this.from.y
-        });
-        this.segments.push({
-            x: this.to.x,
-            y: this.to.y
-        });
+        for (var i = 0; i <= this.sides; i++) {
+
+            var pointX = (this.radius * Math.cos(((Math.PI * 2) / this.sides) * i) + this.center.x),
+                pointY = (this.radius * Math.sin(((Math.PI * 2) / this.sides) * i) + this.center.y);
+
+            this.segments.push({
+                x: pointX,
+                y: pointY
+            });
+        }
 
         return true;
 
     }
 
 
-
     function create(attrs) {
         // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Polygon - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
         // 1 - verificações de quais atributos são usados
@@ -74,14 +76,13 @@ define("plane/shapes/line", ['require', 'exports'], function (require, exports) 
 
 
         // 3 - conversões dos atributos
-        attrs.from = point.create(attrs.from);
-        attrs.to = point.create(attrs.to);
+        attrs.center = point.create(attrs.center);
 
         // 4 - caso update de um shape não merge em segments
         delete attrs['segments'];
 
         // 5 - criando um novo shape do tipo arco
-        return new Line(attrs);
+        return new Polygon(attrs);
     };
 
     exports.create = create;

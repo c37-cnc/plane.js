@@ -1,6 +1,6 @@
-define("plane/structure/point", ['require', 'exports'], function (require, exports) {
+define("plane/core/point", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
     function Point(x, y) {
         this.x = x;
@@ -53,9 +53,9 @@ define("plane/structure/point", ['require', 'exports'], function (require, expor
 
         if (arguments.length == 2 && (arguments[0] != null && arguments[1] != null)) {
             return new Point(arguments[0], arguments[1]);
-        } else if (arguments.length == 1 && (types.conversion.toType(arguments[0]) == 'object') && (arguments[0].x != null && arguments[0].y != null)) {
+        } else if (arguments.length == 1 && (utility.conversion.toType(arguments[0]) == 'object') && (arguments[0].x != null && arguments[0].y != null)) {
             return new Point(arguments[0].x, arguments[0].y);
-        } else if (arguments.length == 1 && (types.conversion.toType(arguments[0]) == 'array') && (arguments[0].length == 2)) {
+        } else if (arguments.length == 1 && (utility.conversion.toType(arguments[0]) == 'array') && (arguments[0].length == 2)) {
             return new Point(arguments[0][0], arguments[0][1]);
         }
 

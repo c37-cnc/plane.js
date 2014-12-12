@@ -1,12 +1,12 @@
-define("plane/shapes/ellipse", ['require', 'exports'], function (require, exports) {
+define("plane/object/ellipse", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
 
     /**
@@ -20,7 +20,7 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
      * @class Ellipse
      * @constructor
      */
-    var Ellipse = types.object.inherits(function Ellipse(attrs) {
+    var Ellipse = utility.object.inherits(function Ellipse(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -48,11 +48,11 @@ define("plane/shapes/ellipse", ['require', 'exports'], function (require, export
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
     Ellipse.prototype.calculeSegments = function () {
 
-        var angle = (this.startAngle != undefined && this.endAngle != undefined) ? this.angle : types.math.radians(this.angle) || 0;
+        var angle = (this.startAngle != undefined && this.endAngle != undefined) ? this.angle : utility.math.radians(this.angle) || 0;
         var startAngle = this.startAngle || 0;
         var endAngle = this.endAngle || (2.0 * Math.PI);
 

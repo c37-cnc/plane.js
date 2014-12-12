@@ -1,10 +1,10 @@
-define("plane/structure/tool", ['require', 'exports'], function (require, exports) {
+define("plane/core/tool", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
-    var store = types.data.dictionary.create();
+    var store = utility.data.dictionary.create();
 
-    var point = require('plane/structure/point');
+    var point = require('plane/core/point');
 
     var viewPort = null,
         view = null,
@@ -60,7 +60,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
                 altKey: event.altKey,
                 ctrlKey: event.ctrlKey,
                 shiftKey: event.shiftKey,
-                key: types.string.fromKeyPress(event.keyCode),
+                key: utility.string.fromKeyPress(event.keyCode),
                 now: new Date().toISOString()
             };
 
@@ -77,7 +77,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
         function onMouseDown(event) {
 
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+            var pointInCanvas = utility.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // dizendo que o mouse preenche o evento down
@@ -111,7 +111,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
         function onMouseUp(event) {
 
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+            var pointInCanvas = utility.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // limpo está variável que é o controle para disparar o evento onMouseDrag
@@ -143,7 +143,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             // se Mouse Down preenchido 
             if (mouseDown) {
 
-                var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                var pointInCanvas = utility.graphic.mousePosition(viewPort, event.x, event.y),
                     pointInView = view.transform.inverseTransform(pointInCanvas);
 
                 var pointFirst = point.create(mouseDown),
@@ -178,11 +178,11 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
         function onMouseMove(event) {
 
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+            var pointInCanvas = utility.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // 2014.12.05 - lilo - cópia de código errado - VERIFICAR!
-            // pointInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y);
+            // pointInCanvas = utility.graphic.canvasPosition(viewPort, event.x, event.y);
 
             // customized event
             event = {
@@ -210,7 +210,7 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
 
         function onMouseWheel(event) {
 
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+            var pointInCanvas = utility.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // customized event
@@ -247,12 +247,12 @@ define("plane/structure/tool", ['require', 'exports'], function (require, export
             throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        var uuid = types.math.uuid(9, 16);
+        var uuid = utility.math.uuid(9, 16);
 
-        attrs = types.object.merge({
+        attrs = utility.object.merge({
             uuid: uuid,
             name: 'tool - '.concat(uuid),
-            events: types.object.event.create(),
+            events: utility.object.event.create(),
             active: false
         }, attrs);
 

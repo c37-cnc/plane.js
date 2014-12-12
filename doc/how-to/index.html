@@ -221,7 +221,7 @@
             });
             toolPan.events.listen('onMouseDrag', function (event) {
 
-                var moveFactor = event.pointFirst.subtract(event.pointLast);
+                var moveFactor = event.point.first.subtract(event.point.last);
                 var newCenter = plane.view.center.sum(moveFactor);
 
                 plane.view.center = newCenter;
@@ -283,19 +283,20 @@
 
                 plane.shape.create({
                     type: 'rectangle',
-                    from: [event.pointFirst.x, event.pointFirst.y],
-                    to: [event.pointLast.x, event.pointLast.y],
+                    from: [event.point.first.x, event.point.first.y],
+                    to: [event.point.last.x, event.point.last.y],
                     status: 'temporary'
                 });
 
 
                 plane.layer.active.children.list().forEach(function (shape) {
-                    if (shape.intersect({
-                        x: event.pointFirst.x,
-                        y: event.pointFirst.y,
-                        height: event.pointLast.subtract(event.pointFirst).y,
-                        width: event.pointLast.subtract(event.pointFirst).x,
-                    })) {
+                    
+                    var rectangle = {
+                        to: event.point.first,
+                        from: event.point.last
+                    };
+                    
+                    if (shape.intersect(rectangle)) {
 
                         console.log(shape.name);
 

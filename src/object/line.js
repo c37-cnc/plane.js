@@ -1,12 +1,12 @@
-define("plane/shapes/polyline", ['require', 'exports'], function (require, exports) {
+define("plane/object/line", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
 
     /**
@@ -19,7 +19,7 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
      * @class Shape
      * @constructor
      */
-    var Polyline = types.object.inherits(function Polyline(attrs) {
+    var Line = utility.object.inherits(function Line(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -37,19 +37,28 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
         this.status = null;
         this.style = null;
 
-        this.points = null;
+        this.from = null;
+        this.to = null;
 
         this.initialize(attrs);
 
-    }, object.Base);
-    
-    Polyline.prototype.calculeSegments = function(){
-        
-        this.segments = this.points;
-        
+    }, shape.Base);
+
+    Line.prototype.calculeSegments = function () {
+
+        this.segments.push({
+            x: this.from.x,
+            y: this.from.y
+        });
+        this.segments.push({
+            x: this.to.x,
+            y: this.to.y
+        });
+
         return true;
-        
+
     }
+
 
 
     function create(attrs) {
@@ -65,16 +74,16 @@ define("plane/shapes/polyline", ['require', 'exports'], function (require, expor
 
 
         // 3 - conversões dos atributos
-        attrs.points = attrs.points.map(function(item){
-            return point.create(item);
-        });
+        attrs.from = point.create(attrs.from);
+        attrs.to = point.create(attrs.to);
 
         // 4 - caso update de um shape não merge em segments
         delete attrs['segments'];
 
         // 5 - criando um novo shape do tipo arco
-        return new Polyline(attrs);
+        return new Line(attrs);
     };
 
     exports.create = create;
+
 });

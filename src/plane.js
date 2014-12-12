@@ -3,21 +3,21 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var version = '3.0.0',
         authors = ['lilo@c37.co', 'ser@c37.co'];
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
-    var matrix = require('plane/geometric/matrix');
+    var matrix = require('plane/math/matrix');
 
-    var layer = require('plane/structure/layer'),
-        point = require('plane/structure/point'),
-        shape = require('plane/structure/shape'),
-        group = require('plane/structure/group'),
-        tool = require('plane/structure/tool'),
-        view = require('plane/structure/view');
+    var layer = require('plane/core/layer'),
+        point = require('plane/core/point'),
+        shape = require('plane/core/shape'),
+        group = require('plane/core/group'),
+        tool = require('plane/core/tool'), 
+        view = require('plane/core/view');
 
     var importer = require('plane/data/importer'),
         exporter = require('plane/data/exporter');
 
-    var viewPort = null;
+    var viewPort = null; 
 
 
     function initialize(config) {
@@ -30,7 +30,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (config.viewPort == null) {
             throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-
+        
         // save in variable viewPort
         viewPort = config.viewPort;
 
@@ -38,7 +38,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // montando o render de Plane
         var canvas = document.createElement('canvas');
 
-        canvas.id = types.math.uuid(9, 16);
+        canvas.id = utility.math.uuid(9, 16);
         canvas.width = viewPort.clientWidth;
         canvas.height = viewPort.clientHeight;
 

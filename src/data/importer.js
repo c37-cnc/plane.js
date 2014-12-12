@@ -1,6 +1,6 @@
 define("plane/data/importer", ['require', 'exports'], function (require, exports) {
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
     function parseDxf(stringDxf) {
 
@@ -10,12 +10,12 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
             case 'arc':
                 {
                     var arc = '{"type": "arc", "center": [{0}, {1}], "radius": {2}, "startAngle": {3}, "endAngle": {4} },';
-                    return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1]);
+                    return utility.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1]);
                 }
             case 'circle':
                 {
                     var circle = '{ "type": "circle", "center": [{0}, {1}], "radius": {2} },';
-                    return types.string.format(circle, [objectDxf.x, objectDxf.y, objectDxf.r]);
+                    return utility.string.format(circle, [objectDxf.x, objectDxf.y, objectDxf.r]);
                 }
             case 'ellipse':
                 {
@@ -42,12 +42,12 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
 
 
-                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, endAngle, angle]);
+                    return utility.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, endAngle, angle]);
                 }
             case 'line':
                 {
                     var line = '{ "type": "line", "from": [{0}, {1}], "to": [{2}, {3}] },';
-                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
+                    return utility.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
                 }
             case 'lwpolyline':
                 {
@@ -58,10 +58,10 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                         for (var i = 0; i < objectDxf.vertices.length; i++) {
 
                             var point = i == objectDxf.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
+                            points += utility.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
 
                         }
-                        return types.string.format(polyline, [points]);
+                        return utility.string.format(polyline, [points]);
                     }
                     return '';
                 }
@@ -74,10 +74,10 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                         for (var i = 0; i < objectDxf.vertices.length; i++) {
 
                             var point = i == objectDxf.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
+                            points += utility.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
 
                         }
-                        return types.string.format(polyline, [points]);
+                        return utility.string.format(polyline, [points]);
                     }
                     return '';
                 }
@@ -90,10 +90,10 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                         for (var i = 0; i < objectDxf.points.length; i++) {
 
                             var point = i == objectDxf.points.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
+                            points += utility.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
 
                         }
-                        return types.string.format(spline, [objectDxf.degree, objectDxf.knots.join(), points]);
+                        return utility.string.format(spline, [objectDxf.degree, objectDxf.knots.join(), points]);
                     }
                     return '';
                 }
@@ -137,9 +137,9 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 if (objectParse.type == 'spline') {
                     // caso necessário crio um array de points
                     objectParse.points = objectParse.points || [];
-                    objectParse.points.push([types.math.parseFloat(stringLine, 5), 0]);
+                    objectParse.points.push([utility.math.parseFloat(stringLine, 5), 0]);
                 } else {
-                    objectParse.x = types.math.parseFloat(stringLine, 5);
+                    objectParse.x = utility.math.parseFloat(stringLine, 5);
                 }
                 stringAux = '';
                 continue;
@@ -149,7 +149,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 continue;
             }
             if (stringAux == ' 11') {
-                objectParse.x1 = types.math.parseFloat(stringLine, 5);
+                objectParse.x1 = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -165,9 +165,9 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 // verificação especifica para spline
                 if (objectParse.type == 'spline') {
                     // localizando o ultimo point de points para completar add ao valor de y
-                    objectParse.points[objectParse.points.length - 1][1] = types.math.parseFloat(stringLine, 5);
+                    objectParse.points[objectParse.points.length - 1][1] = utility.math.parseFloat(stringLine, 5);
                 } else {
-                    objectParse.y = types.math.parseFloat(stringLine, 5);
+                    objectParse.y = utility.math.parseFloat(stringLine, 5);
                 }
                 // de acordo com o tipo pegar o preenchido de x e y ?
                 // verificação especifica para lwpolyline e polyline
@@ -188,7 +188,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 continue;
             }
             if (stringAux == ' 21') {
-                objectParse.y1 = types.math.parseFloat(stringLine, 5);
+                objectParse.y1 = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -203,9 +203,9 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 if (objectParse.type == 'spline') {
                     // caso necessário crio um array de points
                     objectParse.knots = objectParse.knots || [];
-                    objectParse.knots.push(types.math.parseFloat(stringLine, 5));
+                    objectParse.knots.push(utility.math.parseFloat(stringLine, 5));
                 } else {
-                    objectParse.r = types.math.parseFloat(stringLine, 5);
+                    objectParse.r = utility.math.parseFloat(stringLine, 5);
                 }
                 stringAux = '';
                 continue;
@@ -217,7 +217,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
 
             if (stringAux == ' 41') {
-                objectParse.startAngle = types.math.parseFloat(stringLine, 5);
+                objectParse.startAngle = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -227,7 +227,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
             }
 
             if (stringAux == ' 42') {
-                objectParse.endAngle = types.math.parseFloat(stringLine, 5);
+                objectParse.endAngle = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -238,7 +238,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
 
             if (stringAux == ' 50') {
-                objectParse.a0 = types.math.parseFloat(stringLine, 5);
+                objectParse.a0 = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -247,7 +247,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 continue;
             }
             if (stringAux == ' 51') {
-                objectParse.a1 = types.math.parseFloat(stringLine, 5);
+                objectParse.a1 = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -258,7 +258,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
 
             if (stringAux == ' 71') {
-                objectParse.degree = types.math.parseFloat(stringLine, 5);
+                objectParse.degree = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }

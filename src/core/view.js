@@ -1,11 +1,11 @@
-define("plane/structure/view", ['require', 'exports'], function (require, exports) {
+define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
-    var matrix = require('plane/geometric/matrix');
+    var matrix = require('plane/math/matrix');
 
-    var layer = require('plane/structure/layer'),
-        point = require('plane/structure/point');
+    var layer = require('plane/core/layer'),
+        point = require('plane/core/point');
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
 
     var viewPort = null,
@@ -217,7 +217,7 @@ define("plane/structure/view", ['require', 'exports'], function (require, export
     });
 
 
-    var events = types.object.event.create();
+    var events = utility.object.event.create();
 
 
     exports.initialize = initialize;

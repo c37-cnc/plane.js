@@ -1,12 +1,12 @@
-define("plane/shapes/spline", ['require', 'exports'], function (require, exports) {
+define("plane/object/spline", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
 
     /**
@@ -19,7 +19,7 @@ define("plane/shapes/spline", ['require', 'exports'], function (require, exports
      * @class Shape
      * @constructor
      */
-    var Spline = types.object.inherits(function Spline(attrs) {
+    var Spline = utility.object.inherits(function Spline(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -43,7 +43,7 @@ define("plane/shapes/spline", ['require', 'exports'], function (require, exports
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
     Spline.prototype.calculeSegments = function () {
 

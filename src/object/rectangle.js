@@ -1,12 +1,12 @@
-define("plane/shapes/rectangle", ['require', 'exports'], function (require, exports) {
+define("plane/object/rectangle", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
 
     /**
@@ -19,7 +19,7 @@ define("plane/shapes/rectangle", ['require', 'exports'], function (require, expo
      * @class Shape
      * @constructor
      */
-    var Rectangle = types.object.inherits(function Rectangle(attrs) {
+    var Rectangle = utility.object.inherits(function Rectangle(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -42,7 +42,7 @@ define("plane/shapes/rectangle", ['require', 'exports'], function (require, expo
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
     Rectangle.prototype.calculeSegments = function () {
 

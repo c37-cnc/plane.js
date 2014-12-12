@@ -1,11 +1,11 @@
-define("plane/shapes/object", ['require', 'exports'], function (require, exports) {
+define("plane/object/shape", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point');
+    var point = require('plane/core/point');
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -23,10 +23,10 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
         initialize: function (attrs) {
 
             // o nome do shape
-            attrs.name = types.string.format('{0} - {1}', [attrs.type, attrs.uuid]);
+            attrs.name = utility.string.format('{0} - {1}', [attrs.type, attrs.uuid]);
 
             // completando os campos do shape
-            types.object.extend(this, attrs);
+            utility.object.extend(this, attrs);
 
             // calculando os segmentos
             this.calculeSegments();
@@ -125,11 +125,11 @@ define("plane/shapes/object", ['require', 'exports'], function (require, exports
             //                type: this.type,
             //                name: this.name,
             //                status: this.status,
-            //                x: types.math.parseFloat(this.point.x, 5),
-            //                y: types.math.parseFloat(this.point.y, 5),
-            //                radius: types.math.parseFloat(this.radius, 5),
-            //                startAngle: types.math.parseFloat(this.startAngle, 5),
-            //                endAngle: types.math.parseFloat(this.endAngle, 5),
+            //                x: utility.math.parseFloat(this.point.x, 5),
+            //                y: utility.math.parseFloat(this.point.y, 5),
+            //                radius: utility.math.parseFloat(this.radius, 5),
+            //                startAngle: utility.math.parseFloat(this.startAngle, 5),
+            //                endAngle: utility.math.parseFloat(this.endAngle, 5),
             //                clockWise: this.clockWise
             //            };
 

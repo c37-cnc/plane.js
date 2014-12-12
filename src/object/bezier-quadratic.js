@@ -1,12 +1,12 @@
-define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (require, exports) {
+define("plane/object/bezier-quadratic", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
 
     /**
@@ -21,7 +21,7 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
      * @constructor
      */
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-    var BezierQuadratic = types.object.inherits(function BezierQuadratic(attrs) {
+    var BezierQuadratic = utility.object.inherits(function BezierQuadratic(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -43,7 +43,7 @@ define("plane/shapes/bezier-quadratic", ['require', 'exports'], function (requir
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
 
     // https://github.com/MartinDoms/Splines/blob/master/quadraticBezier.js

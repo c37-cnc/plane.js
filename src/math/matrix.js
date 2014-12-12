@@ -1,4 +1,4 @@
-define("plane/geometric/matrix", ['require', 'exports'], function (require, exports) {
+define("plane/math/matrix", ['require', 'exports'], function (require, exports) {
 
     // http://www.senocular.com/flash/tutorials/transformmatrix/
     // https://github.com/heygrady/transform/wiki/Calculating-2d-Matrices
@@ -187,7 +187,7 @@ define("plane/geometric/matrix", ['require', 'exports'], function (require, expo
 
         },
         // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L113
-        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/shapes/group.class.js#L459
+        // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/object/group.class.js#L459
 
         // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L565
         // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js#L451

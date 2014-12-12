@@ -1,12 +1,12 @@
-define("plane/shapes/polygon", ['require', 'exports'], function (require, exports) {
+define("plane/object/polyline", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
 
     /**
@@ -19,7 +19,7 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
      * @class Shape
      * @constructor
      */
-    var Polygon = types.object.inherits(function Polygon(attrs) {
+    var Polyline = utility.object.inherits(function Polyline(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -37,36 +37,25 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
         this.status = null;
         this.style = null;
 
-        this.center = null;
-        this.sides = null;
-        this.radius = null;
+        this.points = null;
 
         this.initialize(attrs);
 
-    }, object.Base);
-
-    Polygon.prototype.calculeSegments = function () {
-
-        for (var i = 0; i <= this.sides; i++) {
-
-            var pointX = (this.radius * Math.cos(((Math.PI * 2) / this.sides) * i) + this.center.x),
-                pointY = (this.radius * Math.sin(((Math.PI * 2) / this.sides) * i) + this.center.y);
-
-            this.segments.push({
-                x: pointX,
-                y: pointY
-            });
-        }
-
+    }, shape.Base);
+    
+    Polyline.prototype.calculeSegments = function(){
+        
+        this.segments = this.points;
+        
         return true;
-
+        
     }
 
 
     function create(attrs) {
         // 0 - verificação da chamada
         if (typeof attrs == 'function') {
-            throw new Error('Polygon - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Arc - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
         // 1 - verificações de quais atributos são usados
@@ -76,15 +65,16 @@ define("plane/shapes/polygon", ['require', 'exports'], function (require, export
 
 
         // 3 - conversões dos atributos
-        attrs.center = point.create(attrs.center);
+        attrs.points = attrs.points.map(function(item){
+            return point.create(item);
+        });
 
         // 4 - caso update de um shape não merge em segments
         delete attrs['segments'];
 
         // 5 - criando um novo shape do tipo arco
-        return new Polygon(attrs);
+        return new Polyline(attrs);
     };
 
     exports.create = create;
-
 });

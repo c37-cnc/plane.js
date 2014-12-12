@@ -1,12 +1,12 @@
-define("plane/shapes/circle", ['require', 'exports'], function (require, exports) {
+define("plane/object/circle", ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/geometric/intersection'),
-        matrix = require('plane/geometric/matrix');
+    var intersection = require('plane/math/intersection'),
+        matrix = require('plane/math/matrix');
 
-    var point = require('plane/structure/point'),
-        object = require('plane/shapes/object');
+    var point = require('plane/core/point'),
+        shape = require('plane/object/shape');
 
-    var types = require('plane/utility/types');
+    var utility = require('utility');
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -19,7 +19,7 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
      * @class Circle
      * @constructor
      */
-    var Circle = types.object.inherits(function Circle(attrs) {
+    var Circle = utility.object.inherits(function Circle(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -42,7 +42,7 @@ define("plane/shapes/circle", ['require', 'exports'], function (require, exports
 
         this.initialize(attrs);
 
-    }, object.Base);
+    }, shape.Base);
 
     Circle.prototype.calculeSegments = function () {
 
