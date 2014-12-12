@@ -1,5 +1,5 @@
 /*!
- * C37 in 12-12-2014 at 09:53:19 
+ * C37 in 12-12-2014 at 10:11:11 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -46,9 +46,9 @@ define("plane/core/group", ['require', 'exports'], function (require, exports) {
 });
 define("plane/core/layer", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility');
+    var utility = require('utility');
 
-    var store = types.data.dictionary.create();
+    var store = utility.data.dictionary.create();
 
     var _active = null;
 
@@ -81,10 +81,10 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
             throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        var uuid = types.math.uuid(9, 16);
+        var uuid = utility.math.uuid(9, 16);
 
         // parametros para a nova Layer
-        attrs = types.object.merge({
+        attrs = utility.object.merge({
             uuid: uuid,
             name: 'Layer '.concat(uuid),
             style: {
@@ -94,8 +94,8 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
                 lineColor: 'rgb(0, 0, 0)',
             },
             status: 'visible',
-            children: types.data.dictionary.create(),
-            events: types.object.event.create()
+            children: utility.data.dictionary.create(),
+            events: utility.object.event.create()
         }, attrs);
         // parametros para a nova Layer
 
@@ -142,16 +142,20 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
         },
         set: function (value) {
 
-
+            // value null || undefined == return
+            if ((value == null) || (value == undefined)) return;
             
+            var uuid;
 
+            // value como string == uuid
+            if (utility.conversion.toType(value) == 'string') {
+                uuid = value;
+            }
 
-            
-            
-            
-
-            throw new Error('Layer - active - parameter is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-
+            // value como object == shape
+            if (utility.conversion.toType(value) == 'object') {
+                uuid = value.uuid;
+            }
 
 
             // só altero a layer quando é diferente, isso para não gerar eventos não desejados
@@ -179,7 +183,7 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
     });
 
 
-    exports.events = types.object.event.create();
+    exports.events = utility.object.event.create();
     exports.create = create;
     exports.list = list;
     exports.find = find;
@@ -187,7 +191,7 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
 });
 define("plane/core/point", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility');
+    var utility = require('utility');
 
     function Point(x, y) {
         this.x = x;
@@ -240,9 +244,9 @@ define("plane/core/point", ['require', 'exports'], function (require, exports) {
 
         if (arguments.length == 2 && (arguments[0] != null && arguments[1] != null)) {
             return new Point(arguments[0], arguments[1]);
-        } else if (arguments.length == 1 && (types.conversion.toType(arguments[0]) == 'object') && (arguments[0].x != null && arguments[0].y != null)) {
+        } else if (arguments.length == 1 && (utility.conversion.toType(arguments[0]) == 'object') && (arguments[0].x != null && arguments[0].y != null)) {
             return new Point(arguments[0].x, arguments[0].y);
-        } else if (arguments.length == 1 && (types.conversion.toType(arguments[0]) == 'array') && (arguments[0].length == 2)) {
+        } else if (arguments.length == 1 && (utility.conversion.toType(arguments[0]) == 'array') && (arguments[0].length == 2)) {
             return new Point(arguments[0][0], arguments[0][1]);
         }
 
@@ -255,7 +259,7 @@ define("plane/core/point", ['require', 'exports'], function (require, exports) {
 });
 define("plane/core/shape", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility');
+    var utility = require('utility');
 
     var intersection = require('plane/math/intersection'),
         matrix = require('plane/math/matrix');
@@ -290,8 +294,8 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
 
 
         // atributos 
-        attrs = types.object.merge({
-            uuid: types.math.uuid(9, 16),
+        attrs = utility.object.merge({
+            uuid: utility.math.uuid(9, 16),
         }, attrs);
 
         // criando pelo type
@@ -320,12 +324,12 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
         if ((param == null) || (param == undefined)) return;
         
         // param como string == uuid
-        if (types.conversion.toType(param) == 'string') {
+        if (utility.conversion.toType(param) == 'string') {
             return layer.active.children.remove(param);
         }
 
         // param como object == shape
-        if (types.conversion.toType(param) == 'object') {
+        if (utility.conversion.toType(param) == 'object') {
             return layer.active.children.remove(param.uuid);
         }
 
@@ -342,12 +346,12 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
         if ((param == null) || (param == undefined)) return;
 
         // param como string == uuid
-        if (types.conversion.toType(param) == 'string') {
+        if (utility.conversion.toType(param) == 'string') {
             return layer.active.children.find(param);
         }
 
         // param como object == shape
-        if (types.conversion.toType(param) == 'object') {
+        if (utility.conversion.toType(param) == 'object') {
             return layer.active.children.find(param.uuid);
         }
 
@@ -373,9 +377,9 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
 });
 define("plane/core/tool", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility');
+    var utility = require('utility');
 
-    var store = types.data.dictionary.create();
+    var store = utility.data.dictionary.create();
 
     var point = require('plane/core/point');
 
@@ -433,7 +437,7 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
                 altKey: event.altKey,
                 ctrlKey: event.ctrlKey,
                 shiftKey: event.shiftKey,
-                key: types.string.fromKeyPress(event.keyCode),
+                key: utility.string.fromKeyPress(event.keyCode),
                 now: new Date().toISOString()
             };
 
@@ -450,7 +454,7 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
 
         function onMouseDown(event) {
 
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+            var pointInCanvas = utility.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // dizendo que o mouse preenche o evento down
@@ -484,7 +488,7 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
 
         function onMouseUp(event) {
 
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+            var pointInCanvas = utility.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // limpo está variável que é o controle para disparar o evento onMouseDrag
@@ -516,7 +520,7 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
             // se Mouse Down preenchido 
             if (mouseDown) {
 
-                var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+                var pointInCanvas = utility.graphic.mousePosition(viewPort, event.x, event.y),
                     pointInView = view.transform.inverseTransform(pointInCanvas);
 
                 var pointFirst = point.create(mouseDown),
@@ -551,11 +555,11 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
 
         function onMouseMove(event) {
 
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+            var pointInCanvas = utility.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // 2014.12.05 - lilo - cópia de código errado - VERIFICAR!
-            // pointInCanvas = types.graphic.canvasPosition(viewPort, event.x, event.y);
+            // pointInCanvas = utility.graphic.canvasPosition(viewPort, event.x, event.y);
 
             // customized event
             event = {
@@ -583,7 +587,7 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
 
         function onMouseWheel(event) {
 
-            var pointInCanvas = types.graphic.mousePosition(viewPort, event.x, event.y),
+            var pointInCanvas = utility.graphic.mousePosition(viewPort, event.x, event.y),
                 pointInView = view.transform.inverseTransform(pointInCanvas);
 
             // customized event
@@ -620,12 +624,12 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
             throw new Error('Tool - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
-        var uuid = types.math.uuid(9, 16);
+        var uuid = utility.math.uuid(9, 16);
 
-        attrs = types.object.merge({
+        attrs = utility.object.merge({
             uuid: uuid,
             name: 'tool - '.concat(uuid),
-            events: types.object.event.create(),
+            events: utility.object.event.create(),
             active: false
         }, attrs);
 
@@ -664,7 +668,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
     var layer = require('plane/core/layer'),
         point = require('plane/core/point');
 
-    var types = require('utility');
+    var utility = require('utility');
 
 
     var viewPort = null,
@@ -876,7 +880,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
     });
 
 
-    var events = types.object.event.create();
+    var events = utility.object.event.create();
 
 
     exports.initialize = initialize;
@@ -916,7 +920,7 @@ define("plane/data/exporter", ['require', 'exports'], function (require, exports
 });
 define("plane/data/importer", ['require', 'exports'], function (require, exports) {
 
-    var types = require('utility');
+    var utility = require('utility');
 
     function parseDxf(stringDxf) {
 
@@ -926,12 +930,12 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
             case 'arc':
                 {
                     var arc = '{"type": "arc", "center": [{0}, {1}], "radius": {2}, "startAngle": {3}, "endAngle": {4} },';
-                    return types.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1]);
+                    return utility.string.format(arc, [objectDxf.x, objectDxf.y, objectDxf.r, objectDxf.a0, objectDxf.a1]);
                 }
             case 'circle':
                 {
                     var circle = '{ "type": "circle", "center": [{0}, {1}], "radius": {2} },';
-                    return types.string.format(circle, [objectDxf.x, objectDxf.y, objectDxf.r]);
+                    return utility.string.format(circle, [objectDxf.x, objectDxf.y, objectDxf.r]);
                 }
             case 'ellipse':
                 {
@@ -958,12 +962,12 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
 
 
-                    return types.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, endAngle, angle]);
+                    return utility.string.format(ellipse, [objectDxf.x, objectDxf.y, radiusY, radiusX, startAngle, endAngle, angle]);
                 }
             case 'line':
                 {
                     var line = '{ "type": "line", "from": [{0}, {1}], "to": [{2}, {3}] },';
-                    return types.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
+                    return utility.string.format(line, [objectDxf.x, objectDxf.y, objectDxf.x1, objectDxf.y1]);
                 }
             case 'lwpolyline':
                 {
@@ -974,10 +978,10 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                         for (var i = 0; i < objectDxf.vertices.length; i++) {
 
                             var point = i == objectDxf.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
+                            points += utility.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
 
                         }
-                        return types.string.format(polyline, [points]);
+                        return utility.string.format(polyline, [points]);
                     }
                     return '';
                 }
@@ -990,10 +994,10 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                         for (var i = 0; i < objectDxf.vertices.length; i++) {
 
                             var point = i == objectDxf.vertices.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
+                            points += utility.string.format(point, [objectDxf.vertices[i].x, objectDxf.vertices[i].y]);
 
                         }
-                        return types.string.format(polyline, [points]);
+                        return utility.string.format(polyline, [points]);
                     }
                     return '';
                 }
@@ -1006,10 +1010,10 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                         for (var i = 0; i < objectDxf.points.length; i++) {
 
                             var point = i == objectDxf.points.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += types.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
+                            points += utility.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
 
                         }
-                        return types.string.format(spline, [objectDxf.degree, objectDxf.knots.join(), points]);
+                        return utility.string.format(spline, [objectDxf.degree, objectDxf.knots.join(), points]);
                     }
                     return '';
                 }
@@ -1053,9 +1057,9 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 if (objectParse.type == 'spline') {
                     // caso necessário crio um array de points
                     objectParse.points = objectParse.points || [];
-                    objectParse.points.push([types.math.parseFloat(stringLine, 5), 0]);
+                    objectParse.points.push([utility.math.parseFloat(stringLine, 5), 0]);
                 } else {
-                    objectParse.x = types.math.parseFloat(stringLine, 5);
+                    objectParse.x = utility.math.parseFloat(stringLine, 5);
                 }
                 stringAux = '';
                 continue;
@@ -1065,7 +1069,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 continue;
             }
             if (stringAux == ' 11') {
-                objectParse.x1 = types.math.parseFloat(stringLine, 5);
+                objectParse.x1 = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -1081,9 +1085,9 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 // verificação especifica para spline
                 if (objectParse.type == 'spline') {
                     // localizando o ultimo point de points para completar add ao valor de y
-                    objectParse.points[objectParse.points.length - 1][1] = types.math.parseFloat(stringLine, 5);
+                    objectParse.points[objectParse.points.length - 1][1] = utility.math.parseFloat(stringLine, 5);
                 } else {
-                    objectParse.y = types.math.parseFloat(stringLine, 5);
+                    objectParse.y = utility.math.parseFloat(stringLine, 5);
                 }
                 // de acordo com o tipo pegar o preenchido de x e y ?
                 // verificação especifica para lwpolyline e polyline
@@ -1104,7 +1108,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 continue;
             }
             if (stringAux == ' 21') {
-                objectParse.y1 = types.math.parseFloat(stringLine, 5);
+                objectParse.y1 = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -1119,9 +1123,9 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 if (objectParse.type == 'spline') {
                     // caso necessário crio um array de points
                     objectParse.knots = objectParse.knots || [];
-                    objectParse.knots.push(types.math.parseFloat(stringLine, 5));
+                    objectParse.knots.push(utility.math.parseFloat(stringLine, 5));
                 } else {
-                    objectParse.r = types.math.parseFloat(stringLine, 5);
+                    objectParse.r = utility.math.parseFloat(stringLine, 5);
                 }
                 stringAux = '';
                 continue;
@@ -1133,7 +1137,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
 
             if (stringAux == ' 41') {
-                objectParse.startAngle = types.math.parseFloat(stringLine, 5);
+                objectParse.startAngle = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -1143,7 +1147,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
             }
 
             if (stringAux == ' 42') {
-                objectParse.endAngle = types.math.parseFloat(stringLine, 5);
+                objectParse.endAngle = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -1154,7 +1158,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
 
             if (stringAux == ' 50') {
-                objectParse.a0 = types.math.parseFloat(stringLine, 5);
+                objectParse.a0 = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -1163,7 +1167,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
                 continue;
             }
             if (stringAux == ' 51') {
-                objectParse.a1 = types.math.parseFloat(stringLine, 5);
+                objectParse.a1 = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -1174,7 +1178,7 @@ define("plane/data/importer", ['require', 'exports'], function (require, exports
 
 
             if (stringAux == ' 71') {
-                objectParse.degree = types.math.parseFloat(stringLine, 5);
+                objectParse.degree = utility.math.parseFloat(stringLine, 5);
                 stringAux = '';
                 continue;
             }
@@ -2132,7 +2136,7 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
     var point = require('plane/core/point'),
         shape = require('plane/object/shape');
 
-    var types = require('utility');
+    var utility = require('utility');
 
 
     /**
@@ -2145,7 +2149,7 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
      * @class Shape
      * @constructor
      */
-    var Arc = types.object.inherits(function Arc(attrs) {
+    var Arc = utility.object.inherits(function Arc(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -2248,7 +2252,7 @@ define("plane/object/bezier-cubic", ['require', 'exports'], function (require, e
     var point = require('plane/core/point'),
         shape = require('plane/object/shape');
 
-    var types = require('utility');
+    var utility = require('utility');
 
 
     /**
@@ -2263,7 +2267,7 @@ define("plane/object/bezier-cubic", ['require', 'exports'], function (require, e
      * @constructor
      */
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-    var BezierCubic = types.object.inherits(function BezierCubic(attrs) {
+    var BezierCubic = utility.object.inherits(function BezierCubic(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -2362,7 +2366,7 @@ define("plane/object/bezier-quadratic", ['require', 'exports'], function (requir
     var point = require('plane/core/point'),
         shape = require('plane/object/shape');
 
-    var types = require('utility');
+    var utility = require('utility');
 
 
     /**
@@ -2377,7 +2381,7 @@ define("plane/object/bezier-quadratic", ['require', 'exports'], function (requir
      * @constructor
      */
     // https://developer.mozilla.org/en-US/docs/Web/Guide/HTML/Canvas_tutorial/Drawing_shapes#Bezier_and_quadratic_curves
-    var BezierQuadratic = types.object.inherits(function BezierQuadratic(attrs) {
+    var BezierQuadratic = utility.object.inherits(function BezierQuadratic(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -2474,7 +2478,7 @@ define("plane/object/circle", ['require', 'exports'], function (require, exports
     var point = require('plane/core/point'),
         shape = require('plane/object/shape');
 
-    var types = require('utility');
+    var utility = require('utility');
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -2487,7 +2491,7 @@ define("plane/object/circle", ['require', 'exports'], function (require, exports
      * @class Circle
      * @constructor
      */
-    var Circle = types.object.inherits(function Circle(attrs) {
+    var Circle = utility.object.inherits(function Circle(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -2577,7 +2581,7 @@ define("plane/object/ellipse", ['require', 'exports'], function (require, export
     var point = require('plane/core/point'),
         shape = require('plane/object/shape');
 
-    var types = require('utility');
+    var utility = require('utility');
 
 
     /**
@@ -2591,7 +2595,7 @@ define("plane/object/ellipse", ['require', 'exports'], function (require, export
      * @class Ellipse
      * @constructor
      */
-    var Ellipse = types.object.inherits(function Ellipse(attrs) {
+    var Ellipse = utility.object.inherits(function Ellipse(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -2623,7 +2627,7 @@ define("plane/object/ellipse", ['require', 'exports'], function (require, export
 
     Ellipse.prototype.calculeSegments = function () {
 
-        var angle = (this.startAngle != undefined && this.endAngle != undefined) ? this.angle : types.math.radians(this.angle) || 0;
+        var angle = (this.startAngle != undefined && this.endAngle != undefined) ? this.angle : utility.math.radians(this.angle) || 0;
         var startAngle = this.startAngle || 0;
         var endAngle = this.endAngle || (2.0 * Math.PI);
 
@@ -2709,7 +2713,7 @@ define("plane/object/line", ['require', 'exports'], function (require, exports) 
     var point = require('plane/core/point'),
         shape = require('plane/object/shape');
 
-    var types = require('utility');
+    var utility = require('utility');
 
 
     /**
@@ -2722,7 +2726,7 @@ define("plane/object/line", ['require', 'exports'], function (require, exports) 
      * @class Shape
      * @constructor
      */
-    var Line = types.object.inherits(function Line(attrs) {
+    var Line = utility.object.inherits(function Line(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -2798,7 +2802,7 @@ define("plane/object/polygon", ['require', 'exports'], function (require, export
     var point = require('plane/core/point'),
         shape = require('plane/object/shape');
 
-    var types = require('utility');
+    var utility = require('utility');
 
 
     /**
@@ -2811,7 +2815,7 @@ define("plane/object/polygon", ['require', 'exports'], function (require, export
      * @class Shape
      * @constructor
      */
-    var Polygon = types.object.inherits(function Polygon(attrs) {
+    var Polygon = utility.object.inherits(function Polygon(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -2888,7 +2892,7 @@ define("plane/object/polyline", ['require', 'exports'], function (require, expor
     var point = require('plane/core/point'),
         shape = require('plane/object/shape');
 
-    var types = require('utility');
+    var utility = require('utility');
 
 
     /**
@@ -2901,7 +2905,7 @@ define("plane/object/polyline", ['require', 'exports'], function (require, expor
      * @class Shape
      * @constructor
      */
-    var Polyline = types.object.inherits(function Polyline(attrs) {
+    var Polyline = utility.object.inherits(function Polyline(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -2968,7 +2972,7 @@ define("plane/object/rectangle", ['require', 'exports'], function (require, expo
     var point = require('plane/core/point'),
         shape = require('plane/object/shape');
 
-    var types = require('utility');
+    var utility = require('utility');
 
 
     /**
@@ -2981,7 +2985,7 @@ define("plane/object/rectangle", ['require', 'exports'], function (require, expo
      * @class Shape
      * @constructor
      */
-    var Rectangle = types.object.inherits(function Rectangle(attrs) {
+    var Rectangle = utility.object.inherits(function Rectangle(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -3067,7 +3071,7 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
 
     var point = require('plane/core/point');
 
-    var types = require('utility');
+    var utility = require('utility');
 
     /**
      * Lorem ipsum dolor sit amet, consectetuer adipiscing elit, sed diam
@@ -3085,10 +3089,10 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
         initialize: function (attrs) {
 
             // o nome do shape
-            attrs.name = types.string.format('{0} - {1}', [attrs.type, attrs.uuid]);
+            attrs.name = utility.string.format('{0} - {1}', [attrs.type, attrs.uuid]);
 
             // completando os campos do shape
-            types.object.extend(this, attrs);
+            utility.object.extend(this, attrs);
 
             // calculando os segmentos
             this.calculeSegments();
@@ -3187,11 +3191,11 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
             //                type: this.type,
             //                name: this.name,
             //                status: this.status,
-            //                x: types.math.parseFloat(this.point.x, 5),
-            //                y: types.math.parseFloat(this.point.y, 5),
-            //                radius: types.math.parseFloat(this.radius, 5),
-            //                startAngle: types.math.parseFloat(this.startAngle, 5),
-            //                endAngle: types.math.parseFloat(this.endAngle, 5),
+            //                x: utility.math.parseFloat(this.point.x, 5),
+            //                y: utility.math.parseFloat(this.point.y, 5),
+            //                radius: utility.math.parseFloat(this.radius, 5),
+            //                startAngle: utility.math.parseFloat(this.startAngle, 5),
+            //                endAngle: utility.math.parseFloat(this.endAngle, 5),
             //                clockWise: this.clockWise
             //            };
 
@@ -3212,7 +3216,7 @@ define("plane/object/spline", ['require', 'exports'], function (require, exports
     var point = require('plane/core/point'),
         shape = require('plane/object/shape');
 
-    var types = require('utility');
+    var utility = require('utility');
 
 
     /**
@@ -3225,7 +3229,7 @@ define("plane/object/spline", ['require', 'exports'], function (require, exports
      * @class Shape
      * @constructor
      */
-    var Spline = types.object.inherits(function Spline(attrs) {
+    var Spline = utility.object.inherits(function Spline(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -3450,7 +3454,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var version = '3.0.0',
         authors = ['lilo@c37.co', 'ser@c37.co'];
 
-    var types = require('utility');
+    var utility = require('utility');
 
     var matrix = require('plane/math/matrix');
 
@@ -3464,7 +3468,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     var importer = require('plane/data/importer'),
         exporter = require('plane/data/exporter');
 
-    var viewPort = null;
+    var viewPort = null; 
 
 
     function initialize(config) {
@@ -3485,7 +3489,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // montando o render de Plane
         var canvas = document.createElement('canvas');
 
-        canvas.id = types.math.uuid(9, 16);
+        canvas.id = utility.math.uuid(9, 16);
         canvas.width = viewPort.clientWidth;
         canvas.height = viewPort.clientHeight;
 
@@ -3601,6 +3605,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     };
 
 });
+// lilo003 - 2014.12.12 1009 - Primeira união de utility somando outras versão dos códigos
 define("utility", ['require', 'exports'], function (require, exports) {
 
     var math = {
@@ -4059,6 +4064,39 @@ define("utility", ['require', 'exports'], function (require, exports) {
 
             return Event;
 
+        })(),
+        mediator: (function () {
+            // Storage for our topics/events
+            var channels = {};
+            // Subscribe to an event, supply a callback to be executed
+            // when that event is broadcast
+            var subscribe = function (channel, fn) {
+                if (!channels[channel]) channels[channel] = [];
+                channels[channel].push({
+                    context: this,
+                    callback: fn
+                });
+                return this;
+
+            };
+            // Publish/broadcast an event to the rest of the application
+            var publish = function (channel) {
+                if (!channels[channel]) return false;
+                var args = Array.prototype.slice.call(arguments, 1);
+                for (var i = 0, l = channels[channel].length; i < l; i++) {
+                    var subscription = channels[channel][i];
+                    subscription.callback.apply(subscription.context, args);
+                }
+                return this;
+            };
+            return {
+                publish: publish,
+                subscribe: subscribe,
+                installTo: function (obj) {
+                    obj.subscribe = subscribe;
+                    obj.publish = publish;
+                }
+            };
         })()
     }
 

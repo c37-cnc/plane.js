@@ -1,5 +1,5 @@
 /*!
- * C37 in 12-12-2014 at 09:58:53 
+ * C37 in 12-12-2014 at 10:11:11 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -190,16 +190,20 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
         },
         set: function (value) {
 
-
+            // value null || undefined == return
+            if ((value == null) || (value == undefined)) return;
             
+            var uuid;
 
+            // value como string == uuid
+            if (utility.conversion.toType(value) == 'string') {
+                uuid = value;
+            }
 
-            
-            
-            
-
-            throw new Error('Layer - active - parameter is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-
+            // value como object == shape
+            if (utility.conversion.toType(value) == 'object') {
+                uuid = value.uuid;
+            }
 
 
             // só altero a layer quando é diferente, isso para não gerar eventos não desejados
@@ -3649,6 +3653,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
     };
 
 });
+// lilo003 - 2014.12.12 1009 - Primeira união de utility somando outras versão dos códigos
 define("utility", ['require', 'exports'], function (require, exports) {
 
     var math = {
@@ -4107,6 +4112,39 @@ define("utility", ['require', 'exports'], function (require, exports) {
 
             return Event;
 
+        })(),
+        mediator: (function () {
+            // Storage for our topics/events
+            var channels = {};
+            // Subscribe to an event, supply a callback to be executed
+            // when that event is broadcast
+            var subscribe = function (channel, fn) {
+                if (!channels[channel]) channels[channel] = [];
+                channels[channel].push({
+                    context: this,
+                    callback: fn
+                });
+                return this;
+
+            };
+            // Publish/broadcast an event to the rest of the application
+            var publish = function (channel) {
+                if (!channels[channel]) return false;
+                var args = Array.prototype.slice.call(arguments, 1);
+                for (var i = 0, l = channels[channel].length; i < l; i++) {
+                    var subscription = channels[channel][i];
+                    subscription.callback.apply(subscription.context, args);
+                }
+                return this;
+            };
+            return {
+                publish: publish,
+                subscribe: subscribe,
+                installTo: function (obj) {
+                    obj.subscribe = subscribe;
+                    obj.publish = publish;
+                }
+            };
         })()
     }
 

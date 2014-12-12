@@ -96,16 +96,20 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
         },
         set: function (value) {
 
-
+            // value null || undefined == return
+            if ((value == null) || (value == undefined)) return;
             
+            var uuid;
 
+            // value como string == uuid
+            if (utility.conversion.toType(value) == 'string') {
+                uuid = value;
+            }
 
-            
-            
-            
-
-            throw new Error('Layer - active - parameter is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
-
+            // value como object == shape
+            if (utility.conversion.toType(value) == 'object') {
+                uuid = value.uuid;
+            }
 
 
             // só altero a layer quando é diferente, isso para não gerar eventos não desejados
