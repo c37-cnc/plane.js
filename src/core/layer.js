@@ -62,7 +62,7 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
         // colocando nova layer como selecionada
         _active = layer;
 
-        return this;
+        return layer;
     }
 
     function list() {

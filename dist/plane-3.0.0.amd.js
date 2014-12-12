@@ -1,5 +1,5 @@
 /*!
- * C37 in 12-12-2014 at 10:23:41 
+ * C37 in 12-12-2014 at 10:29:23 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -108,7 +108,7 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
         // colocando nova layer como selecionada
         _active = layer;
 
-        return this;
+        return layer;
     }
 
     function list() {
