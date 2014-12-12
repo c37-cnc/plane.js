@@ -1,5 +1,5 @@
 /*!
- * C37 in 12-12-2014 at 10:11:11 
+ * C37 in 12-12-2014 at 10:16:11 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3560,6 +3560,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
         });
 
 
+        // create the first layer
+        layer.create();
+        
+        
         return true;
     }
 

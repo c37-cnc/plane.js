@@ -61,6 +61,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
         });
 
 
+        // create the first layer
+        layer.create();
+        
+        
         return true;
     }
 
