@@ -48,22 +48,22 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
         return shape;
     }
 
-    
+
     function update(shape) {
-    
+
         // neste momento realizo a exclução para inicializar o shape de forma correta
-        
+
         remove(shape);
         create(shape);
-        
+
         return true;
     }
 
     function remove(param) {
-        
+
         // param null || undefined == return
         if ((param == null) || (param == undefined)) return;
-        
+
         // param como string == uuid
         if (utility.conversion.toType(param) == 'string') {
             return layer.active.children.remove(param);
@@ -75,6 +75,10 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
         }
 
         throw new Error('Shape - remove - param is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+    }
+
+    function clear() {
+        return layer.active.children.clear();
     }
 
     function list() {
@@ -107,11 +111,10 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
 
 
 
-
-
     exports.create = create;
     exports.update = update;
     exports.remove = remove;
+    exports.clear = clear;
     exports.list = list;
     exports.find = find;
     exports.search = search;
