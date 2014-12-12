@@ -83,6 +83,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
         return true;
     }
 
+    function reset() {
+
+        // reset all parameters in view
+        view.reset();
+
+        // remove em todas as layers
+        layer.remove();
+
+        return true;
+    }
+
 
 
 
@@ -102,8 +113,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     exports.importer = {
         fromDxf: function (stringDxf) {
-            // clear Plane
-            clear();
+            // reset Plane
+            reset();
 
             var stringJson = importer.parseDxf(stringDxf);
             var objectDxf = JSON.parse(stringJson);
@@ -120,7 +131,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             var objectPlane = JSON.parse(stringJson);
 
-            clear();
+            reset();
 
             objectPlane.layers.forEach(function (objectLayer) {
 

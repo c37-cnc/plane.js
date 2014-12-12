@@ -1,5 +1,5 @@
 /*!
- * C37 in 12-12-2014 at 10:55:37 
+ * C37 in 12-12-2014 at 17:26:14 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3585,6 +3585,17 @@ define("plane", ['require', 'exports'], function (require, exports) {
         return true;
     }
 
+    function reset() {
+
+        // reset all parameters in view
+        view.reset();
+
+        // remove em todas as layers
+        layer.remove();
+
+        return true;
+    }
+
 
 
 
@@ -3604,8 +3615,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
     exports.importer = {
         fromDxf: function (stringDxf) {
-            // clear Plane
-            clear();
+            // reset Plane
+            reset();
 
             var stringJson = importer.parseDxf(stringDxf);
             var objectDxf = JSON.parse(stringJson);
@@ -3622,7 +3633,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
             var objectPlane = JSON.parse(stringJson);
 
-            clear();
+            reset();
 
             objectPlane.layers.forEach(function (objectLayer) {
 
