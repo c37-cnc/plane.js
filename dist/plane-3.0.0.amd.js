@@ -1,5 +1,5 @@
 /*!
- * C37 in 12-12-2014 at 10:29:23 
+ * C37 in 12-12-2014 at 10:55:37 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -130,7 +130,6 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
             });
             return true;
         }
-        //        return uuid ? store.remove(uuid) : store.clear();
     }
 
 
@@ -802,6 +801,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
 
     function reset() {
+        // no mesmo momento, retorno o zoom para 1 e informe o centro inicial
         zoomTo(1, point.create(size.width / 2, size.height / 2));
     }
 
@@ -3465,13 +3465,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
         point = require('plane/core/point'),
         shape = require('plane/core/shape'),
         group = require('plane/core/group'),
-        tool = require('plane/core/tool'), 
+        tool = require('plane/core/tool'),
         view = require('plane/core/view');
 
     var importer = require('plane/data/importer'),
         exporter = require('plane/data/exporter');
 
-    var viewPort = null; 
+    var viewPort = null;
 
 
     function initialize(config) {
@@ -3484,7 +3484,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (config.viewPort == null) {
             throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-        
+
         // save in variable viewPort
         viewPort = config.viewPort;
 
@@ -3517,8 +3517,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         // create the first layer
         layer.create();
-        
-        
+
+
         return true;
     }
 
@@ -3530,6 +3530,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         // remove em todas as layers
         layer.remove();
+
+        // create the first layer
+        layer.create();
 
         return true;
     }
@@ -3613,6 +3616,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
 });
 // lilo003 - 2014.12.12 1009 - Primeira união de utility somando outras versão dos códigos
+// lilo003 - 2014.12.12 1039 - Novo método em array = find
 define("utility", ['require', 'exports'], function (require, exports) {
 
     var math = {
@@ -3659,6 +3663,12 @@ define("utility", ['require', 'exports'], function (require, exports) {
 
         format: function () {}
 
+    }
+    
+    var array = {
+        find: function (array, item) {
+            return array[array.indexOf(item)];
+        }
     }
 
     /**
@@ -4109,6 +4119,7 @@ define("utility", ['require', 'exports'], function (require, exports) {
 
     exports.math = math;
     exports.string = string;
+    exports.array = array;
     exports.graphic = graphic;
     exports.data = data;
     exports.date = date;

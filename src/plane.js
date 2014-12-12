@@ -11,13 +11,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
         point = require('plane/core/point'),
         shape = require('plane/core/shape'),
         group = require('plane/core/group'),
-        tool = require('plane/core/tool'), 
+        tool = require('plane/core/tool'),
         view = require('plane/core/view');
 
     var importer = require('plane/data/importer'),
         exporter = require('plane/data/exporter');
 
-    var viewPort = null; 
+    var viewPort = null;
 
 
     function initialize(config) {
@@ -30,7 +30,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
         if (config.viewPort == null) {
             throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-        
+
         // save in variable viewPort
         viewPort = config.viewPort;
 
@@ -63,8 +63,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         // create the first layer
         layer.create();
-        
-        
+
+
         return true;
     }
 
@@ -76,6 +76,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
         // remove em todas as layers
         layer.remove();
+
+        // create the first layer
+        layer.create();
 
         return true;
     }

@@ -84,7 +84,6 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
             });
             return true;
         }
-        //        return uuid ? store.remove(uuid) : store.clear();
     }
 
 
