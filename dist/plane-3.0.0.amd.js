@@ -1,5 +1,5 @@
 /*!
- * C37 in 12-12-2014 at 17:26:14 
+ * C37 in 15-12-2014 at 18:18:41 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -803,6 +803,9 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
     function reset() {
         // no mesmo momento, retorno o zoom para 1 e informe o centro inicial
         zoomTo(1, point.create(size.width / 2, size.height / 2));
+        
+        // clear in the matrix transform
+        _transform = matrix.create();
     }
 
 

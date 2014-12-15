@@ -138,6 +138,9 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
     function reset() {
         // no mesmo momento, retorno o zoom para 1 e informe o centro inicial
         zoomTo(1, point.create(size.width / 2, size.height / 2));
+        
+        // clear in the matrix transform
+        _transform = matrix.create();
     }
 
 
