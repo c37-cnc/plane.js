@@ -1,5 +1,5 @@
 /*!
- * C37 in 15-12-2014 at 18:18:41 
+ * C37 in 16-12-2014 at 02:05:50 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -797,6 +797,17 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
         var layers = layer.list(),
             l = layers.length;
+        
+        // sort, toda(s) a(s) layer(s) system(s) devem ser as primeiras
+        // para os demais layers/objetos virem depois
+        layers.sort(function (a, b) {
+            if (a.status != 'system')
+                return -1;
+            if (a.status == 'system')
+                return 1;
+            return 0;
+        });
+        
         while (l--) {
             var shapes = layers[l].children.list(),
                 s = shapes.length;

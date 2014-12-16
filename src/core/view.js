@@ -84,6 +84,17 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
         var layers = layer.list(),
             l = layers.length;
+        
+        // sort, toda(s) a(s) layer(s) system(s) devem ser as primeiras
+        // para os demais layers/objetos virem depois
+        layers.sort(function (a, b) {
+            if (a.status != 'system')
+                return -1;
+            if (a.status == 'system')
+                return 1;
+            return 0;
+        });
+        
         while (l--) {
             var shapes = layers[l].children.list(),
                 s = shapes.length;
