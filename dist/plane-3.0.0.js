@@ -1,5 +1,5 @@
 /*!
- * C37 in 16-12-2014 at 02:05:50 
+ * C37 in 16-12-2014 at 02:28:05 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -3640,7 +3640,6 @@ define("plane", ['require', 'exports'], function (require, exports) {
                 for (var prop in objectDxf) {
                     shape.create(objectDxf[prop]);
                 }
-                view.update();
             }
         },
         fromJson: function (stringJson) {
