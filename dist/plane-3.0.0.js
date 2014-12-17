@@ -1,5 +1,5 @@
 /*!
- * C37 in 17-12-2014 at 00:37:26 
+ * C37 in 17-12-2014 at 02:34:22 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -167,9 +167,33 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
         return store.find(uuid);
     }
 
-    function remove(uuid) {
-        if (uuid) {
-            return store.remove(uuid);
+    function remove(value) {
+        if (value) {
+
+            var uuid = null;
+
+            // value como string == uuid
+            if (utility.conversion.toType(value) == 'string') {
+                uuid = value;
+            }
+            // value como object == layer
+            if (utility.conversion.toType(value) == 'object') {
+                uuid = value.uuid;
+            }
+
+            // removo a layer selecionada
+            store.remove(uuid);
+
+            // filtro as layers que não são do sistema
+            var layers = store.list().filter(function (layer) {
+                return layer.status != 'system';
+            });
+            
+            // coloco a ultima como ativa            
+            _active = layers[layers.length - 1];
+
+            return true;
+
         } else {
             store.list().forEach(function (layer) {
                 if (layer.status != 'system') {
@@ -191,8 +215,8 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
 
             // value null || undefined == return
             if ((value == null) || (value == undefined)) return;
-            
-            var uuid;
+
+            var uuid = null;
 
             // value como string == uuid
             if (utility.conversion.toType(value) == 'string') {
