@@ -49,8 +49,8 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
 
         function onKeyDown(event) {
 
-            // se backspace desabilito o evento default 'retornar para a pagina anterior'
-            if (event.keyCode == 8) {
+            // se backspace e não um target do tipo text, desabilito o evento default 'retornar para a pagina anterior'
+            if ((event.keyCode == 8) && (event.target.getAttribute('type') != 'text')) {
                 event.preventDefault();
             }
 
