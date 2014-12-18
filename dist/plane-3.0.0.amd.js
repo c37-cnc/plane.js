@@ -1,5 +1,5 @@
 /*!
- * C37 in 17-12-2014 at 02:34:22 
+ * C37 in 18-12-2014 at 02:07:27 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -453,7 +453,7 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
         function onKeyDown(event) {
 
             // se backspace e não um target do tipo text, desabilito o evento default 'retornar para a pagina anterior'
-            if ((event.keyCode == 8) && (event.target.getAttribute('type') != 'text')) {
+            if ((event.keyCode == 8) && (event.target.getAttribute('type') != 'text') && (event.target.tagName != 'P')) {
                 event.preventDefault();
             }
 
