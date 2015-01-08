@@ -121,6 +121,7 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
             // customized event
             event = {
                 type: 'onMouseUp',
+                button: event.button == 0 ? 'left' : event.button == 1 ? 'wheel' : 'right',
                 point: {
                     inDocument: point.create(event.x, event.y),
                     inCanvas: point.create(pointInCanvas),

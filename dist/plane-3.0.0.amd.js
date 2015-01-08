@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-01-2015 at 19:37:13 
+ * C37 in 08-01-2015 at 19:41:17 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -524,6 +524,7 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
             // customized event
             event = {
                 type: 'onMouseUp',
+                button: event.button == 0 ? 'left' : event.button == 1 ? 'wheel' : 'right',
                 point: {
                     inDocument: point.create(event.x, event.y),
                     inCanvas: point.create(pointInCanvas),
