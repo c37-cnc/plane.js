@@ -86,6 +86,7 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
             // customized event
             event = {
                 type: 'onMouseDown',
+                button: event.button == 0 ? 'left' : event.button == 1 ? 'wheel' : 'right',
                 target: event.target,
                 point: {
                     // o ponto do mouse dentro do html document

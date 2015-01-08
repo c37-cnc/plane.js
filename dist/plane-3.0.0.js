@@ -1,10 +1,10 @@
 /*!
- * C37 in 19-12-2014 at 00:05:29 
+ * C37 in 08-01-2015 at 19:37:13 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
  *
- * Copyright - C37 - http://c37.co - 2014
+ * Copyright - C37 - http://c37.co - 2015
  */
 
 (function (window) {
@@ -537,6 +537,7 @@ define("plane/core/tool", ['require', 'exports'], function (require, exports) {
             // customized event
             event = {
                 type: 'onMouseDown',
+                button: event.button == 0 ? 'left' : event.button == 1 ? 'wheel' : 'right',
                 target: event.target,
                 point: {
                     // o ponto do mouse dentro do html document
