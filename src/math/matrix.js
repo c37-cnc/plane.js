@@ -231,6 +231,7 @@ define("plane/math/matrix", ['require', 'exports'], function (require, exports) 
                 this.d / det, -this.c / det, -this.b / det,
                 this.a / det, (this.b * this.ty - this.d * this.tx) / det, (this.c * this.tx - this.a * this.ty) / det);
         },
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L576
         inverseTransform: function (point) {
             var det = getDeterminant(this);
 
