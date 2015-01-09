@@ -1,5 +1,5 @@
 /*!
- * C37 in 08-01-2015 at 19:41:17 
+ * C37 in 09-01-2015 at 17:00:24 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -258,8 +258,25 @@ define("plane/core/point", ['require', 'exports'], function (require, exports) {
         maximum: function (point) {
             return new Point(Math.max(this.x, point.x), Math.max(this.y, point.y));
         },
-        equals: function(point){
+        // https://github.com/kangax/fabric.js/blob/master/src/point.class.js#L159
+        equals: function (point) {
             return (this.x == point.x) && (this.y == point.y);
+        },
+        // https://github.com/kangax/fabric.js/blob/master/src/point.class.js#L177
+        lessThan: function (point) {
+            return (this.x <= point.x && this.y <= point.y);
+        },
+        // https://github.com/kangax/fabric.js/blob/master/src/point.class.js#L168
+        less: function (point) {
+            return (this.x < point.x && this.y < point.y);
+        },
+        // https://github.com/kangax/fabric.js/blob/master/src/point.class.js#L196
+        greaterThan: function (point) {
+            return (this.x >= point.x && this.y >= point.y);
+        },
+        // https://github.com/kangax/fabric.js/blob/master/src/point.class.js#L187
+        greater: function (point) {
+            return (this.x > point.x && this.y > point.y);
         }
     };
 
