@@ -104,6 +104,17 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
     }
 
     function search(query) {
+
+        if (query.type == 'inView') {
+
+            return layer.active.children.list().filter(function (shape) {
+
+
+            });
+
+        }
+
+
         return '';
     }
 

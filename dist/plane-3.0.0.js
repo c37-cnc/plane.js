@@ -1,5 +1,5 @@
 /*!
- * C37 in 12-01-2015 at 04:40:42 
+ * C37 in 12-01-2015 at 11:09:43 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -451,6 +451,17 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
     }
 
     function search(query) {
+
+        if (query.type == 'inView') {
+
+            return layer.active.children.list().filter(function (shape) {
+
+
+            });
+
+        }
+
+
         return '';
     }
 
@@ -842,7 +853,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
             l = layers.length;
 
         // sort, toda(s) a(s) layer(s) system(s) devem ser as primeiras
-        // para os demais layers/objetos virem depois
+        // para os demais layers/objetos virem depois 'em cima'
         layers.sort(function (a, b) {
             if (a.status != 'system')
                 return -1;
@@ -853,17 +864,6 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
         var numberOfProcessor = navigator.hardwareConcurrency;
 
-        function split(a, n) {
-            var len = a.length,
-                out = [],
-                i = 0;
-            while (i < len) {
-                var size = Math.ceil((len - i) / n--);
-                out.push(a.slice(i, i + size));
-                i += size;
-            }
-            return out;
-        }
 
         while (l--) {
             var shapes = layers[l].children.list(),
@@ -872,29 +872,17 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
             // style of layer
             _context.lineCap = layers[l].style.lineCap;
             _context.lineJoin = layers[l].style.lineJoin;
+            
+            _context.beginPath();
+            
+            // quando o arquivo tiver mais de 500 shapes 
+            if (s > 500) {
 
-            if (s > 300) {
-
-                //                var parts = parseInt(s / numberOfProcessor),
-                //                    rest = parseInt(s % numberOfProcessor);
-
-                var parts = split(shapes, numberOfProcessor);
-
-                //                for (var i = 0; i < parts.length; i++) {
-                //                    utility.thread.add(function () {
-                //
-                //                        var xxx = parts[i],
-                //                            xxz = parts[i].length;
-                //
-                //                        while (xxz--) {
-                //                            xxx[xxz].render(_context, _transform);
-                //                        }
-                //
-                //                        return false;
-                //                    })
-                //                }
+                // eu didivo os shapes pelo numero de processadores em outros arrays
+                var parts = utility.array.split(shapes, numberOfProcessor);
 
                 parts.forEach(function (part) {
+                    // para cada part registro uma nova thread
                     utility.thread.add(function () {
 
                         var xxx = part,
@@ -907,14 +895,15 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
                         return false;
                     })
                 });
-
-
+                // inicio as threads
                 utility.thread.start();
             } else {
                 while (s--) {
                     shapes[s].render(_context, _transform);
                 }
             }
+            
+            _context.stroke();
         }
         return this;
     }
@@ -3315,7 +3304,7 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
                 context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
 
-            context.beginPath();
+//            context.beginPath();
 
             var scale = Math.sqrt(transform.a * transform.d);
             var move = {
@@ -3324,6 +3313,19 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
             };
 
 
+            // movendo para o inicio do shape para não criar uma linha
+            context.moveTo(this.segments[0].x * scale + move.x, this.segments[0].y * scale + move.y);
+            
+//            var segments = this.segments,
+//                s = segments.length;
+//            
+//            while(s--){
+//                var x = segments[s].x * scale + move.x;
+//                var y = segments[s].y * scale + move.y;
+//
+//                context.lineTo(x, y);
+//            }
+            
             for (var i = 0; i < this.segments.length; i++) {
                 var x = this.segments[i].x * scale + move.x;
                 var y = this.segments[i].y * scale + move.y;
@@ -3332,7 +3334,7 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
             }
 
 
-            context.stroke();
+//            context.stroke();
 
 
             // possivel personalização
@@ -3787,8 +3789,10 @@ define("plane", ['require', 'exports'], function (require, exports) {
 // lilo003 - 2014.12.12 1009 - Primeira união de utility somando outras versão dos códigos
 // lilo003 - 2014.12.12 1039 - Novo método em array = find
 // lilo003 - 2015.01.12 0310 - Novo objeto thread
+// lilo003 - 2015.01.12 1035 - Novo método em array = split
 define("utility", ['require', 'exports'], function (require, exports) {
 
+    // do livro - Segredos do Ninja JavaScript - John Resig - pag. 264
     var thread = {
         id: 0,
         threads: [],
@@ -3865,6 +3869,17 @@ define("utility", ['require', 'exports'], function (require, exports) {
     var array = {
         find: function (array, item) {
             return array[array.indexOf(item)];
+        },
+        split: function (a, n) {
+            var len = a.length,
+                out = [],
+                i = 0;
+            while (i < len) {
+                var size = Math.ceil((len - i) / n--);
+                out.push(a.slice(i, i + size));
+                i += size;
+            }
+            return out;
         }
     }
 

@@ -86,7 +86,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
             l = layers.length;
 
         // sort, toda(s) a(s) layer(s) system(s) devem ser as primeiras
-        // para os demais layers/objetos virem depois
+        // para os demais layers/objetos virem depois 'em cima'
         layers.sort(function (a, b) {
             if (a.status != 'system')
                 return -1;
@@ -97,17 +97,6 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
         var numberOfProcessor = navigator.hardwareConcurrency;
 
-        function split(a, n) {
-            var len = a.length,
-                out = [],
-                i = 0;
-            while (i < len) {
-                var size = Math.ceil((len - i) / n--);
-                out.push(a.slice(i, i + size));
-                i += size;
-            }
-            return out;
-        }
 
         while (l--) {
             var shapes = layers[l].children.list(),
@@ -116,29 +105,17 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
             // style of layer
             _context.lineCap = layers[l].style.lineCap;
             _context.lineJoin = layers[l].style.lineJoin;
+            
+            _context.beginPath();
+            
+            // quando o arquivo tiver mais de 500 shapes 
+            if (s > 500) {
 
-            if (s > 300) {
-
-                //                var parts = parseInt(s / numberOfProcessor),
-                //                    rest = parseInt(s % numberOfProcessor);
-
-                var parts = split(shapes, numberOfProcessor);
-
-                //                for (var i = 0; i < parts.length; i++) {
-                //                    utility.thread.add(function () {
-                //
-                //                        var xxx = parts[i],
-                //                            xxz = parts[i].length;
-                //
-                //                        while (xxz--) {
-                //                            xxx[xxz].render(_context, _transform);
-                //                        }
-                //
-                //                        return false;
-                //                    })
-                //                }
+                // eu didivo os shapes pelo numero de processadores em outros arrays
+                var parts = utility.array.split(shapes, numberOfProcessor);
 
                 parts.forEach(function (part) {
+                    // para cada part registro uma nova thread
                     utility.thread.add(function () {
 
                         var xxx = part,
@@ -151,14 +128,15 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
                         return false;
                     })
                 });
-
-
+                // inicio as threads
                 utility.thread.start();
             } else {
                 while (s--) {
                     shapes[s].render(_context, _transform);
                 }
             }
+            
+            _context.stroke();
         }
         return this;
     }

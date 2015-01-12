@@ -73,29 +73,35 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
 
             // possivel personalização
             if (this.style) {
+                // salvo as configurações de estilo atuais do contexto
                 context.save();
-
+                // personalização para linha pontilhada
                 if (this.style.lineDash) {
                     context.setLineDash([5, 2]);
                 }
-                if (this.style.fillColor){
+                // personalização para preenchimento de cor
+                if (this.style.fillColor) {
                     context.fillStyle = this.style.fillColor;
                     context.strokeStyle = this.style.fillColor;
                 }
-                
+                // personalização para a espessura da linha
                 context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                // personalização para a cor da linha
                 context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
 
-            context.beginPath();
-
+            // de acordo com a matrix - a escala que devo aplicar nos segmentos
             var scale = Math.sqrt(transform.a * transform.d);
+            // de acordo com a matrix - o movimento que devo aplicar nos segmentos
             var move = {
                 x: transform.tx,
                 y: transform.ty
             };
 
 
+            // movendo para o inicio do shape para não criar uma linha
+            context.moveTo(this.segments[0].x * scale + move.x, this.segments[0].y * scale + move.y);
+            // para cada segmento, vou traçando uma linha
             for (var i = 0; i < this.segments.length; i++) {
                 var x = this.segments[i].x * scale + move.x;
                 var y = this.segments[i].y * scale + move.y;
@@ -104,17 +110,20 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
             }
 
 
-            context.stroke();
-
-
             // possivel personalização
             if (this.style && this.style.fillColor) {
                 context.fill();
             }
+            // quando possivel personalização
             if (this.style) {
+                // desenho o shape no contexto
+                context.stroke();
+                // restauro as configurações de estilo anteriores do contexto
                 context.restore();
+                // e deixo iniciado um novo shape
+                context.beginPath();
             }
-
+            
         },
         toObject: function () {
 
