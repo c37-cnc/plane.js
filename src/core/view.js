@@ -84,7 +84,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
         var layers = layer.list(),
             l = layers.length;
-        
+
         // sort, toda(s) a(s) layer(s) system(s) devem ser as primeiras
         // para os demais layers/objetos virem depois
         layers.sort(function (a, b) {
@@ -94,7 +94,21 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
                 return 1;
             return 0;
         });
-        
+
+        var numberOfProcessor = navigator.hardwareConcurrency;
+
+        function split(a, n) {
+            var len = a.length,
+                out = [],
+                i = 0;
+            while (i < len) {
+                var size = Math.ceil((len - i) / n--);
+                out.push(a.slice(i, i + size));
+                i += size;
+            }
+            return out;
+        }
+
         while (l--) {
             var shapes = layers[l].children.list(),
                 s = shapes.length;
@@ -103,8 +117,47 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
             _context.lineCap = layers[l].style.lineCap;
             _context.lineJoin = layers[l].style.lineJoin;
 
-            while (s--) {
-                shapes[s].render(_context, _transform);
+            if (s > 300) {
+
+                //                var parts = parseInt(s / numberOfProcessor),
+                //                    rest = parseInt(s % numberOfProcessor);
+
+                var parts = split(shapes, numberOfProcessor);
+
+                //                for (var i = 0; i < parts.length; i++) {
+                //                    utility.thread.add(function () {
+                //
+                //                        var xxx = parts[i],
+                //                            xxz = parts[i].length;
+                //
+                //                        while (xxz--) {
+                //                            xxx[xxz].render(_context, _transform);
+                //                        }
+                //
+                //                        return false;
+                //                    })
+                //                }
+
+                parts.forEach(function (part) {
+                    utility.thread.add(function () {
+
+                        var xxx = part,
+                            xxz = part.length;
+
+                        while (xxz--) {
+                            xxx[xxz].render(_context, _transform);
+                        }
+
+                        return false;
+                    })
+                });
+
+
+                utility.thread.start();
+            } else {
+                while (s--) {
+                    shapes[s].render(_context, _transform);
+                }
             }
         }
         return this;
@@ -149,7 +202,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
     function reset() {
         // no mesmo momento, retorno o zoom para 1 e informe o centro inicial
         zoomTo(1, point.create(size.width / 2, size.height / 2));
-        
+
         // clear in the matrix transform
         _transform = matrix.create();
     }

@@ -92,9 +92,6 @@
             });
             // plane - initialize
 
-            plane.layer.create();
-
-
             plane.shape.create({
                 type: 'arc',
                 center: [700, 250],
@@ -244,34 +241,6 @@
 
                 plane.view.update();
 
-
-                // caso positivo realizamos a procura 
-                //            if (imageData && layer.active && layer.active.status != 'system') {
-                //                // apenas procuro na layer selecionada
-                //                var children = layer.active.children.list(),
-                //                    c = children.length;
-                //
-                //                while (c--) {
-                //                    if (children[c].contains(pointInCanvas, view.transform)) {
-                //                        shapesSelect.push(children[c]);
-                //                        //                        break; - lilo - teste de performance
-                //                    }
-                //                }
-                //            }
-
-                //
-                //                if (event.shapes.length > 0) {
-                //
-                //                    event.shapes.forEach(function (shape) {
-                //                        shape.status = 'selected';
-                //                        shape.style = {
-                //                            lineColor: 'rgb(68, 121, 154)'
-                //                        };
-                //                    });
-                //                }
-                //
-                //                plane.view.update();
-
             });
             toolSelect.events.listen('onMouseDrag', function (event) {
 
@@ -290,52 +259,37 @@
 
 
                 plane.layer.active.children.list().forEach(function (shape) {
-                    
+
                     var rectangle = {
                         to: event.point.first,
                         from: event.point.last
                     };
-                    
+
                     if (shape.intersect(rectangle)) {
-
-                        console.log(shape.name);
-
+                        // console.log(shape.name);
                     }
                 });
 
                 plane.view.update();
 
-
             });
 
 
             plane.view.events.listen('onResize', function (events) {
-                console.log(events);
+                // console.log(events);
             });
-
-
-
-
-
 
 
             var toolSpline = plane.tool.create({
                     active: false
                 }),
                 toolSplinePoints = [];
-
-            function clamp(x, a, b) {
-                return (x < a) ? a : ((x > b) ? b : x);
-            }
-
             toolSpline.events.listen('onActive', function (event) {
 
                 toolSplinePoints = [];
-                xxx = [];
-
                 document.getElementById('toolSpline').classList.add('selected');
-            });
 
+            });
             toolSpline.events.listen('onMouseMove', function (event) {
 
                 if (toolSplinePoints.length > 1) {
@@ -343,12 +297,6 @@
                     toolSplinePoints = toolSplinePoints.filter(function (item) {
                         return item.type == 'click';
                     });
-                    //                    toolSplinePoints.push({
-                    //                        x: event.point.inView.x,
-                    //                        y: event.point.inView.y,
-                    //                        type: 'move'
-                    //                    });
-
 
                     plane.layer.active.children.list().forEach(function (shape) {
                         if (shape.status == 'temporary') {
@@ -363,6 +311,11 @@
                     for (var i = 0; i <= nurbsDegree; i++) {
                         nurbsKnots.push(0);
                     }
+
+                    function clamp(x, a, b) {
+                        return (x < a) ? a : ((x > b) ? b : x);
+                    }
+
                     for (var i = 0, j = nurbsControlPoints.length; i < j; i++) {
                         var knot = (i + 1) / (j - nurbsDegree);
                         nurbsKnots.push(clamp(knot, 0, 1));
@@ -387,16 +340,13 @@
                     y: event.point.y,
                     type: 'click'
                 });
-                //                toolSplinePoints.push(event.point);
             });
 
 
 
 
-
-
-
             document.getElementById('fileImport').addEventListener('change', function () {
+
                 var file = this.files[0],
                     filename = file.name;
 
@@ -419,9 +369,10 @@
                     default:
                         return;
                     }
-
+                    plane.view.update();
                 };
                 reader.readAsText(file);
+
             });
 
             document.getElementById('exportJsonButton').addEventListener('click', function (event) {

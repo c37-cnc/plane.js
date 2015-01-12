@@ -1,5 +1,5 @@
 /*!
- * C37 in 09-01-2015 at 17:00:24 
+ * C37 in 12-01-2015 at 04:40:42 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -840,7 +840,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
         var layers = layer.list(),
             l = layers.length;
-        
+
         // sort, toda(s) a(s) layer(s) system(s) devem ser as primeiras
         // para os demais layers/objetos virem depois
         layers.sort(function (a, b) {
@@ -850,7 +850,21 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
                 return 1;
             return 0;
         });
-        
+
+        var numberOfProcessor = navigator.hardwareConcurrency;
+
+        function split(a, n) {
+            var len = a.length,
+                out = [],
+                i = 0;
+            while (i < len) {
+                var size = Math.ceil((len - i) / n--);
+                out.push(a.slice(i, i + size));
+                i += size;
+            }
+            return out;
+        }
+
         while (l--) {
             var shapes = layers[l].children.list(),
                 s = shapes.length;
@@ -859,8 +873,47 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
             _context.lineCap = layers[l].style.lineCap;
             _context.lineJoin = layers[l].style.lineJoin;
 
-            while (s--) {
-                shapes[s].render(_context, _transform);
+            if (s > 300) {
+
+                //                var parts = parseInt(s / numberOfProcessor),
+                //                    rest = parseInt(s % numberOfProcessor);
+
+                var parts = split(shapes, numberOfProcessor);
+
+                //                for (var i = 0; i < parts.length; i++) {
+                //                    utility.thread.add(function () {
+                //
+                //                        var xxx = parts[i],
+                //                            xxz = parts[i].length;
+                //
+                //                        while (xxz--) {
+                //                            xxx[xxz].render(_context, _transform);
+                //                        }
+                //
+                //                        return false;
+                //                    })
+                //                }
+
+                parts.forEach(function (part) {
+                    utility.thread.add(function () {
+
+                        var xxx = part,
+                            xxz = part.length;
+
+                        while (xxz--) {
+                            xxx[xxz].render(_context, _transform);
+                        }
+
+                        return false;
+                    })
+                });
+
+
+                utility.thread.start();
+            } else {
+                while (s--) {
+                    shapes[s].render(_context, _transform);
+                }
             }
         }
         return this;
@@ -905,7 +958,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
     function reset() {
         // no mesmo momento, retorno o zoom para 1 e informe o centro inicial
         zoomTo(1, point.create(size.width / 2, size.height / 2));
-        
+
         // clear in the matrix transform
         _transform = matrix.create();
     }
@@ -1933,6 +1986,7 @@ define("plane/math/matrix", ['require', 'exports'], function (require, exports) 
                 this.d / det, -this.c / det, -this.b / det,
                 this.a / det, (this.b * this.ty - this.d * this.tx) / det, (this.c * this.tx - this.a * this.ty) / det);
         },
+        // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L576
         inverseTransform: function (point) {
             var det = getDeterminant(this);
 
@@ -3732,7 +3786,35 @@ define("plane", ['require', 'exports'], function (require, exports) {
 });
 // lilo003 - 2014.12.12 1009 - Primeira união de utility somando outras versão dos códigos
 // lilo003 - 2014.12.12 1039 - Novo método em array = find
+// lilo003 - 2015.01.12 0310 - Novo objeto thread
 define("utility", ['require', 'exports'], function (require, exports) {
+
+    var thread = {
+        id: 0,
+        threads: [],
+        add: function (handler) {
+            this.threads.push(handler);
+        },
+        start: function () {
+            if (this.id) return;
+
+            (function runNext() {
+                if (thread.threads.length > 0) {
+                    for (var i = 0; i < thread.threads.length; i++) {
+                        if (thread.threads[i]() === false) {
+                            thread.threads.splice(i, 1);
+                            i--;
+                        }
+                    }
+                }
+            })();
+        },
+        stop: function () {
+            clearTimeout(this.id);
+            this.id = 0;
+        }
+    }
+
 
     var math = {
         uuid: function (length, radix) {
@@ -3779,7 +3861,7 @@ define("utility", ['require', 'exports'], function (require, exports) {
         format: function () {}
 
     }
-    
+
     var array = {
         find: function (array, item) {
             return array[array.indexOf(item)];
@@ -4232,6 +4314,7 @@ define("utility", ['require', 'exports'], function (require, exports) {
         })()
     }
 
+    exports.thread = thread;
     exports.math = math;
     exports.string = string;
     exports.array = array;
