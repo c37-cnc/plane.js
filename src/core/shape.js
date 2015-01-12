@@ -6,7 +6,8 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
         matrix = require('plane/math/matrix');
 
     var point = require('plane/core/point'),
-        layer = require('plane/core/layer');
+        layer = require('plane/core/layer'),
+        view = require('plane/core/view');
 
     var shapeType = {
         'arc': require('plane/object/arc'),
@@ -107,9 +108,13 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
 
         if (query.type == 'inView') {
 
+            var rectangle = {
+                from: point.create(view.transform.inverseTransform(point.create(0, 0))),
+                to: point.create(view.transform.inverseTransform(point.create(view.size.width, view.size.height)))
+            }
+
             return layer.active.children.list().filter(function (shape) {
-
-
+                return shape.inRectangle(rectangle);
             });
 
         }

@@ -97,19 +97,31 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
         var numberOfProcessor = navigator.hardwareConcurrency;
 
+        var rectangle = {
+            from: point.create(_transform.inverseTransform(point.create(0, 0))),
+            to: point.create(_transform.inverseTransform(point.create(size.width, size.height)))
+        }
+
 
         while (l--) {
-            var shapes = layers[l].children.list(),
+            var shapes = layers[l].children.list().filter(function (shape) {
+                    return shape.inRectangle(rectangle);
+                }),
                 s = shapes.length;
+
+
+//            console.log(shapes.length);
+
 
             // style of layer
             _context.lineCap = layers[l].style.lineCap;
             _context.lineJoin = layers[l].style.lineJoin;
-            
+
+            // inicio o conjunto de shapes no contexto
             _context.beginPath();
-            
+
             // quando o arquivo tiver mais de 500 shapes 
-            if (s > 500) {
+            if (s > 300) {
 
                 // eu didivo os shapes pelo numero de processadores em outros arrays
                 var parts = utility.array.split(shapes, numberOfProcessor);
@@ -135,7 +147,8 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
                     shapes[s].render(_context, _transform);
                 }
             }
-            
+
+            // desenho o conjunto de shapes no contexto
             _context.stroke();
         }
         return this;

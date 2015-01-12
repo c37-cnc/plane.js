@@ -1,5 +1,5 @@
 /*!
- * C37 in 12-01-2015 at 11:09:43 
+ * C37 in 12-01-2015 at 16:14:45 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -353,7 +353,8 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
         matrix = require('plane/math/matrix');
 
     var point = require('plane/core/point'),
-        layer = require('plane/core/layer');
+        layer = require('plane/core/layer'),
+        view = require('plane/core/view');
 
     var shapeType = {
         'arc': require('plane/object/arc'),
@@ -454,9 +455,13 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
 
         if (query.type == 'inView') {
 
+            var rectangle = {
+                from: point.create(view.transform.inverseTransform(point.create(0, 0))),
+                to: point.create(view.transform.inverseTransform(point.create(view.size.width, view.size.height)))
+            }
+
             return layer.active.children.list().filter(function (shape) {
-
-
+                return shape.inRectangle(rectangle);
             });
 
         }
@@ -864,19 +869,31 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
         var numberOfProcessor = navigator.hardwareConcurrency;
 
+        var rectangle = {
+            from: point.create(_transform.inverseTransform(point.create(0, 0))),
+            to: point.create(_transform.inverseTransform(point.create(size.width, size.height)))
+        }
+
 
         while (l--) {
-            var shapes = layers[l].children.list(),
+            var shapes = layers[l].children.list().filter(function (shape) {
+                    return shape.inRectangle(rectangle);
+                }),
                 s = shapes.length;
+
+
+//            console.log(shapes.length);
+
 
             // style of layer
             _context.lineCap = layers[l].style.lineCap;
             _context.lineJoin = layers[l].style.lineJoin;
-            
+
+            // inicio o conjunto de shapes no contexto
             _context.beginPath();
-            
+
             // quando o arquivo tiver mais de 500 shapes 
-            if (s > 500) {
+            if (s > 300) {
 
                 // eu didivo os shapes pelo numero de processadores em outros arrays
                 var parts = utility.array.split(shapes, numberOfProcessor);
@@ -902,7 +919,8 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
                     shapes[s].render(_context, _transform);
                 }
             }
-            
+
+            // desenho o conjunto de shapes no contexto
             _context.stroke();
         }
         return this;
@@ -3286,27 +3304,56 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
             return intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
 
         },
+        inRectangle: function (rectangle) {
+
+            var tl = point.create(rectangle.from.x, rectangle.to.y), // top left
+                tr = point.create(rectangle.to.x, rectangle.to.y), // top right
+                bl = point.create(rectangle.from.x, rectangle.from.y), // bottom left
+                br = point.create(rectangle.to.x, rectangle.from.y), // bottom right
+                result = false;
+
+
+            if (this.type == 'line') {
+
+                // faço a verificação 'pontos dentro do retângulo'
+                result = ((this.to.x >= rectangle.from.x && this.to.x <= rectangle.to.x) && (this.to.y >= rectangle.from.y && this.to.y <= rectangle.to.y)) ||
+                    ((this.from.x >= rectangle.from.x && this.from.x <= rectangle.to.x) && (this.from.y >= rectangle.from.y && this.from.y <= rectangle.to.y));
+
+                if (!result) {
+                    result = intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
+                }
+
+            } else {
+                result = intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
+            }
+
+            return result;
+
+        },
         render: function (context, transform) {
 
             // possivel personalização
             if (this.style) {
+                // salvo as configurações de estilo atuais do contexto
                 context.save();
-
+                // personalização para linha pontilhada
                 if (this.style.lineDash) {
                     context.setLineDash([5, 2]);
                 }
-                if (this.style.fillColor){
+                // personalização para preenchimento de cor
+                if (this.style.fillColor) {
                     context.fillStyle = this.style.fillColor;
                     context.strokeStyle = this.style.fillColor;
                 }
-                
+                // personalização para a espessura da linha
                 context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                // personalização para a cor da linha
                 context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
             }
 
-//            context.beginPath();
-
+            // de acordo com a matrix - a escala que devo aplicar nos segmentos
             var scale = Math.sqrt(transform.a * transform.d);
+            // de acordo com a matrix - o movimento que devo aplicar nos segmentos
             var move = {
                 x: transform.tx,
                 y: transform.ty
@@ -3315,17 +3362,7 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
 
             // movendo para o inicio do shape para não criar uma linha
             context.moveTo(this.segments[0].x * scale + move.x, this.segments[0].y * scale + move.y);
-            
-//            var segments = this.segments,
-//                s = segments.length;
-//            
-//            while(s--){
-//                var x = segments[s].x * scale + move.x;
-//                var y = segments[s].y * scale + move.y;
-//
-//                context.lineTo(x, y);
-//            }
-            
+            // para cada segmento, vou traçando uma linha
             for (var i = 0; i < this.segments.length; i++) {
                 var x = this.segments[i].x * scale + move.x;
                 var y = this.segments[i].y * scale + move.y;
@@ -3334,15 +3371,18 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
             }
 
 
-//            context.stroke();
-
-
             // possivel personalização
             if (this.style && this.style.fillColor) {
                 context.fill();
             }
+            // quando possivel personalização
             if (this.style) {
+                // desenho o shape no contexto
+                context.stroke();
+                // restauro as configurações de estilo anteriores do contexto
                 context.restore();
+                // e deixo iniciado um novo shape
+                context.beginPath();
             }
 
         },
