@@ -300,7 +300,7 @@
                     }
 
                     shapesInView.forEach(function (shape) {
-                        if ((shape.status != 'line') &&(shape.status != 'intersect') && shape.contains(event.point.inCanvas, plane.view.transform)) {
+                        if ((shape.status != 'line') && (shape.status != 'intersect') && shape.contains(event.point.inCanvas, plane.view.transform)) {
                             shape.style = {
                                 lineColor: 'rgb(221, 106, 100)'
                             };
@@ -415,6 +415,15 @@
 
                 }
 
+                // para o movimento do cursor
+                var x = event.point.inView.x,
+                    y = event.point.inView.y;
+
+                var xxx = plane.point.create(x * plane.view.transform.a + y * plane.view.transform.b + plane.view.transform.tx, x * plane.view.transform.c + y * plane.view.transform.d + plane.view.transform.ty);
+                document.getElementById('ui-mouse-cursor').style.top = ((xxx.y - plane.view.size.height) * -1) - 10 + 'px';
+                document.getElementById('ui-mouse-cursor').style.left = xxx.x - 10 + 'px';
+                // para o movimento do cursor
+                
 
                 plane.shape.list().forEach(function (shape) {
                     if (shape.status == 'intersect') {
@@ -423,27 +432,64 @@
                 });
 
                 if (toolLineIntersect) {
-                    var pointOrtho = null;
 
-                    var dx = event.point.inView.x - toolLineIntersect.x,
-                        dy = event.point.inView.y - toolLineIntersect.y;
+                    if (Math.abs(event.point.inView.x - toolLineIntersect.x) <= 10) {
 
-                    if (Math.abs(dx) > Math.abs(dy)) {
-                        pointOrtho = plane.point.create(event.point.inView.x, toolLineIntersect.y);
-                    } else {
-                        pointOrtho = plane.point.create(toolLineIntersect.x, event.point.inView.y);
+                        var rectangle = {
+                            from: plane.point.create(plane.view.transform.inverseTransform(plane.point.create(0, 0))),
+                            to: plane.point.create(plane.view.transform.inverseTransform(plane.point.create(plane.view.size.width, plane.view.size.height)))
+                        }
+
+                        plane.shape.create({
+                            type: 'line',
+                            from: [toolLineIntersect.x, rectangle.from.y],
+                            to: [toolLineIntersect.x, rectangle.to.y],
+                            status: 'intersect',
+                            style: {
+                                lineColor: 'rgb(32, 184, 96)',
+                                lineDash: true
+                            }
+                        });
+                        
+                        toolSelect.active = false;
+                        
+                        
+                        // para o movimento do cursor
+                        var x = toolLineIntersect.x,
+                            y = event.point.inView.y;
+
+                        var xxx = plane.point.create(x * plane.view.transform.a + y * plane.view.transform.b + plane.view.transform.tx, x * plane.view.transform.c + y * plane.view.transform.d + plane.view.transform.ty);
+                        document.getElementById('ui-mouse-cursor').style.top = ((xxx.y - plane.view.size.height) * -1) - 10 + 'px';
+                        document.getElementById('ui-mouse-cursor').style.left = xxx.x - 10 + 'px';
+                        // para o movimento do cursor
+                        
                     }
 
-                    plane.shape.create({
-                        type: 'line',
-                        from: toolLineIntersect,
-                        to: pointOrtho,
-                        status: 'intersect',
-                        style: {
-                            lineColor: 'rgb(32, 184, 96)',
-                            lineDash: true
-                        }
-                    });
+
+
+
+
+                    //                    var pointOrtho = null;
+                    //
+                    //                    var dx = event.point.inView.x - toolLineIntersect.x,
+                    //                        dy = event.point.inView.y - toolLineIntersect.y;
+                    //
+                    //                    if (Math.abs(dx) > Math.abs(dy)) {
+                    //                        pointOrtho = plane.point.create(event.point.inView.x, toolLineIntersect.y);
+                    //                    } else {
+                    //                        pointOrtho = plane.point.create(toolLineIntersect.x, event.point.inView.y);
+                    //                    }
+                    //
+                    //                    plane.shape.create({
+                    //                        type: 'line',
+                    //                        from: toolLineIntersect,
+                    //                        to: pointOrtho,
+                    //                        status: 'intersect',
+                    //                        style: {
+                    //                            lineColor: 'rgb(32, 184, 96)',
+                    //                            lineDash: true
+                    //                        }
+                    //                    });
                 }
 
 
