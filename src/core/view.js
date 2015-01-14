@@ -104,52 +104,70 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
 
         while (l--) {
+            
             var shapes = layers[l].children.list().filter(function (shape) {
-                    return shape.inRectangle(rectangle);
-                }),
-                s = shapes.length;
+                return shape.intersect(rectangle);
+            });
+
+            var shapesWithStyle = shapes.filter(function (shape) {
+                return shape.style;
+            });
+
+            var shapesWithoutStyle = shapes.filter(function (shape) {
+                return !shape.style;
+            });
 
 
-//            console.log(shapes.length);
+            if (shapesWithStyle.length > 0) {
 
+                var s = shapesWithStyle.length;
 
-            // style of layer
-            _context.lineCap = layers[l].style.lineCap;
-            _context.lineJoin = layers[l].style.lineJoin;
-
-            // inicio o conjunto de shapes no contexto
-            _context.beginPath();
-
-            // quando o arquivo tiver mais de 500 shapes 
-            if (s > 300) {
-
-                // eu didivo os shapes pelo numero de processadores em outros arrays
-                var parts = utility.array.split(shapes, numberOfProcessor);
-
-                parts.forEach(function (part) {
-                    // para cada part registro uma nova thread
-                    utility.thread.add(function () {
-
-                        var xxx = part,
-                            xxz = part.length;
-
-                        while (xxz--) {
-                            xxx[xxz].render(_context, _transform);
-                        }
-
-                        return false;
-                    })
-                });
-                // inicio as threads
-                utility.thread.start();
-            } else {
                 while (s--) {
-                    shapes[s].render(_context, _transform);
+                    shapesWithStyle[s].render(_context, _transform);
                 }
+
             }
 
-            // desenho o conjunto de shapes no contexto
-            _context.stroke();
+            if (shapesWithoutStyle.length > 0) {
+
+                var s = shapesWithoutStyle.length;
+
+                // inicio o conjunto de shapes no contexto
+                _context.beginPath();
+
+                // quando o arquivo tiver mais de 500 shapes 
+                if (s > 300) {
+
+                    // eu didivo os shapes pelo numero de processadores em outros arrays
+                    var parts = utility.array.split(shapesWithoutStyle, numberOfProcessor);
+
+                    parts.forEach(function (part) {
+                        // para cada part registro uma nova thread
+                        utility.thread.add(function () {
+
+                            var xxx = part,
+                                xxz = part.length;
+
+                            while (xxz--) {
+                                xxx[xxz].render(_context, _transform);
+                            }
+
+                            return false;
+                        })
+                    });
+                    // inicio as threads
+                    utility.thread.start();
+                } else {
+                    while (s--) {
+                        shapesWithoutStyle[s].render(_context, _transform);
+                    }
+                }
+
+                // desenho o conjunto de shapes no contexto
+                _context.stroke();
+
+            }
+
         }
         return this;
     }

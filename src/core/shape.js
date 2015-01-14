@@ -114,7 +114,7 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
             }
 
             return layer.active.children.list().filter(function (shape) {
-                return shape.inRectangle(rectangle);
+                return shape.intersect(rectangle);
             });
 
         }

@@ -1,5 +1,5 @@
 /*!
- * C37 in 12-01-2015 at 16:14:45 
+ * C37 in 14-01-2015 at 04:31:21 
  *
  * plane version: 3.0.0
  * licensed by Creative Commons Attribution-ShareAlike 3.0
@@ -325,6 +325,10 @@ define("plane/core/point", ['require', 'exports'], function (require, exports) {
         // https://github.com/kangax/fabric.js/blob/master/src/point.class.js#L187
         greater: function (point) {
             return (this.x > point.x && this.y > point.y);
+        },
+        toJson: function(){
+            return JSON.stringify(this);
+//            JSON.stringify(utility.string.format('[', []))
         }
     };
 
@@ -461,7 +465,7 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
             }
 
             return layer.active.children.list().filter(function (shape) {
-                return shape.inRectangle(rectangle);
+                return shape.intersect(rectangle);
             });
 
         }
@@ -876,52 +880,70 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
 
         while (l--) {
+            
             var shapes = layers[l].children.list().filter(function (shape) {
-                    return shape.inRectangle(rectangle);
-                }),
-                s = shapes.length;
+                return shape.intersect(rectangle);
+            });
+
+            var shapesWithStyle = shapes.filter(function (shape) {
+                return shape.style;
+            });
+
+            var shapesWithoutStyle = shapes.filter(function (shape) {
+                return !shape.style;
+            });
 
 
-//            console.log(shapes.length);
+            if (shapesWithStyle.length > 0) {
 
+                var s = shapesWithStyle.length;
 
-            // style of layer
-            _context.lineCap = layers[l].style.lineCap;
-            _context.lineJoin = layers[l].style.lineJoin;
-
-            // inicio o conjunto de shapes no contexto
-            _context.beginPath();
-
-            // quando o arquivo tiver mais de 500 shapes 
-            if (s > 300) {
-
-                // eu didivo os shapes pelo numero de processadores em outros arrays
-                var parts = utility.array.split(shapes, numberOfProcessor);
-
-                parts.forEach(function (part) {
-                    // para cada part registro uma nova thread
-                    utility.thread.add(function () {
-
-                        var xxx = part,
-                            xxz = part.length;
-
-                        while (xxz--) {
-                            xxx[xxz].render(_context, _transform);
-                        }
-
-                        return false;
-                    })
-                });
-                // inicio as threads
-                utility.thread.start();
-            } else {
                 while (s--) {
-                    shapes[s].render(_context, _transform);
+                    shapesWithStyle[s].render(_context, _transform);
                 }
+
             }
 
-            // desenho o conjunto de shapes no contexto
-            _context.stroke();
+            if (shapesWithoutStyle.length > 0) {
+
+                var s = shapesWithoutStyle.length;
+
+                // inicio o conjunto de shapes no contexto
+                _context.beginPath();
+
+                // quando o arquivo tiver mais de 500 shapes 
+                if (s > 300) {
+
+                    // eu didivo os shapes pelo numero de processadores em outros arrays
+                    var parts = utility.array.split(shapesWithoutStyle, numberOfProcessor);
+
+                    parts.forEach(function (part) {
+                        // para cada part registro uma nova thread
+                        utility.thread.add(function () {
+
+                            var xxx = part,
+                                xxz = part.length;
+
+                            while (xxz--) {
+                                xxx[xxz].render(_context, _transform);
+                            }
+
+                            return false;
+                        })
+                    });
+                    // inicio as threads
+                    utility.thread.start();
+                } else {
+                    while (s--) {
+                        shapesWithoutStyle[s].render(_context, _transform);
+                    }
+                }
+
+                // desenho o conjunto de shapes no contexto
+                _context.stroke();
+
+            }
+
         }
         return this;
     }
@@ -3279,9 +3301,11 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
 
             for (var i = 0; i < this.segments.length; i++) {
 
+                // correção de lógica, como estou calculando pelos segmentos, 
+                // não posso pegar o ultimo + o primeiro, pois será como um shape 'fechado'
                 if (i + 1 == this.segments.length) {
                     segmentA = this.segments[i];
-                    segmentB = this.segments[0];
+                    segmentB = this.segments[i - 1];
                 } else {
                     segmentA = this.segments[i];
                     segmentB = this.segments[i + 1];
@@ -3295,16 +3319,6 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
 
         },
         intersect: function (rectangle) {
-
-            var tl = point.create(rectangle.from.x, rectangle.to.y), // top left
-                tr = point.create(rectangle.to.x, rectangle.to.y), // top right
-                bl = point.create(rectangle.from.x, rectangle.from.y), // bottom left
-                br = point.create(rectangle.to.x, rectangle.from.y); // bottom right
-
-            return intersection.segmentsRectangle(this.segments, tl, tr, bl, br);
-
-        },
-        inRectangle: function (rectangle) {
 
             var tl = point.create(rectangle.from.x, rectangle.to.y), // top left
                 tr = point.create(rectangle.to.x, rectangle.to.y), // top right
@@ -3336,19 +3350,21 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
             if (this.style) {
                 // salvo as configurações de estilo atuais do contexto
                 context.save();
+
                 // personalização para linha pontilhada
-                if (this.style.lineDash) {
+                if (this.style.lineDash)
                     context.setLineDash([5, 2]);
-                }
-                // personalização para preenchimento de cor
-                if (this.style.fillColor) {
-                    context.fillStyle = this.style.fillColor;
-                    context.strokeStyle = this.style.fillColor;
-                }
+
                 // personalização para a espessura da linha
-                context.lineWidth = this.style.lineWidth ? this.style.lineWidth : context.lineWidth;
+                if (this.style.lineWidth)
+                    context.lineWidth = this.style.lineWidth;
+                
                 // personalização para a cor da linha
-                context.strokeStyle = this.style.lineColor ? this.style.lineColor : context.lineColor;
+                if (this.style.lineColor)
+                    context.strokeStyle = this.style.lineColor;
+                
+                // e deixo iniciado um novo shape
+                context.beginPath();
             }
 
             // de acordo com a matrix - a escala que devo aplicar nos segmentos
@@ -3358,7 +3374,6 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
                 x: transform.tx,
                 y: transform.ty
             };
-
 
             // movendo para o inicio do shape para não criar uma linha
             context.moveTo(this.segments[0].x * scale + move.x, this.segments[0].y * scale + move.y);
@@ -3371,18 +3386,12 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
             }
 
 
-            // possivel personalização
-            if (this.style && this.style.fillColor) {
-                context.fill();
-            }
             // quando possivel personalização
             if (this.style) {
                 // desenho o shape no contexto
                 context.stroke();
                 // restauro as configurações de estilo anteriores do contexto
                 context.restore();
-                // e deixo iniciado um novo shape
-                context.beginPath();
             }
 
         },

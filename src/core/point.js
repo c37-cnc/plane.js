@@ -63,6 +63,10 @@ define("plane/core/point", ['require', 'exports'], function (require, exports) {
         // https://github.com/kangax/fabric.js/blob/master/src/point.class.js#L187
         greater: function (point) {
             return (this.x > point.x && this.y > point.y);
+        },
+        toJson: function(){
+            return JSON.stringify(this);
+//            JSON.stringify(utility.string.format('[', []))
         }
     };
 
