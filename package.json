@@ -31,12 +31,12 @@
     },
     "dependencies": {},
     "devDependencies": {
-        "grunt": "*",
-        "grunt-contrib-watch": "*",
-        "grunt-contrib-qunit": "*",
-        "grunt-contrib-concat": "*",
-        "grunt-contrib-uglify": "*",
-        "grunt-contrib-yuidoc": "*"
+        "grunt": "latest",
+        "grunt-contrib-watch": "latest",
+        "grunt-contrib-qunit": "latest",
+        "grunt-contrib-concat": "latest",
+        "grunt-contrib-uglify": "latest",
+        "grunt-contrib-yuidoc": "latest"
     },
     "config": {
         "unsafe-perm": true
