@@ -112,6 +112,9 @@ define("plane", ['require', 'exports'], function (require, exports) {
     exports.tool = tool;
 
     exports.importer = {
+        fromSvg: function (stringSvg) {
+            // https://github.com/gabelerner/canvg
+        },
         fromDxf: function (stringDxf) {
             // reset Plane
             reset();
