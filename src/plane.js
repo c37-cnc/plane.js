@@ -1,4 +1,5 @@
 define("plane", ['require', 'exports'], function (require, exports) {
+    'use strict';
 
     var version = '3.0.0',
         authors = ['lilo@c37.co', 'ser@c37.co'];
@@ -21,13 +22,13 @@ define("plane", ['require', 'exports'], function (require, exports) {
 
 
     function initialize(config) {
-        if (config == null) {
+        if (config === null) {
             throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-        if (typeof config == "function") {
+        if (typeof config === "function") {
             throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
-        if (config.viewPort == null) {
+        if (config.viewPort === null) {
             throw new Error('plane - initialize - config is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
@@ -119,8 +120,8 @@ define("plane", ['require', 'exports'], function (require, exports) {
             // reset Plane
             reset();
 
-            var stringJson = importer.parseDxf(stringDxf);
-            var objectDxf = JSON.parse(stringJson);
+            var stringJson = importer.parseDxf(stringDxf),
+                objectDxf = JSON.parse(stringJson);
 
             if (stringJson) {
                 layer.create();
