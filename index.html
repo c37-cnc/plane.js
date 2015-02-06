@@ -1,0 +1,31 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+
+    <title>software-architecture</title>
+
+    <script src="js/plane.js"></script>
+
+    <script>
+        plane.initialize({
+            zz: 'yy'
+        });
+
+        plane.shape.create({
+            type: 'polygon',
+            center: [900, 400],
+            radius: 70,
+            sides: 5
+        });
+        
+        console.log(plane.layer.list());
+    </script>
+</head>
+
+<body>
+
+</body>
+
+</html>
