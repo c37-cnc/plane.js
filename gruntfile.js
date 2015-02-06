@@ -1,7 +1,9 @@
 module.exports = function (grunt) {
 
     // Load the plugins that provides tasks
+    grunt.loadNpmTasks('grunt-bump');
     grunt.loadNpmTasks('grunt-contrib-watch');
+    grunt.loadNpmTasks('grunt-contrib-clean');
     grunt.loadNpmTasks('grunt-contrib-qunit');
     grunt.loadNpmTasks('grunt-contrib-concat');
     grunt.loadNpmTasks('grunt-contrib-uglify');
@@ -21,37 +23,53 @@ module.exports = function (grunt) {
             banner: '/*!\n' +
                 ' * C37 in <%= grunt.template.today("dd-mm-yyyy") %> at <%= grunt.template.today("HH:MM:ss") %> \n' +
                 ' *\n' +
-                ' * <%= pkg.name %> version: <%= pkg.version %>\n' +
+                ' * <%= pkg.name %> version: <%= grunt.file.readJSON("package.json").version %>\n' +
                 ' * licensed by Creative Commons Attribution-ShareAlike 3.0\n' +
                 ' *\n' +
                 ' * Copyright - C37 - http://c37.co - <%= grunt.template.today("yyyy") %>\n' +
-                ' */'
+                ' */\n'
         },
         concat: {
             browser: {
-                src: [ '<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
-                dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'
+                files: [
+                    {
+                        src: ['<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
+                        dest: '<%= dirs.dist %>/<%= pkg.name %>.js'
+                    },
+                    {
+                        src: ['<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
+                        dest: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'
+                    }
+                ]
             },
             amd: {
                 options: {
-                    banner: '<%= meta.banner %>\n'
+                    banner: '<%= meta.banner %>'
                 },
-                src: [ '<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
-                dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.amd.js'
+                files: [
+                    {
+                        src: ['<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
+                        dest: '<%= dirs.dist %>/<%= pkg.name %>.amd.js'
+                    },
+                    {
+                        src: ['<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
+                        dest: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.amd.js'
+                    }
+                ]
             }
         },
         uglify: {
             options: {
-                banner: '<%= meta.banner %>\n',
+                banner: '<%= meta.banner %>',
                 report: 'gzip'
             },
             browser: {
-                src: '<%= concat.browser.dest %>',
-                dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.min.js'
+                src: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js',
+                dest: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.min.js'
             },
             amd: {
-                src: '<%= concat.amd.dest %>',
-                dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.amd.min.js'
+                src: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.amd.js',
+                dest: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.amd.min.js'
             }
         },
         qunit: {
@@ -75,17 +93,44 @@ module.exports = function (grunt) {
                 files: [
                     '<%= dirs.src %>/**'
                 ],
-                tasks: ['concat:browser', 'browser']
-                //                tasks: ['concat', 'browser', 'minify']
+                tasks: ['dev']
             }
         },
         browser: {
             dist: {
-                src: ['<%= dirs.lib %>/module.js', '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js'],
-                dest: '<%= dirs.dist %>/<%= pkg.name %>-<%= pkg.version %>.js',
                 options: {
                     namespace: "plane"
-                }
+                },
+                files: [
+                    {
+                        src: ['<%= dirs.lib %>/module.js', '<%= dirs.dist %>/<%= pkg.name %>.js'],
+                        dest: '<%= dirs.dist %>/<%= pkg.name %>.js'
+                    },
+                    {
+                        src: ['<%= dirs.lib %>/module.js', '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'],
+                        dest: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'
+                    }
+                ]
+            }
+        },
+        clean: {
+            dist: {
+                expand: true,
+                cwd: '<%= dirs.dist %>/',
+                src: ['<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.amd.js', '<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js']
+            },
+        },
+        bump: {
+            options: {
+                files: ['package.json'],
+                updateConfigs: [],
+                commit: false,
+                commitMessage: 'Release v%VERSION%',
+                commitFiles: ['package.json', 'manifest.json'],
+                createTag: false,
+                tagName: 'v%VERSION%',
+                tagMessage: 'Version %VERSION%',
+                push: false
             }
         }
     });
@@ -96,22 +141,27 @@ module.exports = function (grunt) {
     });
 
     // Tasks
+    // http://gruntjs.com/creating-tasks
     grunt.registerMultiTask('browser', 'Export a module to the window', function () {
-        var options = this.options(),
-            output = [];
+        var options = this.options();
 
         this.files.forEach(function (f) {
-            output.push('<%= meta.banner %>\n');
+            var output = [];
+            // grunt.log.writeln(f.src);
+
+            output.push('<%= meta.banner %>');
             output.push('(function (window) {');
             output.push('"use strict";');
             output.push.apply(output, f.src.map(grunt.file.read));
+            // output.push(f.src.map(grunt.file.read)); error para concatenar
+
             output.push(grunt.template.process(
                 'window.<%= namespace %> = require("<%= namespace %>");', {
                     data: {
-                        namespace: options.namespace,
-                        barename: options.barename
+                        namespace: options.namespace
                     }
                 }));
+
             output.push('})(window);');
 
             grunt.file.write(f.dest, grunt.template.process(output.join("\n")));
@@ -122,6 +172,8 @@ module.exports = function (grunt) {
     grunt.registerTask('doc', ['yuidoc']);
     grunt.registerTask('test', ['qunit']);
 
-    grunt.registerTask('dist', ['concat', 'browser', 'minify']);
-    grunt.registerTask('default', ['dist', 'test']);
+    grunt.registerTask('dev', ['concat:browser', 'browser']);
+    grunt.registerTask('dist', ['bump', 'concat', 'browser', 'minify', 'clean']);
+
+    grunt.registerTask('default');
 };

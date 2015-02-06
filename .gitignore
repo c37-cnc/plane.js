@@ -1,4 +1,5 @@
-/amd/
-/doc/api/*.*
+/dist/*/
+/dist/*.*
+!/dist/.gitkeep
 /node_modules/
-/doc/dummy
+/doc/dummy/
