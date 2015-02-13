@@ -108,6 +108,13 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
             var shapes = layers[l].children.list().filter(function (shape) {
                 return shape.intersect(rectangle);
             });
+              
+            
+            
+            
+//            var shapes = layers[l].children.list().filter(function (shape) {
+//                return shape.intersect(rectangle);
+//            });
 
             var shapesWithStyle = shapes.filter(function (shape) {
                 return shape.style;
@@ -157,6 +164,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
                     });
                     // inicio as threads
                     utility.thread.start();
+                    
                 } else {
                     while (s--) {
                         shapesWithoutStyle[s].render(_context, _transform);
