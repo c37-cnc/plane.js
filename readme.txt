@@ -20,3 +20,17 @@ http://semver.org/lang/pt-BR/
 https://www.npmjs.com/package/grunt-contrib-coffee
 http://js2.coffee/
 http://js2coffee.thomaskalka.de/
+
+
+
+
+ESTE MODELO DE ARQUITETURA NÃO PERMITE MÉTODOS EXCLUSIVAMENTE PRIVADOS
+
+AMD PERMITE, CONTUDO HÁ UMA SOBRECARGA NA EXECUÇÃO
+
+O MELHOR É SEGUIR ESTÁ ESTRUTURA
+
+
+A MELHOR FORMA É: CRIAR UMA BIBLIOTECA COM ESTRUTURAS DE DADOS E METODOS DE AUXILIO, 
+
+DECLARA-LA ANTES E UTILIZAR SEUS BENEFICIOS AQUI DENTRO DO CODIGO, COMO https://github.com/jashkenas/backbone/blob/master/backbone.js
