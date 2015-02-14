@@ -66,10 +66,9 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
     }
 
     function list() {
-        // filtro as layers que não são do sistema
-        return store.list().filter(function (layer) {
-            return layer.status != 'system';
-        });
+        // não é possivel fazer o filtro aqui, pois preciso da layer do sistema 
+        // para montar o grid
+        return store.list()
     }
 
     function find(uuid) {
