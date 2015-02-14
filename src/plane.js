@@ -1,4 +1,5 @@
-window.plane = (function (window) {
+window.plane = (function (window, document, undefined) {
+    'use strict';
 
     // private property
     var version = ':-]';
@@ -9,43 +10,43 @@ window.plane = (function (window) {
         console.log('m001');
     }
 
-    /* 
-        In software engineering, a mediator is a behavioral design pattern that allows us to
-        expose a unified interface through which the different parts of a system may communicate.
-    */
-    var mediator = (function () {
-        // Storage for our topics/events
-        var channels = {};
-        // Subscribe to an event, supply a callback to be executed
-        // when that event is broadcast
-        var subscribe = function (channel, fn) {
-            if (!channels[channel]) channels[channel] = [];
-            channels[channel].push({
-                context: this,
-                callback: fn
-            });
-            return this;
-
-        };
-        // Publish/broadcast an event to the rest of the application
-        var publish = function (channel) {
-            if (!channels[channel]) return false;
-            var args = Array.prototype.slice.call(arguments, 1);
-            for (var i = 0, l = channels[channel].length; i < l; i++) {
-                var subscription = channels[channel][i];
-                subscription.callback.apply(subscription.context, args);
-            }
-            return this;
-        };
-        return {
-            publish: publish,
-            subscribe: subscribe,
-            installTo: function (obj) {
-                obj.subscribe = subscribe;
-                obj.publish = publish;
-            }
-        };
-    })();
+    //    /* 
+    //        In software engineering, a mediator is a behavioral design pattern that allows us to
+    //        expose a unified interface through which the different parts of a system may communicate.
+    //    */
+    //    var mediator = (function () {
+    //        // Storage for our topics/events
+    //        var channels = {};
+    //        // Subscribe to an event, supply a callback to be executed
+    //        // when that event is broadcast
+    //        var subscribe = function (channel, fn) {
+    //            if (!channels[channel]) channels[channel] = [];
+    //            channels[channel].push({
+    //                context: this,
+    //                callback: fn
+    //            });
+    //            return this;
+    //
+    //        };
+    //        // Publish/broadcast an event to the rest of the application
+    //        var publish = function (channel) {
+    //            if (!channels[channel]) return false;
+    //            var args = Array.prototype.slice.call(arguments, 1);
+    //            for (var i = 0, l = channels[channel].length; i < l; i++) {
+    //                var subscription = channels[channel][i];
+    //                subscription.callback.apply(subscription.context, args);
+    //            }
+    //            return this;
+    //        };
+    //        return {
+    //            publish: publish,
+    //            subscribe: subscribe,
+    //            installTo: function (obj) {
+    //                obj.subscribe = subscribe;
+    //                obj.publish = publish;
+    //            }
+    //        };
+    //    })();
 
 
     // public method
@@ -55,16 +56,59 @@ window.plane = (function (window) {
             console.log('initialize - plane');
             console.log(plane.utility.math.uuid(9, 16));
 
-            plane.layer.initialize();
+            plane.layer._initialize();
             plane.shape.initialize();
+
+            plane.shape.create({
+                name: 'duru'
+            });
+
+
+            console.log(plane.layer.list());
 
             return true;
         },
-        mediator: mediator,
-        object: {}
+        //        mediator: mediator,
+        //        object: {}
     }
 
-})(window);
+})(window, document, undefined);
+
+
+plane.mediator = (function () {
+    // Storage for our topics/events
+    var channels = {};
+    // Subscribe to an event, supply a callback to be executed
+    // when that event is broadcast
+    var subscribe = function (channel, fn) {
+        if (!channels[channel]) channels[channel] = [];
+        channels[channel].push({
+            context: this,
+            callback: fn
+        });
+        return this;
+
+    };
+    // Publish/broadcast an event to the rest of the application
+    var publish = function (channel) {
+        if (!channels[channel]) return false;
+        var args = Array.prototype.slice.call(arguments, 1);
+        for (var i = 0, l = channels[channel].length; i < l; i++) {
+            var subscription = channels[channel][i];
+            subscription.callback.apply(subscription.context, args);
+        }
+        return this;
+    };
+    return {
+        publish: publish,
+        subscribe: subscribe,
+        installTo: function (obj) {
+            obj.subscribe = subscribe;
+            obj.publish = publish;
+        }
+    };
+})();
+
 
 plane.utility = (function (plane) {
 
@@ -160,7 +204,7 @@ plane.layer = (function (plane) {
 
 
     return {
-        initialize: function (config) {
+        _initialize: function (config) {
             console.log('initialize - layer');
             return true;
         },
@@ -196,6 +240,14 @@ plane.shape = (function (plane) {
     };
 
 })(plane);
+
+
+plane.object = (function (plane) {
+
+    return {};
+
+})(plane);
+
 
 plane.object.shape = (function (plane) {
 
