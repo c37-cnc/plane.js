@@ -1,4 +1,3 @@
-
 *AutoCAD 2000 DXF Reference*
 http://www.autodesk.com/techpubs/autocad/acad2000/dxf/
 http://www.autodesk.com/techpubs/autocad/acad2000/dxf/entities_section.htm

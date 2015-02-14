@@ -212,7 +212,20 @@ define("plane/object/spline", ['require', 'exports'], function (require, exports
     }
 
 
-    function create(attrs) { 
+    Spline.prototype.toObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            degree: this.degree,
+            knots: this.knots,
+            points: this.points.map(function(point){
+                return point.toObject();
+            })
+        };
+    }
+
+
+    function create(attrs) {
         // 0 - verificação da chamada
         if (typeof attrs == 'function') {
             throw new Error('Spline - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
@@ -225,7 +238,7 @@ define("plane/object/spline", ['require', 'exports'], function (require, exports
 
 
         // 3 - conversões dos atributos
-        attrs.points = attrs.points.map(function(item){
+        attrs.points = attrs.points.map(function (item) {
             return point.create(item);
         });
 

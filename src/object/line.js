@@ -59,6 +59,15 @@ define("plane/object/line", ['require', 'exports'], function (require, exports) 
 
     }
 
+    Line.prototype.toObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            from: this.from.toObject(),
+            to: this.to.toObject()
+        };
+    }
+    
 
 
     function create(attrs) {

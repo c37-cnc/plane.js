@@ -50,6 +50,17 @@ define("plane/object/polyline", ['require', 'exports'], function (require, expor
         return true;
         
     }
+    
+    Polyline.prototype.toObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            points: this.points.map(function(point){
+                return point.toObject();
+            })
+        };
+    }
+    
 
 
     function create(attrs) {

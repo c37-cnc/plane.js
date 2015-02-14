@@ -82,10 +82,10 @@ define("plane/object/ellipse", ['require', 'exports'], function (require, export
             // p3 *= matrix4x4F;
             // aplicando a matrix para a rotação
             p3 = {
-                x: p3.x * num + p3.y * -num12,
-                y: p3.x * num12 + p3.y * num
-            }
-            // o ponto de centro + o item da ellipse
+                    x: p3.x * num + p3.y * -num12,
+                    y: p3.x * num12 + p3.y * num
+                }
+                // o ponto de centro + o item da ellipse
             p3 = {
                 x: this.center.x + p3.x,
                 y: this.center.y + p3.y
@@ -104,6 +104,20 @@ define("plane/object/ellipse", ['require', 'exports'], function (require, export
         return true;
 
     }
+
+    Ellipse.prototype.toObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            center: this.center.toObject(),
+            radiusY: this.radiusY,
+            radiusX: this.radiusX,
+            angle: this.angle,
+            startAngle: this.startAngle,
+            endAngle: this.endAngle
+        };
+    }
+
 
     function create(attrs) {
         // 0 - verificação da chamada

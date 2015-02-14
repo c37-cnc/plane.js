@@ -64,10 +64,17 @@ define("plane/core/point", ['require', 'exports'], function (require, exports) {
         greater: function (point) {
             return (this.x > point.x && this.y > point.y);
         },
-        toJson: function(){
+        toJson: function () {
             return JSON.stringify(this);
-//            JSON.stringify(utility.string.format('[', []))
+            //            JSON.stringify(utility.string.format('[', []))
+        },
+        toObject: function () {
+            return {
+                x: utility.math.parseFloat(this.x, 5),
+                y: utility.math.parseFloat(this.y, 5)
+            }
         }
+
     };
 
     function create() {

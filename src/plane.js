@@ -151,7 +151,7 @@ define("plane", ['require', 'exports'], function (require, exports) {
             });
 
             view.zoomTo(objectPlane.zoom, point.create(objectPlane.center));
-
+            
             return true;
         }
     };
@@ -160,17 +160,27 @@ define("plane", ['require', 'exports'], function (require, exports) {
     exports.exporter = {
         toJson: function () {
 
-            var plane = {
-                center: _view.center,
-                zoom: _view.zoom,
-                layers: layer.list().map(function (layer) {
-                    return layer.status != 'system' ? layer.toObject() : null;
-                }).filter(function (layer) {
-                    return layer != undefined
+            var objectPlane = {
+                center: view.center.toObject(),
+                zoom: view.zoom,
+                layers: layer.list().map(function(layer){
+                    return layer.toObject()
                 })
-            }
+            };
 
-            return JSON.stringify(plane);
+            return JSON.stringify(objectPlane);
+        },
+        toObject: function () {
+            
+            var objectPlane = {
+                center: view.center.toObject(),
+                zoom: view.zoom,
+                layers: layer.list().map(function(layer){
+                    return layer.toObject()
+                })
+            };
+
+            return objectPlane;
         }
     };
 

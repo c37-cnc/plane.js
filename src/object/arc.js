@@ -49,7 +49,7 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
     Arc.prototype.calculeSegments = function () {
 
         var end = this.endAngle - this.startAngle;
-        
+
         if (end < 0.0) {
             end += 360.0;
         }
@@ -83,11 +83,21 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
 
         this.segments[this.segments.length - 1].x = xval1;
         this.segments[this.segments.length - 1].y = yval1;
-        
+
         return true;
-        
+
     }
 
+    Arc.prototype.toObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            center: this.center.toObject(),
+            radius: this.radius,
+            startAngle: this.startAngle,
+            endAngle: this.endAngle
+        };
+    }
 
     function create(attrs) {
         // 0 - verificação da chamada
@@ -103,7 +113,7 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
 
         // 3 - conversões dos atributos
         attrs.center = point.create(attrs.center);
-        
+
         // 4 - caso update de um shape não merge em segments
         delete attrs['segments'];
 

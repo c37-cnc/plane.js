@@ -137,25 +137,6 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
                 context.restore();
             }
 
-        },
-        toObject: function () {
-
-            // converto para object os campos utilizando parseFloat
-
-            //            return {
-            //                uuid: this.uuid,
-            //                type: this.type,
-            //                name: this.name,
-            //                status: this.status,
-            //                x: utility.math.parseFloat(this.point.x, 5),
-            //                y: utility.math.parseFloat(this.point.y, 5),
-            //                radius: utility.math.parseFloat(this.radius, 5),
-            //                startAngle: utility.math.parseFloat(this.startAngle, 5),
-            //                endAngle: utility.math.parseFloat(this.endAngle, 5),
-            //                clockWise: this.clockWise
-            //            };
-
-            return true;
         }
     };
 

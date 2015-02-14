@@ -70,6 +70,17 @@ define("plane/object/rectangle", ['require', 'exports'], function (require, expo
         return true;
 
     }
+    
+    Rectangle.prototype.toObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            from: this.from.toObject(),
+            to: this.to.toObject()
+        };
+    }
+    
+    
 
 
     function create(attrs) {

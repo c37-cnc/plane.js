@@ -66,7 +66,10 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
     }
 
     function list() {
-        return store.list();
+        // filtro as layers que não são do sistema
+        return store.list().filter(function (layer) {
+            return layer.status != 'system';
+        });
     }
 
     function find(uuid) {
@@ -94,7 +97,7 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
             var layers = store.list().filter(function (layer) {
                 return layer.status != 'system';
             });
-            
+
             // coloco a ultima como ativa            
             _active = layers[layers.length - 1];
 

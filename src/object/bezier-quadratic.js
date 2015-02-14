@@ -81,7 +81,16 @@ define("plane/object/bezier-quadratic", ['require', 'exports'], function (requir
 
         return true;
     }
-
+    
+    BezierQuadratic.prototype.toObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            points: this.points.map(function(point){
+                return point.toObject();
+            })
+        };
+    }
 
     function create(attrs) {
         // 0 - verificação da chamada

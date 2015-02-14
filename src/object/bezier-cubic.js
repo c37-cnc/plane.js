@@ -83,6 +83,15 @@ define("plane/object/bezier-cubic", ['require', 'exports'], function (require, e
         return true;
     }
 
+    BezierCubic.prototype.toObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            points: this.points.map(function(point){
+                return point.toObject();
+            })
+        };
+    }
 
     function create(attrs) {
         // 0 - verificação da chamada

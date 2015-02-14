@@ -62,6 +62,17 @@ define("plane/object/polygon", ['require', 'exports'], function (require, export
 
     }
 
+    Polygon.prototype.toObject = function () {
+        return {
+            uuid: this.uuid,
+            type: this.type,
+            center: this.center.toObject(),
+            sides: this.sides,
+            radius: this.radius
+        };
+    }
+
+
 
     function create(attrs) {
         // 0 - verificação da chamada
