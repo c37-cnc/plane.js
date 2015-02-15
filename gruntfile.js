@@ -33,11 +33,11 @@ module.exports = function (grunt) {
             browser: {
                 files: [
                     {
-                        src: ['<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
+                        src: ['<%= dirs.src %>/**/*.js'],
                         dest: '<%= dirs.dist %>/<%= pkg.name %>.js'
                     },
                     {
-                        src: ['<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
+                        src: ['<%= dirs.src %>/**/*.js'],
                         dest: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'
                     }
                 ]
@@ -48,11 +48,11 @@ module.exports = function (grunt) {
                 },
                 files: [
                     {
-                        src: ['<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
+                        src: ['<%= dirs.src %>/**/*.js'],
                         dest: '<%= dirs.dist %>/<%= pkg.name %>.amd.js'
                     },
                     {
-                        src: ['<%= dirs.src %>/**/*.js', '<%= dirs.lib %>/utility.js'],
+                        src: ['<%= dirs.src %>/**/*.js'],
                         dest: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.amd.js'
                     }
                 ]
@@ -103,11 +103,13 @@ module.exports = function (grunt) {
                 },
                 files: [
                     {
-                        src: ['<%= dirs.lib %>/module.js', '<%= dirs.dist %>/<%= pkg.name %>.js'],
+                        src: ['<%= dirs.dist %>/<%= pkg.name %>.js'],
+                        // src: ['<%= dirs.lib %>/module.js', '<%= dirs.dist %>/<%= pkg.name %>.js'],
                         dest: '<%= dirs.dist %>/<%= pkg.name %>.js'
                     },
                     {
-                        src: ['<%= dirs.lib %>/module.js', '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'],
+                        src: ['<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'],
+                        //src: ['<%= dirs.lib %>/module.js', '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'],
                         dest: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'
                     }
                 ]
