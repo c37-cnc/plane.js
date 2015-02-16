@@ -104,12 +104,10 @@ module.exports = function (grunt) {
                 files: [
                     {
                         src: ['<%= dirs.dist %>/<%= pkg.name %>.js'],
-                        // src: ['<%= dirs.lib %>/module.js', '<%= dirs.dist %>/<%= pkg.name %>.js'],
                         dest: '<%= dirs.dist %>/<%= pkg.name %>.js'
                     },
                     {
                         src: ['<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'],
-                        //src: ['<%= dirs.lib %>/module.js', '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'],
                         dest: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'
                     }
                 ]
@@ -155,7 +153,6 @@ module.exports = function (grunt) {
             output.push('(function (window) {');
             output.push('"use strict";');
             output.push.apply(output, f.src.map(grunt.file.read));
-            // output.push(f.src.map(grunt.file.read)); error para concatenar
 
             output.push(grunt.template.process(
                 'window.<%= namespace %> = require("<%= namespace %>");', {
