@@ -153,6 +153,26 @@ define("plane", ['require', 'exports'], function (require, exports) {
             view.zoomTo(objectPlane.zoom, point.create(objectPlane.center));
 
             return true;
+        },
+        fromObject: function (objectPlane) {
+
+            objectPlane.layers.forEach(function (objectLayer) {
+
+                layer.create({
+                    uuid: objectLayer.uuid,
+                    name: objectLayer.name,
+                    status: objectLayer.status,
+                    style: objectLayer.style,
+                });
+
+                objectLayer.children.forEach(function (objectShape) {
+                    shape.create(objectShape);
+                });
+            });
+
+            view.zoomTo(objectPlane.zoom, point.create(objectPlane.center));
+
+            return true;
         }
     };
 
