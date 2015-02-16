@@ -1,4 +1,4 @@
-define("plane/object/shape", ['require', 'exports'], function (require, exports) {
+define('plane/object/shape', ['require', 'exports'], function (require, exports) {
 
     var intersection = require('plane/math/intersection'),
         matrix = require('plane/math/matrix');
@@ -46,13 +46,13 @@ define("plane/object/shape", ['require', 'exports'], function (require, exports)
 
                 // correção de lógica, como estou calculando pelos segmentos, 
                 // não posso pegar o ultimo + o primeiro, pois será como um shape 'fechado'
+                // 2015.02.16 - outra correção IMPORTANTE - se == ao fim CONTINUE
                 if (i + 1 == this.segments.length) {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i - 1];
-                } else {
-                    segmentA = this.segments[i];
-                    segmentB = this.segments[i + 1];
+                    continue;
                 }
+                
+                segmentA = this.segments[i];
+                segmentB = this.segments[i + 1];
 
                 if (intersection.circleLine(position, 4, point.create(segmentA.x * scale + move.x, segmentA.y * scale + move.y), point.create(segmentB.x * scale + move.x, segmentB.y * scale + move.y)))
                     return true;
