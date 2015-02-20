@@ -83,7 +83,9 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
         // executando o clear por status 
         if (param && param.status) {
 
-            list().forEach(function (shape) {
+            search({
+                type: 'inView'
+            }).forEach(function (shape) {
                 if (shape.status == param.status) {
                     remove(shape.uuid);
                 }
