@@ -80,8 +80,16 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
 
     function clear(param) {
 
+        // executando o clear por status 
         if (param && param.status) {
 
+            list().forEach(function (shape) {
+                if (shape.status == param.status) {
+                    remove(shape.uuid);
+                }
+            });
+
+            return true;
 
         } else {
             return layer.active.children.clear();
