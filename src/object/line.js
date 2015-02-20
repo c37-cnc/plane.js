@@ -59,6 +59,31 @@ define("plane/object/line", ['require', 'exports'], function (require, exports) 
 
     }
 
+    Line.prototype.fromSnap = function (point, distance) {
+
+        var status = false;
+
+        if (point.distanceTo(this.from) <= distance) {
+            return {
+                status: true,
+                point: this.from
+            };
+        }
+
+        if (point.distanceTo(this.to) <= distance) {
+            return {
+                status: true,
+                point: this.to
+            };
+        }
+
+        return {
+            status: status,
+            point: null
+        };
+
+    }
+
     Line.prototype.toObject = function () {
         return {
             uuid: this.uuid,
@@ -67,7 +92,7 @@ define("plane/object/line", ['require', 'exports'], function (require, exports) 
             to: this.to.toObject()
         };
     }
-    
+
 
 
     function create(attrs) {

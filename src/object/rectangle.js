@@ -70,7 +70,33 @@ define("plane/object/rectangle", ['require', 'exports'], function (require, expo
         return true;
 
     }
-    
+
+    Rectangle.prototype.fromSnap = function (point, distance) {
+
+        var status = false;
+
+        if (point.distanceTo(this.from) <= distance) {
+            return {
+                status: true,
+                point: this.from
+            };
+        }
+
+        if (point.distanceTo(this.to) <= distance) {
+            return {
+                status: true,
+                point: this.to
+            };
+        }
+
+        return {
+            status: status,
+            point: null
+        };
+
+    }
+
+
     Rectangle.prototype.toObject = function () {
         return {
             uuid: this.uuid,
@@ -79,8 +105,8 @@ define("plane/object/rectangle", ['require', 'exports'], function (require, expo
             to: this.to.toObject()
         };
     }
-    
-    
+
+
 
 
     function create(attrs) {

@@ -62,6 +62,24 @@ define("plane/object/polygon", ['require', 'exports'], function (require, export
 
     }
 
+    Polygon.prototype.fromSnap = function (point, distance) {
+
+        var status = false;
+
+        if (point.distanceTo(this.center) <= distance) {
+            return {
+                status: true,
+                point: this.center
+            };
+        }
+
+        return {
+            status: status,
+            point: null
+        };
+
+    }
+
     Polygon.prototype.toObject = function () {
         return {
             uuid: this.uuid,

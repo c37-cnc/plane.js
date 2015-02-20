@@ -211,6 +211,25 @@ define("plane/object/spline", ['require', 'exports'], function (require, exports
 
     }
 
+    Spline.prototype.fromSnap = function (point, distance) {
+
+        var status = false;
+
+        for (var i = 0; i < this.points.length; i++) {
+            if (point.distanceTo(this.points[i]) <= distance) {
+                return {
+                    status: true,
+                    point: this.points[i]
+                };
+            }
+        }
+
+        return {
+            status: status,
+            point: null
+        };
+
+    }
 
     Spline.prototype.toObject = function () {
         return {
@@ -218,7 +237,7 @@ define("plane/object/spline", ['require', 'exports'], function (require, exports
             type: this.type,
             degree: this.degree,
             knots: this.knots,
-            points: this.points.map(function(point){
+            points: this.points.map(function (point) {
                 return point.toObject();
             })
         };

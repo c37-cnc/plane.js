@@ -74,6 +74,24 @@ define("plane/object/circle", ['require', 'exports'], function (require, exports
 
     }
 
+    Circle.prototype.fromSnap = function (point, distance) {
+
+        var status = false;
+
+        if (point.distanceTo(this.center) <= distance) {
+            return {
+                status: true,
+                point: this.center
+            };
+        }
+
+        return {
+            status: status,
+            point: null
+        };
+
+    }
+
     Circle.prototype.toObject = function () {
         return {
             uuid: this.uuid,

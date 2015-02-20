@@ -83,11 +83,31 @@ define("plane/object/bezier-cubic", ['require', 'exports'], function (require, e
         return true;
     }
 
+    BezierCubic.prototype.fromSnap = function (point, distance) {
+
+        var status = false;
+
+        for (var i = 0; i < this.points.length; i++) {
+            if (point.distanceTo(this.points[i]) <= distance) {
+                return {
+                    status: true,
+                    point: this.points[i]
+                };
+            }
+        }
+
+        return {
+            status: status,
+            point: null
+        };
+
+    }
+
     BezierCubic.prototype.toObject = function () {
         return {
             uuid: this.uuid,
             type: this.type,
-            points: this.points.map(function(point){
+            points: this.points.map(function (point) {
                 return point.toObject();
             })
         };

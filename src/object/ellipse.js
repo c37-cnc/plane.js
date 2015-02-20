@@ -105,6 +105,24 @@ define("plane/object/ellipse", ['require', 'exports'], function (require, export
 
     }
 
+    Ellipse.prototype.fromSnap = function (point, distance) {
+
+        var status = false;
+
+        if (point.distanceTo(this.center) <= distance) {
+            return {
+                status: true,
+                point: this.center
+            };
+        }
+
+        return {
+            status: status,
+            point: null
+        };
+
+    }
+
     Ellipse.prototype.toObject = function () {
         return {
             uuid: this.uuid,

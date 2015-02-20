@@ -88,6 +88,24 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
 
     }
 
+    Arc.prototype.fromSnap = function (point, distance) {
+
+        var status = false;
+
+        if (point.distanceTo(this.center) <= distance) {
+            return {
+                status: true,
+                point: this.center
+            };
+        }
+
+        return {
+            status: status,
+            point: null
+        };
+
+    }
+
     Arc.prototype.toObject = function () {
         return {
             uuid: this.uuid,

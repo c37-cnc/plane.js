@@ -81,12 +81,32 @@ define("plane/object/bezier-quadratic", ['require', 'exports'], function (requir
 
         return true;
     }
-    
+
+    BezierQuadratic.prototype.fromSnap = function (point, distance) {
+
+        var status = false;
+
+        for (var i = 0; i < this.points.length; i++) {
+            if (point.distanceTo(this.points[i]) <= distance) {
+                return {
+                    status: true,
+                    point: this.points[i]
+                };
+            }
+        }
+
+        return {
+            status: status,
+            point: null
+        };
+
+    }
+
     BezierQuadratic.prototype.toObject = function () {
         return {
             uuid: this.uuid,
             type: this.type,
-            points: this.points.map(function(point){
+            points: this.points.map(function (point) {
                 return point.toObject();
             })
         };

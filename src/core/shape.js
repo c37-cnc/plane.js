@@ -78,8 +78,15 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
         throw new Error('Shape - remove - param is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
     }
 
-    function clear() {
-        return layer.active.children.clear();
+    function clear(param) {
+
+        if (param && param.status) {
+
+
+        } else {
+            return layer.active.children.clear();
+        }
+
     }
 
     function list() {
