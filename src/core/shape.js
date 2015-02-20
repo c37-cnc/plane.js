@@ -123,7 +123,30 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
 
     function search(query) {
 
-        if (query.type == 'inView') {
+        if ((query.type == 'inView') && (query.notEqual)) {
+
+            var rectangle = {
+                    from: point.create(view.transform.inverseTransform(point.create(0, 0))),
+                    to: point.create(view.transform.inverseTransform(point.create(view.size.width, view.size.height)))
+                },
+                sentence = query.notEqual;
+
+
+            return layer.active.children.list().filter(function (shape) {
+
+                if (sentence.length == 1) {
+                    return (shape.status != sentence[0]) && shape.intersect(rectangle);
+                }
+
+                if (sentence.length == 2) {
+                    return (shape.status != sentence[0]) && (shape.status != sentence[1]) && shape.intersect(rectangle);
+                }
+
+            });
+
+
+
+        } else if (query.type == 'inView') {
 
             var rectangle = {
                 from: point.create(view.transform.inverseTransform(point.create(0, 0))),
