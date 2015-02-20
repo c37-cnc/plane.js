@@ -3,7 +3,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
     var matrix = require('plane/math/matrix');
 
     var layer = require('plane/core/layer'),
-        point = require('plane/core/point');
+        point = null;
 
     var utility = require('utility');
 
@@ -13,7 +13,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
         _context = null,
         _transform = null,
         _zoom = 1,
-        _center = point.create(0, 0),
+        _center = null,
         size = {
             height: 0,
             width: 0
@@ -31,6 +31,9 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
     function initialize(config) {
 
         viewPort = config.viewPort;
+        point = config.point;
+
+
         canvas = config.canvas;
         _context = canvas.getContext('2d');
 
@@ -42,7 +45,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
         _transform = matrix.create();
 
         // o centro inicial
-        _center = _center.sum(point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2));
+        _center = point.create(viewPort.clientWidth / 2, viewPort.clientHeight / 2);
 
         // os tamanhos que são fixos
         size.height = viewPort.clientHeight;
@@ -104,17 +107,10 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
 
         while (l--) {
-            
+
             var shapes = layers[l].children.list().filter(function (shape) {
                 return shape.intersect(rectangle);
             });
-              
-            
-            
-            
-//            var shapes = layers[l].children.list().filter(function (shape) {
-//                return shape.intersect(rectangle);
-//            });
 
             var shapesWithStyle = shapes.filter(function (shape) {
                 return shape.style;
@@ -164,7 +160,7 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
                     });
                     // inicio as threads
                     utility.thread.start();
-                    
+
                 } else {
                     while (s--) {
                         shapesWithoutStyle[s].render(_context, _transform);

@@ -53,8 +53,11 @@ define("plane", ['require', 'exports'], function (require, exports) {
         // initialize view
         view.initialize({
             viewPort: viewPort,
-            canvas: canvas
+            canvas: canvas,
+            point: point
         });
+        
+        
         // initialize tool
         tool.initialize({
             viewPort: viewPort,

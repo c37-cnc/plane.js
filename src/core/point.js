@@ -1,6 +1,8 @@
 define("plane/core/point", ['require', 'exports'], function (require, exports) {
 
     var utility = require('utility');
+    
+    var view = require('plane/core/view');
 
     function Point(x, y) {
         this.x = x;
@@ -73,7 +75,18 @@ define("plane/core/point", ['require', 'exports'], function (require, exports) {
                 x: utility.math.parseFloat(this.x, 5),
                 y: utility.math.parseFloat(this.y, 5)
             }
+        },
+        toDocument: function () {
+            
+            var inDocument = new Point(this.x * view.transform.a + this.y * view.transform.b + view.transform.tx, this.x * view.transform.c + this.y * view.transform.d + view.transform.ty);
+            
+            // a inversão do eixo carteziano
+            inDocument.y = (inDocument.y - view.size.height) * -1;
+            
+            return  inDocument;
+
         }
+
 
     };
 
