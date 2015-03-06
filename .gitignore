@@ -3,3 +3,4 @@
 !/dist/.gitkeep
 /node_modules/
 /doc/dummy/
+/nbproject/

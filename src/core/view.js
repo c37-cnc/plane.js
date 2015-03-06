@@ -18,12 +18,12 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
             height: 0,
             width: 0
         },
-        bounds = {
-            x: 0,
-            y: 0,
-            height: 0,
-            width: 0
-        };
+    bounds = {
+        x: 0,
+        y: 0,
+        height: 0,
+        width: 0
+    };
 
 
 
@@ -241,14 +241,22 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
 
     Object.defineProperty(exports, 'bounds', {
         get: function () {
-            var scale = Math.sqrt(_transform.a * _transform.d);
 
-            return {
-                x: _transform.tx,
-                y: _transform.ty,
-                height: size.height * scale,
-                width: size.width * scale
-            }
+            var rectangle = {
+                from: point.create(_transform.inverseTransform(point.create(0, 0))),
+                to: point.create(_transform.inverseTransform(point.create(size.width, size.height)))
+            };
+             
+            return rectangle;
+
+//            var scale = Math.sqrt(_transform.a * _transform.d);
+//
+//            return {
+//                x: _transform.tx,
+//                y: _transform.ty,
+//                height: size.height * scale,
+//                width: size.width * scale
+//            }
         }
     });
 
