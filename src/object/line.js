@@ -59,21 +59,30 @@ define("plane/object/line", ['require', 'exports'], function (require, exports) 
 
     }
 
-    Line.prototype.fromSnap = function (point, distance) {
+    Line.prototype.fromSnap = function (pointCheck, distance) {
 
         var status = false;
 
-        if (point.distanceTo(this.from) <= distance) {
+        if (pointCheck.distanceTo(this.from) <= distance) {
             return {
                 status: true,
                 point: this.from
             };
         }
 
-        if (point.distanceTo(this.to) <= distance) {
+        if (pointCheck.distanceTo(this.to) <= distance) {
             return {
                 status: true,
                 point: this.to
+            };
+        }
+        
+        
+        
+        if (pointCheck.distanceTo(this.to.midTo(this.from)) <= distance) {
+            return {
+                status: true,
+                point: this.to.midTo(this.from)
             };
         }
 

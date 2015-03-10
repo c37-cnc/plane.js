@@ -88,23 +88,45 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
 
     }
 
-    Arc.prototype.fromSnap = function (point, distance) {
+    Arc.prototype.fromSnap = function (pointCheck, distance) {
 
         var status = false;
-
-        if (point.distanceTo(this.center) <= distance) {
+        
+        if (pointCheck.distanceTo(this.center) <= distance) {
             return {
                 status: true,
                 point: this.center
             };
+        };
+        
+        
+        var sX = this.center.x + this.radius * Math.cos(Math.PI * this.startAngle / 180.0),
+            sY = this.center.y + this.radius * Math.sin(Math.PI * this.startAngle / 180.0);
+        var startPoint = point.create(sX, sY);
+        if (pointCheck.distanceTo(startPoint) <= distance) {
+            return {
+                status: true,
+                point: startPoint
+            };
         }
+        
+        var eX = this.center.x + this.radius * Math.cos(Math.PI * this.endAngle / 180.0),
+            eY = this.center.y + this.radius * Math.sin(Math.PI * this.endAngle / 180.0);
+        var endPoint = point.create(eX, eY);
+        if (pointCheck.distanceTo(endPoint) <= distance) {
+            return {
+                status: true,
+                point: endPoint
+            };
+        }
+        
 
         return {
             status: status,
             point: null
         };
 
-    }
+    };
 
     Arc.prototype.toObject = function () {
         return {
