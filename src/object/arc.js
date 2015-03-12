@@ -49,23 +49,23 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
     Arc.prototype.calculeSegments = function () {
 
         var end = this.endAngle - this.startAngle;
-
         if (end < 0.0) {
             end += 360.0;
         }
 
-        // .7 resolution
-        var num1 = .7 / 180.0 * Math.PI;
+          // .7 resolution
+        var num1 = .5 / 180.0 * Math.PI;
+        
         var num2 = this.startAngle / 180.0 * Math.PI;
         var num3 = end / 180.0 * Math.PI;
 
-        if (num3 < 0.0)
-            num1 = -num1;
-        var size = Math.abs(num3 / num1) + 2;
+        var size = (num3 / num1);
+
 
         var index = 0;
         var num4 = num2;
-        while (index < size - 1) {
+        
+        while (index <= size) {
 
             var xval = this.center.x + this.radius * Math.cos(num4);
             var yval = this.center.y + this.radius * Math.sin(num4);
@@ -75,31 +75,42 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
                 y: yval
             });
             ++index;
+            
             num4 += num1;
         }
 
         var xval1 = this.center.x + this.radius * Math.cos(num2 + num3);
         var yval1 = this.center.y + this.radius * Math.sin(num2 + num3);
 
-        this.segments[this.segments.length - 1].x = xval1;
-        this.segments[this.segments.length - 1].y = yval1;
+        this.segments.push({
+            x: xval1,
+            y: yval1
+        });
 
         return true;
-
+        
     }
 
     Arc.prototype.fromSnap = function (pointCheck, distance) {
 
         var status = false;
-        
+
         if (pointCheck.distanceTo(this.center) <= distance) {
             return {
                 status: true,
                 point: this.center
             };
-        };
-        
-        
+        }
+
+
+        var middlePoint = this.getMiddle();
+        if (pointCheck.distanceTo(middlePoint) <= distance){
+            return {
+                status: true,
+                point: middlePoint
+            };
+        }
+
         var sX = this.center.x + this.radius * Math.cos(Math.PI * this.startAngle / 180.0),
             sY = this.center.y + this.radius * Math.sin(Math.PI * this.startAngle / 180.0);
         var startPoint = point.create(sX, sY);
@@ -109,7 +120,7 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
                 point: startPoint
             };
         }
-        
+
         var eX = this.center.x + this.radius * Math.cos(Math.PI * this.endAngle / 180.0),
             eY = this.center.y + this.radius * Math.sin(Math.PI * this.endAngle / 180.0);
         var endPoint = point.create(eX, eY);
@@ -119,7 +130,7 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
                 point: endPoint
             };
         }
-        
+
 
         return {
             status: status,
@@ -137,7 +148,46 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
             startAngle: this.startAngle,
             endAngle: this.endAngle
         };
-    }
+    };
+
+
+    Arc.prototype.getMiddle = function () {
+
+        var end = this.endAngle - this.startAngle;
+
+        if (end < 0.0) {
+            end += 360.0;
+        }
+
+        // o tamanho de cada passo
+        var num1 = .3 / 180.0 * Math.PI;
+        
+        // o inicio em graus
+        var num2 = this.startAngle / 180.0 * Math.PI;
+        
+        // o fim em graus
+        var num3 = end / 180.0 * Math.PI;
+
+        // meia correção por aproximação, pois não estou conseguindo entender esta conta 
+        // para redesenhar toda a lógica do arco
+        var size = (num3 / num1) + 1.2;
+
+        var index = 0;
+        var num4 = num2;
+        
+        
+        while (index <= (size / 2)) {
+
+            var xval = this.center.x + this.radius * Math.cos(num4);
+            var yval = this.center.y + this.radius * Math.sin(num4);
+
+            ++index;
+            num4 += num1;
+        }
+        return point.create(xval, yval);
+        
+
+    };
 
     function create(attrs) {
         // 0 - verificação da chamada
@@ -159,7 +209,8 @@ define("plane/object/arc", ['require', 'exports'], function (require, exports) {
 
         // 5 - criando um novo shape do tipo arco
         return new Arc(attrs);
-    };
+    }
+    ;
 
     exports.create = create;
 
