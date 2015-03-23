@@ -62,15 +62,20 @@ define("plane/object/polygon", ['require', 'exports'], function (require, export
 
     }
 
-    Polygon.prototype.fromSnap = function (point, distance) {
+    Polygon.prototype.fromSnap = function (pointCheck, distance) {
 
         var status = false;
-
-        if (point.distanceTo(this.center) <= distance) {
-            return {
-                status: true,
-                point: this.center
-            };
+        
+        for(var i = 0; i < this.segments.length; i++){
+            
+            var calculatePoint = point.create(this.segments[i]);
+                
+            if (calculatePoint.distanceTo(pointCheck) <= distance){
+                return {
+                    status: true,
+                    point: calculatePoint
+                };
+            }
         }
 
         return {
