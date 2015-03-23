@@ -46,22 +46,27 @@ define("plane/object/rectangle", ['require', 'exports'], function (require, expo
 
     Rectangle.prototype.calculeSegments = function () {
 
+        //  left + bottom 
         this.segments.push({
             x: this.from.x,
             y: this.from.y
         });
+        // left + top
         this.segments.push({
             x: this.from.x,
             y: this.to.y
         });
+        // right + top
         this.segments.push({
             x: this.to.x,
             y: this.to.y
         });
+        // right + bottom 
         this.segments.push({
             x: this.to.x,
             y: this.from.y
         });
+        // base
         this.segments.push({
             x: this.from.x,
             y: this.from.y
@@ -71,22 +76,20 @@ define("plane/object/rectangle", ['require', 'exports'], function (require, expo
 
     }
 
-    Rectangle.prototype.fromSnap = function (point, distance) {
+    Rectangle.prototype.fromSnap = function (pointCheck, distance) {
 
         var status = false;
-
-        if (point.distanceTo(this.from) <= distance) {
-            return {
-                status: true,
-                point: this.from
-            };
-        }
-
-        if (point.distanceTo(this.to) <= distance) {
-            return {
-                status: true,
-                point: this.to
-            };
+        
+        for(var i = 0; i < this.segments.length; i++){
+            
+            var calculatePoint = point.create(this.segments[i]);
+                
+            if (calculatePoint.distanceTo(pointCheck) <= distance){
+                return {
+                    status: true,
+                    point: calculatePoint
+                };
+            }
         }
 
         return {

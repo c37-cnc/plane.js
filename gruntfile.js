@@ -42,6 +42,14 @@ module.exports = function (grunt) {
                     }
                 ]
             },
+            browserOnly: {
+                files: [
+                    {
+                        src: ['<%= dirs.src %>/**/*.js'],
+                        dest: '<%= dirs.dist %>/<%= pkg.name %>.js'
+                    }
+                ]
+            },
             amd: {
                 options: {
                     banner: '<%= meta.banner %>'
@@ -54,6 +62,17 @@ module.exports = function (grunt) {
                     {
                         src: ['<%= dirs.src %>/**/*.js'],
                         dest: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.amd.js'
+                    }
+                ]
+            },
+            amdOnly: {
+                options: {
+                    banner: '<%= meta.banner %>'
+                },
+                files: [
+                    {
+                        src: ['<%= dirs.src %>/**/*.js'],
+                        dest: '<%= dirs.dist %>/<%= pkg.name %>.amd.js'
                     }
                 ]
             }
@@ -109,6 +128,17 @@ module.exports = function (grunt) {
                     {
                         src: ['<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'],
                         dest: '<%= dirs.dist %>/<%= pkg.name %>-v<%= grunt.file.readJSON("package.json").version %>.js'
+                    }
+                ]
+            },
+            only: {
+                options: {
+                    namespace: "plane"
+                },
+                files: [
+                    {
+                        src: ['<%= dirs.dist %>/<%= pkg.name %>.js'],
+                        dest: '<%= dirs.dist %>/<%= pkg.name %>.js'
                     }
                 ]
             }
@@ -171,7 +201,7 @@ module.exports = function (grunt) {
     grunt.registerTask('doc', ['yuidoc']);
     grunt.registerTask('test', ['qunit']);
 
-    grunt.registerTask('dev', ['concat:browser', 'browser']);
+    grunt.registerTask('dev', ['concat:browserOnly', 'browser:only', 'concat:amdOnly']);
     grunt.registerTask('dist', ['bump', 'concat', 'browser', 'minify', 'clean']);
 
     grunt.registerTask('default');
