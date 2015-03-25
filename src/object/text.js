@@ -93,7 +93,7 @@ define("plane/object/text", ['require', 'exports'], function (require, exports) 
             uuid: this.uuid,
             type: this.type,
             from: this.from.toObject(),
-            to: this.from.toObject(),
+            to: this.to.toObject(),
             size: this.size,
             value: this.value
         };
