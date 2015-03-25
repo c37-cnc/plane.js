@@ -66,7 +66,7 @@ define("plane/object/polygon", ['require', 'exports'], function (require, export
 
         var status = false;
         
-        if (point.distanceTo(this.center) <= distance) {
+        if (pointCheck.distanceTo(this.center) <= distance) {
             return {
                 status: true,
                 point: this.center

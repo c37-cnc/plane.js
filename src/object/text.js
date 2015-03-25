@@ -20,7 +20,7 @@ define("plane/object/text", ['require', 'exports'], function (require, exports) 
      * @constructor
      */
     var Text = utility.object.inherits(function Text(attrs) {
-
+ 
         /**
          * A Universally unique identifier for
          * a single instance of Object
