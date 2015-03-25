@@ -39,16 +39,15 @@ define("plane/object/text", ['require', 'exports'], function (require, exports) 
 
         this.from = null;
         this.to = null;
+        this.size = null;
+        this.value = null;
+        this.measure = null;
 
         this.initialize(attrs);
 
     }, shape.Base);
 
     Text.prototype.calculeSegments = function () {
-
-
-        console.log('segments de text!');
-
 
         return true;
 
@@ -58,17 +57,27 @@ define("plane/object/text", ['require', 'exports'], function (require, exports) 
 
         var status = false;
 
+
         if (pointCheck.distanceTo(this.from) <= distance) {
             return {
                 status: true,
                 point: this.from
             };
         }
+        
+        
+        var angleInRadian = this.from.angleTo(this.to),
+            lineSizeValue = this.measure.width;
+        
+        var pointTo = point.create(this.from.x + (lineSizeValue * Math.cos(angleInRadian)), this.from.y + (lineSizeValue * Math.sin(angleInRadian)));
+        
+        
+        //console.log(pointTo);
 
-        if (pointCheck.distanceTo(this.to) <= distance) {
+        if (pointCheck.distanceTo(pointTo) <= distance) {
             return {
                 status: true,
-                point: this.to
+                point: pointTo
             };
         }
 
@@ -108,6 +117,7 @@ define("plane/object/text", ['require', 'exports'], function (require, exports) 
 
         // para a fonte + seu tamanho
         context.font = utility.string.format('{0}px arial', [parseInt(this.size * scale)]);
+        context.canvas.font = utility.string.format('{0}px arial', [parseInt(this.size * scale)]);
 
         // para o movimento até o ponto inicial
         context.translate(this.from.x * scale + move.x, this.from.y * scale + move.y);
@@ -120,26 +130,20 @@ define("plane/object/text", ['require', 'exports'], function (require, exports) 
         // o flip para o texto estar correto
         context.scale(1, -1);
 
+        this.measure = {
+            height: 0,
+            width: context.measureText(this.value).width
+        };
 
 
-
-
-
-
-
-        //context.rotate(Math.PI);
+        // escrevo o texto no context
         context.fillText(this.value, 0, 0);
-        //context.fillText(this.value, this.from.x, this.from.y);
 
-        console.log(context.measureText(this.value));
 
         // restauro as configurações de estilo anteriores do contexto
         context.restore();
 
     }
-
-
-
 
     function create(attrs) {
         // 0 - verificação da chamada

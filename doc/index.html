@@ -41,7 +41,7 @@
         <script src="../lib/module.js"></script>
         <script src="../lib/utility.js"></script>
         <script src="../dist/plane.js"></script>
-
+        
         <script>
             window.onload = function () {
                 var viewPort = document.getElementById("viewPort");
@@ -158,43 +158,60 @@
                         [1159.668201168597, 650.3135198903983]
                     ]
                 });
-                
-                
-                plane.shape.create({
-                    type: 'line',
-                    from: [50, 50],
-                    to: [300, 720],
-                    style: {
-                        lineColor: 'rgb(32, 184, 96)',
-                        lineDash: true
-                    }
-                });
-                plane.shape.create({
-                    type: 'text',
-                    from: [50, 50],
-                    to: [300, 720],
-                    size: 25,
-                    value: 'Andréa Fabiana de Oliveira Maciel'
-                });
 
-                plane.shape.create({
-                    type: 'line',
-                    from: [50, 850],
-                    to: [300, 720],
-                    style: {
-                        lineColor: 'rgb(32, 184, 96)',
-                        lineDash: true
-                    }
-                });
-                plane.shape.create({
+
+//                plane.shape.create({
+//                    type: 'line',
+//                    from: [50, 50],
+//                    to: [300, 720],
+//                    style: {
+//                        lineColor: 'rgb(32, 184, 96)',
+//                        lineDash: true
+//                    }
+//                });
+//                plane.shape.create({
+//                    type: 'text',
+//                    from: [50, 50],
+//                    to: [300, 720],
+//                    size: 25,
+//                    value: 'Andréa Fabiana de Oliveira Maciel'
+//                });
+
+                var shapeText = plane.shape.create({
                     type: 'text',
                     from: [50, 850],
+                    //to: [300, 850],
                     to: [300, 720],
                     size: 35,
                     value: 'Andréa Fabiana de Oliveira Maciel'
                 });
+                plane.shape.create({
+                    type: 'line',
+                    from: [50, 850],
+                    to: [300, 850],
+                    //to: [300, 720],
+                    style: {
+                        lineColor: 'rgb(32, 184, 96)',
+                        lineDash: true
+                    }
+                });
+                plane.shape.create({
+                    type: 'line',
+                    from: [526, 602],
+                    to: [200, 350],
+                    //to: [300, 720],
+                    style: {
+                        lineColor: 'red',
+                        lineDash: true
+                    }
+                });
+                
 
                 plane.view.update();
+
+                var pointCheck = plane.point.create(526, 602);
+
+                console.log(shapeText.fromSnap(pointCheck, 3));
 
                 //            console.log('nº de shapes - ' + plane.shape.search({
                 //                type: 'inView'
@@ -223,6 +240,9 @@
 //                    console.log('nº de shapes - ' + plane.shape.search({
 //                        type: 'inView'
 //                    }).length);
+
+                    console.log(shapeText.fromSnap(pointCheck, 3));
+
 
                 });
 
