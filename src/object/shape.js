@@ -1,7 +1,6 @@
 define('plane/object/shape', ['require', 'exports'], function (require, exports) {
 
-    var intersection = require('plane/math/intersection'),
-        matrix = require('plane/math/matrix');
+    var intersection = require('plane/math/intersection');
 
     var point = require('plane/core/point');
 
@@ -47,7 +46,7 @@ define('plane/object/shape', ['require', 'exports'], function (require, exports)
                 // correção de lógica, como estou calculando pelos segmentos, 
                 // não posso pegar o ultimo + o primeiro, pois será como um shape 'fechado'
                 // 2015.02.16 - outra correção IMPORTANTE - se == ao fim CONTINUE
-                if (i + 1 == this.segments.length) {
+                if (i + 1 === this.segments.length) {
                     continue;
                 }
                 
@@ -70,7 +69,7 @@ define('plane/object/shape', ['require', 'exports'], function (require, exports)
                 result = false;
 
 
-            if (this.type == 'line') {
+            if ((this.type === 'line') || (this.type === 'text')) {
 
                 // faço a verificação 'pontos dentro do retângulo'
                 result = ((this.to.x >= rectangle.from.x && this.to.x <= rectangle.to.x) && (this.to.y >= rectangle.from.y && this.to.y <= rectangle.to.y)) ||

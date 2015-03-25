@@ -1,4 +1,4 @@
-define("plane/object/line", ['require', 'exports'], function (require, exports) {
+define("plane/object/text", ['require', 'exports'], function (require, exports) {
 
     var intersection = require('plane/math/intersection'),
         matrix = require('plane/math/matrix');
@@ -19,7 +19,7 @@ define("plane/object/line", ['require', 'exports'], function (require, exports) 
      * @class Shape
      * @constructor
      */
-    var Line = utility.object.inherits(function Line(attrs) {
+    var Text = utility.object.inherits(function Text(attrs) {
 
         /**
          * A Universally unique identifier for
@@ -44,22 +44,17 @@ define("plane/object/line", ['require', 'exports'], function (require, exports) 
 
     }, shape.Base);
 
-    Line.prototype.calculeSegments = function () {
+    Text.prototype.calculeSegments = function () {
 
-        this.segments.push({
-            x: this.from.x,
-            y: this.from.y
-        });
-        this.segments.push({
-            x: this.to.x,
-            y: this.to.y
-        });
+
+        console.log('segments de text!');
+
 
         return true;
 
-    }
+    };
 
-    Line.prototype.fromSnap = function (pointCheck, distance) {
+    Text.prototype.fromSnap = function (pointCheck, distance) {
 
         var status = false;
 
@@ -76,38 +71,80 @@ define("plane/object/line", ['require', 'exports'], function (require, exports) 
                 point: this.to
             };
         }
-        
-        
-        
-        if (pointCheck.distanceTo(this.to.midTo(this.from)) <= distance) {
-            return {
-                status: true,
-                point: this.to.midTo(this.from)
-            };
-        }
 
         return {
             status: status,
             point: null
         };
 
-    }
+    };
 
-    Line.prototype.toObject = function () {
+    Text.prototype.toObject = function () {
         return {
             uuid: this.uuid,
             type: this.type,
             from: this.from.toObject(),
-            to: this.to.toObject()
+            to: this.from.toObject(),
+            size: this.size,
+            value: this.value
         };
+    };
+
+
+    // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
+    Text.prototype.render = function (context, transform) {
+
+        // salvo as configurações de estilo atuais do contexto
+        context.save();
+
+        // de acordo com a matrix - a escala que devo aplicar nos segmentos
+        var scale = Math.sqrt(transform.a * transform.d);
+        // de acordo com a matrix - o movimento que devo aplicar nos segmentos
+        var move = {
+            x: transform.tx,
+            y: transform.ty
+        };
+
+
+        // para a fonte + seu tamanho
+        context.font = utility.string.format('{0}px arial', [parseInt(this.size * scale)]);
+
+        // para o movimento até o ponto inicial
+        context.translate(this.from.x * scale + move.x, this.from.y * scale + move.y);
+
+
+        // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Transformations#Rotating
+        // o angulo em radianos do ponto inicial ao ponto final
+        context.rotate(this.from.angleTo(this.to));
+
+        // o flip para o texto estar correto
+        context.scale(1, -1);
+
+
+
+
+
+
+
+
+        //context.rotate(Math.PI);
+        context.fillText(this.value, 0, 0);
+        //context.fillText(this.value, this.from.x, this.from.y);
+
+        console.log(context.measureText(this.value));
+
+        // restauro as configurações de estilo anteriores do contexto
+        context.restore();
+
     }
+
 
 
 
     function create(attrs) {
         // 0 - verificação da chamada
-        if (typeof attrs == 'function') {
-            throw new Error('Line - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+        if (typeof attrs === 'function') {
+            throw new Error('Text - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
         // 1 - verificações de quais atributos são usados
@@ -124,8 +161,9 @@ define("plane/object/line", ['require', 'exports'], function (require, exports) 
         delete attrs['segments'];
 
         // 5 - criando um novo shape do tipo arco
-        return new Line(attrs);
-    };
+        return new Text(attrs);
+    }
+    ;
 
     exports.create = create;
 

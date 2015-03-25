@@ -158,6 +158,41 @@
                         [1159.668201168597, 650.3135198903983]
                     ]
                 });
+                
+                
+                plane.shape.create({
+                    type: 'line',
+                    from: [50, 50],
+                    to: [300, 720],
+                    style: {
+                        lineColor: 'rgb(32, 184, 96)',
+                        lineDash: true
+                    }
+                });
+                plane.shape.create({
+                    type: 'text',
+                    from: [50, 50],
+                    to: [300, 720],
+                    size: 25,
+                    value: 'Andréa Fabiana de Oliveira Maciel'
+                });
+
+                plane.shape.create({
+                    type: 'line',
+                    from: [50, 850],
+                    to: [300, 720],
+                    style: {
+                        lineColor: 'rgb(32, 184, 96)',
+                        lineDash: true
+                    }
+                });
+                plane.shape.create({
+                    type: 'text',
+                    from: [50, 850],
+                    to: [300, 720],
+                    size: 35,
+                    value: 'Andréa Fabiana de Oliveira Maciel'
+                });
 
                 plane.view.update();
 
@@ -185,9 +220,9 @@
 
                     plane.view.zoomTo(zoomNew, centerNew);
 
-                    console.log('nº de shapes - ' + plane.shape.search({
-                        type: 'inView'
-                    }).length);
+//                    console.log('nº de shapes - ' + plane.shape.search({
+//                        type: 'inView'
+//                    }).length);
 
                 });
 
