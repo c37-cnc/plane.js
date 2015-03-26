@@ -17,7 +17,8 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
         'polyline': require('plane/object/polyline'),
         'rectangle': require('plane/object/rectangle'),
         'spline': require('plane/object/spline'),
-        'text': require('plane/object/text')
+        'text': require('plane/object/text'),
+        'quote': require('plane/object/quote')
     };
 
 
@@ -28,7 +29,7 @@ define("plane/core/shape", ['require', 'exports'], function (require, exports) {
         }
 
         // verifição para o tipo de shape
-        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier-cubic', 'bezier-quadratic', 'spline', 'text'].indexOf(attrs.type) === -1) {
+        if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier-cubic', 'bezier-quadratic', 'spline', 'text', 'quote'].indexOf(attrs.type) === -1) {
             throw new Error('shape - create - type is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
