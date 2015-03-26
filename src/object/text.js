@@ -4,6 +4,7 @@ define("plane/object/text", ['require', 'exports'], function (require, exports) 
         matrix = require('plane/math/matrix');
 
     var point = require('plane/core/point'),
+        view = require('plane/core/view'),
         shape = require('plane/object/shape');
 
     var utility = require('utility');
@@ -20,7 +21,7 @@ define("plane/object/text", ['require', 'exports'], function (require, exports) 
      * @constructor
      */
     var Text = utility.object.inherits(function Text(attrs) {
- 
+
         /**
          * A Universally unique identifier for
          * a single instance of Object
@@ -64,15 +65,12 @@ define("plane/object/text", ['require', 'exports'], function (require, exports) 
                 point: this.from
             };
         }
-        
-        
+
+        // um remendo para o calculo
         var angleInRadian = this.from.angleTo(this.to),
-            lineSizeValue = this.measure.width;
-        
+            lineSizeValue = this.measure.width - (.5 / view.zoom);
+
         var pointTo = point.create(this.from.x + (lineSizeValue * Math.cos(angleInRadian)), this.from.y + (lineSizeValue * Math.sin(angleInRadian)));
-        
-        
-        //console.log(pointTo);
 
         if (pointCheck.distanceTo(pointTo) <= distance) {
             return {
@@ -130,11 +128,15 @@ define("plane/object/text", ['require', 'exports'], function (require, exports) 
         // o flip para o texto estar correto
         context.scale(1, -1);
 
-        this.measure = {
-            height: 0,
-            width: context.measureText(this.value).width
-        };
 
+        if (!this.measure) {
+
+            this.measure = {
+                height: 0,
+                width: context.measureText(this.value).width
+            };
+
+        }
 
         // escrevo o texto no context
         context.fillText(this.value, 0, 0);

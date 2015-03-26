@@ -79,18 +79,61 @@ define("plane/object/rectangle", ['require', 'exports'], function (require, expo
     Rectangle.prototype.fromSnap = function (pointCheck, distance) {
 
         var status = false;
-        
-        for(var i = 0; i < this.segments.length; i++){
-            
+
+        // pelas pontas
+        for (var i = 0; i < this.segments.length; i++) {
+
             var calculatePoint = point.create(this.segments[i]);
-                
-            if (calculatePoint.distanceTo(pointCheck) <= distance){
+
+            if (calculatePoint.distanceTo(pointCheck) <= distance) {
                 return {
                     status: true,
                     point: calculatePoint
                 };
             }
         }
+
+        // pelos meios 
+        var p1 = point.create(this.segments[0]),
+            p2 = point.create(this.segments[1]);
+
+        if (pointCheck.distanceTo(p1.midTo(p2)) <= distance) {
+            return {
+                status: true,
+                point: p1.midTo(p2)
+            };
+        }
+
+        var p3 = point.create(this.segments[1]),
+            p4 = point.create(this.segments[2]);
+
+        if (pointCheck.distanceTo(p3.midTo(p4)) <= distance) {
+            return {
+                status: true,
+                point: p3.midTo(p4)
+            };
+        }
+
+        var p5 = point.create(this.segments[2]),
+            p6 = point.create(this.segments[3]);
+
+        if (pointCheck.distanceTo(p5.midTo(p6)) <= distance) {
+            return {
+                status: true,
+                point: p5.midTo(p6)
+            };
+        }
+
+        var p7 = point.create(this.segments[3]),
+            p8 = point.create(this.segments[4]);
+
+        if (pointCheck.distanceTo(p7.midTo(p8)) <= distance) {
+            return {
+                status: true,
+                point: p7.midTo(p8)
+            };
+        }
+
 
         return {
             status: status,
@@ -133,7 +176,8 @@ define("plane/object/rectangle", ['require', 'exports'], function (require, expo
 
         // 5 - criando um novo shape do tipo arco
         return new Rectangle(attrs);
-    };
+    }
+    ;
 
     exports.create = create;
 
