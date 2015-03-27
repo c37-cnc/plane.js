@@ -112,15 +112,29 @@ define("plane/core/view", ['require', 'exports'], function (require, exports) {
                 return shape.intersect(rectangle);
             });
 
+            var shapesQuote = shapes.filter(function (shape) {
+                return shape.type === 'quote';
+            });
+            
             var shapesWithStyle = shapes.filter(function (shape) {
-                return shape.style;
+                return shape.style && shape.type !== 'quote';
             });
 
             var shapesWithoutStyle = shapes.filter(function (shape) {
-                return !shape.style;
+                return !shape.style && shape.type !== 'quote';
             });
 
 
+            if (shapesQuote.length > 0) {
+
+                var s = shapesQuote.length;
+
+                while (s--) {
+                    shapesQuote[s].render(_context, _transform);
+                }
+
+            }
+            
             if (shapesWithStyle.length > 0) {
 
                 var s = shapesWithStyle.length;
