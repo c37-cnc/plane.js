@@ -11,6 +11,10 @@ http://knowledge.autodesk.com/support/autocad/learn-explore/caas/CloudHelp/cloud
 **Ellipse**
 http://www.autodesk.com/techpubs/autocad/acadr14/dxf/ellipse_al_u05_c.htm
 
+**Arvore Binária para Intersections**
+http://en.wikipedia.org/wiki/Bentley%E2%80%93Ottmann_algorithm
+https://github.com/lilo003/algorithm-009
+
 
 *Códigos fontes*
 
