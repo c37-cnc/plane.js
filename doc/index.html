@@ -51,158 +51,155 @@
                     viewPort: viewPort
                 });
                 // plane - initialize
-//
-//                plane.shape.create({
-//                    type: 'arc',
-//                    center: [700, 250],
-//                    radius: 50,
-//                    startAngle: 90,
-//                    endAngle: 270
-//                });
-//                plane.shape.create({
-//                    type: 'arc',
-//                    center: [1200, 300],
-//                    radius: 30,
-//                    startAngle: 360,
-//                    endAngle: 90
-//                });
-//
-//                plane.shape.create({
-//                    type: 'bezier-cubic',
-//                    points: [[60, 190], [80, 10], [500, 10], [520, 190]]
-//                });
-//
-//                plane.shape.create({
-//                    type: 'bezier-quadratic',
-//                    points: [[700, 100], [860, 0], [1000, 100]]
-//                });
-//
-//                plane.shape.create({
-//                    type: 'circle',
-//                    center: [1200, 100],
-//                    radius: 50
-//                });
-//
-//                plane.shape.create({
-//                    type: 'ellipse',
-//                    center: [400, 300],
-//                    radiusY: 50,
-//                    radiusX: 100
-//                });
-//
-//                plane.shape.create({
-//                    type: 'line',
-//                    from: [150, 450],
-//                    to: [600, 450]
-//                });
+
+                plane.shape.create({
+                    type: 'arc',
+                    center: [700, 250],
+                    radius: 50,
+                    startAngle: 90,
+                    endAngle: 270
+                });
+                plane.shape.create({
+                    type: 'arc',
+                    center: [1200, 300],
+                    radius: 30,
+                    startAngle: 360,
+                    endAngle: 90
+                });
+
+                plane.shape.create({
+                    type: 'bezier-cubic',
+                    points: [[60, 190], [80, 10], [500, 10], [520, 190]]
+                });
+
+                plane.shape.create({
+                    type: 'bezier-quadratic',
+                    points: [[700, 100], [860, 0], [1000, 100]]
+                });
+
+                plane.shape.create({
+                    type: 'circle',
+                    center: [1200, 100],
+                    radius: 50
+                });
+
+                plane.shape.create({
+                    type: 'ellipse',
+                    center: [400, 300],
+                    radiusY: 50,
+                    radiusX: 100
+                });
+
+                plane.shape.create({
+                    type: 'line',
+                    from: [150, 450],
+                    to: [600, 450]
+                });
+                plane.shape.create({
+                    type: 'line',
+                    from: [50, 50],
+                    to: [50, 320],
+                    style: {
+                        lineColor: 'rgb(32, 184, 96)',
+                        lineDash: true
+                    }
+                });
+
+                plane.shape.create({
+                    type: 'polygon',
+                    center: [900, 400],
+                    radius: 70,
+                    sides: 5
+                });
+
+                plane.shape.create({
+                    type: 'polyline',
+                    points: [[700, 100], [860, 0], [1000, 100]]
+                });
+                plane.shape.create({
+                    type: 'polyline',
+                    points: [[60, 190], [80, 10], [500, 10], [520, 190]]
+                });
+
+                plane.shape.create({
+                    type: 'rectangle',
+                    from: [0, 0],
+                    to: [viewPort.clientWidth, viewPort.clientHeight]
+                });
+                plane.shape.create({
+                    type: 'rectangle',
+                    from: [1350, 100],
+                    to: [1550, 300]
+                });
+
+                plane.shape.create({
+                    type: 'spline',
+                    degree: 3,
+                    knots: [0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4],
+                    points: [
+                        [1099.987144430972, 649.9876187248264],
+                        [1110.097044818745, 670.0304621818222],
+                        [1120.20695803644, 649.9876187248264],
+                        [1129.990734674595, 692.028699594638],
+                        [1140.426771641907, 650.1505693076124],
+                        [1149.884424530442, 669.7045610162513],
+                        [1159.668201168597, 650.3135198903983]
+                    ]
+                });
+                plane.shape.create({
+                    type: 'polyline',
+                    points: [
+                        [1099.987144430972, 649.9876187248264],
+                        [1110.097044818745, 670.0304621818222],
+                        [1120.20695803644, 649.9876187248264],
+                        [1129.990734674595, 692.028699594638],
+                        [1140.426771641907, 650.1505693076124],
+                        [1149.884424530442, 669.7045610162513],
+                        [1159.668201168597, 650.3135198903983]
+                    ]
+                });
+
+
 //                plane.shape.create({
 //                    type: 'line',
 //                    from: [50, 50],
-//                    to: [50, 320],
+//                    to: [300, 720],
 //                    style: {
 //                        lineColor: 'rgb(32, 184, 96)',
 //                        lineDash: true
 //                    }
 //                });
-//
 //                plane.shape.create({
-//                    type: 'polygon',
-//                    center: [900, 400],
-//                    radius: 70,
-//                    sides: 5
-//                });
-//
-//                plane.shape.create({
-//                    type: 'polyline',
-//                    points: [[700, 100], [860, 0], [1000, 100]]
-//                });
-//                plane.shape.create({
-//                    type: 'polyline',
-//                    points: [[60, 190], [80, 10], [500, 10], [520, 190]]
-//                });
-//
-//                plane.shape.create({
-//                    type: 'rectangle',
-//                    from: [0, 0],
-//                    to: [viewPort.clientWidth, viewPort.clientHeight]
-//                });
-//                plane.shape.create({
-//                    type: 'rectangle',
-//                    from: [1350, 100],
-//                    to: [1550, 300]
-//                });
-//
-//                plane.shape.create({
-//                    type: 'spline',
-//                    degree: 3,
-//                    knots: [0, 0, 0, 0, 1, 2, 3, 4, 4, 4, 4],
-//                    points: [
-//                        [1099.987144430972, 649.9876187248264],
-//                        [1110.097044818745, 670.0304621818222],
-//                        [1120.20695803644, 649.9876187248264],
-//                        [1129.990734674595, 692.028699594638],
-//                        [1140.426771641907, 650.1505693076124],
-//                        [1149.884424530442, 669.7045610162513],
-//                        [1159.668201168597, 650.3135198903983]
-//                    ]
-//                });
-//                plane.shape.create({
-//                    type: 'polyline',
-//                    points: [
-//                        [1099.987144430972, 649.9876187248264],
-//                        [1110.097044818745, 670.0304621818222],
-//                        [1120.20695803644, 649.9876187248264],
-//                        [1129.990734674595, 692.028699594638],
-//                        [1140.426771641907, 650.1505693076124],
-//                        [1149.884424530442, 669.7045610162513],
-//                        [1159.668201168597, 650.3135198903983]
-//                    ]
-//                });
-//
-//
-////                plane.shape.create({
-////                    type: 'line',
-////                    from: [50, 50],
-////                    to: [300, 720],
-////                    style: {
-////                        lineColor: 'rgb(32, 184, 96)',
-////                        lineDash: true
-////                    }
-////                });
-////                plane.shape.create({
-////                    type: 'text',
-////                    from: [50, 50],
-////                    to: [300, 720],
-////                    size: 25,
-////                    value: 'Andréa Fabiana de Oliveira Maciel'
-////                });
-//
-//                var shapeText = plane.shape.create({
 //                    type: 'text',
-//                    from: [50, 850],
-//                    //to: [300, 850],
+//                    from: [50, 50],
 //                    to: [300, 720],
-//                    size: 35,
+//                    size: 25,
 //                    value: 'Andréa Fabiana de Oliveira Maciel'
 //                });
-//                plane.shape.create({
-//                    type: 'line',
-//                    from: [50, 850],
-//                    to: [300, 850],
-//                    //to: [300, 720],
-//                    style: {
-//                        lineColor: 'rgb(32, 184, 96)',
-//                        lineDash: true
-//                    }
-//                });
+
+                var shapeText = plane.shape.create({
+                    type: 'text',
+                    from: [50, 850],
+                    //to: [300, 850],
+                    to: [300, 720],
+                    size: 35,
+                    value: 'Andréa Fabiana de Oliveira Maciel'
+                });
+                plane.shape.create({
+                    type: 'line',
+                    from: [50, 850],
+                    to: [300, 850],
+                    //to: [300, 720],
+                    style: {
+                        lineColor: 'rgb(32, 184, 96)',
+                        lineDash: true
+                    }
+                });
+
                 plane.shape.create({
                     type: 'line',
                     from: [226, 602],
-                    to: [800, 502],
-                    style: {
-                        lineColor: 'red',
-                        lineDash: true
-                    }
+                    to: [800, 502]
                 });
                 plane.shape.create({
                     type: 'quote',
@@ -214,17 +211,13 @@
                 plane.shape.create({
                     type: 'line',
                     from: [100, 50],
-                    to: [100, 500],
-                    style: {
-                        lineColor: 'red',
-                        lineDash: true
-                    }
+                    to: [100, 500]
                 });
                 plane.shape.create({
                     type: 'quote',
                     from: [100, 50],
                     to: [100, 500],
-                    height: 10
+                    height: -15
                 });
                 
 

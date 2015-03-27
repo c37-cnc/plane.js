@@ -36,7 +36,7 @@ define("plane/object/quote", ['require', 'exports'], function (require, exports)
 
         this.segments = [];
         this.status = null;
-        this.style = null;
+        this.style = 'quote';
 
         this.from = null;
         this.to = null;
@@ -98,30 +98,6 @@ define("plane/object/quote", ['require', 'exports'], function (require, exports)
     // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
     Quote.prototype.render = function (context, transform) {
 
-//        var angleInRadian = this.from.angleTo(this.to);
-//
-//        var p1 = this.from,
-//            p2 = point.create(this.from.x + (this.height * Math.cos(angleInRadian)), this.from.y + (this.height * Math.sin(angleInRadian))),
-//            p3 = point.create(this.to.x + (this.height * Math.cos(angleInRadian)), this.to.y + (this.height * Math.sin(angleInRadian))),
-//            p4 = this.to;
-//
-//        // de acordo com a matrix - a escala que devo aplicar nos segmentos
-//        var scale = Math.sqrt(transform.a * transform.d);
-//        // de acordo com a matrix - o movimento que devo aplicar nos segmentos
-//        var move = {
-//            x: transform.tx,
-//            y: transform.ty
-//        };
-//        
-//        context.moveTo(this.from.x * scale + move.x, this.from.y * scale + move.y);
-//
-//        context.lineTo(p1.x * scale + move.x, p1.y * scale + move.y);
-//        context.lineTo(p2.x * scale + move.x, p2.y * scale + move.y);
-//        context.lineTo(p3.x * scale + move.x, p3.y * scale + move.y);
-//        context.lineTo(p4.x * scale + move.x, p4.y * scale + move.y);
-
-
-
         var length = Math.sqrt((this.from.x - this.to.x) * (this.from.x - this.to.x) + (this.from.y - this.to.y) * (this.from.y - this.to.y));
 
         var p1 = this.from,
@@ -144,7 +120,18 @@ define("plane/object/quote", ['require', 'exports'], function (require, exports)
             x: transform.tx,
             y: transform.ty
         };
-
+        
+        
+        // salvo as configurações de estilo atuais do contexto
+        context.save();
+        
+        context.setLineDash([5, 2]);
+        //context.strokeStyle = '#007efc';
+        context.strokeStyle = '#0f8fff';
+        
+        context.beginPath();
+        
+        
         context.moveTo(this.from.x * scale + move.x, this.from.y * scale + move.y);
 
         context.lineTo(p1.x * scale + move.x, p1.y * scale + move.y);
@@ -152,12 +139,11 @@ define("plane/object/quote", ['require', 'exports'], function (require, exports)
 
         context.lineTo(p3.x * scale + move.x, p3.y * scale + move.y);
         context.lineTo(p4.x * scale + move.x, p4.y * scale + move.y);
-
-
-
+        
+        context.stroke();
+        
 
         var hAlpha = this.height + 3;
-
 
         var pAlpha1 = {
             x: this.from.x + hAlpha * (this.from.y - this.to.y) / length,
@@ -167,31 +153,30 @@ define("plane/object/quote", ['require', 'exports'], function (require, exports)
             x: this.to.x + hAlpha * (this.from.y - this.to.y) / length,
             y: this.to.y + hAlpha * (this.to.x - this.from.x) / length
         };
+        
+        // o tamanho do texto 
+        var widthTextAlpha = context.measureText(this.value).width;
+        
+        // o angulo para a inclinação dos pontos alpha
+        var angleInRadian = this.from.angleTo(this.to);
+        
+        // o ponto final + medida total do texto para um novo pointo final
+        var pAlpha3 = point.create(pAlpha2.x + (-widthTextAlpha * Math.cos(angleInRadian)), pAlpha2.y + (-widthTextAlpha * Math.sin(angleInRadian)));
+        
+        // o meio entre o inicio estático e o novo pointo final
+        var midAlpha = point.create(pAlpha1).midTo(point.create(pAlpha3));
+        
+        // a medida arredondada entre o ponto inicial e o pointo final
+        var textAlpha = point.create(pAlpha1).distanceTo(point.create(pAlpha2));
+        
+        
+        
 
-        var midAlpha = point.create(pAlpha1).midTo(point.create(pAlpha2));
-        var textAlpha = point.create(pAlpha1).distanceTo(point.create(pAlpha2))
-
-
-
-
-        //console.log(this.height)
-
-        //context.stroke();
-
-        // salvo as configurações de estilo atuais do contexto
-        context.save();
-
-        // de acordo com a matrix - a escala que devo aplicar nos segmentos
-        var scale = Math.sqrt(transform.a * transform.d);
-        // de acordo com a matrix - o movimento que devo aplicar nos segmentos
-        var move = {
-            x: transform.tx,
-            y: transform.ty
-        };
-
-
+        
         // para a fonte + seu tamanho
-        context.font = utility.string.format('{0}px arial', [parseInt(13 * scale)]);
+        context.font = utility.string.format('{0}px arial', [parseInt(11 * scale)]);
+        //context.fillStyle = '#007efc';
+        context.fillStyle = '#0f8fff';
 
         // para o movimento até o ponto inicial
         context.translate(midAlpha.x * scale + move.x, midAlpha.y * scale + move.y);
@@ -217,11 +202,10 @@ define("plane/object/quote", ['require', 'exports'], function (require, exports)
         // escrevo o texto no context
         context.fillText(Math.round(textAlpha) + 'mm', 0, 0);
 
-
         // restauro as configurações de estilo anteriores do contexto
         context.restore();
 
-    }
+    };
 
     Quote.prototype.intersect = function (rectangle) {
 

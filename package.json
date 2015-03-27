@@ -1,6 +1,6 @@
 {
     "name": "plane",
-    "version": "3.0.60",
+    "version": "3.0.61",
     "description": "JavaScript Engine for Building 2D Element with HTML5 Canvas",
     "keywords": ["javascript", "canvas", "geometry", "space", "euclidean", "draw", "vector", "cad", "2d", "svg", "dxf"],
     "homepage": "http://plane.c37.co/",
