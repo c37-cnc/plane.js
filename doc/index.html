@@ -41,7 +41,7 @@
         <script src="../lib/module.js"></script>
         <script src="../lib/utility.js"></script>
         <script src="../dist/plane.js"></script>
-        
+
         <script>
             window.onload = function () {
                 var viewPort = document.getElementById("viewPort");
@@ -207,7 +207,7 @@
                     to: [800, 502],
                     height: 20
                 });
-                
+
                 plane.shape.create({
                     type: 'line',
                     from: [100, 50],
@@ -219,44 +219,39 @@
                     to: [100, 500],
                     height: -15
                 });
-                
-                plane.shape.create({
+
+                var shapes = [];
+
+                shapes.push(plane.shape.create({
                     type: 'line',
                     from: [130, 900],
                     to: [200, 900]
-                });
+                }));
                 plane.shape.create({
                     type: 'quote',
                     from: [130, 900],
                     to: [200, 900],
                     height: 15
                 });
-                
-                plane.shape.create({
+
+                shapes.push(plane.shape.create({
                     type: 'line',
                     from: [130, 870],
                     to: [230, 870]
-                });
+                }));
                 plane.shape.create({
                     type: 'quote',
                     from: [130, 870],
                     to: [230, 870],
                     height: 15
                 });
-                
+
 
                 plane.view.update();
 
-//                var pointCheck = plane.point.create(526, 602);
-//
-//                console.log(shapeText.fromSnap(pointCheck, 3));
-
-                //            console.log('nº de shapes - ' + plane.shape.search({
-                //                type: 'inView'
-                //            }).length);
 
 
-
+                console.log(plane.group.create(shapes));
 
 
 

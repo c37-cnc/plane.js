@@ -20,7 +20,7 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
         return {
             uuid: this.uuid,
             name: this.name,
-            status: this.status,
+            status: this.status, // para ativo || não ativo
             style: this.style,
             children: this.children.list().map(function (shape) {
                 return shape.toObject();
@@ -32,7 +32,7 @@ define("plane/core/layer", ['require', 'exports'], function (require, exports) {
 
     function create(attrs) {
         if ((typeof attrs == "function")) {
-            throw new Error('layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
+            throw new Error('Layer - create - attrs is not valid \n http://requirejs.org/docs/errors.html#' + 'errorCode');
         }
 
         var uuid = utility.math.uuid(9, 16);
