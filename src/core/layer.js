@@ -1,6 +1,6 @@
 (function (plane) {
-
     "use strict";
+
     var _store = null,
         _active = null;
 
@@ -67,7 +67,7 @@
 
             // colocando nova layer como selecionada
             _active = layer;
-            
+
             return layer;
         },
         list: function () {
@@ -78,6 +78,12 @@
         },
         remove: function (value) {
 
+        },
+        get active() {
+            return _active;
+        },
+        set active(value){
+            
         }
     };
 
