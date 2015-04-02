@@ -1,0 +1,44 @@
+{
+    "name": "plane",
+    "version": "4.0.0",
+    "description": "JavaScript Engine for Building 2D Element with HTML5 Canvas",
+    "keywords": ["javascript", "canvas", "geometry", "space", "euclidean", "draw", "vector", "cad", "2d", "svg", "dxf"],
+    "homepage": "http://plane.c37.co/",
+    "bugs": {
+        "url": ""
+    },
+    "license": "CC-BY-SA-3.0",
+    "author": {
+        "name": "Ciro Cesar Maciel",
+        "email": "ciro.maciel@c37.co"
+    },
+    "contributors": [{
+        "name": "Andréa Fabiana Maciel",
+        "email": "andrea.maciel@c37.co"
+    }],
+    "directories": {
+        "dist": "./dist",
+        "doc": "./doc",
+        "src": "./src",
+        "test": "./test"
+    },
+    "repository": {
+        "type": "git",
+        "url": ""
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "grunt": "latest",
+        "grunt-bump": "latest",
+        "grunt-contrib-watch": "latest",
+        "grunt-contrib-clean": "latest",
+        "grunt-contrib-qunit": "latest",
+        "grunt-contrib-concat": "latest",
+        "grunt-contrib-uglify": "latest",
+        "grunt-contrib-yuidoc": "latest"
+    },
+    "scripts": {
+        "install": "",
+        "test": ""
+    }
+}

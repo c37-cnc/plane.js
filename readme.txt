@@ -17,9 +17,6 @@ https://www.youtube.com/watch?v=gIbfDxF69c8
 https://www.npmjs.com/package/grunt-bump
 http://semver.org/lang/pt-BR/
 
-https://www.npmjs.com/package/grunt-contrib-coffee
-http://js2.coffee/
-http://js2coffee.thomaskalka.de/
 
 
 
