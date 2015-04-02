@@ -1,5 +1,16 @@
 plane.utility = (function (plane) {
 
+    var string = {
+        format: function (str, args) {
+            return str.replace(/{(\d+)}/g, function (match, number) {
+                return typeof args[number] != 'undefined' ? args[number] : match;
+            });
+        },
+        contains: function () {
+            return String.prototype.indexOf.apply(this, arguments) !== -1;
+        }
+    };
+
 
     var math = {
         uuid: function (length, radix) {
@@ -39,10 +50,11 @@ plane.utility = (function (plane) {
             return radians * (180 / Math.PI);
         }
     }
+    
 
     var object = {
         inherits: function (f, p) {
-            f.prototype = new p();
+            f.prototype = p.prototype;
             f.constructor = f;
             return f;
         },
@@ -118,6 +130,7 @@ plane.utility = (function (plane) {
 
     return {
         math: math,
+        string: string,
         object: object
     };
 
