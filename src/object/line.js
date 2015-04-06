@@ -20,21 +20,21 @@
 
         this.from = null;
         this.to = null;
-        
+
         this._initialize(attrs);
-     
+
     }, plane.math.shape);
-                                             
+
     Line.prototype._calculeSegments = function () {
 
-//        this.segments.push({
-//            x: this.from.x,
-//            y: this.from.y
-//        });
-//        this.segments.push({
-//            x: this.to.x,
-//            y: this.to.y
-//        });
+        this._segments.push({
+            x: this.from.x,
+            y: this.from.y
+        });
+        this._segments.push({
+            x: this.to.x,
+            y: this.to.y
+        });
 
         return true;
 
@@ -66,11 +66,11 @@
 
 
             // 2 - validações dos atributos deste tipo
-
+            
 
             // 3 - conversões dos atributos
-            //            attrs.from = point.create(attrs.from);
-            //            attrs.to = point.create(attrs.to);
+            attrs.from = plane.point.create(attrs.from);
+            attrs.to = plane.point.create(attrs.to);
 
             // 4 - caso update de um shape não merge em segments
             delete attrs['segments'];

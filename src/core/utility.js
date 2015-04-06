@@ -21,7 +21,8 @@ plane.utility = (function (plane) {
             radix = radix || chars.length;
 
             if (length) {
-                for (i = 0; i < length; i++) uuid[i] = chars[0 | Math.random() * radix];
+                for (i = 0; i < length; i++)
+                    uuid[i] = chars[0 | Math.random() * radix];
             } else {
                 var r;
 
@@ -49,8 +50,8 @@ plane.utility = (function (plane) {
         degrees: function (radians) {
             return radians * (180 / Math.PI);
         }
-    }
-    
+    };
+
 
     var object = {
         inherits: function (f, p) {
@@ -85,7 +86,8 @@ plane.utility = (function (plane) {
          */
         merge: function (o, p) {
             for (var prop in p) { // For all props in p
-                if (o.hasOwnProperty[prop]) continue; // Except those already in o
+                if (o.hasOwnProperty[prop])
+                    continue; // Except those already in o
                 o[prop] = p[prop]; // add the property to o
             }
             return o;
@@ -124,14 +126,34 @@ plane.utility = (function (plane) {
             return Event;
 
         })()
-    }
+    };
 
-
+    var conversion = {
+        // http://javascriptweblog.wordpress.com/2011/08/08/fixing-the-javascript-typeof-operator/
+        toType: function (obj) {
+            return ({}).toString.call(obj).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
+        },
+        toJson: function (obj) {
+            return '';
+        },
+        toObject: function (obj) {
+            return {};
+        },
+        toArray: function (obj) {
+            var array = [];
+            // iterate backwards ensuring that length is an UInt32
+            for (var i = obj.length >>> 0; i--; ) {
+                array[i] = obj[i];
+            }
+            return array;
+        }
+    };
 
     return {
         math: math,
         string: string,
-        object: object
+        object: object,
+        conversion: conversion
     };
 
 

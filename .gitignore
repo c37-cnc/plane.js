@@ -2,3 +2,4 @@
 !/dist/.gitkeep
 /node_modules/
 /doc/
+/nbproject/

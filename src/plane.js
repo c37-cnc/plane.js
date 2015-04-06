@@ -20,6 +20,7 @@ window.plane = (function (window, document, undefined) {
 
 
             plane.layer._initialize(config);
+            plane.shape._initialize(config);
             plane.view._initialize(config);
 
 
