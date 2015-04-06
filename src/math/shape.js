@@ -1,17 +1,18 @@
 (function (plane) {
     "use strict";
-    
-    function Shape() {};
+
+    function Shape() {
+    }
 
     Shape.prototype = {
         _initialize: function (attrs) {
 
             // o nome do shape
             this.name = plane.utility.string.format('{0} - {1}', [attrs.type, attrs.uuid]);
-            
+
             // completando os campos do shape
             plane.utility.object.extend(this, attrs);
-            
+
 
             // calculando os segmentos
             this._calculeSegments();
@@ -29,8 +30,8 @@
 
         },
         render: function () {
-            
-            
+
+
         }
     };
 

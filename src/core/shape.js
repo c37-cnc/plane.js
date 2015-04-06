@@ -1,7 +1,18 @@
 (function (plane) {
     "use strict";
 
+    var _store = null, // store - para armazenamento 
+        _tree = null; // tree - para a arvore de pesquisa
+
     plane.shape = {
+        _initialize: function (config) {
+
+            _store = plane.math.dictionary.create();
+            _tree = plane.math.dictionary.create();
+
+            return true;
+
+        },
         create: function (attrs) {
 
             if ((typeof attrs === "function") || (attrs === null)) {
@@ -12,7 +23,6 @@
                 throw new Error('shape - create - type is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
 
-
             // atributos 
             attrs = plane.utility.object.merge({
                 uuid: plane.utility.math.uuid(9, 16)
@@ -20,11 +30,29 @@
 
             // criando pelo type
             var shape = plane.object[attrs.type].create(attrs);
-            
-            debugger;
 
-            // adicionando o novo shape na layer ativa
-            plane.layer.active.children.add(shape.uuid, shape);
+            // verifico se o store para a layer activa existe
+            if (!_store.find(plane.layer.active.uuid)) {
+                // se não existir, crio
+                _store.add(plane.layer.active.uuid, plane.math.dictionary.create());
+                _tree.add(plane.layer.active.uuid, plane.math.tree.create());
+            }
+
+            // de acordo com a layer - add shape in store
+            _store.find(plane.layer.active.uuid).add(shape.uuid, shape);
+
+            // de acordo com a layer - add segments in arvore de pesquisa
+            var i = 0;
+            do {
+                var x = shape._segments[i].x,
+                    y = shape._segments[i].y,
+                    uuid = shape.uuid;
+
+                _tree.find(plane.layer.active.uuid).add([x, x, y, y, {uuid: uuid}]);
+
+                i++;
+            } while (i < shape._segments.length);
+
 
             return shape;
         },
