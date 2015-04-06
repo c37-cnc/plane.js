@@ -48,7 +48,9 @@
                     y = shape._segments[i].y,
                     uuid = shape.uuid;
 
-                _tree.find(plane.layer.active.uuid).add([x, x, y, y, {uuid: uuid}]);
+                // simplificando a referencia
+                //_tree.find(plane.layer.active.uuid).add([x, x, y, y, {uuid: uuid}]);
+                _tree.find(plane.layer.active.uuid).add([x, x, y, y, uuid]);
 
                 i++;
             } while (i < shape._segments.length);
@@ -69,18 +71,67 @@
         clear: function () {
 
         },
-        list: function () {
+        list: function (value) {
+            if (!value) {
+                return _store.find(plane.layer.active.uuid).list();
+            } else {
+                var uuid = null;
 
+                // value como string == uuid
+                if (plane.utility.conversion.toType(value) === 'string') {
+                    uuid = value;
+                }
+                // value como object == layer
+                if (plane.utility.conversion.toType(value) === 'object') {
+                    uuid = value.uuid;
+                }
+
+                return _store.find(uuid).list();
+            }
         },
-        find: function (value) {
+        find: function (rectangle, value) {
+            if (!rectangle)
+                throw new Error('shape - find - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+            else {
+                if (!value) {
 
-            // uuid
-            // shape
-            // shape - property
+                    var segmentsFound = _tree.find(plane.layer.active.uuid).search([rectangle.from.x, rectangle.from.y, rectangle.to.x, rectangle.to.y]);
 
+                    segmentsFound = segmentsFound.map(function (segment) {
+                        return segment[4];
+                    });
 
-            return true;
+                    var shapesFound = segmentsFound.filter(function (segment, index, self) {
+                        return index === self.indexOf(segment);
+                    });
+                    
+                    return _store.find(plane.layer.active.uuid).find(shapesFound);
+                    
+                } else {
+                    var uuid = null;
 
+                    // value como string == uuid
+                    if (plane.utility.conversion.toType(value) === 'string') {
+                        uuid = value;
+                    }
+                    // value como object == layer
+                    if (plane.utility.conversion.toType(value) === 'object') {
+                        uuid = value.uuid;
+                    }
+                    
+                    var segmentsFound = _tree.find(uuid).search([rectangle.from.x, rectangle.from.y, rectangle.to.x, rectangle.to.y]);
+
+                    segmentsFound = segmentsFound.map(function (segment) {
+                        return segment[4];
+                    });
+
+                    var shapesFound = segmentsFound.filter(function (segment, index, self) {
+                        return index === self.indexOf(segment);
+                    });
+                    
+                    return _store.find(uuid).find(shapesFound);
+                }
+            }
         },
         search: function (query) {
 

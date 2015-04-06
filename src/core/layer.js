@@ -12,7 +12,8 @@
         this.style = attrs.style;
         this.children = attrs.children;
         this.events = attrs.events;
-    };
+    }
+    ;
 
     Layer.prototype.toObject = function () {
         return {
@@ -71,7 +72,7 @@
             return layer;
         },
         list: function () {
-
+            return _store.list()
         },
         find: function (uuid) {
 
@@ -82,8 +83,8 @@
         get active() {
             return _active;
         },
-        set active(value){
-            
+        set active(value) {
+
         }
     };
 
