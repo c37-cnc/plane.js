@@ -31,6 +31,7 @@
         },
         render: function () {
 
+            console.log('render!');
 
         }
     };

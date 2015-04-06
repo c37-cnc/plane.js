@@ -14,7 +14,18 @@
             return this.store[key] = value;
         },
         find: function (key) {
-            return this.store[key];
+            if (typeof key === 'string') {
+                return this.store[key];
+            } else if ((typeof key !== 'string') && key.length > 0) { // array
+                var self = this,
+                    keys = key;
+                return Object.keys(this.store).filter(function (key) {
+                    if (keys.indexOf(key) !== -1)
+                        return self.store[key];
+                }).map(function (key) {
+                    return self.store[key];
+                });
+            }
         },
         remove: function (key) {
             delete this.store[key];
@@ -31,7 +42,7 @@
                 return self.store[key];
             });
         }
-    }
+    };
 
 
     plane.math.dictionary = {
