@@ -17,6 +17,7 @@
             if (typeof key === 'string') {
                 return this.store[key];
             } else if ((typeof key !== 'string') && key.length > 0) { // array
+                // TODO: polir/melhorar aqui - uma forma mais rápida?
                 var self = this,
                     keys = key;
                 return Object.keys(this.store).filter(function (key) {

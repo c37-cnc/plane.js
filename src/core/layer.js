@@ -1,7 +1,7 @@
 (function (plane) {
     "use strict";
 
-    var _store = null,
+    var _store = null, // store - para armazenamento 
         _active = null;
 
 
@@ -10,22 +10,17 @@
         this.name = attrs.name;
         this.status = attrs.status;
         this.style = attrs.style;
-        this.children = attrs.children;
         this.events = attrs.events;
     }
-    ;
 
     Layer.prototype.toObject = function () {
         return {
             uuid: this.uuid,
             name: this.name,
             status: this.status, // para ativo || não ativo
-            style: this.style,
-            children: this.children.list().map(function (shape) {
-                return shape.toObject();
-            })
+            style: this.style
         };
-    }
+    };
 
 
     plane.layer = {
@@ -38,7 +33,7 @@
         },
         create: function (attrs) {
 
-            if ((typeof attrs == "function")) {
+            if ((typeof attrs === "function")) {
                 throw new Error('layer - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
 
@@ -52,10 +47,9 @@
                     lineCap: 'butt',
                     lineJoin: 'miter',
                     lineWidth: .7,
-                    lineColor: 'rgb(0, 0, 0)',
+                    lineColor: 'rgb(0, 0, 0)'
                 },
                 status: 'visible',
-                children: plane.math.dictionary.create(),
                 events: plane.utility.object.event.create()
             }, attrs);
             // parametros para a nova Layer
