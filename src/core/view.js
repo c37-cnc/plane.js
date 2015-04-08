@@ -51,13 +51,19 @@
             var layers = plane.layer.list(),
                 l = 0;
             do {
+                // inicio o conjunto de shapes no contexto
+                _context.beginPath();
+                
                 var shapes = plane.shape.find(rectangle, layers[0].uuid),
                 //var shapes = plane.shape.find(rectangle),
                     s = shapes.length;
 
                 while (s--) {
-                    shapes[s].render();
+                    shapes[s].render(_context);
                 }
+                
+                // desenho o conjunto de shapes no contexto
+                _context.stroke();
 
                 l++;
             } while (l < layers.length)
