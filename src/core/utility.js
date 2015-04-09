@@ -8,6 +8,18 @@ plane.utility = (function (plane) {
         },
         contains: function () {
             return String.prototype.indexOf.apply(this, arguments) !== -1;
+        },
+        hashCode: function (str) {
+            // http://stackoverflow.com/questions/7616461/generate-a-hash-from-string-in-javascript-jquery
+            var hash = 0, i, chr, len;
+            if (str.length === 0)
+                return hash;
+            for (i = 0, len = str.length; i < len; i++) {
+                chr = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + chr;
+                hash |= 0; // Convert to 32bit integer
+            }
+            return hash;
         }
     };
 
