@@ -55,10 +55,10 @@
                 shapes = attrs.children; // os shapes filhos
 
             // a layer que vamos trabalhar
-            layer = plane.layer.find(layer);
+            layer = plane.layer.get(layer);
 
             // verifico se temos os stores para a layer que estamos trabalhando
-            if ((!_groups.find(layer.uuid)) && (!_segments.find(layer.uuid))) {
+            if ((!_groups.get(layer.uuid)) && (!_segments.get(layer.uuid))) {
                 // se não existir, crio
                 _groups.add(layer.uuid, plane.math.dictionary.create());
                 _segments.add(layer.uuid, plane.math.store.create());
@@ -86,7 +86,7 @@
                 }
 
                 // removo o shape de plane
-                plane.shape.remove(shapes[i], layer);
+                plane.shape.remove(shapes[i].uuid, layer.uuid);
 
                 // para incluir dentro do group criado
                 group.children.add(shapes[i].uuid, shapes[i]);
@@ -98,7 +98,7 @@
                         y = shapes[i]._segments[ii].y,
                         uuid = shapes[i].uuid;
 
-                    _segments.find(layer.uuid).add([x, y, x, y, uuid]);
+                    _segments.get(layer.uuid).add([x, y, x, y, uuid]);
 
                     ii++;
                 } while (ii < shapes[i]._segments.length);
@@ -109,7 +109,7 @@
             // para conversão && add de children
 
             // de acordo com a layer - add shape in store
-            _groups.find(layer.uuid).add(group.uuid, group);
+            _groups.get(layer.uuid).add(group.uuid, group);
 
             return group;
         },
@@ -120,42 +120,42 @@
         },
         list: function (layer) {
             // sempre trabalhamos com uma layer
-            layer = plane.layer.find(layer);
-            return _groups.find(layer.uuid).list();
+            layer = plane.layer.get(layer);
+            return _groups.get(layer.uuid).list();
         },
-        find: function (type, layer) {
-            if (!type) {
-                throw new Error('group - find - type is not defined \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+        get: function (groupUuid, layerUuid) {
+            if ((!groupUuid) || (typeof groupUuid !== 'string')) {
+                throw new Error('shape - remove - groupUuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
                 // a layer que vamos trabalhar
-                layer = plane.layer.find(layer);
+                var layer = plane.layer.get(layerUuid);
+                return _groups.get(layer.uuid).get(groupUuid);
+            }
+        },
+        find: function (rectangle, layerUuid) {
+            if ((!rectangle) || (typeof rectangle !== 'object')) {
+                throw new Error('group - find - rectangle is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+            } else {
 
-                if (type.group) {
-                    return _groups.find(layer.uuid).find(group);
-                } else if (type.rectangle) {
+                var layer = plane.layer.get(layerUuid),
+                    shapes = null,
+                    segments = _segments.get(layer.uuid).search(rectangle);
 
-                    var groups = null,
-                        shapes = null,
-                        segments = _segments.find(layer.uuid).search(type.rectangle);
+                // um mapeamendo para separar os uuids dos shapes
+                shapes = segments.map(function (segment) {
+                    return segment[4];
+                });
 
-                    // um mapeamendo para separar os uuids dos shapes
-                    shapes = segments.map(function (segment) {
-                        return segment[4];
-                    });
+                // um filtro para retirar os uuids duplicados
+                shapes = shapes.filter(function (shape, index, self) {
+                    return index === self.indexOf(shape);
+                });
 
-                    // um filtro para retirar os uuids duplicados
-                    shapes = shapes.filter(function (shape, index, self) {
-                        return index === self.indexOf(shape);
-                    });
+                // agora procuro e retorno só os grupos com os shapes encontrados
+                return _groups.get(layer.uuid).list().filter(function (group) {
+                    return group.children.has(shapes);
+                });
 
-                    // agora procuro e retorno só os grupos com os shapes encontrados
-                    return _groups.find(layer.uuid).list().filter(function (group) {
-                        return group.children.has(shapes);
-                    });
-
-                }
-
-                throw new Error('group - find - type is invalid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
         }
     };

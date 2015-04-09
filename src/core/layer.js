@@ -67,13 +67,11 @@
         list: function () {
             return _layers.list();
         },
-        find: function (uuid) {
+        get: function (uuid) {
             if ((_active === null) || (_active === undefined))
                 throw new Error('layer - find - no layer active \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
 
-            var layer = _layers.find(uuid);
-
-            return layer ? layer : _active;
+            return uuid ? _layers.get(uuid) : _active;
         },
         remove: function (value) {
 

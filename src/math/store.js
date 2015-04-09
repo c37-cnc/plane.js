@@ -20,7 +20,7 @@
         // value = array
         get: function (value) {
             var key = plane.utility.string.hashCode(value.toString());
-            return this._dictionary.find(key);
+            return this._dictionary.get(key);
         },
         search: function (rectangle) {
 
@@ -29,7 +29,7 @@
         },
         remove: function (value) {
             var key = plane.utility.string.hashCode(value.toString()),
-                item = this._dictionary.find(key);
+                item = this._dictionary.get(key);
 
             // remove de dictionary
             this._dictionary.remove(key);
