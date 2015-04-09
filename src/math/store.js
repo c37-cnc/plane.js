@@ -1,6 +1,6 @@
 (function (plane) {
-
     "use strict";
+    
     function Store() {
         this._tree = plane.math.tree.create();
         this._dictionary = plane.math.dictionary.create();
@@ -47,9 +47,11 @@
             return true;
         }
     };
+    
     plane.math.store = {
         create: function () {
             return new Store();
         }
     };
+    
 })(plane);
