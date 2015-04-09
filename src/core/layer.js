@@ -1,7 +1,7 @@
 (function (plane) {
     "use strict";
 
-    var _store = null, // store - para armazenamento 
+    var _layers = null, // store - para armazenamento 
         _active = null;
 
 
@@ -26,7 +26,7 @@
     plane.layer = {
         _initialize: function (config) {
 
-            _store = plane.math.dictionary.create();
+            _layers = plane.math.dictionary.create();
 
             return true;
 
@@ -57,7 +57,7 @@
             var layer = new Layer(attrs);
 
             // armazenando 
-            _store.add(layer.uuid, layer);
+            _layers.add(layer.uuid, layer);
 
             // colocando nova layer como selecionada
             _active = layer;
@@ -65,10 +65,15 @@
             return layer;
         },
         list: function () {
-            return _store.list();
+            return _layers.list();
         },
         find: function (uuid) {
-            return _store.find(uuid);
+            if ((_active === null) || (_active === undefined))
+                throw new Error('layer - find - no layer active \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+
+            var layer = _layers.find(uuid);
+
+            return layer ? layer : _active;
         },
         remove: function (value) {
 

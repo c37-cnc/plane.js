@@ -1,23 +1,20 @@
 (function (plane) {
     "use strict";
 
-    var _store = null, // store - para armazenamento 
-        _tree = null; // tree - para a arvore de pesquisa
+    var _shapes = null,
+        _segments = null;
 
-    var _hi = null;
 
     plane.shape = {
         _initialize: function (config) {
 
-            _store = plane.math.dictionary.create();
-            _tree = plane.math.dictionary.create();
-
-            _hi = plane.math.store.create();
+            _shapes = plane.math.dictionary.create();
+            _segments = plane.math.dictionary.create();
 
             return true;
 
         },
-        create: function (attrs) {
+        create: function (attrs, layer) {
 
             if ((typeof attrs === "function") || (attrs === null)) {
                 throw new Error('shape - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
@@ -27,6 +24,8 @@
                 throw new Error('shape - create - type is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
 
+            layer = plane.layer.find(layer);
+
             // atributos 
             attrs = plane.utility.object.merge({
                 uuid: plane.utility.math.uuid(9, 16)
@@ -35,27 +34,24 @@
             // criando pelo type
             var shape = plane.object[attrs.type].create(attrs);
 
-            // verifico se o store para a layer activa existe
-            if (!_store.find(plane.layer.active.uuid)) {
+            // verifico se temos os stores para a layer que estamos trabalhando
+            if ((!_segments.find(layer.uuid)) && (!_shapes.find(layer.uuid))) {
                 // se não existir, crio
-                _store.add(plane.layer.active.uuid, plane.math.dictionary.create());
-                _tree.add(plane.layer.active.uuid, plane.math.tree.create());
+                _shapes.add(layer.uuid, plane.math.dictionary.create());
+                _segments.add(layer.uuid, plane.math.store.create());
             }
 
             // de acordo com a layer - add shape in store
-            _store.find(plane.layer.active.uuid).add(shape.uuid, shape);
+            _shapes.find(layer.uuid).add(shape.uuid, shape);
 
-            // de acordo com a layer - add segments in arvore de pesquisa
+            // de acordo com a layer - add segments in store
             var i = 0;
             do {
                 var x = shape._segments[i].x,
                     y = shape._segments[i].y,
                     uuid = shape.uuid;
-                
-                var item = [x, y, x, y, uuid];
 
-                _tree.find(plane.layer.active.uuid).add([x, y, x, y, uuid]);
-                _hi.add(item);
+                _segments.find(layer.uuid).add([x, y, x, y, uuid]);
 
                 i++;
             } while (i < shape._segments.length);
@@ -69,38 +65,31 @@
             return true;
         },
         remove: function (value, layer) {
-            // sempre trabalho com uma layer
-            var layer = _layerParse(layer),
+            // sempre trabalhamos com uma layer
+            var layer = plane.layer.find(layer),
                 shape = null;
 
             // value como string == uuid
             if (plane.utility.conversion.toType(value) === 'string') {
-                shape = _store.find(layer.uuid).find(value);
+                shape = _segments.find(layer.uuid).find(value);
             }
             // value como object == shape
             if (plane.utility.conversion.toType(value) === 'object') {
                 shape = value;
             }
 
-            // removendo do store
-            _store.find(layer.uuid).remove(shape);
+            // removendo shape
+            _shapes.find(layer.uuid).remove(shape);
 
 
-            // removendo os segmentos na tree de pesquisa 
-            // em shape, de acordo com a layer
+            // removendo os segmentos, de acordo com a layer
             var i = 0;
             do {
                 var x = shape._segments[i].x,
                     y = shape._segments[i].y,
                     uuid = shape.uuid;
 
-                //debugger;
-                
-                var item = [x, y, x, y, uuid];
-
-                console.log(_hi.get(item));
-
-                _tree.find(layer.uuid).remove([x, y, x, y, uuid]);
+                _segments.find(layer.uuid).remove([x, y, x, y, uuid]);
                 i++;
             } while (i < shape._segments.length)
 
@@ -109,125 +98,34 @@
         clear: function () {
 
         },
-        // params = object && obrigatório
-        // params.shape 
-        list: function (valueeee) {
-//            // sempre trabalho com uma layer
-//            var layer = _layerParse(layer);
-//
-//            // se não tenho argumentos
-//            if (arguments.length === 0) {
-//                // retorno todos os shapes de acordo com a layer
-//                return _store.find(layer.uuid).list();
-//            }
-//
-//            debugger;
-//
-//
-//            // shape, layer
-//
-//
-//
-//            if (!shape) {
-//                return _store.find(layer.uuid).list();
-//
-//            }
-//
-//
-
-
-
-
-
-
-
-            if (!value) {
-                return _store.find(plane.layer.active.uuid).list();
-            } else {
-                var uuid = null;
-
-                // value como string == uuid
-                if (plane.utility.conversion.toType(value) === 'string') {
-                    uuid = value;
-                }
-                // value como object == layer
-                if (plane.utility.conversion.toType(value) === 'object') {
-                    uuid = value.uuid;
-                }
-
-                return _store.find(uuid).list();
-            }
+        list: function (layer) {
+            // sempre trabalhamos com uma layer
+            layer = plane.layer.find(layer);
+            return _shapes.find(layer.uuid).list();
         },
-        find: function (rectangle, value) {
+        // melhorar 
+        // rectangle || uuid
+        find: function (rectangle, layer) {
             if (!rectangle)
                 throw new Error('shape - find - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             else {
-                if (!value) {
+                // sempre trabalhamos com uma layer
+                layer = plane.layer.find(layer);
 
-                    var segmentsFound = _tree.find(plane.layer.active.uuid).search([rectangle.from.x, rectangle.from.y, rectangle.to.x, rectangle.to.y]);
+                var shapes = null,
+                    segments = _segments.find(layer.uuid).search(rectangle);
 
-                    segmentsFound = segmentsFound.map(function (segment) {
-                        return segment[4];
-                    });
+                shapes = segments.map(function (segment) {
+                    return segment[4];
+                });
 
-                    var shapesFound = segmentsFound.filter(function (segment, index, self) {
-                        return index === self.indexOf(segment);
-                    });
+                shapes = shapes.filter(function (shape, index, self) {
+                    return index === self.indexOf(shape);
+                });
 
-                    return _store.find(plane.layer.active.uuid).find(shapesFound);
-
-                } else {
-                    var uuid = null;
-
-                    // value como string == uuid
-                    if (plane.utility.conversion.toType(value) === 'string') {
-                        uuid = value;
-                    }
-                    // value como object == layer
-                    if (plane.utility.conversion.toType(value) === 'object') {
-                        uuid = value.uuid;
-                    }
-
-                    var segmentsFound = _tree.find(uuid).search([rectangle.from.x, rectangle.from.y, rectangle.to.x, rectangle.to.y]);
-
-                    segmentsFound = segmentsFound.map(function (segment) {
-                        return segment[4];
-                    });
-
-                    var shapesFound = segmentsFound.filter(function (segment, index, self) {
-                        return index === self.indexOf(segment);
-                    });
-
-                    return _store.find(uuid).find(shapesFound);
-                }
+                return _shapes.find(layer.uuid).find(shapes);
             }
-        },
-        search: function (query) {
-
-
-            return true;
         }
     };
-
-
-    // layer = (uuid || layer) && não obrigatório
-    // return = object layer
-    function _layerParse(layer) {
-        if ((layer !== undefined) && (layer !== null)) {
-            // value como string == uuid
-            if (plane.utility.conversion.toType(layer) === 'string') {
-                return plane.layer.find(layer);
-            }
-            // value como object == layer
-            if (plane.utility.conversion.toType(layer) === 'object') {
-                return layer;
-            }
-        } else {
-            // se nenhum parametro
-            // a layer activa de plane
-            return plane.layer.active;
-        }
-    }
-
 
 })(plane);

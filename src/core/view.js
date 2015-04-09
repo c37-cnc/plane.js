@@ -37,36 +37,60 @@
             return true;
         },
         update: function () {
+            var layers = plane.layer.list();
+
+            if (!layers)
+                throw new Error('view - update - no layers \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+
 
             // clear context, +1 is needed on some browsers to really clear the borders
             _context.clearRect(0, 0, _viewPort.clientWidth + 1, _viewPort.clientHeight + 1);
 
+            // area visivel de plane
             var rectangle = {
                 from: plane.point.create(0, 0),
                 to: plane.point.create(_viewPort.clientWidth, _viewPort.clientHeight)
             };
-            
-            console.log(rectangle);
 
-            var layers = plane.layer.list(),
-                l = 0;
+
+            var i = 0;
             do {
+                // primeiro - os groups
+                var groups = plane.group.find({rectangle: rectangle}, layers[i]);
+                
+                
+                
+                
+                console.log(groups);
+                
+                
+                
+                
+                
+                
+                // segundo - os shapes
+                
+                
+                
+                
                 // inicio o conjunto de shapes no contexto
                 _context.beginPath();
-                
+
                 var shapes = plane.shape.find(rectangle, layers[0].uuid),
-                //var shapes = plane.shape.find(rectangle),
+                    //var shapes = plane.shape.find(rectangle),
                     s = shapes.length;
 
                 while (s--) {
                     shapes[s].render(_context);
                 }
-                
+
                 // desenho o conjunto de shapes no contexto
                 _context.stroke();
+                
+                
 
-                l++;
-            } while (l < layers.length)
+                i++;
+            } while (i < layers.length)
 
 
 
