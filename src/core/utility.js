@@ -67,7 +67,9 @@ plane.utility = (function (plane) {
 
     var object = {
         inherits: function (f, p) {
-            f.prototype = p.prototype;
+            //f.prototype = p.prototype;
+            // O OBJETO INSTANCIADO!!!
+            f.prototype = new p();
             f.constructor = f;
             return f;
         },

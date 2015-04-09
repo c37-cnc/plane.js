@@ -24,7 +24,7 @@
                 throw new Error('shape - create - type is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
 
-            layer = plane.layer.find(layer);
+            layer = plane.layer.get(layer);
 
             // atributos 
             attrs = plane.utility.object.merge({
@@ -35,14 +35,14 @@
             var shape = plane.object[attrs.type].create(attrs);
 
             // verifico se temos os stores para a layer que estamos trabalhando
-            if ((!_segments.find(layer.uuid)) && (!_shapes.find(layer.uuid))) {
+            if ((!_segments.get(layer.uuid)) && (!_shapes.get(layer.uuid))) {
                 // se não existir, crio
                 _shapes.add(layer.uuid, plane.math.dictionary.create());
                 _segments.add(layer.uuid, plane.math.store.create());
             }
 
             // de acordo com a layer - add shape in store
-            _shapes.find(layer.uuid).add(shape.uuid, shape);
+            _shapes.get(layer.uuid).add(shape.uuid, shape);
 
             // de acordo com a layer - add segments in store
             var i = 0;
@@ -51,7 +51,7 @@
                     y = shape._segments[i].y,
                     uuid = shape.uuid;
 
-                _segments.find(layer.uuid).add([x, y, x, y, uuid]);
+                _segments.get(layer.uuid).add([x, y, x, y, uuid]);
 
                 i++;
             } while (i < shape._segments.length);
@@ -64,66 +64,70 @@
 
             return true;
         },
-        remove: function (value, layer) {
-            // sempre trabalhamos com uma layer
-            var layer = plane.layer.find(layer),
-                shape = null;
+        remove: function (shapeUuid, layerUuid) {
+            if ((!shapeUuid) || (typeof shapeUuid !== 'string')) {
+                throw new Error('shape - remove - shapeUuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+            } else {
+                // sempre trabalhamos com uma layer
+                var layer = plane.layer.get(layerUuid),
+                    shape = _shapes.get(layer.uuid).get(shapeUuid);
 
-            // value como string == uuid
-            if (plane.utility.conversion.toType(value) === 'string') {
-                shape = _segments.find(layer.uuid).find(value);
+                // removendo shape
+                _shapes.get(layer.uuid).remove(shape.uuid);
+
+                // removendo os segmentos, de acordo com a layer
+                var i = 0;
+                do {
+                    var x = shape._segments[i].x,
+                        y = shape._segments[i].y,
+                        uuid = shape.uuid;
+
+                    _segments.get(layer.uuid).remove([x, y, x, y, uuid]);
+                    i++;
+                } while (i < shape._segments.length)
+
+                return true;
             }
-            // value como object == shape
-            if (plane.utility.conversion.toType(value) === 'object') {
-                shape = value;
-            }
-
-            // removendo shape
-            _shapes.find(layer.uuid).remove(shape);
-
-
-            // removendo os segmentos, de acordo com a layer
-            var i = 0;
-            do {
-                var x = shape._segments[i].x,
-                    y = shape._segments[i].y,
-                    uuid = shape.uuid;
-
-                _segments.find(layer.uuid).remove([x, y, x, y, uuid]);
-                i++;
-            } while (i < shape._segments.length)
-
-            return true;
         },
         clear: function () {
 
         },
         list: function (layer) {
             // sempre trabalhamos com uma layer
-            layer = plane.layer.find(layer);
-            return _shapes.find(layer.uuid).list();
+            layer = plane.layer.get(layer);
+            return _shapes.get(layer.uuid).list();
         },
-        // melhorar 
-        // rectangle || uuid
-        find: function (rectangle, layer) {
-            if (!rectangle)
-                throw new Error('shape - find - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
-            else {
-                // sempre trabalhamos com uma layer
-                layer = plane.layer.find(layer);
+        get: function (shapeUuid, layerUuid) {
+            if ((!shapeUuid) || (typeof shapeUuid === 'string')) {
+                throw new Error('shape - find - uuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+            } else {
+                // a layer que vamos trabalhar
+                var layer = plane.layer.get(layerUuid);
 
-                var shapes = null,
-                    segments = _segments.find(layer.uuid).search(rectangle);
+                return _shapes.get(layer.uuid).get(shapeUuid);
+            }
+        },
+        find: function (rectangle, layerUuid) {
+            if ((!rectangle) || (typeof rectangle !== 'object')) {
+                throw new Error('shape - find - rectangle is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+            } else {
+    
+                var layer = plane.layer.get(layerUuid),
+                    shapes = null,
+                    segments = _segments.get(layer.uuid).search(rectangle);
 
+                // um mapeamendo para separar os uuids dos shapes
                 shapes = segments.map(function (segment) {
                     return segment[4];
                 });
 
+                // um filtro para retirar os uuids duplicados
                 shapes = shapes.filter(function (shape, index, self) {
                     return index === self.indexOf(shape);
                 });
 
-                return _shapes.find(layer.uuid).find(shapes);
+                // agora procuro e retorno só os shapes encontrados
+                return _shapes.get(layer.uuid).get(shapes);
             }
         }
     };

@@ -38,12 +38,12 @@
 
         return true;
 
-    }
+    };
 
     Line.prototype.fromSnap = function (point, distance) {
 
 
-    }
+    };
 
     Line.prototype.toObject = function () {
         return {
@@ -52,13 +52,13 @@
             from: this.from.toObject(),
             to: this.to.toObject()
         };
-    }
+    };
 
 
     plane.object.line = {
         create: function (attrs) {
             // 0 - verificação da chamada
-            if (typeof attrs == 'function') {
+            if (typeof attrs === 'function') {
                 throw new Error('line - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
 
@@ -66,7 +66,7 @@
 
 
             // 2 - validações dos atributos deste tipo
-            
+
 
             // 3 - conversões dos atributos
             attrs.from = plane.point.create(attrs.from);
