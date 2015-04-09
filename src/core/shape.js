@@ -4,11 +4,15 @@
     var _store = null, // store - para armazenamento 
         _tree = null; // tree - para a arvore de pesquisa
 
+    var _hi = null;
+
     plane.shape = {
         _initialize: function (config) {
 
             _store = plane.math.dictionary.create();
             _tree = plane.math.dictionary.create();
+
+            _hi = plane.math.store.create();
 
             return true;
 
@@ -47,9 +51,11 @@
                 var x = shape._segments[i].x,
                     y = shape._segments[i].y,
                     uuid = shape.uuid;
+                
+                var item = [x, y, x, y, uuid];
 
-                _tree.find(plane.layer.active.uuid).insert([x, y, x, y, uuid]);
-                //_tree.find(plane.layer.active.uuid).add([x, y, x, y, uuid]);
+                _tree.find(plane.layer.active.uuid).add([x, y, x, y, uuid]);
+                _hi.add(item);
 
                 i++;
             } while (i < shape._segments.length);
@@ -66,7 +72,7 @@
             // sempre trabalho com uma layer
             var layer = _layerParse(layer),
                 shape = null;
-            
+
             // value como string == uuid
             if (plane.utility.conversion.toType(value) === 'string') {
                 shape = _store.find(layer.uuid).find(value);
@@ -76,11 +82,9 @@
                 shape = value;
             }
 
-            debugger;
-
             // removendo do store
             _store.find(layer.uuid).remove(shape);
-            
+
 
             // removendo os segmentos na tree de pesquisa 
             // em shape, de acordo com a layer
@@ -89,6 +93,12 @@
                 var x = shape._segments[i].x,
                     y = shape._segments[i].y,
                     uuid = shape.uuid;
+
+                //debugger;
+                
+                var item = [x, y, x, y, uuid];
+
+                console.log(_hi.get(item));
 
                 _tree.find(layer.uuid).remove([x, y, x, y, uuid]);
                 i++;
