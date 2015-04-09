@@ -32,14 +32,13 @@
 
         },
         create: function (attrs) {
-
-            if ((typeof attrs === "function")) {
+            if (attrs && (plane.utility.conversion.toType(attrs) !== 'object')) {
                 throw new Error('layer - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
 
             var uuid = plane.utility.math.uuid(9, 16);
 
-            // parametros para a nova Layer
+            // (attributos || parametros) para a nova Layer
             attrs = plane.utility.object.merge({
                 uuid: uuid,
                 name: 'Layer '.concat(uuid),
@@ -66,10 +65,10 @@
             return layer;
         },
         list: function () {
-            return _store.list()
+            return _store.list();
         },
         find: function (uuid) {
-
+            return _store.find(uuid);
         },
         remove: function (value) {
 
