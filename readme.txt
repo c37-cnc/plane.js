@@ -28,7 +28,15 @@ https://github.com/craftyjs/Crafty/blob/bcd581948c61966ed589c457feb32358a0afd9c8
 *Esferas delimitadoras*
 http://en.wikipedia.org/wiki/Bounding_sphere
 
+*Display list*
+http://en.wikipedia.org/wiki/Display_list
+https://github.com/CreateJS/EaselJS/blob/36d35b1d64c17b998d72e32bdff1e564cbb6b1c6/src/easeljs/display/Container.js#L38
+https://github.com/CreateJS/EaselJS/blob/4cddf7f91b8aa2cafa4b609c6745b99f1faf92be/src/easeljs/display/DisplayObject.js#L31
 
+*Canvas render optimize*
+http://seb.ly/2011/02/html5-canvas-sprite-optimisation/
+http://jsperf.com/math-round-vs-hack/3
+http://www.ibm.com/developerworks/library/wa-canvashtml5layering/
 
 *Software architecture*
 http://backbonetutorials.com/organizing-backbone-using-modules/

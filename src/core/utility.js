@@ -135,7 +135,7 @@ plane.utility = (function (plane) {
 
             Event.create = function () {
                 return new Event();
-            }
+            };
 
             return Event;
 
@@ -163,8 +163,72 @@ plane.utility = (function (plane) {
         }
     };
 
+    var array = {
+        find: function (array, item) {
+            return array[array.indexOf(item)];
+        },
+        split: function (a, n) {
+            var len = a.length,
+                out = [],
+                i = 0;
+            while (i < len) {
+                var size = Math.ceil((len - i) / n--);
+                out.push(a.slice(i, i + size));
+                i += size;
+            }
+            return out;
+        },
+        diff: function (a, b) {
+
+            var onlyInA = a.filter(function (current) {
+                return b.filter(function (current_b) {
+                    return (current_b.snap.x === current.snap.x) && (current_b.snap.y === current.snap.y);
+                }).length === 0;
+            });
+
+            var onlyInB = b.filter(function (current) {
+                return a.filter(function (current_a) {
+                    return (current_a.snap.x === current.snap.x) && (current_a.snap.y === current.snap.y);
+                }).length === 0;
+            });
+
+            return onlyInA.concat(onlyInB);
+        }
+    };
+
+    // do livro - Segredos do Ninja JavaScript - John Resig - pag. 264
+    var thread = {
+        id: 0,
+        threads: [],
+        add: function (handler) {
+            this.threads.push(handler);
+        },
+        start: function () {
+            if (this.id)
+                return;
+
+            (function runNext() {
+                if (thread.threads.length > 0) {
+                    for (var i = 0; i < thread.threads.length; i++) {
+                        if (thread.threads[i]() === false) {
+                            thread.threads.splice(i, 1);
+                            i--;
+                        }
+                    }
+                }
+            })();
+        },
+        stop: function () {
+            clearTimeout(this.id);
+            this.id = 0;
+        }
+    };
+
+
     return {
         math: math,
+        array: array,
+        thread: thread,
         string: string,
         object: object,
         conversion: conversion

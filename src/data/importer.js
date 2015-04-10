@@ -306,8 +306,6 @@
             
             //debugger;
             
-            plane.view.update();
-            
             return true;
         }
     };
