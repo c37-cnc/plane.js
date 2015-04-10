@@ -3,7 +3,7 @@
 
     var Text = plane.utility.object.inherits(function Text(attrs) {
 
-       /**
+        /**
          * A Universally unique identifier for
          * a single instance of Object
          *
@@ -25,7 +25,7 @@
 
         this.status = null;
         this.style = null;
-        
+
         this.from = null;
         this.to = null;
         this.size = null;
@@ -68,17 +68,17 @@
     };
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
-    Text.prototype.render = function (context, transform) {
+    Text.prototype.render = function (context, matrix) {
 
         // salvo as configurações de estilo atuais do contexto
         context.save();
 
         // de acordo com a matrix - a escala que devo aplicar nos segmentos
-        var scale = 1;
+        var scale = Math.sqrt(matrix.a * matrix.d);
         // de acordo com a matrix - o movimento que devo aplicar nos segmentos
         var move = {
-            x: 0,
-            y: 0
+            x: matrix.tx,
+            y: matrix.ty
         };
 
 
