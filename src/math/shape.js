@@ -2,6 +2,23 @@
     "use strict";
 
     function Shape() {
+        
+        /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
+        
+        this._segments = [];
+        this.status = null;
+        this.style = null;
+        
     }
 
     Shape.prototype = {
@@ -12,12 +29,25 @@
 
             // completando os campos do shape
             plane.utility.object.extend(this, attrs);
-
+            
+            // limpando os segments
+            this._segments = [];
 
             // calculando os segmentos
             this._calculeSegments();
+            
+            // calculando os limites
+            this._calculeBounds();
 
             return true;
+        },
+        _calculeBounds: function () {
+
+
+            //this._segments.
+
+            return true;
+
         },
         contains: function (position, transform) {
 
@@ -30,8 +60,8 @@
 
         },
         render: function (context) {
-            
-            console.log('render - ' + this.type + ' - uuid: ' + this.uuid)
+
+            //console.log('render - ' + this.type + ' - uuid: ' + this.uuid)
 
             // de acordo com a matrix - a escala que devo aplicar nos segmentos
             var scale = 1;

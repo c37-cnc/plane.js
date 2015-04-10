@@ -136,26 +136,33 @@
             if ((!rectangle) || (typeof rectangle !== 'object')) {
                 throw new Error('group - find - rectangle is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
+                var layer = plane.layer.get(layerUuid);
 
-                var layer = plane.layer.get(layerUuid),
-                    shapes = null,
-                    segments = _segments.get(layer.uuid).search(rectangle);
+                // verifico se criei ao menos um group para a layer
+                if (_segments.get(layer.uuid)) {
 
-                // um mapeamendo para separar os uuids dos shapes
-                shapes = segments.map(function (segment) {
-                    return segment[4];
-                });
+                    var shapes = null,
+                        segments = _segments.get(layer.uuid).search(rectangle);
 
-                // um filtro para retirar os uuids duplicados
-                shapes = shapes.filter(function (shape, index, self) {
-                    return index === self.indexOf(shape);
-                });
+                    // um mapeamendo para separar os uuids dos shapes
+                    shapes = segments.map(function (segment) {
+                        return segment[4];
+                    });
 
-                // agora procuro e retorno só os grupos com os shapes encontrados
-                return _groups.get(layer.uuid).list().filter(function (group) {
-                    return group.children.has(shapes);
-                });
+                    // um filtro para retirar os uuids duplicados
+                    shapes = shapes.filter(function (shape, index, self) {
+                        return index === self.indexOf(shape);
+                    });
 
+                    // agora procuro e retorno só os grupos com os shapes encontrados
+                    return _groups.get(layer.uuid).list().filter(function (group) {
+                        return group.children.has(shapes);
+                    });
+                    
+                } else {
+                    return [];
+                }
+                
             }
         }
     };
