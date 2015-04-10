@@ -2,21 +2,6 @@
     "use strict";
 
     var Line = plane.utility.object.inherits(function Line(attrs) {
-        /**
-         * A Universally unique identifier for
-         * a single instance of Object
-         *
-         * @property uuid
-         * @type String
-         * @default 'uuid'
-         */
-        this.uuid = null;
-        this.type = null;
-        this.name = null;
-
-        this._segments = [];
-        this.status = null;
-        this.style = null;
 
         this.from = null;
         this.to = null;
@@ -71,9 +56,7 @@
             // 3 - conversões dos atributos
             attrs.from = plane.point.create(attrs.from);
             attrs.to = plane.point.create(attrs.to);
-
-            // 4 - caso update de um shape não merge em segments
-            delete attrs['segments'];
+            
 
             // 5 - criando um novo shape do tipo arco
             return new Line(attrs);

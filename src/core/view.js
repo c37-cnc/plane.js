@@ -42,7 +42,6 @@
             if (!layers)
                 throw new Error('view - update - no layers \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
 
-
             // clear context, +1 is needed on some browsers to really clear the borders
             _context.clearRect(0, 0, _viewPort.clientWidth + 1, _viewPort.clientHeight + 1);
 
@@ -57,7 +56,7 @@
                 // primeiro - os groups
                 var groups = plane.group.find(rectangle, layers[i].uuid);
 
-                console.log(groups);
+                //console.log(groups);
                 // temos groups para render?
                 if (groups.length > 0) {
                     var ii = 0;
@@ -83,7 +82,7 @@
                 // segundo - os shapes
                 var shapes = plane.shape.find(rectangle, layers[i].uuid);
 
-                console.log(shapes);
+                //console.log(shapes);
                 // temos shapes para render?
                 if (shapes.length > 0) {
                     // inicio o conjunto de shapes no contexto

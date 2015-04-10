@@ -2,21 +2,6 @@
     "use strict";
 
     var Text = plane.utility.object.inherits(function Text(attrs) {
-        /**
-         * A Universally unique identifier for
-         * a single instance of Object
-         *
-         * @property uuid
-         * @type String
-         * @default 'uuid'
-         */
-        this.uuid = null;
-        this.type = null;
-        this.name = null;
-
-        this._segments = [];
-        this.status = null;
-        this.style = null;
 
         this.from = null;
         this.to = null;
