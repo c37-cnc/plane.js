@@ -304,7 +304,7 @@
                 }
             }
             
-            debugger;
+            //debugger;
             
             plane.view.update();
             

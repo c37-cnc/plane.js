@@ -3,7 +3,7 @@
 
 
     var _groups = null, // store - para armazenamento 
-        _segments = null; // tree - para a arvore de pesquisa
+        _bounds = null; // tree - para a arvore de pesquisa
 
 
     function Group(attrs) {
@@ -34,7 +34,7 @@
         _initialize: function (config) {
 
             _groups = plane.math.dictionary.create();
-            _segments = plane.math.dictionary.create();
+            _bounds = plane.math.dictionary.create();
 
             return true;
 
@@ -58,10 +58,10 @@
             layer = plane.layer.get(layer);
 
             // verifico se temos os stores para a layer que estamos trabalhando
-            if ((!_groups.get(layer.uuid)) && (!_segments.get(layer.uuid))) {
+            if ((!_groups.get(layer.uuid)) && (!_bounds.get(layer.uuid))) {
                 // se não existir, crio
                 _groups.add(layer.uuid, plane.math.dictionary.create());
-                _segments.add(layer.uuid, plane.math.store.create());
+                _bounds.add(layer.uuid, plane.math.store.create());
             }
 
             // apagando a referencia em attrs
@@ -91,18 +91,8 @@
                 // para incluir dentro do group criado
                 group.children.add(shapes[i].uuid, shapes[i]);
 
-                // de acordo com a layer - add segments in store
-                var ii = 0;
-                do {
-                    var x = shapes[i]._segments[ii].x,
-                        y = shapes[i]._segments[ii].y,
-                        uuid = shapes[i].uuid;
-
-                    _segments.get(layer.uuid).add([x, y, x, y, uuid]);
-
-                    ii++;
-                } while (ii < shapes[i]._segments.length);
-                // de acordo com a layer - add segments in store
+                // de acordo com a layer - add bounds in store
+                _bounds.get(layer.uuid).add([shapes[i]._bounds.from.x, shapes[i]._bounds.from.y, shapes[i]._bounds.to.x, shapes[i]._bounds.to.y, shapes[i].uuid]);
 
                 i++;
             } while (i < shapes.length);
@@ -139,19 +129,14 @@
                 var layer = plane.layer.get(layerUuid);
 
                 // verifico se criei ao menos um group para a layer
-                if (_segments.get(layer.uuid)) {
+                if (_bounds.get(layer.uuid)) {
 
                     var shapes = null,
-                        segments = _segments.get(layer.uuid).search(rectangle);
+                        segments = _bounds.get(layer.uuid).search(rectangle);
 
                     // um mapeamendo para separar os uuids dos shapes
                     shapes = segments.map(function (segment) {
                         return segment[4];
-                    });
-
-                    // um filtro para retirar os uuids duplicados
-                    shapes = shapes.filter(function (shape, index, self) {
-                        return index === self.indexOf(shape);
                     });
 
                     // agora procuro e retorno só os grupos com os shapes encontrados
