@@ -13,6 +13,7 @@
         _initialize: function (config) {
 
             _viewPort = config.viewPort;
+            _matrix = config.matrix;
 
             // montando o render de Plane
             var canvas = document.createElement('canvas');
@@ -35,9 +36,6 @@
             _context.scale(1, -1);
             // o sistema de coordenadas cartesiano
 
-            // a matrix de transform
-            _matrix = plane.math.matrix.create();
-
             // o centro inicial
             _center = plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2);
 
@@ -54,8 +52,8 @@
 
             // area visivel de plane
             var rectangle = {
-                from: plane.point.create(0, 0),
-                to: plane.point.create(_viewPort.clientWidth, _viewPort.clientHeight)
+                from: _matrix.inverseTransform({x: 0, y: 0}),
+                to: _matrix.inverseTransform({x: _viewPort.clientWidth, y: _viewPort.clientHeight})
             };
 
             var i = 0;
@@ -75,7 +73,7 @@
 
                         var iii = 0;
                         do {
-                            shapes[iii].render(_context, _matrix);
+                            shapes[iii]._render(_context, _matrix);
                             iii++;
                         } while (iii < shapes.length)
 
@@ -95,11 +93,46 @@
                     // inicio o conjunto de shapes no contexto
                     _context.beginPath();
 
-                    var ii = 0;
-                    do {
-                        shapes[ii].render(_context, _matrix);
-                        ii++;
-                    } while (ii < shapes.length)
+                    if (shapes.length > 4000) {
+
+                        //var numberOfProcessor = navigator.hardwareConcurrency;
+                        var numberOfProcessor = 4;
+
+                        // eu didivo os shapes pelo numero de processadores em outros arrays
+                        var parts = plane.utility.array.split(shapes, numberOfProcessor);
+
+                        parts.forEach(function (part) {
+                            // para cada part registro uma nova thread
+                            plane.utility.thread.add(function () {
+
+                                var xxx = part,
+                                    xxz = part.length;
+
+                                while (xxz--) {
+                                    xxx[xxz]._render(_context, _zoom, {
+                                        x: _matrix.tx,
+                                        y: _matrix.ty
+                                    });
+                                }
+
+                                return false;
+                            })
+                        });
+                        // inicio as threads
+                        plane.utility.thread.start();
+
+
+                    } else {
+                        var ii = 0;
+                        do {
+                            shapes[ii]._render(_context, _zoom, {
+                                x: _matrix.tx,
+                                y: _matrix.ty
+                            });
+                            ii++;
+                        } while (ii < shapes.length)
+                    }
+
 
                     // desenho o conjunto de shapes no contexto
                     _context.stroke();
@@ -185,7 +218,7 @@
 
             // clear in the matrix transform
             _matrix = plane.math.matrix.create();
-            
+
             return true;
         }
     };

@@ -43,9 +43,9 @@
 
             // de acordo com a layer - add shape in store
             _shapes.get(layer.uuid).add(shape.uuid, shape);
-            
+
             // de acordo com a layer - add bounds in store
-            _bounds.get(layer.uuid).add([shape._bounds.from.x, shape._bounds.from.y, shape._bounds.to.x, shape._bounds.to.y, shape.uuid]);
+            _bounds.get(layer.uuid).add([shape._bounds.from.x, shape._bounds.from.y, shape._bounds.to.x, shape._bounds.to.y, shape]);
 
             return shape;
         },
@@ -95,16 +95,13 @@
             } else {
 
                 var layer = plane.layer.get(layerUuid),
-                    shapes = null,
-                    segments = _bounds.get(layer.uuid).search(rectangle);
+                    rectangles = _bounds.get(layer.uuid).search(rectangle);
 
-                // um mapeamendo para separar os uuids dos shapes
-                shapes = segments.map(function (segment) {
+                // um mapeamendo para separar os shapes dos rectangles
+                return rectangles.map(function (segment) {
                     return segment[4];
                 });
 
-                // agora procuro e retorno só os shapes encontrados
-                return _shapes.get(layer.uuid).get(shapes);
             }
         }
     };

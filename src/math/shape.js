@@ -59,7 +59,7 @@
                 y: (from.y + to.y) / 2
             },
             radius = Math.sqrt((to.x - from.x) * (to.x - from.x) + (to.y - from.y) * (to.y - from.y)) / 2;
-        
+
             this._bounds.center = plane.point.create(center);
             this._bounds.radius = radius;
 
@@ -73,6 +73,13 @@
             return true;
 
         },
+        _cache: function (){
+            // http://www.createjs.com/Demos/EaselJS/Cache
+            // https://github.com/CreateJS/EaselJS/blob/master/src/easeljs/display/DisplayObject.js#L811
+            
+            
+            return true;
+        },
         contains: function (position, transform) {
 
             return false;
@@ -83,24 +90,33 @@
             return true;
 
         },
-        render: function (context, matrix) {
+        _render: function (context, zoom, motion) {
 
             //console.log('render - ' + this.type + ' - uuid: ' + this.uuid)
 
-            // de acordo com a matrix - a escala que devo aplicar nos segmentos
-            var scale = Math.sqrt(matrix.a * matrix.d);
-            // de acordo com a matrix - o movimento que devo aplicar nos segmentos
-            var move = {
-                x: matrix.tx,
-                y: matrix.ty
-            };
-
             // movendo para o inicio do shape para não criar uma linha
-            context.moveTo(this._segments[0].x * scale + move.x, this._segments[0].y * scale + move.y);
+            context.moveTo(this._segments[0].x * zoom + motion.x, this._segments[0].y * zoom + motion.y);
             // para cada segmento, vou traçando uma linha
             for (var i = 0; i < this._segments.length; i++) {
-                var x = this._segments[i].x * scale + move.x;
-                var y = this._segments[i].y * scale + move.y;
+
+                // http://seb.ly/2011/02/html5-canvas-sprite-optimisation/
+                // http://jsperf.com/math-round-vs-hack/3
+                // http://www.ibm.com/developerworks/library/wa-canvashtml5layering/
+                 
+                // var x = this._segments[i].x * zoom + motion.x;
+                // var y = this._segments[i].y * zoom + motion.y;
+
+                // var x = Math.round(this._segments[i].x * zoom + motion.x);
+                // var y = Math.round(this._segments[i].y * zoom + motion.y);
+
+                // var x = (0.5 + (this._segments[i].x * zoom + motion.x)) << 0;
+                // var y = (0.5 + (this._segments[i].y * zoom + motion.y) << 0);
+                
+                //debugger;
+
+                var x = ~~(0.5 + (this._segments[i].x * zoom + motion.x));
+                var y = ~~(0.5 + (this._segments[i].y * zoom + motion.y));
+
 
                 context.lineTo(x, y);
             }
