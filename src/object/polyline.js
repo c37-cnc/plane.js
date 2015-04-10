@@ -3,6 +3,29 @@
 
     var Polyline = plane.utility.object.inherits(function Polyline(attrs) {
 
+       /**
+         * A Universally unique identifier for
+         * a single instance of Object
+         *
+         * @property uuid
+         * @type String
+         * @default 'uuid'
+         */
+        this.uuid = null;
+        this.type = null;
+        this.name = null;
+
+        this._segments = [];
+        this._bounds = {
+            from: null,
+            to: null,
+            center: null,
+            radius: null
+        };
+
+        this.status = null;
+        this.style = null;
+        
         this.points = null;
 
         this._initialize(attrs);

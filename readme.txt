@@ -19,6 +19,9 @@ Broad-Phase Collision - http://www.metanetsoftware.com/technique/tutorialB.html
 Broad-Phase Collision - Broad Phase - Spatial HashMap - https://github.com/craftyjs/Crafty/blob/bcd581948c61966ed589c457feb32358a0afd9c8/src/spatial/spatial-grid.js
 Broad-Phase Collision - Narrow Phase - SAT (Separating Axis Theorem) - https://github.com/jriecken/sat-js
 
+*Minimum bounding rectangle*
+http://en.wikipedia.org/wiki/Minimum_bounding_rectangle
+
 *Quadrados delimitadores*
 https://github.com/craftyjs/Crafty/blob/bcd581948c61966ed589c457feb32358a0afd9c8/src/spatial/collision.js#L137
 

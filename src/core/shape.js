@@ -2,14 +2,14 @@
     "use strict";
 
     var _shapes = null,
-        _segments = null;
+        _bounds = null;
 
 
     plane.shape = {
         _initialize: function (config) {
 
             _shapes = plane.math.dictionary.create();
-            _segments = plane.math.dictionary.create();
+            _bounds = plane.math.dictionary.create();
 
             return true;
 
@@ -35,27 +35,17 @@
             var shape = plane.object[attrs.type].create(attrs);
 
             // verifico se temos os stores para a layer que estamos trabalhando
-            if ((!_segments.get(layer.uuid)) && (!_shapes.get(layer.uuid))) {
+            if ((!_shapes.get(layer.uuid)) && (!_bounds.get(layer.uuid))) {
                 // se não existir, crio
                 _shapes.add(layer.uuid, plane.math.dictionary.create());
-                _segments.add(layer.uuid, plane.math.store.create());
+                _bounds.add(layer.uuid, plane.math.store.create());
             }
 
             // de acordo com a layer - add shape in store
             _shapes.get(layer.uuid).add(shape.uuid, shape);
-
-            // de acordo com a layer - add segments in store
-            var i = 0;
-            do {
-                var x = shape._segments[i].x,
-                    y = shape._segments[i].y,
-                    uuid = shape.uuid;
-
-                _segments.get(layer.uuid).add([x, y, x, y, uuid]);
-
-                i++;
-            } while (i < shape._segments.length);
-
+            
+            // de acordo com a layer - add bounds in store
+            _bounds.get(layer.uuid).add([shape._bounds.from.x, shape._bounds.from.y, shape._bounds.to.x, shape._bounds.to.y, shape.uuid]);
 
             return shape;
         },
@@ -75,16 +65,8 @@
                 // removendo shape
                 _shapes.get(layer.uuid).remove(shape.uuid);
 
-                // removendo os segmentos, de acordo com a layer
-                var i = 0;
-                do {
-                    var x = shape._segments[i].x,
-                        y = shape._segments[i].y,
-                        uuid = shape.uuid;
-
-                    _segments.get(layer.uuid).remove([x, y, x, y, uuid]);
-                    i++;
-                } while (i < shape._segments.length)
+                // removendo os bounds, de acordo com a layer
+                _bounds.get(layer.uuid).remove([shape._bounds.from.x, shape._bounds.from.y, shape._bounds.to.x, shape._bounds.to.y, shape.uuid]);
 
                 return true;
             }
@@ -111,19 +93,14 @@
             if ((!rectangle) || (typeof rectangle !== 'object')) {
                 throw new Error('shape - find - rectangle is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
-    
+
                 var layer = plane.layer.get(layerUuid),
                     shapes = null,
-                    segments = _segments.get(layer.uuid).search(rectangle);
+                    segments = _bounds.get(layer.uuid).search(rectangle);
 
                 // um mapeamendo para separar os uuids dos shapes
                 shapes = segments.map(function (segment) {
                     return segment[4];
-                });
-
-                // um filtro para retirar os uuids duplicados
-                shapes = shapes.filter(function (shape, index, self) {
-                    return index === self.indexOf(shape);
                 });
 
                 // agora procuro e retorno só os shapes encontrados
