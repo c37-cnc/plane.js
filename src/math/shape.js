@@ -83,16 +83,16 @@
             return true;
 
         },
-        render: function (context) {
+        render: function (context, matrix) {
 
             //console.log('render - ' + this.type + ' - uuid: ' + this.uuid)
 
             // de acordo com a matrix - a escala que devo aplicar nos segmentos
-            var scale = 1;
+            var scale = Math.sqrt(matrix.a * matrix.d);
             // de acordo com a matrix - o movimento que devo aplicar nos segmentos
             var move = {
-                x: 0,
-                y: 0
+                x: matrix.tx,
+                y: matrix.ty
             };
 
             // movendo para o inicio do shape para não criar uma linha

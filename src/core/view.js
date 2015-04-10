@@ -4,6 +4,10 @@
     var _viewPort = null,
         _context = null;
 
+    var _matrix = null,
+        _center = null,
+        _zoom = 1;
+
 
     plane.view = {
         _initialize: function (config) {
@@ -31,8 +35,11 @@
             _context.scale(1, -1);
             // o sistema de coordenadas cartesiano
 
+            // a matrix de transform
+            _matrix = plane.math.matrix.create();
 
-
+            // o centro inicial
+            _center = plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2);
 
             return true;
         },
@@ -68,7 +75,7 @@
 
                         var iii = 0;
                         do {
-                            shapes[iii].render(_context);
+                            shapes[iii].render(_context, _matrix);
                             iii++;
                         } while (iii < shapes.length)
 
@@ -90,10 +97,10 @@
 
                     var ii = 0;
                     do {
-                        shapes[ii].render(_context);
+                        shapes[ii].render(_context, _matrix);
                         ii++;
                     } while (ii < shapes.length)
-                        
+
                     // desenho o conjunto de shapes no contexto
                     _context.stroke();
                 }
@@ -104,6 +111,82 @@
 
 
             return this;
+        },
+        zoomTo: function (zoom, center) {
+
+            var factor;
+
+            factor = zoom / _zoom;
+
+            _matrix.scale({
+                x: factor,
+                y: factor
+            }, _center);
+
+            _zoom = zoom;
+
+
+            var centerSubtract = center.subtract(_center);
+            centerSubtract = centerSubtract.negate();
+
+            var xxx = plane.math.matrix.create();
+            xxx.translate(centerSubtract.x, centerSubtract.y);
+
+            _matrix.concate(xxx);
+
+            _center = center;
+
+            plane.view.update();
+
+            return true;
+        },
+        get center() {
+            return _center;
+        },
+        set active(value) {
+
+            var centerSubtract = value.subtract(_center);
+            centerSubtract = centerSubtract.negate();
+
+            var xxx = plane.math.matrix.create();
+            xxx.translate(centerSubtract.x, centerSubtract.y);
+
+            _matrix.concate(xxx);
+
+            _center = value;
+
+            plane.view.update();
+
+            return true;
+        },
+        get zoom() {
+            return _zoom;
+        },
+        set zoom(value) {
+
+            var factor;
+
+            factor = value / _zoom;
+
+            _matrix.scale({
+                x: factor,
+                y: factor
+            }, _center);
+
+            _zoom = value;
+
+            plane.view.update();
+
+            return true;
+        },
+        reset: function () {
+            // no mesmo momento, retorno o zoom para 1 e informe o centro inicial
+            plane.view.zoomTo(1, plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2));
+
+            // clear in the matrix transform
+            _matrix = plane.math.matrix.create();
+            
+            return true;
         }
     };
 
