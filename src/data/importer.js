@@ -349,16 +349,12 @@
                 case 'spline':
                 {
                     if (objectDxf.points) {
-                        var spline = '{"type": "spline", "degree": {0}, "knots": [{1}], "points": [{2}]},',
-                            points = '';
+                        var points = [];
 
                         for (var i = 0; i < objectDxf.points.length; i++) {
-
-                            var point = i === objectDxf.points.length - 1 ? '{"x": {0}, "y": {1}}' : '{"x": {0}, "y": {1}},';
-                            points += plane.utility.string.format(point, [objectDxf.points[i][0], objectDxf.points[i][1]]);
-
+                            points.push([objectDxf.points[i][0], objectDxf.points[i][1]]);
                         }
-                        return {"type": "spline", "degree": objectDxf.degree, "knots": [objectDxf.knots.join()], "points": [points]};
+                        return {"type": "spline", "degree": objectDxf.degree, "knots": objectDxf.knots, "points": points};
                     }
                     return '';
                 }
