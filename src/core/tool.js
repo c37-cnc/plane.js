@@ -45,13 +45,13 @@
 
             function onMouseWheel(event) {
 
-                var pointInCanvas = mousePosition(_viewPort, event.x, event.y),
+                var pointInCanvas = mousePosition(_viewPort, event.x || event.clientX, event.y || event.clientY),
                     pointInView = _matrix.inverseTransform(pointInCanvas);
 
                 // customized event
                 event = {
                     type: 'onMouseWheel',
-                    delta: event.deltaY,
+                    delta: event.detail || (event.wheelDelta * -1),
                     point: plane.point.create(pointInView),
                     now: new Date().toISOString()
                 };
@@ -65,7 +65,60 @@
                 }
             }
 
-            _viewPort.onmousewheel = onMouseWheel;
+            function onMouseMove(event) {
+
+                var pointInCanvas = mousePosition(_viewPort, event.x, event.y),
+                    pointInView = _matrix.inverseTransform(pointInCanvas),
+                    shapes = [];
+
+
+                // um remendo para o calculo
+                var angleInRadian = 0.7853981634,
+                    lineSizeValue = 3 / plane.view.zoom;
+
+                // com uma tolerancia para os limites não ficar sem cima dos shapes
+                var maxPoint = plane.point.create(pointInView.x + (-lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (-lineSizeValue * Math.sin(angleInRadian))),
+                    minPoint = plane.point.create(pointInView.x + (+lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (+lineSizeValue * Math.sin(angleInRadian)));
+                
+                var rectangle = {
+                    from: minPoint,
+                    to: maxPoint
+                };
+                
+
+                var duru = plane.shape.find(rectangle);
+                
+                console.log(duru);
+
+
+
+                // customized event
+                event = {
+                    type: 'onMouseMove',
+                    point: {
+                        inDocument: plane.point.create(event.x, event.y),
+                        inCanvas: plane.point.create(pointInCanvas),
+                        inView: plane.point.create(pointInView)
+                    },
+                    shapes: shapes,
+                    now: new Date().toISOString()
+                };
+
+                var tools = _tools.list(),
+                    t = tools.length;
+                while (t--) {
+                    if (tools[t].active) {
+                        tools[t].events.notify('onMouseMove', event);
+                    }
+                }
+            }
+
+            // compatibilidade com Firefox
+            _viewPort.addEventListener(/Firefox/i.test(navigator.userAgent) ? "DOMMouseScroll" : "mousewheel", onMouseWheel);
+
+            _viewPort.addEventListener('mousemove', onMouseMove, false);
+            //_viewPort.addEventListener('mousemove', onMouseDrag, false);
+
 
             return true;
 
