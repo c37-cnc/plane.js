@@ -73,7 +73,10 @@
 
                         var iii = 0;
                         do {
-                            shapes[iii]._render(_context, _matrix);
+                            shapes[iii]._render(_context, _zoom, {
+                                x: _matrix.tx,
+                                y: _matrix.ty
+                            });
                             iii++;
                         } while (iii < shapes.length)
 
