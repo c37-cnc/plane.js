@@ -7,7 +7,7 @@ https://en.wikipedia.org/wiki/Partition_of_a_set
 *Binary space partitioning*
 https://en.wikipedia.org/wiki/Binary_space_partitioning
 
-*K-Dimensional*
+*R-Tree*
 https://github.com/mourner/rbush
 
 *Collision Detection*
