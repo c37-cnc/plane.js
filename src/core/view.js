@@ -116,7 +116,7 @@
                                 }
 
                                 return false;
-                            })
+                            });
                         });
                         // inicio as threads
                         plane.utility.thread.start();

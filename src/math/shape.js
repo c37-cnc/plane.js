@@ -95,7 +95,7 @@
             //console.log('render - ' + this.type + ' - uuid: ' + this.uuid)
 
             // movendo para o inicio do shape para não criar uma linha
-            context.moveTo(this._segments[0].x * zoom + motion.x, this._segments[0].y * zoom + motion.y);
+            context.moveTo(~~(0.5 + (this._segments[0].x * zoom + motion.x)), ~~(0.5 + (this._segments[0].y * zoom + motion.y)));
             // para cada segmento, vou traçando uma linha
             for (var i = 0; i < this._segments.length; i++) {
 
