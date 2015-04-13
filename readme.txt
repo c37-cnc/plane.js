@@ -38,6 +38,10 @@ http://seb.ly/2011/02/html5-canvas-sprite-optimisation/
 http://jsperf.com/math-round-vs-hack/3
 http://www.ibm.com/developerworks/library/wa-canvashtml5layering/
 
+*3D - Bounding volume hierarchy*
+http://en.wikipedia.org/wiki/Bounding_volume_hierarchy
+https://gist.github.com/lilo003/7d0dc21d883d4a705fa7
+
 *Software architecture*
 http://backbonetutorials.com/organizing-backbone-using-modules/
 

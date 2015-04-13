@@ -1,7 +1,7 @@
 (function (plane) {
     "use strict";
-
     // https://github.com/mourner/rbush/blob/master/rbush.js
+
     function Tree(maxEntries, format) {
 
         // jshint newcap: false, validthis: true
