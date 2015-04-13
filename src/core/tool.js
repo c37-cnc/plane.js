@@ -74,16 +74,16 @@
 
                 // um remendo para o calculo
                 var angleInRadian = 0.7853981634,
-                    lineSizeValue = 3 / plane.view.zoom;
+                    lineSizeValue = 5 / plane.view.zoom;
 
                 // com uma tolerancia para os limites não ficar sem cima dos shapes
-                var maxPoint = plane.point.create(pointInView.x + (-lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (-lineSizeValue * Math.sin(angleInRadian))),
-                    minPoint = plane.point.create(pointInView.x + (+lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (+lineSizeValue * Math.sin(angleInRadian)));
+                var minPoint = plane.point.create(pointInView.x + (-lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (-lineSizeValue * Math.sin(angleInRadian))),
+                    maxPoint = plane.point.create(pointInView.x + (+lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (+lineSizeValue * Math.sin(angleInRadian)));
 
                 var rectangle = {
                     from: minPoint,
                     to: maxPoint,
-                    center:{
+                    center: {
                         x: (minPoint.x + maxPoint.x) / 2,
                         y: (minPoint.y + maxPoint.y) / 2
                     }
@@ -95,12 +95,30 @@
 
                     var i = 0;
                     do {
-                        // clono os segmentos, para fazer o counter-clockwise da verificação de colisão
-                        var segments = shapes[i]._segments.splice();
-                        var polygon = new plane.math.collision.Polygon(null, segments.reverse());
-                        var circle = new plane.math.collision.Circle(new plane.math.collision.Vector(rectangle.center.x, rectangle.center.y), 3 / plane.view.zoom);
+                        // clonando os segmentos, para fazer o counter-clockwise da verificação de colisão
+//                        var segments = shapes[i]._segments.slice();
+//                        var polygon = new plane.math.collision.Polygon(null, segments);
+//                        var circle = new plane.math.collision.Circle(new plane.math.collision.Vector(rectangle.center.x, rectangle.center.y), 5 / plane.view.zoom);
+//
+//                        if (plane.math.collision.testPolygonCircle(polygon, circle)) {
+//                            objects.push(shapes[i]);
+//                        }
                         
-                        if (plane.math.collision.testPolygonCircle(polygon, circle)){
+                        //debugger;
+
+//                        var polygon = {
+//                            points: shapes[i]._segments
+//                        };
+//                        var circle = {
+//                            center: rectangle.center,
+//                            radius: 3 / plane.view.zoom
+//                        };
+//
+//                        if (plane.math.intersect(polygon, circle)) {
+//                            objects.push(shapes[i]);
+//                        }
+
+                        if (plane.math.intersect(shapes[i]._segments, rectangle)) {
                             objects.push(shapes[i]);
                         }
 
