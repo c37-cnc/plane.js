@@ -42,16 +42,20 @@
 
             });
 
+//            // um remendo para o calculo
+//            var angleInRadian = from.angleTo(to),
+//                lineSizeValue = 5 / plane.view.zoom;
+//
+//            // com uma tolerancia para os limites não ficar sem cima dos shapes
+//            var minPoint = plane.point.create(from.x + (-lineSizeValue * Math.cos(angleInRadian)), from.y + (-lineSizeValue * Math.sin(angleInRadian))),
+//                maxPoint = plane.point.create(to.x + (+lineSizeValue * Math.cos(angleInRadian)), to.y + (+lineSizeValue * Math.sin(angleInRadian)));
+//
+//            from = minPoint;
+//            to = maxPoint;
+
             this._bounds.from = from;
             this._bounds.to = to;
 
-            //            // um remendo para o calculo
-            //            var angleInRadian = maxPoint.angleTo(minPoint),
-            //                lineSizeValue = 5 / view.zoom;
-            //
-            //            // com uma tolerancia para os limites não ficar sem cima dos shapes
-            //            var maxPoint2 = point.create(maxPoint.x + (-lineSizeValue * Math.cos(angleInRadian)), maxPoint.y + (-lineSizeValue * Math.sin(angleInRadian))),
-            //                minPoint2 = point.create(minPoint.x + (+lineSizeValue * Math.cos(angleInRadian)), minPoint.y + (+lineSizeValue * Math.sin(angleInRadian)));
 
             // https://github.com/craftyjs/Crafty/blob/bcd581948c61966ed589c457feb32358a0afd9c8/src/spatial/collision.js#L154
             var center = {
@@ -73,11 +77,11 @@
             return true;
 
         },
-        _cache: function (){
+        _cache: function () {
             // http://www.createjs.com/Demos/EaselJS/Cache
             // https://github.com/CreateJS/EaselJS/blob/master/src/easeljs/display/DisplayObject.js#L811
-            
-            
+
+
             return true;
         },
         contains: function (position, transform) {
@@ -102,7 +106,7 @@
                 // http://seb.ly/2011/02/html5-canvas-sprite-optimisation/
                 // http://jsperf.com/math-round-vs-hack/3
                 // http://www.ibm.com/developerworks/library/wa-canvashtml5layering/
-                 
+
                 // var x = this._segments[i].x * zoom + motion.x;
                 // var y = this._segments[i].y * zoom + motion.y;
 
@@ -111,7 +115,7 @@
 
                 // var x = (0.5 + (this._segments[i].x * zoom + motion.x)) << 0;
                 // var y = (0.5 + (this._segments[i].y * zoom + motion.y) << 0);
-                
+
                 //debugger;
 
                 var x = ~~(0.5 + (this._segments[i].x * zoom + motion.x));
