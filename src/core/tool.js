@@ -69,7 +69,7 @@
 
                 var pointInCanvas = mousePosition(_viewPort, event.x, event.y),
                     pointInView = _matrix.inverseTransform(pointInCanvas),
-                    shapes = [];
+                    objects = [];
 
 
                 // um remendo para o calculo
@@ -79,16 +79,39 @@
                 // com uma tolerancia para os limites não ficar sem cima dos shapes
                 var maxPoint = plane.point.create(pointInView.x + (-lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (-lineSizeValue * Math.sin(angleInRadian))),
                     minPoint = plane.point.create(pointInView.x + (+lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (+lineSizeValue * Math.sin(angleInRadian)));
-                
+
                 var rectangle = {
                     from: minPoint,
-                    to: maxPoint
+                    to: maxPoint,
+                    center:{
+                        x: (minPoint.x + maxPoint.x) / 2,
+                        y: (minPoint.y + maxPoint.y) / 2
+                    }
                 };
-                
 
-                var duru = plane.shape.find(rectangle);
-                
-                console.log(duru);
+                var shapes = plane.shape.find(rectangle);
+
+                if (shapes.length > 0) {
+
+                    var i = 0;
+                    do {
+                        // clono os segmentos, para fazer o counter-clockwise da verificação de colisão
+                        var segments = shapes[i]._segments.splice();
+                        var polygon = new plane.math.collision.Polygon(null, segments.reverse());
+                        var circle = new plane.math.collision.Circle(new plane.math.collision.Vector(rectangle.center.x, rectangle.center.y), 3 / plane.view.zoom);
+                        
+                        if (plane.math.collision.testPolygonCircle(polygon, circle)){
+                            objects.push(shapes[i]);
+                        }
+
+                        i++;
+                    } while (i < shapes.length)
+
+
+                    console.log(objects);
+                }
+
+
 
 
 
@@ -100,7 +123,7 @@
                         inCanvas: plane.point.create(pointInCanvas),
                         inView: plane.point.create(pointInView)
                     },
-                    shapes: shapes,
+                    objects: objects,
                     now: new Date().toISOString()
                 };
 
