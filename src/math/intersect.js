@@ -31,22 +31,22 @@
             return true;
         }
 
-        for (var i = 0; i < segments.length; i++) {
-            if (isInside(segments[i].x, segments[i].y, bl, tl, tr, br)) {
-                return true;
-            }
-        }
+//        for (var i = 0; i < segments.length; i++) {
+//            if (isInside(segments[i].x, segments[i].y, bl, tl, tr, br)) {
+//                return true;
+//            }
+//        }
 
         return false;
     }
 
     function intersectSegmentsLine(a1, a2, points) {
-        var result = [],
-            length = points.length;
+        var length = points.length;
 
         for (var i = 0; i < length; i++) {
+            
             var b1 = points[i],
-                b2 = points[(i + 1) % length];
+                b2 = points[((i + 1) === length) ? (i - 1) : (i + 1)];
 
             if (lineLine(a1, a2, b1, b2)) {
                 return true;
@@ -91,7 +91,6 @@
         }
         return result;
     }
-    ;
 
 
 

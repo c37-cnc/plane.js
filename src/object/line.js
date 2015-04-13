@@ -66,23 +66,16 @@
         this._bounds.to = to;
 
         // correção para rectangle com eixos iguais
-        if ((this._bounds.from.x === this._bounds.to.x) || (this._bounds.from.y === this._bounds.to.y)) {
-            this._bounds.from.x = this._bounds.from.x - (7 / plane.view.zoom);
-            this._bounds.from.y = this._bounds.from.y - (7 / plane.view.zoom);
-            
-            this._bounds.to.x = this._bounds.to.x + (7 / plane.view.zoom);
-            this._bounds.to.y = this._bounds.to.y + (7 / plane.view.zoom);
-        }
-
-
-
-        //            // um remendo para o calculo
-        //            var angleInRadian = maxPoint.angleTo(minPoint),
-        //                lineSizeValue = 5 / view.zoom;
-        //
-        //            // com uma tolerancia para os limites não ficar sem cima dos shapes
-        //            var maxPoint2 = point.create(maxPoint.x + (-lineSizeValue * Math.cos(angleInRadian)), maxPoint.y + (-lineSizeValue * Math.sin(angleInRadian))),
-        //                minPoint2 = point.create(minPoint.x + (+lineSizeValue * Math.cos(angleInRadian)), minPoint.y + (+lineSizeValue * Math.sin(angleInRadian)));
+        // APARENTEMENTE ERRADO!
+//        if ((this._bounds.from.x === this._bounds.to.x) || (this._bounds.from.y === this._bounds.to.y)) {
+//            this._bounds.from.x = this._bounds.from.x - (7 / plane.view.zoom);
+//            this._bounds.from.y = this._bounds.from.y - (7 / plane.view.zoom);
+//            
+//            this._bounds.to.x = this._bounds.to.x + (7 / plane.view.zoom);
+//            this._bounds.to.y = this._bounds.to.y + (7 / plane.view.zoom);
+//        }
+//
+//
 
 
         // https://github.com/craftyjs/Crafty/blob/bcd581948c61966ed589c457feb32358a0afd9c8/src/spatial/collision.js#L154
