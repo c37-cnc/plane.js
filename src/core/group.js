@@ -3,7 +3,7 @@
 
 
     var _groups = null, // store - para armazenamento 
-        _bounds = null; // tree - para a arvore de pesquisa
+        _shapes = null; // tree - para a arvore de pesquisa
 
 
     function Group(attrs) {
@@ -34,12 +34,12 @@
         _initialize: function (config) {
 
             _groups = plane.math.dictionary.create();
-            _bounds = plane.math.dictionary.create();
+            _shapes = plane.math.dictionary.create();
 
             return true;
 
         },
-        create: function (attrs, layer) {
+        create: function (attrs, layerUuid) {
             if (plane.utility.conversion.toType(attrs) !== 'object') {
                 throw new Error('group - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
@@ -55,13 +55,13 @@
                 shapes = attrs.children; // os shapes filhos
 
             // a layer que vamos trabalhar
-            layer = plane.layer.get(layer);
+            var layer = plane.layer.get(layerUuid);
 
             // verifico se temos os stores para a layer que estamos trabalhando
-            if ((!_groups.get(layer.uuid)) && (!_bounds.get(layer.uuid))) {
+            if ((!_groups.get(layer.uuid)) && (!_shapes.get(layer.uuid))) {
                 // se não existir, crio
                 _groups.add(layer.uuid, plane.math.dictionary.create());
-                _bounds.add(layer.uuid, plane.math.store.create());
+                _shapes.add(layer.uuid, plane.math.store.create());
             }
 
             // apagando a referencia em attrs
@@ -81,10 +81,10 @@
             // para conversão && add de children
             var i = 0;
             do {
-                if ((plane.utility.conversion.toType(shapes[i]) !== 'object') || (!attrs.children)) {
+                if ((typeof shapes[i] !== 'object') || (!attrs.children)) {
                     throw new Error('group - create - children is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
                 }
-
+                
                 // removo o shape de plane
                 plane.shape.remove(shapes[i].uuid, layer.uuid);
 
@@ -92,7 +92,7 @@
                 group.children.add(shapes[i].uuid, shapes[i]);
 
                 // de acordo com a layer - add bounds in store
-                _bounds.get(layer.uuid).add([shapes[i]._bounds.from.x, shapes[i]._bounds.from.y, shapes[i]._bounds.to.x, shapes[i]._bounds.to.y, shapes[i].uuid]);
+                _shapes.get(layer.uuid).add(shapes[i].uuid, [shapes[i]._bounds.from.x, shapes[i]._bounds.from.y, shapes[i]._bounds.to.x, shapes[i]._bounds.to.y, shapes[i]]);
 
                 i++;
             } while (i < shapes.length);
@@ -129,19 +129,21 @@
                 var layer = plane.layer.get(layerUuid);
 
                 // verifico se criei ao menos um group para a layer
-                if (_bounds.get(layer.uuid)) {
+                if (_shapes.get(layer.uuid)) {
 
                     var shapes = null,
-                        segments = _bounds.get(layer.uuid).search(rectangle);
+                        rectangles = _shapes.get(layer.uuid).search(rectangle);
 
                     // um mapeamendo para separar os uuids dos shapes
-                    shapes = segments.map(function (segment) {
+                    shapes = rectangles.map(function (segment) {
                         return segment[4];
                     });
 
                     // agora procuro e retorno só os grupos com os shapes encontrados
                     return _groups.get(layer.uuid).list().filter(function (group) {
-                        return group.children.has(shapes);
+                        return group.children.has(shapes.map(function (shape){
+                            return shape.uuid;
+                        }));
                     });
                     
                 } else {

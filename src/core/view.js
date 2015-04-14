@@ -56,12 +56,13 @@
                 to: _matrix.inverseTransform({x: _viewPort.clientWidth, y: _viewPort.clientHeight})
             };
 
+            // para todas as layers
             var i = 0;
             do {
+                
                 // primeiro - os groups
                 var groups = plane.group.find(rectangle, layers[i].uuid);
 
-                //console.log(groups);
                 // temos groups para render?
                 if (groups.length > 0) {
                     var ii = 0;

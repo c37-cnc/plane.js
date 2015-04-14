@@ -89,48 +89,34 @@
                     }
                 };
 
-                var shapes = plane.shape.find(rectangle);
-
-                if (shapes.length > 0) {
-
+                // primeiro - os groups
+                var groups = plane.group.find(rectangle);
+                if (groups.length > 0) {
                     var i = 0;
                     do {
-                        // clonando os segmentos, para fazer o counter-clockwise da verificação de colisão
-//                        var segments = shapes[i]._segments.slice();
-//                        var polygon = new plane.math.collision.Polygon(null, segments);
-//                        var circle = new plane.math.collision.Circle(new plane.math.collision.Vector(rectangle.center.x, rectangle.center.y), 5 / plane.view.zoom);
-//
-//                        if (plane.math.collision.testPolygonCircle(polygon, circle)) {
-//                            objects.push(shapes[i]);
-//                        }
-                        
-                        //debugger;
+                        var ii = 0,
+                            shapes = groups[i].children.list();
+                        do {
+                            if (plane.math.intersect(shapes[ii]._segments, rectangle)) {
+                                objects.push(groups[i]);
+                            }
+                            ii++;
+                        } while (ii < shapes.length)
+                        i++;
+                    } while (i < groups.length)
+                }
 
-//                        var polygon = {
-//                            points: shapes[i]._segments
-//                        };
-//                        var circle = {
-//                            center: rectangle.center,
-//                            radius: 3 / plane.view.zoom
-//                        };
-//
-//                        if (plane.math.intersect(polygon, circle)) {
-//                            objects.push(shapes[i]);
-//                        }
-
+                // segundo - os shapes
+                var shapes = plane.shape.find(rectangle);
+                if (shapes.length > 0) {
+                    var i = 0;
+                    do {
                         if (plane.math.intersect(shapes[i]._segments, rectangle)) {
                             objects.push(shapes[i]);
                         }
-
                         i++;
                     } while (i < shapes.length)
-
-
-                    console.log(objects);
                 }
-
-
-
 
 
                 // customized event
