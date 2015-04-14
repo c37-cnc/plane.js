@@ -8,8 +8,8 @@
 
     Store.prototype = {
         // value = array
-        add: function (value) {
-            var key = plane.utility.string.hashCode(value.toString());
+        add: function (key, value) {
+            
             // add ao dictionary
             this._dictionary.add(key, value);
             // add a tree
@@ -18,19 +18,17 @@
             return true;
         },
         // value = array
-        get: function (value) {
-            var key = plane.utility.string.hashCode(value.toString());
-            return this._dictionary.get(key);
+        get: function (key) {
+            var rectangle = this._dictionary.get(key);
+            return rectangle ? rectangle[4] : null;
         },
         search: function (rectangle) {
-
             return this._tree.search([rectangle.from.x, rectangle.from.y, rectangle.to.x, rectangle.to.y]);
-
         },
-        remove: function (value) {
-            var key = plane.utility.string.hashCode(value.toString()),
-                item = this._dictionary.get(key);
-
+        remove: function (key) {
+            
+            // o item no dictionary
+            var item = this._dictionary.get(key);
             // remove de dictionary
             this._dictionary.remove(key);
             // remove de tree

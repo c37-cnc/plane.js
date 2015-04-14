@@ -10,7 +10,7 @@ https://en.wikipedia.org/wiki/Binary_space_partitioning
 *R-Tree*
 https://github.com/mourner/rbush
 
-*Collision Detection*
+*Collision Detection* um objeto fechado
 https://en.wikipedia.org/wiki/Collision_detection
 https://developer.mozilla.org/en-US/docs/Games/Techniques/2D_collision_detection
 http://http.developer.nvidia.com/GPUGems3/gpugems3_ch32.html

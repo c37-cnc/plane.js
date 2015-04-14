@@ -1,20 +1,18 @@
 (function (plane) {
     "use strict";
 
-    var _shapes = null,
-        _bounds = null;
+    var _shapes = null;
 
 
     plane.shape = {
         _initialize: function (config) {
 
             _shapes = plane.math.dictionary.create();
-            _bounds = plane.math.dictionary.create();
 
             return true;
 
         },
-        create: function (attrs, layer) {
+        create: function (attrs, layerUuid) {
 
             if ((typeof attrs === "function") || (attrs === null)) {
                 throw new Error('shape - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
@@ -24,7 +22,7 @@
                 throw new Error('shape - create - type is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
 
-            layer = plane.layer.get(layer);
+            var layer = plane.layer.get(layerUuid);
 
             // atributos 
             attrs = plane.utility.object.merge({
@@ -35,21 +33,17 @@
             var shape = plane.object[attrs.type].create(attrs);
 
             // verifico se temos os stores para a layer que estamos trabalhando
-            if ((!_shapes.get(layer.uuid)) && (!_bounds.get(layer.uuid))) {
+            if (!_shapes.get(layer.uuid)) {
                 // se não existir, crio
-                _shapes.add(layer.uuid, plane.math.dictionary.create());
-                _bounds.add(layer.uuid, plane.math.store.create());
+                _shapes.add(layer.uuid, plane.math.store.create());
             }
 
-            // de acordo com a layer - add shape in store
-            _shapes.get(layer.uuid).add(shape.uuid, shape);
-
             // de acordo com a layer - add bounds in store
-            _bounds.get(layer.uuid).add([shape._bounds.from.x, shape._bounds.from.y, shape._bounds.to.x, shape._bounds.to.y, shape]);
+            _shapes.get(layer.uuid).add(shape.uuid, [shape._bounds.from.x, shape._bounds.from.y, shape._bounds.to.x, shape._bounds.to.y, shape]);
 
             return shape;
         },
-        update: function (shape) {
+        update: function (shapeUuid) {
 
 
             return true;
@@ -58,15 +52,11 @@
             if ((!shapeUuid) || (typeof shapeUuid !== 'string')) {
                 throw new Error('shape - remove - shapeUuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
+                
                 // sempre trabalhamos com uma layer
-                var layer = plane.layer.get(layerUuid),
-                    shape = _shapes.get(layer.uuid).get(shapeUuid);
-
+                var layer = plane.layer.get(layerUuid);
                 // removendo shape
-                _shapes.get(layer.uuid).remove(shape.uuid);
-
-                // removendo os bounds, de acordo com a layer
-                _bounds.get(layer.uuid).remove([shape._bounds.from.x, shape._bounds.from.y, shape._bounds.to.x, shape._bounds.to.y, shape.uuid]);
+                _shapes.get(layer.uuid).remove(shapeUuid);
 
                 return true;
             }
@@ -74,9 +64,9 @@
         clear: function () {
 
         },
-        list: function (layer) {
+        list: function (layerUuid) {
             // sempre trabalhamos com uma layer
-            layer = plane.layer.get(layer);
+            var layer = plane.layer.get(layerUuid);
             return _shapes.get(layer.uuid).list();
         },
         get: function (shapeUuid, layerUuid) {
@@ -95,7 +85,7 @@
             } else {
 
                 var layer = plane.layer.get(layerUuid),
-                    rectangles = _bounds.get(layer.uuid).search(rectangle);
+                    rectangles = _shapes.get(layer.uuid).search(rectangle);
 
                 // um mapeamendo para separar os shapes dos rectangles
                 return rectangles.map(function (segment) {
