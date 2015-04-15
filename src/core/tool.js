@@ -363,6 +363,9 @@
                 do {
                     if (plane.math.intersect(shapes[ii]._segments, rectangle)) {
                         groupFinded.push(groups[i]);
+                        // caso seja localizado apenas um shape dentro do group paro
+                        // a pesquisa para não add o mesmo grou mais de uma vez
+                        break;
                     }
                     ii++;
                 } while (ii < shapes.length)
