@@ -42,37 +42,7 @@
 
             });
 
-//            // um remendo para o calculo
-//            var angleInRadian = from.angleTo(to),
-//                lineSizeValue = 5 / plane.view.zoom;
-//
-//            // com uma tolerancia para os limites não ficar sem cima dos shapes
-//            var minPoint = plane.point.create(from.x + (-lineSizeValue * Math.cos(angleInRadian)), from.y + (-lineSizeValue * Math.sin(angleInRadian))),
-//                maxPoint = plane.point.create(to.x + (+lineSizeValue * Math.cos(angleInRadian)), to.y + (+lineSizeValue * Math.sin(angleInRadian)));
-//
-//            from = minPoint;
-//            to = maxPoint;
-
-            this._bounds.from = from;
-            this._bounds.to = to;
-
-
-            // https://github.com/craftyjs/Crafty/blob/bcd581948c61966ed589c457feb32358a0afd9c8/src/spatial/collision.js#L154
-            var center = {
-                x: (from.x + to.x) / 2,
-                y: (from.y + to.y) / 2
-            },
-            radius = Math.sqrt((to.x - from.x) * (to.x - from.x) + (to.y - from.y) * (to.y - from.y)) / 2;
-
-            this._bounds.center = plane.point.create(center);
-            this._bounds.radius = radius;
-
-
-            /**
-             * Calculates the MBR when rotated some number of radians about an origin point o.
-             * Necessary on a rotation, or a resize
-             */
-            // https://github.com/craftyjs/Crafty/blob/2f131c55c60e1aecc68923c9576c6dad00539d82/src/spatial/2d.js#L358
+            this._bounds = plane.math.bounds.create(from, to);
 
             return true;
 
