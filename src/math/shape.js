@@ -34,12 +34,8 @@
                 to = plane.point.create(this._segments[0]);
 
             this._segments.forEach(function (segment) {
-
-                var point = plane.point.create(segment);
-
-                from = point.minimum(from);
-                to = point.maximum(to);
-
+                from = operation.minimum(segment, from);
+                to = operation.maximum(segment, to);
             });
 
             this._bounds = plane.math.bounds.create(from, to);
@@ -95,6 +91,21 @@
                 context.lineTo(x, y);
             }
 
+        }
+    };
+
+    var operation = {
+        minimum: function (a, b) {
+            return {
+                x: (a.x < b.x) ? a.x : b.x,
+                y: (a.y < b.y) ? a.y : b.y
+            };
+        },
+        maximum: function (a, b) {
+            return {
+                x: (a.x > b.x) ? a.x : b.x,
+                y: (a.y > b.y) ? a.y : b.y
+            };
         }
     };
 
