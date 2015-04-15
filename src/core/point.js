@@ -79,9 +79,9 @@
 
             var inDocument = new Point(this.x * _matrix.a + this.y * _matrix.b + _matrix.tx,
                 this.x * _matrix.c + this.y * _matrix.d + _matrix.ty);
-
+                
             // a inversão do eixo carteziano
-            inDocument.y = (inDocument.y - plane.view.bounds.height) * -1;
+            inDocument.y = (inDocument.y - plane.view.size.height) * -1;
 
             return  inDocument;
 

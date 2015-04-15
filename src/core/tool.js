@@ -7,7 +7,6 @@
         _mouseDown = null; // usado para calculo do evento onMouseDrag
 
 
-
     function Tool(attrs) {
 
         this.uuid = attrs.uuid;
@@ -45,292 +44,17 @@
             _tools = plane.math.dictionary.create();
 
 
-            function onMouseWheel(event) {
+            // vinculo o event keydown ao window
+            window.addEventListener('keydown', onKeyDown, false);
 
-                var pointInCanvas = mousePosition(_viewPort, event.x || event.clientX, event.y || event.clientY),
-                    pointInView = _matrix.inverseTransform(pointInCanvas);
-
-                // customized event
-                event = {
-                    type: 'onMouseWheel',
-                    delta: event.detail || (event.wheelDelta * -1),
-                    point: plane.point.create(pointInView),
-                    now: new Date().toISOString()
-                };
-
-                var tools = _tools.list(),
-                    t = tools.length;
-                while (t--) {
-                    if (tools[t].active) {
-                        tools[t].events.notify('onMouseWheel', event);
-                    }
-                }
-            }
-
-            function onMouseDown(event) {
-
-                var pointInCanvas = mousePosition(_viewPort, event.x, event.y),
-                    pointInView = _matrix.inverseTransform(pointInCanvas),
-                    objects = [];
-
-                // dizendo que o mouse preenche o evento down
-                _mouseDown = pointInView;
-
-
-                // com uma tolerancia para os limites não ficar sem cima dos shapes
-                var angleInRadian = 0.7853981634,
-                    lineSizeValue = 5 / plane.view.zoom; // o valor + o respectivo zoom
-
-                var minPoint = plane.point.create(pointInView.x + (-lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (-lineSizeValue * Math.sin(angleInRadian))),
-                    maxPoint = plane.point.create(pointInView.x + (+lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (+lineSizeValue * Math.sin(angleInRadian)));
-
-                var rectangle = {
-                    from: minPoint,
-                    to: maxPoint
-                };
-
-                // primeiro - os groups
-                var groups = plane.group.find(rectangle);
-                if (groups.length > 0) {
-                    var i = 0;
-                    do {
-                        var ii = 0,
-                            shapes = groups[i].children.list();
-                        do {
-                            if (plane.math.intersect(shapes[ii]._segments, rectangle)) {
-                                objects.push(groups[i]);
-                            }
-                            ii++;
-                        } while (ii < shapes.length)
-                        i++;
-                    } while (i < groups.length)
-                }
-
-                // segundo - os shapes
-                var shapes = plane.shape.find(rectangle);
-                if (shapes.length > 0) {
-                    var i = 0;
-                    do {
-                        if (plane.math.intersect(shapes[i]._segments, rectangle)) {
-                            objects.push(shapes[i]);
-                        }
-                        i++;
-                    } while (i < shapes.length)
-                }
-
-                // customized event
-                event = {
-                    type: 'onMouseDown',
-                    target: event.target,
-                    objects: objects,
-                    point: plane.point.create(pointInView),
-                    now: new Date().toISOString()
-                };
-
-                // propagação do evento para tools ativas
-                var tools = _tools.list(),
-                    t = tools.length;
-                while (t--) {
-                    if (tools[t].active) {
-                        tools[t].events.notify('onMouseDown', event);
-                    }
-                }
-
-            }
-
-            function onMouseUp(event) {
-
-                var pointInCanvas = mousePosition(_viewPort, event.x, event.y),
-                    pointInView = _matrix.inverseTransform(pointInCanvas);
-
-                // limpo está variável que é o controle para disparar o evento onMouseDrag
-                _mouseDown = null;
-
-                // customized event
-                event = {
-                    type: 'onMouseUp',
-                    point: plane.point.create(pointInView),
-                    now: new Date().toISOString()
-                };
-
-                // propagação do evento para tools ativas
-                var tools = _tools.list(),
-                    t = tools.length;
-                while (t--) {
-                    if (tools[t].active) {
-                        tools[t].events.notify('onMouseUp', event);
-                    }
-                }
-            }
-
-
-            // Mouse Drag vinculado ao o evento Mouse Move do componente <canvas>
-            function onMouseDrag(event) {
-                // se Mouse Down preenchido 
-                if (_mouseDown) {
-
-                    var pointInCanvas = mousePosition(_viewPort, event.x, event.y),
-                        pointInView = _matrix.inverseTransform(pointInCanvas),
-                        objects = [];
-
-                    var from = plane.point.create(_mouseDown),
-                        to = plane.point.create(pointInView);
-
-                    if (from.x > to.x) {
-                        var fromOld = from,
-                            toOld = to;
-
-                        from = plane.point.create(toOld.x, fromOld.y);
-                        to = plane.point.create(fromOld.x, toOld.y);
-                    }
-                    if (from.y > to.y) {
-                        var fromOld = from,
-                            toOld = to;
-
-                        from = plane.point.create(fromOld.x, toOld.y);
-                        to = plane.point.create(toOld.x, fromOld.y);
-                    }
-
-
-                    var rectangle = {
-                        from: from,
-                        to: to
-                    };
-
-                    // primeiro - os groups
-                    var groups = plane.group.find(rectangle);
-                    if (groups.length > 0) {
-                        var i = 0;
-                        do {
-                            var ii = 0,
-                                shapes = groups[i].children.list();
-                            do {
-                                if (plane.math.intersect(shapes[ii]._segments, rectangle)) {
-                                    objects.push(groups[i]);
-                                }
-                                ii++;
-                            } while (ii < shapes.length)
-                            i++;
-                        } while (i < groups.length)
-                    }
-
-                    // segundo - os shapes
-                    //debugger;
-
-                    var shapes = plane.shape.find(rectangle);
-                    if (shapes.length > 0) {
-                        var i = 0;
-                        do {
-                            if (plane.math.intersect(shapes[i]._segments, rectangle)) {
-                                objects.push(shapes[i]);
-                            }
-                            i++;
-                        } while (i < shapes.length)
-                    }
-
-
-                    // os pontos de inicio e fim devem ser diferentes para o evento ser disparado
-                    if (!from.equals(to)) {
-
-                        event = {
-                            type: 'onMouseDrag',
-                            point: {
-                                from: from,
-                                to: to
-                            },
-                            objects: objects,
-                            now: new Date().toISOString()
-                        };
-
-                        var tools = _tools.list(),
-                            t = tools.length;
-                        while (t--) {
-                            if (tools[t].active) {
-                                tools[t].events.notify('onMouseDrag', event);
-                            }
-                        }
-
-                    }
-                }
-            }
-
-            function onMouseMove(event) {
-
-                var pointInCanvas = mousePosition(_viewPort, event.x, event.y),
-                    pointInView = _matrix.inverseTransform(pointInCanvas),
-                    objects = [];
-
-
-                // com uma tolerancia para os limites não ficar sem cima dos shapes
-                var angleInRadian = 0.7853981634,
-                    lineSizeValue = 5 / plane.view.zoom; // o valor + o respectivo zoom
-
-                var minPoint = plane.point.create(pointInView.x + (-lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (-lineSizeValue * Math.sin(angleInRadian))),
-                    maxPoint = plane.point.create(pointInView.x + (+lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (+lineSizeValue * Math.sin(angleInRadian)));
-
-                var rectangle = {
-                    from: minPoint,
-                    to: maxPoint,
-                    center: {
-                        x: (minPoint.x + maxPoint.x) / 2,
-                        y: (minPoint.y + maxPoint.y) / 2
-                    }
-                };
-
-                // primeiro - os groups
-                var groups = plane.group.find(rectangle);
-                if (groups.length > 0) {
-                    var i = 0;
-                    do {
-                        var ii = 0,
-                            shapes = groups[i].children.list();
-                        do {
-                            if (plane.math.intersect(shapes[ii]._segments, rectangle)) {
-                                objects.push(groups[i]);
-                            }
-                            ii++;
-                        } while (ii < shapes.length)
-                        i++;
-                    } while (i < groups.length)
-                }
-
-                // segundo - os shapes
-                var shapes = plane.shape.find(rectangle);
-                if (shapes.length > 0) {
-                    var i = 0;
-                    do {
-                        if (plane.math.intersect(shapes[i]._segments, rectangle)) {
-                            objects.push(shapes[i]);
-                        }
-                        i++;
-                    } while (i < shapes.length)
-                }
-
-
-                // customized event
-                event = {
-                    type: 'onMouseMove',
-                    point: plane.point.create(pointInView),
-                    objects: objects,
-                    now: new Date().toISOString()
-                };
-
-                var tools = _tools.list(),
-                    t = tools.length;
-                while (t--) {
-                    if (tools[t].active) {
-                        tools[t].events.notify('onMouseMove', event);
-                    }
-                }
-            }
-
+            // vinculo os eventos criados com o componente html
             _viewPort.onmousedown = onMouseDown;
             _viewPort.onmouseup = onMouseUp;
-            // compatibilidade com Firefox
             _viewPort.addEventListener(/Firefox/i.test(navigator.userAgent) ? "DOMMouseScroll" : "mousewheel", onMouseWheel);
             _viewPort.addEventListener('mousemove', onMouseMove, false);
             _viewPort.addEventListener('mousemove', onMouseDrag, false);
-
+            _viewPort.onmouseleave = onMouseLeave;
+            // vinculo os eventos criados com o componente html
 
             return true;
 
@@ -359,6 +83,236 @@
     };
 
 
+    function onKeyDown(event) {
+
+        // se backspace e não um target do tipo text, desabilito o evento default 'retornar para a pagina anterior'
+        if ((event.keyCode === 8) && (event.target.tagName !== 'INPUT') && (event.target.tagName !== 'P')) {
+            event.preventDefault();
+        }
+
+        // customized event
+        event = {
+            type: 'onKeyDown',
+            altKey: event.altKey,
+            ctrlKey: event.ctrlKey,
+            shiftKey: event.shiftKey,
+            key: plane.utility.string.fromKeyPress(event.keyCode),
+            now: new Date().toISOString()
+        };
+
+        // propagação do evento para tools ativas
+        var tools = _tools.list(),
+            t = tools.length;
+        while (t--) {
+            if (tools[t].active) {
+                tools[t].events.notify('onKeyDown', event);
+            }
+        }
+
+    }
+
+    function onMouseWheel(event) {
+
+        var pointInCanvas = mousePosition(_viewPort, event.x || event.clientX, event.y || event.clientY),
+            pointInView = _matrix.inverseTransform(pointInCanvas);
+
+        // customized event
+        event = {
+            type: 'onMouseWheel',
+            delta: event.detail || (event.wheelDelta * -1),
+            point: plane.point.create(pointInView),
+            now: new Date().toISOString()
+        };
+
+        var tools = _tools.list(),
+            t = tools.length;
+        while (t--) {
+            if (tools[t].active) {
+                tools[t].events.notify('onMouseWheel', event);
+            }
+        }
+    }
+
+    function onMouseDown(event) {
+
+        var pointInCanvas = mousePosition(_viewPort, event.x, event.y),
+            pointInView = _matrix.inverseTransform(pointInCanvas);
+
+        // dizendo que o MouseDown preenche o evento down
+        _mouseDown = pointInView;
+
+        // com uma tolerancia para os limites não ficar sem cima dos shapes
+        var angleInRadian = 0.7853981634, // 45 graus
+            lineSizeValue = 5 / plane.view.zoom; // o valor + o respectivo zoom
+
+        // o rectangle da pesquisa
+        var rectangle = {
+            from: plane.point.create(pointInView.x + (-lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (-lineSizeValue * Math.sin(angleInRadian))),
+            to: plane.point.create(pointInView.x + (+lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (+lineSizeValue * Math.sin(angleInRadian)))
+        };
+
+        // customized event
+        event = {
+            type: 'onMouseDown',
+            objects: {
+                groups: groupFind(rectangle),
+                shapes: shapesFind(rectangle)
+            },
+            point: plane.point.create(pointInView),
+            now: new Date().toISOString()
+        };
+
+        // propagação do evento para tools ativas
+        var tools = _tools.list(),
+            t = tools.length;
+        while (t--) {
+            if (tools[t].active) {
+                tools[t].events.notify('onMouseDown', event);
+            }
+        }
+
+    }
+
+    function onMouseUp(event) {
+
+        var pointInCanvas = mousePosition(_viewPort, event.x, event.y),
+            pointInView = _matrix.inverseTransform(pointInCanvas);
+
+        // limpo está variável que é o controle para disparar o evento onMouseDrag
+        _mouseDown = null;
+
+        // customized event
+        event = {
+            type: 'onMouseUp',
+            point: plane.point.create(pointInView),
+            now: new Date().toISOString()
+        };
+
+        // propagação do evento para tools ativas
+        var tools = _tools.list(),
+            t = tools.length;
+        while (t--) {
+            if (tools[t].active) {
+                tools[t].events.notify('onMouseUp', event);
+            }
+        }
+    }
+
+    // Mouse Drag vinculado ao o evento Mouse Move do componente <canvas>
+    function onMouseDrag(event) {
+        
+        // se Mouse Down preenchido 
+        if (_mouseDown) {
+
+            var pointInCanvas = mousePosition(_viewPort, event.x, event.y),
+                pointInView = _matrix.inverseTransform(pointInCanvas);
+
+            // para formar um rectangle com inicio 
+            var from = plane.point.create(_mouseDown),
+                to = plane.point.create(pointInView);
+
+            // se os pontos de inicio e fim são diferentes, então o evento é disparado
+            if (!from.equals(to)) {
+               
+                // apenas para as ferramensas activas
+                var tools = _tools.list().filter(function (tool) {
+                    return tool.active;
+                });
+
+                // como filter return array, temos MESMO ferramentas activas?
+                if (tools.length > 0) {
+                    
+                    // para um rectangle sempre - no menor x
+                    if (from.x > to.x) {
+                        var fromOld = from,
+                            toOld = to;
+
+                        from = plane.point.create(toOld.x, fromOld.y);
+                        to = plane.point.create(fromOld.x, toOld.y);
+                    }
+                    // para um rectangle sempre - no menor y
+                    if (from.y > to.y) {
+                        var fromOld = from,
+                            toOld = to;
+
+                        from = plane.point.create(fromOld.x, toOld.y);
+                        to = plane.point.create(toOld.x, fromOld.y);
+                    }
+
+                    // o rectangle da pesquisa
+                    var rectangle = {
+                        from: from,
+                        to: to
+                    };
+
+
+                    event = {
+                        type: 'onMouseDrag',
+                        point: {
+                            from: from,
+                            to: to
+                        },
+                        objects: {
+                            groups: groupFind(rectangle),
+                            shapes: shapesFind(rectangle)
+                        },
+                        now: new Date().toISOString()
+                    };
+
+
+                    var i = 0;
+                    do {
+                        tools[i].events.notify('onMouseDrag', event);
+                        i++;
+                    } while (i < tools.length)
+
+                }
+            }
+
+        }
+    }
+
+    function onMouseMove(event) {
+
+        var pointInCanvas = mousePosition(_viewPort, event.x, event.y),
+            pointInView = _matrix.inverseTransform(pointInCanvas),
+            objects = [];
+
+
+        // com uma tolerancia para os limites não ficar sem cima dos shapes
+        var angleInRadian = 0.7853981634,
+            lineSizeValue = 5 / plane.view.zoom; // o valor + o respectivo zoom
+
+        // o rectangle da pesquisa
+        var rectangle = {
+            from: plane.point.create(pointInView.x + (-lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (-lineSizeValue * Math.sin(angleInRadian))),
+            to: plane.point.create(pointInView.x + (+lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (+lineSizeValue * Math.sin(angleInRadian)))
+        };
+
+        // customized event
+        event = {
+            type: 'onMouseMove',
+            objects: {
+                groups: groupFind(rectangle),
+                shapes: shapesFind(rectangle)
+            },
+            point: plane.point.create(pointInView),
+            now: new Date().toISOString()
+        };
+
+        var tools = _tools.list(),
+            t = tools.length;
+        while (t--) {
+            if (tools[t].active) {
+                tools[t].events.notify('onMouseMove', event);
+            }
+        }
+    }
+
+    function onMouseLeave(event) {
+        _mouseDown = null;
+    }
+
     function mousePosition(element, x, y) {
 
         var bb = element.getBoundingClientRect();
@@ -374,6 +328,50 @@
             x: x,
             y: y
         };
+    }
+
+    function shapesFind(rectangle) {
+
+        var shapesFinded = [];
+
+        // segundo - os shapes
+        var shapes = plane.shape.find(rectangle);
+        if (shapes.length > 0) {
+            var i = 0;
+            do {
+                if (plane.math.intersect(shapes[i]._segments, rectangle)) {
+                    shapesFinded.push(shapes[i]);
+                }
+                i++;
+            } while (i < shapes.length)
+        }
+
+        return shapesFinded;
+
+    }
+
+    function groupFind(rectangle) {
+
+        var groupFinded = [];
+
+        var groups = plane.group.find(rectangle);
+        if (groups.length > 0) {
+            var i = 0;
+            do {
+                var ii = 0,
+                    shapes = groups[i].children.list();
+                do {
+                    if (plane.math.intersect(shapes[ii]._segments, rectangle)) {
+                        groupFinded.push(groups[i]);
+                    }
+                    ii++;
+                } while (ii < shapes.length)
+                i++;
+            } while (i < groups.length)
+        }
+
+        return groupFinded;
+
     }
 
 })(plane);
