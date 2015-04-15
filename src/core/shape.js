@@ -88,8 +88,8 @@
                     rectangles = _shapes.get(layer.uuid).search(rectangle);
 
                 // um mapeamendo para separar os shapes dos rectangles
-                return rectangles.map(function (segment) {
-                    return segment[4];
+                return rectangles.map(function (data) {
+                    return data[4];
                 });
 
             }
