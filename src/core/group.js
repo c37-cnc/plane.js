@@ -135,8 +135,8 @@
                         rectangles = _shapes.get(layer.uuid).search(rectangle);
 
                     // um mapeamendo para separar os uuids dos shapes
-                    shapes = rectangles.map(function (segment) {
-                        return segment[4];
+                    shapes = rectangles.map(function (data) {
+                        return data[4];
                     });
 
                     // agora procuro e retorno só os grupos com os shapes encontrados

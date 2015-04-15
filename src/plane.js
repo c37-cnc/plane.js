@@ -26,6 +26,7 @@ window.plane = (function (window, document, undefined) {
             plane.view._initialize(config);
             plane.tool._initialize(config);
             plane.layer._initialize(config);
+            plane.point._initialize(config);
             plane.group._initialize(config);
             plane.shape._initialize(config);
 

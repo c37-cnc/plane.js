@@ -1,6 +1,8 @@
 (function (plane) {
     "use strict";
 
+    var _matrix = null;
+
     function Point(x, y) {
         this.x = x;
         this.y = y;
@@ -73,19 +75,26 @@
                 y: plane.utility.math.parseFloat(this.y, 5)
             };
         },
-//        toDocument: function () {
-//            
-//            var inDocument = new Point(this.x * view.transform.a + this.y * view.transform.b + view.transform.tx, this.x * view.transform.c + this.y * view.transform.d + view.transform.ty);
-//            
-//            // a inversão do eixo carteziano
-//            inDocument.y = (inDocument.y - view.size.height) * -1;
-//            
-//            return  inDocument;
-//
-//        }
+        toDocument: function () {
+
+            var inDocument = new Point(this.x * _matrix.a + this.y * _matrix.b + _matrix.tx,
+                this.x * _matrix.c + this.y * _matrix.d + _matrix.ty);
+
+            // a inversão do eixo carteziano
+            inDocument.y = (inDocument.y - plane.view.bounds.height) * -1;
+
+            return  inDocument;
+
+        }
     };
 
     plane.point = {
+        _initialize: function (config) {
+
+            _matrix = config.matrix;
+
+            return true;
+        },
         create: function () {
 
             if (arguments.length === 2 && (arguments[0] !== null && arguments[1] !== null)) {

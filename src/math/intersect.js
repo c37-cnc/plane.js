@@ -31,11 +31,11 @@
             return true;
         }
 
-//        for (var i = 0; i < segments.length; i++) {
-//            if (isInside(segments[i].x, segments[i].y, bl, tl, tr, br)) {
-//                return true;
-//            }
-//        }
+        for (var i = 0; i < segments.length; i++) {
+            if (isInside(segments[i].x, segments[i].y, bl, tl, tr, br)) {
+                return true;
+            }
+        }
 
         return false;
     }

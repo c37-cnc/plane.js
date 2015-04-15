@@ -6,8 +6,15 @@
 
     var _matrix = null,
         _center = null,
-        _zoom = 1;
-
+        _zoom = 1,
+        _bounds = {
+            from: null,
+            to: null,
+            center: null,
+            radius: 0,
+            width: 0,
+            height: 0
+        };
 
     plane.view = {
         _initialize: function (config) {
@@ -59,7 +66,7 @@
             // para todas as layers
             var i = 0;
             do {
-                
+
                 // primeiro - os groups
                 var groups = plane.group.find(rectangle, layers[i].uuid);
 
@@ -215,6 +222,26 @@
             plane.view.update();
 
             return true;
+        },
+        get bounds() {
+
+            _bounds.from = plane.point.create(_matrix.inverseTransform({x: 0, y: 0}));
+            _bounds.to = plane.point.create(_matrix.inverseTransform(_viewPort.clientWidth, _viewPort.clientHeight));
+
+            // https://github.com/craftyjs/Crafty/blob/bcd581948c61966ed589c457feb32358a0afd9c8/src/spatial/collision.js#L154
+            var center = {
+                x: (_bounds.from.x + _bounds.to.x) / 2,
+                y: (_bounds.from.y + _bounds.to.y) / 2
+            },
+            radius = Math.sqrt((_bounds.to.x - _bounds.from.x) * (_bounds.to.x - _bounds.from.x) + (_bounds.to.y - _bounds.from.y) * (_bounds.to.y - _bounds.from.y)) / 2;
+
+            this._bounds.center = plane.point.create(center);
+            this._bounds.radius = radius;
+
+            this._bounds.width = _bounds.to.x - _bounds.from.x;
+            this._bounds.height = _bounds.to.y - _bounds.from.y;
+
+            return _bounds;
         },
         reset: function () {
             // no mesmo momento, retorno o zoom para 1 e informe o centro inicial
