@@ -39,11 +39,14 @@
                 this.y + (point.y - this.y) * value
                 );
         },
+        // http://jsperf.com/math-min-vs-if-condition-vs/2
         minimum: function (point) {
-            return new Point(Math.min(this.x, point.x), Math.min(this.y, point.y));
+            //return new Point(Math.min(this.x, point.x), Math.min(this.y, point.y));
+            return new Point((this.x < point.x) ? this.x : point.x, (this.y < point.y) ? this.y : point.y);
         },
         maximum: function (point) {
-            return new Point(Math.max(this.x, point.x), Math.max(this.y, point.y));
+            //return new Point(Math.max(this.x, point.x), Math.max(this.y, point.y));
+            return new Point((this.x > point.x) ? this.x : point.x, (this.y > point.y) ? this.y : point.y);
         },
         // https://github.com/kangax/fabric.js/blob/master/src/point.class.js#L159
         equals: function (point) {
@@ -79,7 +82,7 @@
 
             var inDocument = new Point(this.x * _matrix.a + this.y * _matrix.b + _matrix.tx,
                 this.x * _matrix.c + this.y * _matrix.d + _matrix.ty);
-                
+
             // a inversão do eixo carteziano
             inDocument.y = (inDocument.y - plane.view.size.height) * -1;
 
