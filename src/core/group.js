@@ -39,6 +39,14 @@
             return true;
 
         },
+        _reset: function () {
+            
+            _groups = plane.math.dictionary.create();
+            _shapes = plane.math.dictionary.create();
+
+            return true;
+            
+        },
         create: function (attrs, layerUuid) {
             if (plane.utility.conversion.toType(attrs) !== 'object') {
                 throw new Error('group - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');

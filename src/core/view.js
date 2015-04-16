@@ -40,6 +40,15 @@
 
             return true;
         },
+        _reset: function () {
+            // no mesmo momento, retorno o zoom para 1 e informe o centro inicial
+            plane.view.zoomTo(1, plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2));
+
+            // clear in the matrix transform
+            _matrix = plane.math.matrix.create();
+
+            return true;
+        },
         update: function () {
             var layers = plane.layer.list();
 
@@ -226,15 +235,6 @@
                 height: _viewPort.clientHeight,
                 width: _viewPort.clientWidth
             };
-        },
-        reset: function () {
-            // no mesmo momento, retorno o zoom para 1 e informe o centro inicial
-            plane.view.zoomTo(1, plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2));
-
-            // clear in the matrix transform
-            _matrix = plane.math.matrix.create();
-
-            return true;
         }
     };
 
