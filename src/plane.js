@@ -1,4 +1,4 @@
-window.plane = (function (window, document, undefined) {
+(function (window) {
     'use strict';
 
     var version = '4.0.0',
@@ -6,8 +6,7 @@ window.plane = (function (window, document, undefined) {
 
     var _matrix = null;
 
-
-    return {
+    window.plane = {
         initialize: function (config) {
             if (config === null) {
                 throw new Error('plane - initialize - config is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
@@ -20,7 +19,7 @@ window.plane = (function (window, document, undefined) {
             }
 
             _matrix = plane.math.matrix.create();
-            
+
             config.matrix = _matrix;
 
             plane.view._initialize(config);
@@ -35,6 +34,6 @@ window.plane = (function (window, document, undefined) {
         },
         math: {},
         object: {}
-    }
+    };
 
-})(window, document, undefined);
+})(window);
