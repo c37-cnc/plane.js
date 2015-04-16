@@ -1,4 +1,4 @@
-plane.utility = (function (plane) {
+(function (plane) {
 
     var string = {
         format: function (str, args) {
@@ -319,7 +319,7 @@ plane.utility = (function (plane) {
     };
 
 
-    return {
+    plane.utility = {
         math: math,
         array: array,
         thread: thread,
