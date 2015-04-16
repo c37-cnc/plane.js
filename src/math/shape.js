@@ -61,34 +61,52 @@
 
         },
         _render: function (context, zoom, motion) {
+            
+            // possivel personalização
+            if (this.style) {
+                // salvo as configurações de estilo atuais do contexto
+                context.save();
 
-            //console.log('render - ' + this.type + ' - uuid: ' + this.uuid)
+                // personalização para linha pontilhada
+                if (this.style.lineDash)
+                    context.setLineDash([5, 2]);
+
+                // personalização para a espessura da linha
+                if (this.style.lineWidth)
+                    context.lineWidth = this.style.lineWidth;
+                
+                // personalização para a cor da linha
+                if (this.style.lineColor)
+                    context.strokeStyle = this.style.lineColor;
+                
+                // e deixo iniciado um novo shape
+                context.beginPath();
+            }
+            
+            
+            var moveX = ~~(0.5 + (this._segments[0].x * zoom + motion.x)),
+                moveY = ~~(0.5 + (this._segments[0].y * zoom + motion.y));
 
             // movendo para o inicio do shape para não criar uma linha
-            context.moveTo(~~(0.5 + (this._segments[0].x * zoom + motion.x)), ~~(0.5 + (this._segments[0].y * zoom + motion.y)));
+            context.moveTo(moveX, moveY);
+            
             // para cada segmento, vou traçando uma linha
             for (var i = 0; i < this._segments.length; i++) {
-
                 // http://seb.ly/2011/02/html5-canvas-sprite-optimisation/
                 // http://jsperf.com/math-round-vs-hack/3
                 // http://www.ibm.com/developerworks/library/wa-canvashtml5layering/
-
-                // var x = this._segments[i].x * zoom + motion.x;
-                // var y = this._segments[i].y * zoom + motion.y;
-
-                // var x = Math.round(this._segments[i].x * zoom + motion.x);
-                // var y = Math.round(this._segments[i].y * zoom + motion.y);
-
-                // var x = (0.5 + (this._segments[i].x * zoom + motion.x)) << 0;
-                // var y = (0.5 + (this._segments[i].y * zoom + motion.y) << 0);
-
-                //debugger;
-
                 var x = ~~(0.5 + (this._segments[i].x * zoom + motion.x));
                 var y = ~~(0.5 + (this._segments[i].y * zoom + motion.y));
 
-
                 context.lineTo(x, y);
+            }
+            
+            // quando possivel personalização
+            if (this.style) {
+                // desenho o shape no contexto
+                context.stroke();
+                // restauro as configurações de estilo anteriores do contexto
+                context.restore();
             }
 
         }

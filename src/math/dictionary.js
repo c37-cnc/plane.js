@@ -58,7 +58,7 @@
             return Object.keys(this._store).length;
         },
         clear: function () {
-            return this._store = new Array();
+            return this._store = [];
         },
         list: function () {
             var self = this;
