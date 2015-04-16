@@ -96,22 +96,48 @@
                     } while (ii < groups.length)
                 }
 
-                // segundo - os shapes
+                // segundo - todos os demais shapes
                 var shapes = plane.shape.find(rectangle, layers[i].uuid);
+                
+                //debugger;
 
-                //console.log(shapes);
-                // temos shapes para render?
-                if (shapes.length > 0) {
+                // os COM estilos
+                var shapesWithStyle = shapes.filter(function (shape) {
+                    return shape.style && shape.type !== 'quote';
+                });
+                
+                // temos shapes COM estilo para render?
+                if (shapesWithStyle.length > 0) {
+                    var ii = 0;
+                    do {
+                        shapesWithStyle[ii]._render(_context, _zoom, {
+                            x: _matrix.tx,
+                            y: _matrix.ty
+                        });
+                        ii++;
+                    } while (ii < shapesWithStyle.length)
+                }
+                
+
+                // os SEM estilos
+                var shapesWithoutStyle = shapes.filter(function (shape) {
+                    return !shape.style && shape.type !== 'quote';
+                });
+
+                // temos shapes SEM estilo para render?
+                if (shapesWithoutStyle.length > 0) {
+                    
                     // inicio o conjunto de shapes no contexto
                     _context.beginPath();
 
-                    if (shapes.length > 4000) {
+                    // processamento em massa
+                    if (shapesWithoutStyle.length > 4000) {
 
                         //var numberOfProcessor = navigator.hardwareConcurrency;
                         var numberOfProcessor = 4;
 
                         // eu didivo os shapes pelo numero de processadores em outros arrays
-                        var parts = plane.utility.array.split(shapes, numberOfProcessor);
+                        var parts = plane.utility.array.split(shapesWithoutStyle, numberOfProcessor);
 
                         parts.forEach(function (part) {
                             // para cada part registro uma nova thread
@@ -132,19 +158,16 @@
                         });
                         // inicio as threads
                         plane.utility.thread.start();
-
-
                     } else {
                         var ii = 0;
                         do {
-                            shapes[ii]._render(_context, _zoom, {
+                            shapesWithoutStyle[ii]._render(_context, _zoom, {
                                 x: _matrix.tx,
                                 y: _matrix.ty
                             });
                             ii++;
-                        } while (ii < shapes.length)
+                        } while (ii < shapesWithoutStyle.length)
                     }
-
 
                     // desenho o conjunto de shapes no contexto
                     _context.stroke();
@@ -181,7 +204,8 @@
 
             _center = center;
 
-            plane.view.update();
+            // para quando o cliente tiver a necessidade de atualizar
+            //plane.view.update();
 
             return true;
         },

@@ -40,12 +40,12 @@
 
         },
         _reset: function () {
-            
+
             _groups = plane.math.dictionary.create();
             _shapes = plane.math.dictionary.create();
 
             return true;
-            
+
         },
         create: function (attrs, layerUuid) {
             if (plane.utility.conversion.toType(attrs) !== 'object') {
@@ -92,7 +92,7 @@
                 if ((typeof shapes[i] !== 'object') || (!attrs.children)) {
                     throw new Error('group - create - children is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
                 }
-                
+
                 // removo o shape de plane
                 plane.shape.remove(shapes[i].uuid, layer.uuid);
 
@@ -113,6 +113,17 @@
         },
         remove: function (group, layer) {
 
+
+            return true;
+        },
+        clear: function (uuid) {
+            // sempre trabalhamos com uma layer
+            var layer = plane.layer.get(uuid);
+
+            if (_groups.get(layer.uuid) && _shapes.get(layer.uuid)) {
+                _groups.get(layer.uuid).clear();
+                _shapes.get(layer.uuid).clear();
+            }
 
             return true;
         },
@@ -149,15 +160,15 @@
 
                     // agora procuro e retorno só os grupos com os shapes encontrados
                     return _groups.get(layer.uuid).list().filter(function (group) {
-                        return group.children.has(shapes.map(function (shape){
+                        return group.children.has(shapes.map(function (shape) {
                             return shape.uuid;
                         }));
                     });
-                    
+
                 } else {
                     return [];
                 }
-                
+
             }
         }
     };

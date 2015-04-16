@@ -13,11 +13,11 @@
 
         },
         _reset: function () {
-            
+
             _shapes = plane.math.dictionary.create();
 
             return true;
-            
+
         },
         create: function (attrs, layerUuid) {
 
@@ -68,8 +68,15 @@
                 return true;
             }
         },
-        clear: function () {
+        clear: function (uuid) {
+            // sempre trabalhamos com uma layer
+            var layer = plane.layer.get(uuid);
 
+            if (_shapes.get(layer.uuid)) {
+                _shapes.get(layer.uuid).clear();
+            }
+
+            return true;
         },
         list: function (layerUuid) {
             // sempre trabalhamos com uma layer

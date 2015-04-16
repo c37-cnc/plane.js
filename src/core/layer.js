@@ -32,11 +32,11 @@
 
         },
         _reset: function () {
-            
+
             _layers = plane.math.dictionary.create();
 
             return true;
-            
+
         },
         create: function (attrs) {
             if (attrs && (plane.utility.conversion.toType(attrs) !== 'object')) {
@@ -84,6 +84,17 @@
 
             return _layers.remove(uuid);
 
+        },
+        clear: function (uuid) {
+            
+            // sempre trabalhamos com uma layer
+            var layer = plane.layer.get(uuid);
+            
+            plane.shape.clear(layer.uuid);
+            plane.group.clear(layer.uuid);
+            
+            return true;
+            
         },
         get active() {
             return _active;

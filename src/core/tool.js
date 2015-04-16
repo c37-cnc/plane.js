@@ -60,7 +60,7 @@
 
         },
         create: function (attrs) {
-            if (plane.utility.conversion.toType(attrs) !== 'object') {
+            if ((attrs) && (typeof attrs !== 'object')) {
                 throw new Error('tool - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
 
@@ -200,7 +200,7 @@
 
     // Mouse Drag vinculado ao o evento Mouse Move do componente <canvas>
     function onMouseDrag(event) {
-        
+
         // se Mouse Down preenchido 
         if (_mouseDown) {
 
@@ -213,7 +213,7 @@
 
             // se os pontos de inicio e fim são diferentes, então o evento é disparado
             if (!from.equals(to)) {
-               
+
                 // apenas para as ferramensas activas
                 var tools = _tools.list().filter(function (tool) {
                     return tool.active;
@@ -221,7 +221,7 @@
 
                 // como filter return array, temos MESMO ferramentas activas?
                 if (tools.length > 0) {
-                    
+
                     // para um rectangle sempre - no menor x
                     if (from.x > to.x) {
                         var fromOld = from,
