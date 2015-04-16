@@ -12,6 +12,13 @@
             return true;
 
         },
+        _reset: function () {
+            
+            _shapes = plane.math.dictionary.create();
+
+            return true;
+            
+        },
         create: function (attrs, layerUuid) {
 
             if ((typeof attrs === "function") || (attrs === null)) {
@@ -52,7 +59,7 @@
             if ((!shapeUuid) || (typeof shapeUuid !== 'string')) {
                 throw new Error('shape - remove - shapeUuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
-                
+
                 // sempre trabalhamos com uma layer
                 var layer = plane.layer.get(layerUuid);
                 // removendo shape
@@ -84,13 +91,19 @@
                 throw new Error('shape - find - rectangle is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
 
-                var layer = plane.layer.get(layerUuid),
-                    rectangles = _shapes.get(layer.uuid).search(rectangle);
+                var layer = plane.layer.get(layerUuid);
 
-                // um mapeamendo para separar os shapes dos rectangles
-                return rectangles.map(function (data) {
-                    return data[4];
-                });
+                // se tenho ao menos um shape, então, tenho uma layer
+                if (_shapes.get(layer.uuid)) {
+                    var rectangles = _shapes.get(layer.uuid).search(rectangle);
+
+                    // um mapeamendo para separar os shapes dos rectangles
+                    return rectangles.map(function (data) {
+                        return data[4];
+                    });
+                } else {
+                    return [];
+                }
 
             }
         }

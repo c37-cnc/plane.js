@@ -59,3 +59,9 @@ https://www.youtube.com/watch?v=gIbfDxF69c8
 
 https://www.npmjs.com/package/grunt-bump
 http://semver.org/lang/pt-BR/
+
+
+*Javascript obfuscate*
+https://jscrambler.com/pt/
+https://www.npmjs.com/package/js-obfuscator
+https://www.npmjs.com/package/grunt-obfuscator

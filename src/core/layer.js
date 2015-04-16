@@ -31,6 +31,13 @@
             return true;
 
         },
+        _reset: function () {
+            
+            _layers = plane.math.dictionary.create();
+
+            return true;
+            
+        },
         create: function (attrs) {
             if (attrs && (plane.utility.conversion.toType(attrs) !== 'object')) {
                 throw new Error('layer - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
@@ -73,7 +80,9 @@
 
             return uuid ? _layers.get(uuid) : _active;
         },
-        remove: function (value) {
+        remove: function (uuid) {
+
+            return _layers.remove(uuid);
 
         },
         get active() {
