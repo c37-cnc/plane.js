@@ -99,4 +99,4 @@
     //plane.math.intersect = validate;
     plane.math.intersect = segmentsRectangle;
 
-})(plane);
+})(c37.library.plane);

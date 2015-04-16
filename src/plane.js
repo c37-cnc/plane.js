@@ -6,7 +6,7 @@
 
     var _matrix = null;
 
-    window.plane = {
+    var plane = {
         initialize: function (config) {
             if (config === null) {
                 throw new Error('plane - initialize - config is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
@@ -29,11 +29,16 @@
             plane.group._initialize(config);
             plane.shape._initialize(config);
 
-
             return true;
         },
         math: {},
         object: {}
     };
+
+    // colocando plane dentro dos namespaces C37
+    window.c37 = window.c37 || {};
+    window.c37.library = window.c37.library || {};
+    window.c37.library.plane = plane;
+    // colocando plane dentro dos namespaces C37
 
 })(window);

@@ -111,4 +111,4 @@
 
     plane.math.shape = Shape;
 
-})(plane);
+})(c37.library.plane);
