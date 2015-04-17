@@ -101,6 +101,35 @@
 
     Line.prototype.fromSnap = function (point, distance) {
 
+        // inicio 
+        if (point.distanceTo(this.from) <= distance) {
+            return {
+                status: true,
+                point: this.from
+            };
+        }
+
+        // meio
+        if (point.distanceTo(this.from.midTo(this.to)) <= distance) {
+            return {
+                status: true,
+                point: this.from.midTo(this.to)
+            };
+        }
+        
+        // fim 
+        if (point.distanceTo(this.to) <= distance) {
+            return {
+                status: true,
+                point: this.to
+            };
+        }
+
+        // caso nenhum snap seja encontrado
+        return {
+            status: false,
+            point: null
+        };
 
     };
 
