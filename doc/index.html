@@ -72,10 +72,12 @@
                     points: [[60, 190], [80, 10], [500, 10], [520, 190]]
                 });
 
-                plane.shape.create({
+                var shapes = [];
+
+                shapes.push(plane.shape.create({
                     type: 'bezier-quadratic',
                     points: [[700, 100], [860, 0], [1000, 100]]
-                });
+                }));
 
                 plane.shape.create({
                     type: 'circle',
@@ -220,7 +222,6 @@
                     height: -15
                 });
 
-                var shapes = [];
 
                 shapes.push(plane.shape.create({
                     type: 'line',
@@ -233,6 +234,7 @@
                     to: [200, 900],
                     height: 15
                 });
+
 
                 shapes.push(plane.shape.create({
                     type: 'line',
@@ -247,12 +249,29 @@
                 });
 
 
+                var group = plane.group.create(shapes);
+
+                console.log(group);
+
+                plane.shape.create({
+                    type: 'polyline',
+                    points: [group.bounds.bottomLeft, group.bounds.topLeft, group.bounds.topRight, group.bounds.bottomRight, group.bounds.bottomLeft],
+                    style: {
+                        lineColor: '#666699',
+                        lineDash: true
+                    }
+                });
+
+                group.children.forEach(function (shape) {
+                    shape.style = {
+                        lineColor: '#666699',
+                        lineDash: true
+                    }
+                });
+
+
+
                 plane.view.update();
-
-
-
-                console.log(plane.group.create(shapes));
-
 
 
                 var toolZoomWheel = plane.tool.create({
