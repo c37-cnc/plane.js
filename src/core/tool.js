@@ -116,10 +116,25 @@
         var pointInCanvas = mousePosition(_viewPort, event.x || event.clientX, event.y || event.clientY),
             pointInView = _matrix.inverseTransform(pointInCanvas);
 
+        // com uma tolerancia para os limites não ficar sem cima dos shapes
+        var angleInRadian = 0.7853981634, // 45 graus
+            lineSizeValue = 5 / plane.view.zoom; // o valor + o respectivo zoom
+
+        // o rectangle da pesquisa
+        var rectangle = {
+            from: plane.point.create(pointInView.x + (-lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (-lineSizeValue * Math.sin(angleInRadian))),
+            to: plane.point.create(pointInView.x + (+lineSizeValue * Math.cos(angleInRadian)), pointInView.y + (+lineSizeValue * Math.sin(angleInRadian)))
+        };
+
+
         // customized event
         event = {
             type: 'onMouseWheel',
             delta: event.detail || (event.wheelDelta * -1),
+            objects: {
+                groups: groupFind(rectangle),
+                shapes: shapesFind(rectangle)
+            },
             point: plane.point.create(pointInView),
             now: new Date().toISOString()
         };
