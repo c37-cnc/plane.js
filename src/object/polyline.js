@@ -3,7 +3,7 @@
 
     var Polyline = plane.utility.object.inherits(function Polyline(attrs) {
 
-       /**
+        /**
          * A Universally unique identifier for
          * a single instance of Object
          *
@@ -25,7 +25,7 @@
 
         this.status = null;
         this.style = null;
-        
+
         this.points = null;
 
         this._initialize(attrs);
@@ -41,6 +41,19 @@
 
     Polyline.prototype.fromSnap = function (point, distance) {
 
+        for (var i = 0; i < this.points.length; i++) {
+            if (point.distanceTo(this.points[i]) <= distance) {
+                return {
+                    status: true,
+                    point: this.points[i]
+                };
+            }
+        }
+
+        return {
+            status: false,
+            point: null
+        };
 
     };
 
