@@ -48,57 +48,6 @@
 
     };
 
-    Line.prototype._calculeBounds = function () {
-
-        var from = plane.point.create(this._segments[0]),
-            to = plane.point.create(this._segments[0]);
-
-        this._segments.forEach(function (segment) {
-
-            var point = plane.point.create(segment);
-
-            from = point.minimum(from);
-            to = point.maximum(to);
-
-        });
-
-        this._bounds.from = from;
-        this._bounds.to = to;
-
-        // correção para rectangle com eixos iguais
-        // APARENTEMENTE ERRADO!
-//        if ((this._bounds.from.x === this._bounds.to.x) || (this._bounds.from.y === this._bounds.to.y)) {
-//            this._bounds.from.x = this._bounds.from.x - (7 / plane.view.zoom);
-//            this._bounds.from.y = this._bounds.from.y - (7 / plane.view.zoom);
-//            
-//            this._bounds.to.x = this._bounds.to.x + (7 / plane.view.zoom);
-//            this._bounds.to.y = this._bounds.to.y + (7 / plane.view.zoom);
-//        }
-//
-//
-
-
-        // https://github.com/craftyjs/Crafty/blob/bcd581948c61966ed589c457feb32358a0afd9c8/src/spatial/collision.js#L154
-        var center = {
-            x: (from.x + to.x) / 2,
-            y: (from.y + to.y) / 2
-        },
-        radius = Math.sqrt((to.x - from.x) * (to.x - from.x) + (to.y - from.y) * (to.y - from.y)) / 2;
-
-        this._bounds.center = plane.point.create(center);
-        this._bounds.radius = radius;
-
-
-        /**
-         * Calculates the MBR when rotated some number of radians about an origin point o.
-         * Necessary on a rotation, or a resize
-         */
-        // https://github.com/craftyjs/Crafty/blob/2f131c55c60e1aecc68923c9576c6dad00539d82/src/spatial/2d.js#L358
-
-        return true;
-
-    };
-
     Line.prototype.fromSnap = function (point, distance) {
 
         // inicio 
