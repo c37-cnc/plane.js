@@ -68,26 +68,17 @@
     };
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
-    Text.prototype.render = function (context, matrix) {
+    Text.prototype._render = function (context, zoom, motion) {
 
         // salvo as configurações de estilo atuais do contexto
         context.save();
 
-        // de acordo com a matrix - a escala que devo aplicar nos segmentos
-        var scale = Math.sqrt(matrix.a * matrix.d);
-        // de acordo com a matrix - o movimento que devo aplicar nos segmentos
-        var move = {
-            x: matrix.tx,
-            y: matrix.ty
-        };
-
-
         // para a fonte + seu tamanho
-        context.font = plane.utility.string.format('{0}px arial', [parseInt(this.size * scale)]);
-        context.canvas.font = plane.utility.string.format('{0}px arial', [parseInt(this.size * scale)]);
+        context.font = plane.utility.string.format('{0}px arial', [parseInt(this.size * zoom)]);
+        context.canvas.font = plane.utility.string.format('{0}px arial', [parseInt(this.size * zoom)]);
 
         // para o movimento até o ponto inicial
-        context.translate(this.from.x * scale + move.x, this.from.y * scale + move.y);
+        context.translate(this.from.x * zoom + motion.x, this.from.y * zoom + motion.y);
 
 
         // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Transformations#Rotating
