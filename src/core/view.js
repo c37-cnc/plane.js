@@ -103,7 +103,7 @@
 
                 // os COM estilos
                 var shapesWithStyle = shapes.filter(function (shape) {
-                    return shape.style && shape.type !== 'quote';
+                    return shape.style || shape.type === 'quote';
                 });
                 
                 // temos shapes COM estilo para render?
