@@ -3,7 +3,7 @@
 
     var Circle = plane.utility.object.inherits(function Circle(attrs) {
 
-       /**
+        /**
          * A Universally unique identifier for
          * a single instance of Object
          *
@@ -25,7 +25,7 @@
 
         this.status = null;
         this.style = null;
-        
+
         this.center = null;
         this.radius = null;
 
@@ -57,6 +57,31 @@
 
     Circle.prototype.fromSnap = function (point, distance) {
 
+        // center
+        if (point.distanceTo(this.center) <= distance) {
+            return {
+                status: true,
+                point: this.center
+            };
+        }
+
+//        // radius
+//        var x = this.center.x + (this.radius * Math.cos(this.center.angleTo(point))),
+//            y = this.center.y + (this.radius * Math.sin(this.center.angleTo(point)));
+//
+//        var pointRadius = plane.point.create(x, y);
+//
+//        if (point.distanceTo(pointRadius) <= distance) {
+//            return {
+//                status: true,
+//                point: pointRadius
+//            };
+//        }
+
+        return {
+            status: false,
+            point: null
+        };
 
     };
 
