@@ -269,8 +269,6 @@
     plane.importer = {
         fromDxf: function (stringDxf) {
 
-            //plane.reset();
-
             var arrayDxf = parseDxf(stringDxf);
 
             if (arrayDxf.length > 0) {

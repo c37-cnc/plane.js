@@ -23,16 +23,20 @@
 
         this.tx = tx || 0; // x translate
         this.ty = ty || 0; // y translate
-    };
+    }
+    ;
 
 
     // https://github.com/paperjs/paper.js/blob/master/src/basic/Matrix.js#L558
     // https://github.com/tart/Google-Closure-Library/blob/master/goog/graphics/affinetransform.js#L427
     function getDeterminant(transform) {
         return transform.a * transform.d - transform.b * transform.c;
-    };
+    }
+    ;
 
-    function isIdentity() {};
+    function isIdentity() {
+    }
+    ;
 
     // https://github.com/kangax/fabric.js/blob/4c7ad6a82d5804f17a5cfab37530e0ec3eb0b509/src/util/misc.js#L93
     function toPoint(point, transform, offSet) {
@@ -41,12 +45,14 @@
                 x: (transform[0] * point.x) + (transform[1] * point.y),
                 y: (transform[2] * point.x) + (transform[3] * point.y)
             }
-        };
+        }
+        ;
         return {
             x: (transform[0] * point.x) + (transform[1] * point.y) + transform[4],
             y: (transform[2] * point.x) + (transform[3] * point.y) + transform[5]
         };
-    };
+    }
+    ;
 
 
 
@@ -256,7 +262,8 @@
 
             return this;
         },
-        toCenter: function (point) {},
+        toCenter: function (point) {
+        },
         toArray: function () {
             return [this.a, this.b, this.c, this.d, this.tx, this.ty];
         },
@@ -300,8 +307,6 @@
             return dest.set(min[0], min[1], max[0] - min[0], max[1] - min[1],
                 _dontNotify);
         },
-
-
     };
 
     // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/transform

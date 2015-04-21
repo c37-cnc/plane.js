@@ -33,7 +33,14 @@
         },
         _reset: function () {
 
-            _layers = plane.math.dictionary.create();
+            //_layers = plane.math.dictionary.create();
+
+            _layers.list().forEach(function (layer) {
+                if (layer.status !== 'system') {
+                    _layers.remove(layer.uuid);
+                }
+            });
+
 
             return true;
 
@@ -67,7 +74,7 @@
             _layers.add(layer.uuid, layer);
 
             // colocando nova layer como selecionada
-            _active = layer;
+            _active = (layer.status !== 'system') ? layer : _active;
 
             return layer;
         },
@@ -75,10 +82,15 @@
             return _layers.list();
         },
         get: function (uuid) {
-            if ((_active === null) || (_active === undefined))
-                throw new Error('layer - find - no layer active \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
-
-            return uuid ? _layers.get(uuid) : _active;
+            if ((uuid === undefined) || (uuid === null)) {
+                if ((_active === null) || (_active === undefined)) {
+                    throw new Error('layer - find - no layer active \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+                } else {
+                    return _active;
+                }
+            } else {
+                return _layers.get(uuid)
+            }
         },
         remove: function (uuid) {
 
@@ -86,15 +98,15 @@
 
         },
         clear: function (uuid) {
-            
+
             // sempre trabalhamos com uma layer
             var layer = plane.layer.get(uuid);
-            
+
             plane.shape.clear(layer.uuid);
             plane.group.clear(layer.uuid);
-            
+
             return true;
-            
+
         },
         get active() {
             return _active;
