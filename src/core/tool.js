@@ -90,6 +90,11 @@
             event.preventDefault();
         }
 
+        var pointInCanvas = mousePosition(_viewPort, event.x || event.clientX, event.y || event.clientY),
+            pointInView = _matrix.inverseTransform(pointInCanvas);
+
+
+
         // customized event
         event = {
             type: 'onKeyDown',
@@ -97,6 +102,7 @@
             ctrlKey: event.ctrlKey,
             shiftKey: event.shiftKey,
             key: plane.utility.string.fromKeyPress(event.keyCode),
+            point: plane.point.create(pointInView),
             now: new Date().toISOString()
         };
 
