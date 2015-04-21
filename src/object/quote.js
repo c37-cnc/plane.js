@@ -66,7 +66,7 @@
     };
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
-    Quote.prototype.render = function (context, transform) {
+    Quote.prototype._render = function (context, zoom, motion) {
 
         var length = Math.sqrt((this.from.x - this.to.x) * (this.from.x - this.to.x) + (this.from.y - this.to.y) * (this.from.y - this.to.y));
 
@@ -90,14 +90,10 @@
 
         p3 = plane.point.create(p3.x + (-5 * Math.cos(angleInRadian0)), p3.y + (-5 * Math.sin(angleInRadian0)));
 
-        // de acordo com a matrix - a escala que devo aplicar nos segmentos
-        //var scale = Math.sqrt(transform.a * transform.d);
-        var scale = 1;
-        // de acordo com a matrix - o movimento que devo aplicar nos segmentos
-        var move = {
-            x: 0,
-            y: 0
-        };
+
+        console.log('sa');
+
+
 
 
         // salvo as configurações de estilo atuais do contexto
@@ -110,13 +106,13 @@
         context.beginPath();
 
 
-        context.moveTo(this.from.x * scale + move.x, this.from.y * scale + move.y);
+        context.moveTo(this.from.x * zoom + motion.x, this.from.y * zoom + motion.y);
 
-        context.lineTo(p1.x * scale + move.x, p1.y * scale + move.y);
-        context.lineTo(p2.x * scale + move.x, p2.y * scale + move.y);
+        context.lineTo(p1.x * zoom + motion.x, p1.y * zoom + motion.y);
+        context.lineTo(p2.x * zoom + motion.x, p2.y * zoom + motion.y);
 
-        context.lineTo(p3.x * scale + move.x, p3.y * scale + move.y);
-        context.lineTo(p4.x * scale + move.x, p4.y * scale + move.y);
+        context.lineTo(p3.x * zoom + motion.x, p3.y * zoom + motion.y);
+        context.lineTo(p4.x * zoom + motion.x, p4.y * zoom + motion.y);
 
         context.stroke();
 
@@ -127,7 +123,7 @@
 
 
         // para a fonte + seu tamanho
-        context.font = plane.utility.string.format('{0}px arial', [parseInt(10 * scale)]);
+        context.font = plane.utility.string.format('{0}px arial', [parseInt(10 * zoom)]);
         //context.fillStyle = '#007efc';
         context.fillStyle = '#0f8fff';
 
@@ -176,7 +172,7 @@
 
 
         // para o movimento até o ponto inicial
-        context.translate(midAlpha.x * scale + move.x, midAlpha.y * scale + move.y);
+        context.translate(midAlpha.x * zoom + motion.x, midAlpha.y * zoom + motion.y);
 
 
         // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Transformations#Rotating
