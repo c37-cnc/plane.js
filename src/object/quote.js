@@ -91,11 +91,6 @@
         p3 = plane.point.create(p3.x + (-5 * Math.cos(angleInRadian0)), p3.y + (-5 * Math.sin(angleInRadian0)));
 
 
-        console.log('sa');
-
-
-
-
         // salvo as configurações de estilo atuais do contexto
         context.save();
 
