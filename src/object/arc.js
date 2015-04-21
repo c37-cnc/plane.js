@@ -82,7 +82,48 @@
 
     Arc.prototype.fromSnap = function (point, distance) {
 
+        if (point.distanceTo(this.center) <= distance) {
+            return {
+                status: true,
+                point: this.center
+            };
+        }
 
+
+        var middlePoint = this.getMiddle();
+        if (point.distanceTo(middlePoint) <= distance){
+            return {
+                status: true,
+                point: middlePoint
+            };
+        }
+
+        var sX = this.center.x + this.radius * Math.cos(Math.PI * this.startAngle / 180.0),
+            sY = this.center.y + this.radius * Math.sin(Math.PI * this.startAngle / 180.0);
+        var startPoint = plane.point.create(sX, sY);
+        if (point.distanceTo(startPoint) <= distance) {
+            return {
+                status: true,
+                point: startPoint
+            };
+        }
+
+        var eX = this.center.x + this.radius * Math.cos(Math.PI * this.endAngle / 180.0),
+            eY = this.center.y + this.radius * Math.sin(Math.PI * this.endAngle / 180.0);
+        var endPoint = plane.point.create(eX, eY);
+        if (point.distanceTo(endPoint) <= distance) {
+            return {
+                status: true,
+                point: endPoint
+            };
+        }
+
+
+        return {
+            status: false,
+            point: null
+        };
+        
     };
 
     Arc.prototype.toObject = function () {
