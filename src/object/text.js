@@ -52,7 +52,30 @@
 
     Text.prototype.fromSnap = function (point, distance) {
 
-        //return true;
+        if (point.distanceTo(this.from) <= distance) {
+            return {
+                status: true,
+                point: this.from
+            };
+        }
+
+        // um remendo para o calculo
+        var angleInRadian = this.from.angleTo(this.to),
+            lineSizeValue = this.measure.width - (.5 / plane.view.zoom);
+
+        var pointTo = plane.point.create(this.from.x + (lineSizeValue * Math.cos(angleInRadian)), this.from.y + (lineSizeValue * Math.sin(angleInRadian)));
+
+        if (point.distanceTo(pointTo) <= distance) {
+            return {
+                status: true,
+                point: pointTo
+            };
+        }
+
+        return {
+            status: false,
+            point: null
+        };
 
     };
 
