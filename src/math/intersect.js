@@ -2,9 +2,7 @@
     "use strict";
 
 
-
-
-    function isInside(x, y, z1, z2, z3, z4) {
+    function segmentsInRectangle(x, y, z1, z2, z3, z4) {
         var x1 = z1.minimum(z3);
         var x2 = z1.maximum(z3);
         var y1 = z2.minimum(z4);
@@ -12,6 +10,35 @@
 
         return ((x1.x <= x) && (x <= x2.x) && (y1.y <= y) && (y <= y2.y));
     }
+
+    function rectangleInSegments(segments, rectangle) {
+    }
+
+    function isClosed(segments) {
+
+        if (segments.length > 2) {
+
+            // o primeiro e o ultimo
+            var first = segments[0],
+                last = segments[segments.length - 1];
+
+            // round nos valores - para first
+            first.x = Math.round(first.x);
+            first.y = Math.round(first.y);
+
+            // round nos valores - para last
+            last.x = Math.round(last.x);
+            last.y = Math.round(last.y);
+
+            // realizo a comparação para saber se temos um shape fechado
+            return (first.x === last.x) && (first.y === last.y);
+
+        } else {
+            return false;
+        }
+
+    }
+
 
     function segmentsRectangle(segments, rectangle) {
 
@@ -31,20 +58,31 @@
             return true;
         }
 
-        for (var i = 0; i < segments.length; i++) {
-            if (isInside(segments[i].x, segments[i].y, bl, tl, tr, br)) {
-                return true;
+        if (isClosed(segments)) {
+
+            //console.log('fechado');
+            
+            return true;
+
+        } else {
+            for (var i = 0; i < segments.length; i++) {
+                if (segmentsInRectangle(segments[i].x, segments[i].y, bl, tl, tr, br)) {
+                    return true;
+                }
             }
         }
 
+
+
         return false;
     }
+
 
     function intersectSegmentsLine(a1, a2, points) {
         var length = points.length;
 
         for (var i = 0; i < length; i++) {
-            
+
             var b1 = points[i],
                 b2 = points[((i + 1) === length) ? (i - 1) : (i + 1)];
 
@@ -54,9 +92,6 @@
         }
         return false;
     }
-    ;
-
-
 
 
 
