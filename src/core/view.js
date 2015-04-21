@@ -41,11 +41,15 @@
             return true;
         },
         _reset: function () {
-            // no mesmo momento, retorno o zoom para 1 e informe o centro inicial
-            plane.view.zoomTo(1, plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2));
+            
+            // o centro inicial
+            _center = plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2);
+
+            // o zoom inicial
+            _zoom = 1;
 
             // clear in the matrix transform
-            _matrix = plane.math.matrix.create();
+            _matrix.reset();
 
             return true;
         },
@@ -98,14 +102,14 @@
 
                 // segundo - todos os demais shapes
                 var shapes = plane.shape.find(rectangle, layers[i].uuid);
-                
+
                 //debugger;
 
                 // os COM estilos
                 var shapesWithStyle = shapes.filter(function (shape) {
                     return shape.style || shape.type === 'quote';
                 });
-                
+
                 // temos shapes COM estilo para render?
                 if (shapesWithStyle.length > 0) {
                     var ii = 0;
@@ -117,7 +121,7 @@
                         ii++;
                     } while (ii < shapesWithStyle.length)
                 }
-                
+
 
                 // os SEM estilos
                 var shapesWithoutStyle = shapes.filter(function (shape) {
@@ -126,12 +130,12 @@
 
                 // temos shapes SEM estilo para render?
                 if (shapesWithoutStyle.length > 0) {
-                    
+
                     // inicio o conjunto de shapes no contexto
                     _context.beginPath();
 
                     // processamento em massa
-                    if (shapesWithoutStyle.length > 4000) {
+                    if (shapesWithoutStyle.length > 10) {
 
                         //var numberOfProcessor = navigator.hardwareConcurrency;
                         var numberOfProcessor = 4;
