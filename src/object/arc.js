@@ -96,6 +96,43 @@
         };
     };
 
+    Arc.prototype.getMiddle = function () {
+
+        var end = this.endAngle - this.startAngle;
+
+        if (end < 0.0) {
+            end += 360.0;
+        }
+
+        // o tamanho de cada passo
+        var num1 = .3 / 180.0 * Math.PI;
+        
+        // o inicio em graus
+        var num2 = this.startAngle / 180.0 * Math.PI;
+        
+        // o fim em graus
+        var num3 = end / 180.0 * Math.PI;
+
+        // meia correção por aproximação, pois não estou conseguindo entender esta conta 
+        // para redesenhar toda a lógica do arco
+        var size = (num3 / num1) + 1.2;
+
+        var index = 0;
+        var num4 = num2;
+        
+        
+        while (index <= (size / 2)) {
+
+            var xval = this.center.x + this.radius * Math.cos(num4);
+            var yval = this.center.y + this.radius * Math.sin(num4);
+
+            ++index;
+            num4 += num1;
+        }
+        return plane.point.create(xval, yval);
+        
+
+    };
 
     plane.object.arc = {
         create: function (attrs) {

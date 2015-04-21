@@ -71,6 +71,19 @@
 
     BezierQuadratic.prototype.fromSnap = function (point, distance) {
 
+        for (var i = 0; i < this.points.length; i++) {
+            if (point.distanceTo(this.points[i]) <= distance) {
+                return {
+                    status: true,
+                    point: this.points[i]
+                };
+            }
+        }
+
+        return {
+            status: false,
+            point: null
+        };
 
     };
 
