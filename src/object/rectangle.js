@@ -115,6 +115,65 @@
 
     Rectangle.prototype.fromSnap = function (point, distance) {
 
+        // pelas pontas
+        for (var i = 0; i < this._segments.length; i++) {
+
+            var calculatePoint = plane.point.create(this._segments[i]);
+
+            if (calculatePoint.distanceTo(point) <= distance) {
+                return {
+                    status: true,
+                    point: calculatePoint
+                };
+            }
+        }
+
+        // pelos meios 
+        var p1 = plane.point.create(this._segments[0]),
+            p2 = plane.point.create(this._segments[1]);
+
+        if (point.distanceTo(p1.midTo(p2)) <= distance) {
+            return {
+                status: true,
+                point: p1.midTo(p2)
+            };
+        }
+
+        var p3 = plane.point.create(this._segments[1]),
+            p4 = plane.point.create(this._segments[2]);
+
+        if (point.distanceTo(p3.midTo(p4)) <= distance) {
+            return {
+                status: true,
+                point: p3.midTo(p4)
+            };
+        }
+
+        var p5 = plane.point.create(this._segments[2]),
+            p6 = plane.point.create(this._segments[3]);
+
+        if (point.distanceTo(p5.midTo(p6)) <= distance) {
+            return {
+                status: true,
+                point: p5.midTo(p6)
+            };
+        }
+
+        var p7 = plane.point.create(this._segments[3]),
+            p8 = plane.point.create(this._segments[4]);
+
+        if (point.distanceTo(p7.midTo(p8)) <= distance) {
+            return {
+                status: true,
+                point: p7.midTo(p8)
+            };
+        }
+
+
+        return {
+            status: false,
+            point: null
+        };
 
     };
 
