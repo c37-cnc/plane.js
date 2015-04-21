@@ -52,7 +52,30 @@
 
     Polygon.prototype.fromSnap = function (point, distance) {
 
+        if (point.distanceTo(this.center) <= distance) {
+            return {
+                status: true,
+                point: this.center
+            };
+        }
+        
+        for(var i = 0; i < this._segments.length; i++){
+            
+            var calculatePoint = plane.point.create(this._segments[i]);
+                
+            if (calculatePoint.distanceTo(point) <= distance){
+                return {
+                    status: true,
+                    point: calculatePoint
+                };
+            }
+        }
 
+        return {
+            status: false,
+            point: null
+        };
+        
     };
 
     Polygon.prototype.toObject = function () {
