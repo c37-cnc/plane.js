@@ -41,7 +41,7 @@
             return true;
         },
         _reset: function () {
-            
+
             // o centro inicial
             _center = plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2);
 
@@ -58,6 +58,18 @@
 
             if (!layers)
                 throw new Error('view - update - no layers \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+
+
+            // sort, toda(s) a(s) layer(s) system(s) devem ser as primeiras
+            // para os demais layers/objetos virem depois 'em cima'
+            layers.sort(function (a, b) {
+                if (a.status !== 'system')
+                    return 1;
+                if (a.status === 'system')
+                    return -1;
+                return 0;
+            });
+
 
             // clear context, +1 is needed on some browsers to really clear the borders
             _context.clearRect(0, 0, _viewPort.clientWidth + 1, _viewPort.clientHeight + 1);
@@ -112,14 +124,46 @@
 
                 // temos shapes COM estilo para render?
                 if (shapesWithStyle.length > 0) {
-                    var ii = 0;
-                    do {
-                        shapesWithStyle[ii]._render(_context, _zoom, {
-                            x: _matrix.tx,
-                            y: _matrix.ty
+
+                    // processamento em massa
+                    if (shapesWithStyle.length > 10) {
+
+                        //var numberOfProcessor = navigator.hardwareConcurrency;
+                        var numberOfProcessor = 4;
+
+                        // eu didivo os shapes pelo numero de processadores em outros arrays
+                        var parts = plane.utility.array.split(shapesWithStyle, numberOfProcessor);
+
+                        parts.forEach(function (part) {
+                            // para cada part registro uma nova thread
+                            plane.utility.thread.add(function () {
+
+                                var xxx = part,
+                                    xxz = part.length;
+
+                                while (xxz--) {
+                                    xxx[xxz]._render(_context, _zoom, {
+                                        x: _matrix.tx,
+                                        y: _matrix.ty
+                                    });
+                                }
+
+                                return false;
+                            });
                         });
-                        ii++;
-                    } while (ii < shapesWithStyle.length)
+                        // inicio as threads
+                        plane.utility.thread.start();
+                    } else {
+                        var ii = 0;
+                        do {
+                            shapesWithStyle[ii]._render(_context, _zoom, {
+                                x: _matrix.tx,
+                                y: _matrix.ty
+                            });
+                            ii++;
+                        } while (ii < shapesWithStyle.length)
+                    }
+
                 }
 
 
@@ -216,7 +260,7 @@
         get center() {
             return _center;
         },
-        set active(value) {
+        set center(value) {
 
             var centerSubtract = value.subtract(_center);
             centerSubtract = centerSubtract.negate();
