@@ -42,6 +42,9 @@
         },
         _reset: function () {
 
+            // clear context, +1 is needed on some browsers to really clear the borders
+            _context.clearRect(0, 0, _viewPort.clientWidth + 1, _viewPort.clientHeight + 1);
+
             // o centro inicial
             _center = plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2);
 
@@ -179,7 +182,7 @@
                     _context.beginPath();
 
                     // processamento em massa
-                    if (shapesWithoutStyle.length > 10) {
+                    if (shapesWithoutStyle.length >= 4) {
 
                         //var numberOfProcessor = navigator.hardwareConcurrency;
                         var numberOfProcessor = 4;
@@ -195,7 +198,7 @@
                                     xxz = part.length;
 
                                 while (xxz--) {
-                                    xxx[xxz]._render(_context, _zoom, {
+                                  xxx[xxz]._render(_context, Math.sqrt(_matrix.a * _matrix.d), {
                                         x: _matrix.tx,
                                         y: _matrix.ty
                                     });
@@ -209,7 +212,7 @@
                     } else {
                         var ii = 0;
                         do {
-                            shapesWithoutStyle[ii]._render(_context, _zoom, {
+                            shapesWithoutStyle[ii]._render(_context, Math.sqrt(_matrix.a * _matrix.d), {
                                 x: _matrix.tx,
                                 y: _matrix.ty
                             });

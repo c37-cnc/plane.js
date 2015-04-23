@@ -33,11 +33,12 @@
         },
         reset: function () {
             
+            plane.view._reset();
+            
             plane.layer._reset();
             plane.group._reset();
             plane.shape._reset();
             
-            plane.view._reset();
             
         },
         math: {},

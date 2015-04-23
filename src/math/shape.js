@@ -56,6 +56,9 @@
         _calculeCache: function () {
             // http://www.createjs.com/Demos/EaselJS/Cache
             // https://github.com/CreateJS/EaselJS/blob/master/src/easeljs/display/DisplayObject.js#L811
+            
+            // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Optimizing_canvas
+            // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial
 
             this._cache.context = this._cache.canvas.getContext('2d');
 
@@ -111,10 +114,8 @@
                 context.beginPath();
             }
 
-
             var moveX = ~~(0.5 + (this._segments[0].x * zoom + motion.x)),
                 moveY = ~~(0.5 + (this._segments[0].y * zoom + motion.y));
-
 
             if (!this._cache.context) {
                 // movendo para o inicio do shape para não criar uma linha
@@ -138,7 +139,60 @@
                 context.putImageData(dt, 1, 1);
                 //context.putImageData(dt, moveX, moveY);
             }
+            
+            // quando possivel personalização
+            if (this.style) {
+                // desenho o shape no contexto
+                context.stroke();
+                // restauro as configurações de estilo anteriores do contexto
+                context.restore();
+            }
+        },
+        render: function (context, transform) {
 
+            // possivel personalização
+            if (this.style) {
+                // salvo as configurações de estilo atuais do contexto
+                context.save();
+
+                // personalização para linha pontilhada
+                if (this.style.lineDash)
+                    context.setLineDash([5, 2]);
+
+                // personalização para a espessura da linha
+                if (this.style.lineWidth)
+                    context.lineWidth = this.style.lineWidth;
+
+                // personalização para a cor da linha
+                if (this.style.lineColor)
+                    context.strokeStyle = this.style.lineColor;
+
+                // e deixo iniciado um novo shape
+                context.beginPath();
+            }
+
+            // de acordo com a matrix - a escala que devo aplicar nos segmentos
+            var scale = Math.sqrt(transform.a * transform.d);
+            // de acordo com a matrix - o movimento que devo aplicar nos segmentos
+            var move = {
+                x: transform.tx,
+                y: transform.ty
+            };
+
+            // movendo para o inicio do shape para não criar uma linha
+            context.moveTo(this._segments[0].x * scale + move.x, this._segments[0].y * scale + move.y);
+            // para cada segmento, vou traçando uma linha
+            for (var i = 0; i < this._segments.length; i++) {
+                var x = this._segments[i].x * scale + move.x;
+                var y = this._segments[i].y * scale + move.y;
+
+                context.lineTo(x, y);
+                
+//                if (i === this._segments.length - 2)
+//                    break;
+                
+            }
+            
             // quando possivel personalização
             if (this.style) {
                 // desenho o shape no contexto
@@ -148,6 +202,7 @@
             }
 
         }
+
     };
 
     var operation = {
