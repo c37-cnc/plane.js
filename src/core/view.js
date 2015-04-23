@@ -42,9 +42,6 @@
         },
         _reset: function () {
 
-            // clear context, +1 is needed on some browsers to really clear the borders
-            _context.clearRect(0, 0, _viewPort.clientWidth + 1, _viewPort.clientHeight + 1);
-
             // o centro inicial
             _center = plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2);
 
