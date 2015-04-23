@@ -16,7 +16,8 @@
 
             // cache
             this._cache = {
-                canvas: document.createElement("canvas"),
+                //canvas: document.createElement("canvas"),
+                canvas: null,
                 context: null
             };
 
