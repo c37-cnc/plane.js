@@ -78,10 +78,16 @@
 
             return true;
         },
-        list: function (layerUuid) {
+        list: function (uuid) {
             // sempre trabalhamos com uma layer
-            var layer = plane.layer.get(layerUuid);
-            return _shapes.get(layer.uuid).list();
+            var layer = plane.layer.get(uuid);
+            
+            // temos groups para esta layer?
+            if (_shapes.get(layer.uuid)){
+                return _shapes.get(layer.uuid).list();
+            } else {
+                return [];
+            }
         },
         get: function (shapeUuid, layerUuid) {
             if ((!shapeUuid) || (typeof shapeUuid === 'string')) {
