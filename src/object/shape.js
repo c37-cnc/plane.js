@@ -116,13 +116,22 @@ define('plane/object/shape', ['require', 'exports'], function (require, exports)
                 x: transform.tx,
                 y: transform.ty
             };
+            
+            var moveX = ~~(0.5 + (this.segments[0].x * scale + move.x)),
+                moveY = ~~(0.5 + (this.segments[0].y * scale + move.y));
+            
 
             // movendo para o inicio do shape para não criar uma linha
-            context.moveTo(this.segments[0].x * scale + move.x, this.segments[0].y * scale + move.y);
+            //context.moveTo(this.segments[0].x * scale + move.x, this.segments[0].y * scale + move.y);
+            context.moveTo(moveX, moveY);
             // para cada segmento, vou traçando uma linha
             for (var i = 0; i < this.segments.length; i++) {
-                var x = this.segments[i].x * scale + move.x;
-                var y = this.segments[i].y * scale + move.y;
+//                var x = this.segments[i].x * scale + move.x;
+//                var y = this.segments[i].y * scale + move.y;
+
+                    var x = ~~(0.5 + (this.segments[i].x * scale + move.x));
+                    var y = ~~(0.5 + (this.segments[i].y * scale + move.y));
+
 
                 context.lineTo(x, y);
             }
