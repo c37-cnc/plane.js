@@ -18,9 +18,11 @@
 
         if (segments.length > 2) {
 
+            // pela CÓPIA - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
+            // não pela REFERENCIA
             // o primeiro e o ultimo
-            var first = segments[0],
-                last = segments[segments.length - 1];
+            var first = segments.slice(0, 1),
+                last = segments.slice(segments.length - 1, 1);
 
             // round nos valores - para first
             first.x = Math.round(first.x);

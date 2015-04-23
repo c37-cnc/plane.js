@@ -36,7 +36,7 @@
     }, plane.math.shape);
 
     Arc.prototype._calculeSegments = function () {
-
+        
         var end = this.endAngle - this.startAngle;
         if (end < 0.0) {
             end += 360.0;
