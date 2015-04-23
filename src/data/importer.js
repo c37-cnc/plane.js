@@ -281,6 +281,45 @@
             }
 
             return true;
+        },
+        fromObject: function (objectPlane) {
+
+            objectPlane.layers.forEach(function (layer) {
+
+                plane.layer.create({
+                    uuid: layer.uuid,
+                    name: layer.name,
+                    status: layer.status,
+                    style: layer.style
+                });
+
+//                objectLayer.children.groups.forEach(function (objectShape) {
+//                    plane.shape.create(objectShape);
+//                });
+
+                try {
+                    // versao 3
+                    layer.children.forEach(function (shape) {
+                        plane.shape.create(shape);
+                    });
+                } catch (e) {
+                    try {
+                        // versao 4
+                        layer.children.shapes.forEach(function (shape) {
+                            plane.shape.create(shape);
+                        });
+                    } catch (e) {
+
+                    }
+                }
+
+
+
+            });
+
+            plane.view.zoomTo(objectPlane.zoom, plane.point.create(objectPlane.center));
+
+            return true;
         }
     };
 

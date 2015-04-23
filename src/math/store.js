@@ -1,6 +1,6 @@
 (function (plane) {
     "use strict";
-    
+
     function Store() {
         this._tree = plane.math.tree.create();
         this._dictionary = plane.math.dictionary.create();
@@ -9,7 +9,7 @@
     Store.prototype = {
         // value = array
         add: function (key, value) {
-            
+
             // add ao dictionary
             this._dictionary.add(key, value);
             // add a tree
@@ -22,11 +22,16 @@
             var rectangle = this._dictionary.get(key);
             return rectangle ? rectangle[4] : null;
         },
+        list: function () {
+            return this._dictionary.list().map(function (rectangle){
+                return rectangle[4];
+            });
+        },
         search: function (rectangle) {
             return this._tree.search([rectangle.from.x, rectangle.from.y, rectangle.to.x, rectangle.to.y]);
         },
         remove: function (key) {
-            
+
             // o item no dictionary
             var item = this._dictionary.get(key);
             // remove de dictionary
@@ -45,11 +50,11 @@
             return true;
         }
     };
-    
+
     plane.math.store = {
         create: function () {
             return new Store();
         }
     };
-    
+
 })(c37.library.plane);

@@ -127,10 +127,16 @@
 
             return true;
         },
-        list: function (layer) {
+        list: function (uuid) {
             // sempre trabalhamos com uma layer
-            layer = plane.layer.get(layer);
-            return _groups.get(layer.uuid).list();
+            var layer = plane.layer.get(uuid);
+            
+            // temos groups para esta layer?
+            if (_groups.get(layer.uuid)){
+                return _groups.get(layer.uuid).list();
+            } else {
+                return [];
+            }
         },
         get: function (groupUuid, layerUuid) {
             if ((!groupUuid) || (typeof groupUuid !== 'string')) {
