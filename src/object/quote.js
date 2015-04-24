@@ -3,7 +3,7 @@
 
     var Quote = plane.utility.object.inherits(function Quote(attrs) {
 
-       /**
+        /**
          * A Universally unique identifier for
          * a single instance of Object
          *
@@ -25,7 +25,7 @@
 
         this.status = null;
         this.style = null;
-        
+
         this.from = null;
         this.to = null;
         this.height = null;
@@ -60,8 +60,7 @@
             type: this.type,
             from: this.from.toObject(),
             to: this.to.toObject(),
-            size: this.size,
-            value: this.value
+            height: this.height
         };
     };
 
@@ -79,7 +78,7 @@
         // o angulo para a inclinação dos pontos alpha
         var angleInRadian0 = this.from.angleTo(this.to);
 
-        p2 = plane.point.create(p2.x + (5 * Math.cos(angleInRadian0)), p2.y + (5 * Math.sin(angleInRadian0)));
+        p2 = plane.point.create(p2.x + (2 * Math.cos(angleInRadian0)), p2.y + (2 * Math.sin(angleInRadian0)));
 
 
         var p3 = {
@@ -88,7 +87,7 @@
         },
         p4 = this.to;
 
-        p3 = plane.point.create(p3.x + (-5 * Math.cos(angleInRadian0)), p3.y + (-5 * Math.sin(angleInRadian0)));
+        p3 = plane.point.create(p3.x + (-2 * Math.cos(angleInRadian0)), p3.y + (-2 * Math.sin(angleInRadian0)));
 
 
         // salvo as configurações de estilo atuais do contexto
