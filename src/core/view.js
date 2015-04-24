@@ -37,9 +37,31 @@
 
             // o centro inicial
             _center = plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2);
+            
+            // crio o modulo de eventos em view
+            plane.view.events = plane.utility.object.event.create();
+
+            // crio o evento onResiz
+            window.onresize = function () {
+                
+                // atualizo o tamanho do canvas
+                canvas.width = _viewPort.clientWidth;
+                canvas.height = _viewPort.clientHeight;
+
+                // atualizo o sistema cartesiano de coordenadas
+                _context.translate(0, _viewPort.clientHeight);
+                _context.scale(1, -1);
+
+                // disparo o evento
+                plane.view.events.notify('onResize', {
+                    now: new Date().toISOString()
+                });
+            };
+
 
             return true;
         },
+        events: null,
         _reset: function () {
 
             // o centro inicial
@@ -195,7 +217,7 @@
                                     xxz = part.length;
 
                                 while (xxz--) {
-                                  xxx[xxz]._render(_context, Math.sqrt(_matrix.a * _matrix.d), {
+                                    xxx[xxz]._render(_context, Math.sqrt(_matrix.a * _matrix.d), {
                                         x: _matrix.tx,
                                         y: _matrix.ty
                                     });
