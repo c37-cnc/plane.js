@@ -8,6 +8,8 @@
         _center = null,
         _zoom = 1;
 
+    var _updates = [];
+
     plane.view = {
         _initialize: function (config) {
 
@@ -37,13 +39,13 @@
 
             // o centro inicial
             _center = plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2);
-            
+
             // crio o modulo de eventos em view
             plane.view.events = plane.utility.object.event.create();
 
-            // crio o evento onResiz
+            // crio o evento onResize
             window.onresize = function () {
-                
+
                 // atualizo o tamanho do canvas
                 canvas.width = _viewPort.clientWidth;
                 canvas.height = _viewPort.clientHeight;
@@ -76,175 +78,208 @@
             return true;
         },
         update: function () {
-            var layers = plane.layer.list();
 
-            if (!layers)
-                throw new Error('view - update - no layers \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+            var timeoutId = setTimeout(function () {
 
 
-            // sort, toda(s) a(s) layer(s) system(s) devem ser as primeiras
-            // para os demais layers/objetos virem depois 'em cima'
-            layers.sort(function (a, b) {
-                if (a.status !== 'system')
-                    return 1;
-                if (a.status === 'system')
-                    return -1;
-                return 0;
-            });
+
+                var layers = plane.layer.list();
+
+                if (!layers)
+                    throw new Error('view - update - no layers \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
 
 
-            // clear context, +1 is needed on some browsers to really clear the borders
-            _context.clearRect(0, 0, _viewPort.clientWidth + 1, _viewPort.clientHeight + 1);
+                // sort, toda(s) a(s) layer(s) system(s) devem ser as primeiras
+                // para os demais layers/objetos virem depois 'em cima'
+                layers.sort(function (a, b) {
+                    if (a.status !== 'system')
+                        return 1;
+                    if (a.status === 'system')
+                        return -1;
+                    return 0;
+                });
 
-            // area visivel de plane
-            var rectangle = {
-                from: _matrix.inverseTransform({x: 0, y: 0}),
-                to: _matrix.inverseTransform({x: _viewPort.clientWidth, y: _viewPort.clientHeight})
-            };
 
-            // para todas as layers
-            var i = 0;
-            do {
+                // clear context, +1 is needed on some browsers to really clear the borders
+                _context.clearRect(0, 0, _viewPort.clientWidth + 1, _viewPort.clientHeight + 1);
 
-                // primeiro - os groups
-                var groups = plane.group.find(rectangle, layers[i].uuid);
+                // area visivel de plane
+                var rectangle = {
+                    from: _matrix.inverseTransform({x: 0, y: 0}),
+                    to: _matrix.inverseTransform({x: _viewPort.clientWidth, y: _viewPort.clientHeight})
+                };
 
-                // temos groups para render?
-                if (groups.length > 0) {
-                    var ii = 0;
-                    do {
-                        var shapes = groups[ii].children.list();
+                // para todas as layers
+                var i = 0;
+                do {
+
+                    // primeiro - os groups
+                    var groups = plane.group.find(rectangle, layers[i].uuid);
+
+                    // temos groups para render?
+                    if (groups.length > 0) {
+                        var ii = 0;
+                        do {
+                            var shapes = groups[ii].children.list();
+
+                            // inicio o conjunto de shapes no contexto
+                            _context.beginPath();
+
+                            var iii = 0;
+                            do {
+                                shapes[iii]._render(_context, _zoom, {
+                                    x: _matrix.tx,
+                                    y: _matrix.ty
+                                });
+                                iii++;
+                            } while (iii < shapes.length)
+
+                            // desenho o conjunto de shapes no contexto
+                            _context.stroke();
+
+                            ii++;
+                        } while (ii < groups.length)
+                    }
+
+                    // segundo - todos os demais shapes
+                    var shapes = plane.shape.find(rectangle, layers[i].uuid);
+
+                    //debugger;
+
+                    // os COM estilos
+                    var shapesWithStyle = shapes.filter(function (shape) {
+                        return shape.style || shape.type === 'quote';
+                    });
+
+                    // temos shapes COM estilo para render?
+                    if (shapesWithStyle.length > 0) {
+
+                        // processamento em massa
+                        if (shapesWithStyle.length > 10) {
+
+                            //var numberOfProcessor = navigator.hardwareConcurrency;
+                            var numberOfProcessor = 4;
+
+                            // eu didivo os shapes pelo numero de processadores em outros arrays
+                            var parts = plane.utility.array.split(shapesWithStyle, numberOfProcessor);
+
+                            parts.forEach(function (part) {
+                                // para cada part registro uma nova thread
+                                plane.utility.thread.add(function () {
+
+                                    var xxx = part,
+                                        xxz = part.length;
+
+                                    while (xxz--) {
+                                        xxx[xxz]._render(_context, _zoom, {
+                                            x: _matrix.tx,
+                                            y: _matrix.ty
+                                        });
+                                    }
+
+                                    return false;
+                                });
+                            });
+                            // inicio as threads
+                            plane.utility.thread.start();
+                        } else {
+                            var ii = 0;
+                            do {
+                                shapesWithStyle[ii]._render(_context, _zoom, {
+                                    x: _matrix.tx,
+                                    y: _matrix.ty
+                                });
+                                ii++;
+                            } while (ii < shapesWithStyle.length)
+                        }
+
+                    }
+
+
+                    // os SEM estilos
+                    var shapesWithoutStyle = shapes.filter(function (shape) {
+                        return !shape.style && shape.type !== 'quote';
+                    });
+
+                    // temos shapes SEM estilo para render?
+                    if (shapesWithoutStyle.length > 0) {
 
                         // inicio o conjunto de shapes no contexto
                         _context.beginPath();
 
-                        var iii = 0;
-                        do {
-                            shapes[iii]._render(_context, _zoom, {
-                                x: _matrix.tx,
-                                y: _matrix.ty
+                        // processamento em massa
+                        if (shapesWithoutStyle.length >= 4) {
+
+                            //var numberOfProcessor = navigator.hardwareConcurrency;
+                            var numberOfProcessor = 4;
+
+                            // eu didivo os shapes pelo numero de processadores em outros arrays
+                            var parts = plane.utility.array.split(shapesWithoutStyle, numberOfProcessor);
+
+                            parts.forEach(function (part) {
+                                // para cada part registro uma nova thread
+                                plane.utility.thread.add(function () {
+
+                                    var xxx = part,
+                                        xxz = part.length;
+
+                                    while (xxz--) {
+                                        xxx[xxz]._render(_context, Math.sqrt(_matrix.a * _matrix.d), {
+                                            x: _matrix.tx,
+                                            y: _matrix.ty
+                                        });
+                                    }
+
+                                    return false;
+                                });
                             });
-                            iii++;
-                        } while (iii < shapes.length)
+                            // inicio as threads
+                            plane.utility.thread.start();
+                        } else {
+                            var ii = 0;
+                            do {
+                                shapesWithoutStyle[ii]._render(_context, Math.sqrt(_matrix.a * _matrix.d), {
+                                    x: _matrix.tx,
+                                    y: _matrix.ty
+                                });
+                                ii++;
+                            } while (ii < shapesWithoutStyle.length)
+                        }
 
                         // desenho o conjunto de shapes no contexto
                         _context.stroke();
-
-                        ii++;
-                    } while (ii < groups.length)
-                }
-
-                // segundo - todos os demais shapes
-                var shapes = plane.shape.find(rectangle, layers[i].uuid);
-
-                //debugger;
-
-                // os COM estilos
-                var shapesWithStyle = shapes.filter(function (shape) {
-                    return shape.style || shape.type === 'quote';
-                });
-
-                // temos shapes COM estilo para render?
-                if (shapesWithStyle.length > 0) {
-
-                    // processamento em massa
-                    if (shapesWithStyle.length > 10) {
-
-                        //var numberOfProcessor = navigator.hardwareConcurrency;
-                        var numberOfProcessor = 4;
-
-                        // eu didivo os shapes pelo numero de processadores em outros arrays
-                        var parts = plane.utility.array.split(shapesWithStyle, numberOfProcessor);
-
-                        parts.forEach(function (part) {
-                            // para cada part registro uma nova thread
-                            plane.utility.thread.add(function () {
-
-                                var xxx = part,
-                                    xxz = part.length;
-
-                                while (xxz--) {
-                                    xxx[xxz]._render(_context, _zoom, {
-                                        x: _matrix.tx,
-                                        y: _matrix.ty
-                                    });
-                                }
-
-                                return false;
-                            });
-                        });
-                        // inicio as threads
-                        plane.utility.thread.start();
-                    } else {
-                        var ii = 0;
-                        do {
-                            shapesWithStyle[ii]._render(_context, _zoom, {
-                                x: _matrix.tx,
-                                y: _matrix.ty
-                            });
-                            ii++;
-                        } while (ii < shapesWithStyle.length)
                     }
 
-                }
+                    i++;
+                } while (i < layers.length)
 
 
-                // os SEM estilos
-                var shapesWithoutStyle = shapes.filter(function (shape) {
-                    return !shape.style && shape.type !== 'quote';
-                });
 
-                // temos shapes SEM estilo para render?
-                if (shapesWithoutStyle.length > 0) {
+                //console.log(timeoutId);
+                _updates.splice(_updates.indexOf(timeoutId), 1);
+                //console.log(_updates);
 
-                    // inicio o conjunto de shapes no contexto
-                    _context.beginPath();
+            }, 50);
 
-                    // processamento em massa
-                    if (shapesWithoutStyle.length >= 4) {
 
-                        //var numberOfProcessor = navigator.hardwareConcurrency;
-                        var numberOfProcessor = 4;
+            _updates.push(timeoutId);
 
-                        // eu didivo os shapes pelo numero de processadores em outros arrays
-                        var parts = plane.utility.array.split(shapesWithoutStyle, numberOfProcessor);
-
-                        parts.forEach(function (part) {
-                            // para cada part registro uma nova thread
-                            plane.utility.thread.add(function () {
-
-                                var xxx = part,
-                                    xxz = part.length;
-
-                                while (xxz--) {
-                                    xxx[xxz]._render(_context, Math.sqrt(_matrix.a * _matrix.d), {
-                                        x: _matrix.tx,
-                                        y: _matrix.ty
-                                    });
-                                }
-
-                                return false;
-                            });
-                        });
-                        // inicio as threads
-                        plane.utility.thread.start();
-                    } else {
-                        var ii = 0;
-                        do {
-                            shapesWithoutStyle[ii]._render(_context, Math.sqrt(_matrix.a * _matrix.d), {
-                                x: _matrix.tx,
-                                y: _matrix.ty
-                            });
-                            ii++;
-                        } while (ii < shapesWithoutStyle.length)
+            if (_updates.length > 3) {
+                //console.log('seguencial');
+                _updates.forEach(function (update) {
+                    if (_updates[_updates.length - 1] !== update) {
+                        clearTimeout(update);
                     }
+                });
+                _updates = [];
+            }
 
-                    // desenho o conjunto de shapes no contexto
-                    _context.stroke();
-                }
+            //console.log(_updates);
 
-                i++;
-            } while (i < layers.length)
+
+
+
+
 
 
 
