@@ -64,55 +64,6 @@
         return true;
     };
 
-    Rectangle.prototype._calculeBounds = function () {
-
-        var from = plane.point.create(this._segments[0]),
-            to = plane.point.create(this._segments[0]);
-
-        this._segments.forEach(function (segment) {
-
-            var point = plane.point.create(segment);
-
-            from = point.minimum(from);
-            to = point.maximum(to);
-
-        });
-
-
-
-        // um remendo para o calculo
-        var angleInRadian = 0.7853981634,
-            lineSizeValue = 10 / plane.view.zoom;
-
-        // com uma tolerancia para os limites não ficar sem cima dos shapes
-        var minPoint = plane.point.create(from.x + (-lineSizeValue * Math.cos(angleInRadian)), from.y + (-lineSizeValue * Math.sin(angleInRadian))),
-            maxPoint = plane.point.create(to.x + (+lineSizeValue * Math.cos(angleInRadian)), to.y + (+lineSizeValue * Math.sin(angleInRadian)));
-        
-        this._bounds.from = minPoint;
-        this._bounds.to = maxPoint;
-
-
-        // https://github.com/craftyjs/Crafty/blob/bcd581948c61966ed589c457feb32358a0afd9c8/src/spatial/collision.js#L154
-        var center = {
-            x: (from.x + to.x) / 2,
-            y: (from.y + to.y) / 2
-        },
-        radius = Math.sqrt((to.x - from.x) * (to.x - from.x) + (to.y - from.y) * (to.y - from.y)) / 2;
-
-        this._bounds.center = plane.point.create(center);
-        this._bounds.radius = radius;
-
-
-        /**
-         * Calculates the MBR when rotated some number of radians about an origin point o.
-         * Necessary on a rotation, or a resize
-         */
-        // https://github.com/craftyjs/Crafty/blob/2f131c55c60e1aecc68923c9576c6dad00539d82/src/spatial/2d.js#L358
-
-        return true;
-
-    };
-
     Rectangle.prototype.fromSnap = function (point, distance) {
 
         // pelas pontas
