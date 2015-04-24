@@ -78,7 +78,8 @@
         // o angulo para a inclinação dos pontos alpha
         var angleInRadian0 = this.from.angleTo(this.to);
 
-        p2 = plane.point.create(p2.x + (2 * Math.cos(angleInRadian0)), p2.y + (2 * Math.sin(angleInRadian0)));
+        //p2 = plane.point.create(p2.x + ((2 / plane.view.zoom) * Math.cos(angleInRadian0)), p2.y + ((2 / plane.view.zoom) * Math.sin(angleInRadian0)));
+        p2 = plane.point.create(p2.x + (1 * Math.cos(angleInRadian0)), p2.y + (1 * Math.sin(angleInRadian0)));
 
 
         var p3 = {
@@ -87,7 +88,8 @@
         },
         p4 = this.to;
 
-        p3 = plane.point.create(p3.x + (-2 * Math.cos(angleInRadian0)), p3.y + (-2 * Math.sin(angleInRadian0)));
+        //p3 = plane.point.create(p3.x + ((-2 / plane.view.zoom) * Math.cos(angleInRadian0)), p3.y + ((-2 / plane.view.zoom) * Math.sin(angleInRadian0)));
+        p3 = plane.point.create(p3.x + (-1 * Math.cos(angleInRadian0)), p3.y + (-1 * Math.sin(angleInRadian0)));
 
 
         // salvo as configurações de estilo atuais do contexto
