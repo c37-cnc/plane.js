@@ -54,6 +54,9 @@
             _viewPort.addEventListener('mousemove', onMouseMove, false);
             _viewPort.addEventListener('mousemove', onMouseDrag, false);
             _viewPort.onmouseleave = onMouseLeave;
+            _viewPort.oncontextmenu = function () {
+                return false;
+            };
             // vinculo os eventos criados com o componente html
 
             return true;
@@ -160,7 +163,10 @@
             pointInView = _matrix.inverseTransform(pointInCanvas);
 
         // dizendo que o MouseDown preenche o evento down
-        _mouseDown = pointInView;
+        // apenas se for o click com left
+        if (event.button === 0) {
+            _mouseDown = pointInView;
+        }
 
         // com uma tolerancia para os limites não ficar sem cima dos shapes
         var angleInRadian = 0.7853981634, // 45 graus
@@ -175,6 +181,7 @@
         // customized event
         event = {
             type: 'onMouseDown',
+            button: event.button === 0 ? 'left' : event.button === 1 ? 'wheel' : 'right',
             objects: {
                 groups: groupFind(rectangle),
                 shapes: shapesFind(rectangle)
@@ -269,7 +276,7 @@
 
                     event = {
                         type: 'onMouseDrag',
-                        point: {
+                        points: {
                             from: from,
                             to: to
                         },
