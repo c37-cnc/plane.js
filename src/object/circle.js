@@ -37,7 +37,7 @@
 
         // em numero de partes - 58 
         //var num1 = Math.PI / 58;
-        var num1 = Math.PI / 33;
+        var num1 = Math.PI / 29;
         var size = Math.abs(2.0 * Math.PI / num1) + 2;
         var index = 0;
         var num2 = 0.0;

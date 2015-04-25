@@ -102,6 +102,9 @@
 
                 // clear context, +1 is needed on some browsers to really clear the borders
                 _context.clearRect(0, 0, _viewPort.clientWidth + 1, _viewPort.clientHeight + 1);
+                
+                _context.imageSmoothingEnabled = true;
+
 
                 // area visivel de plane
                 var rectangle = {
@@ -264,7 +267,7 @@
 
             _updates.push(timeoutId);
 
-            if (_updates.length > 3) {
+            if (_updates.length >= 3) {
                 //console.log('seguencial');
                 _updates.forEach(function (update) {
                     if (_updates[_updates.length - 1] !== update) {

@@ -43,7 +43,7 @@
         }
 
         // 1 resolution
-        var num1 = 1 / 180.0 * Math.PI;
+        var num1 = 1.5 / 180.0 * Math.PI;
 
         var num2 = this.startAngle / 180.0 * Math.PI;
         var num3 = end / 180.0 * Math.PI;
