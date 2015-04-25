@@ -150,6 +150,10 @@
                 group.children.list().forEach(function (shape) {
                     // removo do store interdo de shapes
                     _shapes.remove(shape.uuid);
+
+                    // nunca mantenho o estado de estilos
+                    delete shape.style;
+
                     //crio em shapes sem group
                     plane.shape.create(shape);
                 });
