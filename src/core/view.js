@@ -81,7 +81,7 @@
         update: function (priority) {
 
             if (priority) {
-                
+
                 update();
 
             } else {
@@ -102,7 +102,7 @@
                     });
                     _updates = [];
                 }
-                
+
             }
 
             return this;
@@ -212,6 +212,7 @@
         // clear context, +1 is needed on some browsers to really clear the borders
         _context.clearRect(0, 0, _viewPort.clientWidth + 1, _viewPort.clientHeight + 1);
 
+        // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/imageSmoothingEnabled
         _context.imageSmoothingEnabled = true;
 
 
@@ -232,31 +233,21 @@
             if (groups.length > 0) {
                 var ii = 0;
                 do {
-                    var shapes = groups[ii].children.list();
-
-                    // inicio o conjunto de shapes no contexto
-                    _context.beginPath();
-
-                    var iii = 0;
-                    do {
-                        shapes[iii]._render(_context, _zoom, {
+                    groups[ii]._render(
+                        _context,
+                        Math.sqrt(_matrix.a * _matrix.d),
+                        {
                             x: _matrix.tx,
                             y: _matrix.ty
-                        });
-                        iii++;
-                    } while (iii < shapes.length)
-
-                    // desenho o conjunto de shapes no contexto
-                    _context.stroke();
-
+                        }
+                    );
                     ii++;
                 } while (ii < groups.length)
             }
 
+
             // segundo - todos os demais shapes
             var shapes = plane.shape.find(rectangle, layers[i].uuid);
-
-            //debugger;
 
             // os COM estilos
             var shapesWithStyle = shapes.filter(function (shape) {
@@ -267,7 +258,7 @@
             if (shapesWithStyle.length > 0) {
 
                 // processamento em massa
-                if (shapesWithStyle.length > 10) {
+                if (shapesWithStyle.length >= 4) {
 
                     //var numberOfProcessor = navigator.hardwareConcurrency;
                     var numberOfProcessor = 4;
@@ -283,10 +274,14 @@
                                 xxz = part.length;
 
                             while (xxz--) {
-                                xxx[xxz]._render(_context, _zoom, {
-                                    x: _matrix.tx,
-                                    y: _matrix.ty
-                                });
+                                xxx[xxz]._render(
+                                    _context,
+                                    Math.sqrt(_matrix.a * _matrix.d),
+                                    {
+                                        x: _matrix.tx,
+                                        y: _matrix.ty
+                                    }
+                                );
                             }
 
                             return false;
@@ -297,10 +292,14 @@
                 } else {
                     var ii = 0;
                     do {
-                        shapesWithStyle[ii]._render(_context, _zoom, {
-                            x: _matrix.tx,
-                            y: _matrix.ty
-                        });
+                        shapesWithStyle[ii]._render(
+                            _context,
+                            Math.sqrt(_matrix.a * _matrix.d),
+                            {
+                                x: _matrix.tx,
+                                y: _matrix.ty
+                            }
+                        );
                         ii++;
                     } while (ii < shapesWithStyle.length)
                 }
@@ -336,12 +335,15 @@
                                 xxz = part.length;
 
                             while (xxz--) {
-                                xxx[xxz]._render(_context, Math.sqrt(_matrix.a * _matrix.d), {
-                                    x: _matrix.tx,
-                                    y: _matrix.ty
-                                });
+                                xxx[xxz]._render(
+                                    _context,
+                                    Math.sqrt(_matrix.a * _matrix.d),
+                                    {
+                                        x: _matrix.tx,
+                                        y: _matrix.ty
+                                    }
+                                );
                             }
-
                             return false;
                         });
                     });
@@ -350,10 +352,14 @@
                 } else {
                     var ii = 0;
                     do {
-                        shapesWithoutStyle[ii]._render(_context, Math.sqrt(_matrix.a * _matrix.d), {
-                            x: _matrix.tx,
-                            y: _matrix.ty
-                        });
+                        shapesWithoutStyle[ii]._render(
+                            _context,
+                            Math.sqrt(_matrix.a * _matrix.d),
+                            {
+                                x: _matrix.tx,
+                                y: _matrix.ty
+                            }
+                        );
                         ii++;
                     } while (ii < shapesWithoutStyle.length)
                 }
@@ -366,7 +372,7 @@
         } while (i < layers.length)
 
         _updates.splice(_updates.indexOf(_update), 1);
-    
+
         return true;
 
     }
