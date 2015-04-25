@@ -15,6 +15,34 @@
         this.parent = attrs.parent;
     }
 
+    Group.prototype._render = function (context, zoom, motion) {
+
+        var shapes = this.children.list();
+
+        // se não tenho estilo
+        if (!this.style) {
+            // inicio o conjunto de shapes no contexto
+            context.beginPath();
+        }
+
+        var i = 0;
+        do {
+            // se tenho estilo, passo a herança, caso contrario, limpo qualquer erro
+            shapes[i].style = this.style ? this.style : null;
+
+            shapes[i]._render(context, zoom, motion);
+            i++;
+        } while (i < shapes.length)
+
+        // se não tenho estilo
+        if (!this.style) {
+            // desenho o conjunto de shapes no contexto
+            context.stroke();
+        }
+
+        return true;
+    };
+
     Group.prototype.toObject = function () {
         return {
             uuid: this.uuid,
@@ -111,10 +139,25 @@
 
             return group;
         },
-        remove: function (group, layer) {
+        remove: function (uuid) {
+            if ((!uuid) || (typeof uuid !== 'string')) {
+                throw new Error('group - remove - uuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+            } else {
+                // a layer que vamos trabalhar
+                var layer = plane.layer.active,
+                    group = _groups.get(layer.uuid).get(uuid);
 
+                group.children.list().forEach(function (shape) {
+                    // removo do store interdo de shapes
+                    _shapes.remove(shape.uuid);
+                    //crio em shapes sem group
+                    plane.shape.create(shape);
+                });
 
-            return true;
+                _groups.get(layer.uuid).remove(group.uuid);
+
+                return true;
+            }
         },
         clear: function (uuid) {
             // sempre trabalhamos com uma layer
@@ -130,9 +173,9 @@
         list: function (uuid) {
             // sempre trabalhamos com uma layer
             var layer = plane.layer.get(uuid);
-            
+
             // temos groups para esta layer?
-            if (_groups.get(layer.uuid)){
+            if (_groups.get(layer.uuid)) {
                 return _groups.get(layer.uuid).list();
             } else {
                 return [];
@@ -140,7 +183,7 @@
         },
         get: function (groupUuid, layerUuid) {
             if ((!groupUuid) || (typeof groupUuid !== 'string')) {
-                throw new Error('shape - remove - groupUuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+                throw new Error('group - get - groupUuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
                 // a layer que vamos trabalhar
                 var layer = plane.layer.get(layerUuid);

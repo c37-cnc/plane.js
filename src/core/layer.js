@@ -89,7 +89,7 @@
                     return _active;
                 }
             } else {
-                return _layers.get(uuid)
+                return _layers.get(uuid);
             }
         },
         remove: function (uuid) {
