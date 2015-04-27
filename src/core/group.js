@@ -2,7 +2,7 @@
     "use strict";
 
     var _groups = null, // store - para armazenamento 
-            _shapes = null; // tree - para a arvore de pesquisa
+        _shapes = null; // tree - para a arvore de pesquisa
 
     function Group(attrs) {
         this.uuid = attrs.uuid;
@@ -85,8 +85,8 @@
             }
 
             var group = null, // para o novo group
-                    uuid = plane.utility.math.uuid(9, 16), // identificador do group
-                    shapes = attrs.children; // os shapes filhos
+                uuid = plane.utility.math.uuid(9, 16), // identificador do group
+                shapes = attrs.children; // os shapes filhos
 
             // a layer que vamos trabalhar
             var layer = plane.layer.get(layerUuid);
@@ -143,7 +143,7 @@
             } else {
                 // a layer que vamos trabalhar
                 var layer = plane.layer.active,
-                        group = _groups.get(layer.uuid).get(uuid);
+                    group = _groups.get(layer.uuid).get(uuid);
 
                 group.children.list().forEach(function (shape) {
                     // removo do store interdo de shapes
@@ -192,17 +192,19 @@
                 return _groups.get(layer.uuid).get(groupUuid);
             }
         },
-        find: function (rectangle, layerUuid) {
+        // rectangle = area da procura
+        // uuid = respectivo da layer
+        find: function (rectangle, uuid) {
             if ((!rectangle) || (typeof rectangle !== 'object')) {
                 throw new Error('group - find - rectangle is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
-                var layer = plane.layer.get(layerUuid);
+                var layer = plane.layer.get(uuid);
 
                 // verifico se criei ao menos um group para a layer
                 if (_shapes.get(layer.uuid)) {
 
                     var shapes = null,
-                            rectangles = _shapes.get(layer.uuid).search(rectangle);
+                        rectangles = _shapes.get(layer.uuid).search(rectangle);
 
                     // um mapeamendo para separar os uuids dos shapes
                     shapes = rectangles.map(function (data) {

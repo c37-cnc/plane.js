@@ -1,11 +1,8 @@
 <!doctype html>
 <html>
-
     <head>
         <meta charset="utf-8">
-
         <title>plane - v4</title>
-
         <style>
             /* html structure */
             html,
@@ -35,9 +32,7 @@
             }
             /* application structure */
         </style>
-
         <script src="../dist/plane.js"></script>
-
         <script>
             window.onload = function () {
 
@@ -57,6 +52,37 @@
                         type: 'line',
                         from: [150, 450],
                         to: [600, 450]
+                    });
+
+
+                    var line1 = plane.shape.create({
+                        type: 'line',
+                        from: [150, 850],
+                        to: [500, 850]
+                    });
+                    var line2 = plane.shape.create({
+                        type: 'line',
+                        from: [150, 850],
+                        to: [150, 600]
+                    });
+                    var arc1 = plane.shape.create({
+                        type: 'arc',
+                        center: [400, 750],
+                        radius: 40,
+                        startAngle: 90,
+                        endAngle: 270
+                    });
+
+                    var group1 = plane.group.create({
+                        children: [line1, line2],
+                        style: {
+                            lineColor: '#ff9791'
+                        }
+                    });
+
+                    var group2 = plane.group.create({
+                        parent: group1,
+                        children: [arc1]
                     });
 
 
@@ -122,11 +148,6 @@
 
                     plane.shape.create({
                         type: 'rectangle',
-                        from: [0, 0],
-                        to: [viewPort.clientWidth, viewPort.clientHeight]
-                    });
-                    plane.shape.create({
-                        type: 'rectangle',
                         from: [1350, 100],
                         to: [1550, 300]
                     });
@@ -160,12 +181,69 @@
 
                     plane.view.update();
 
+                    plane.view.events.listen('onResize', function (event) {
+                        plane.view.update(true);
+                    });
+                    
+                    document.getElementById('fileManager').addEventListener('change', function () {
+
+                        var file = this.files[0],
+                            filename = file.name;
+
+                        var lastDotPosition = filename.lastIndexOf('.'),
+                            fileExtension = filename.substr(lastDotPosition + 1).toLowerCase();
+
+                        var reader = new FileReader();
+                        reader.onload = function (event) {
+
+                            var fileData = event.target.result;
+
+                            switch (fileExtension) {
+                                case 'dxf':
+                                    plane.importer.fromDxf(fileData);
+                                    break;
+                                case 'json':
+                                    plane.importer.fromJson(fileData);
+                                    break;
+                                default:
+                                    return;
+                            }
+                            plane.view.update();
+                        };
+                        reader.readAsText(file);
+
+                        this.value = '';
+                    });
+
+                    var wheel = plane.tool.create({
+                        active: true
+                    });
+                    wheel.events.listen('onMouseWheel', function (event) {
+
+                        var position = event.point,
+                            zoomNew = event.delta < 0 ? plane.view.zoom / .83 : plane.view.zoom * .83,
+                            zoomFactor = plane.view.zoom / zoomNew;
+
+                        var centerFactor = position.subtract(plane.view.center);
+                        var centerSum = position.subtract(centerFactor.multiply(zoomFactor)).subtract(plane.view.center);
+                        var centerNew = plane.view.center.sum(centerSum);
+
+                        plane.view.zoomTo(zoomNew, centerNew);
+                        plane.view.update(true);
+                    });
+
+                    var mouseMove = plane.tool.create({
+                        active: true
+                    });
+                    mouseMove.events.listen('onMouseMove', function (event) {
+                        console.log(event.objects);
+                    });
+
+
+
+
+
                 })(c37.library.plane);
-
-
-
-
-
             };
         </script>
 
@@ -173,6 +251,7 @@
 
     <body>
         <header>
+            <input id="fileManager" type="file" style="width:390px;margin-top: 9px;margin-left: 9px;"/>
         </header>
         <main>
         </main>
