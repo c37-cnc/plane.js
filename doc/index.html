@@ -74,15 +74,14 @@
                     });
 
                     var group1 = plane.group.create({
-                        children: [line1, line2],
-                        style: {
-                            lineColor: '#ff9791'
-                        }
+                        children: [line1, line2]
                     });
 
                     var group2 = plane.group.create({
-                        parent: group1,
-                        children: [arc1]
+                        children: [arc1, group1],
+                        style: {
+                            lineColor: '#ff9791'
+                        }
                     });
 
 
@@ -117,11 +116,14 @@
                         radius: 50
                     });
 
-                    plane.shape.create({
+                    var ellipse1 = plane.shape.create({
                         type: 'ellipse',
                         center: [400, 300],
                         radiusY: 50,
                         radiusX: 100
+                    });
+                    plane.group.create({
+                        children: [ellipse1]
                     });
 
                     plane.shape.create({
@@ -184,7 +186,7 @@
                     plane.view.events.listen('onResize', function (event) {
                         plane.view.update(true);
                     });
-                    
+
                     document.getElementById('fileManager').addEventListener('change', function () {
 
                         var file = this.files[0],
