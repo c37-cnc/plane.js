@@ -43,7 +43,7 @@
 //            debugger;
 
             // crio o novo Group
-            var group = new plane.math.group.create(attrs);
+            var group = plane.math.group.create(attrs);
 
             // de acordo com a layer - add bounds in store
             _groups.get(layer.uuid).add(group.uuid, [group._bounds.from.x, group._bounds.from.y, group._bounds.to.x, group._bounds.to.y, group]);
@@ -55,7 +55,32 @@
                 throw new Error('group - remove - uuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
                 // a layer que vamos trabalhar
-                var layer = plane.layer.active;
+                var layer = plane.layer.active,
+                    group = _groups.get(layer.uuid).get(uuid);
+                
+                //debugger;
+
+                var children = group.children.list(),
+                    i = 0;
+
+                do {
+                    if (children[i] instanceof plane.math.group) {
+                        
+                        var xxx = children[i];
+                        xxx.children = xxx.children.list();
+                        xxx.style = null;
+                        
+                        plane.group.create(children[i]);
+
+                    }
+
+                    if (children[i] instanceof plane.math.shape) {
+                        plane.shape.create(children[i]);
+                    }
+
+                    i++;
+                } while (i < children.length);
+
 
                 _groups.get(layer.uuid).remove(uuid);
 
