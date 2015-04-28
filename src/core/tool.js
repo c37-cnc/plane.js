@@ -387,16 +387,16 @@
             var i = 0;
             do {
                 var ii = 0,
-                    shapes = groups[i].children.list();
+                    children = groups[i].children;
                 do {
-                    if (plane.math.intersect(shapes[ii]._segments, rectangle)) {
+                    if (plane.math.intersect(children[ii]._segments, rectangle)) {
                         groupFinded.push(groups[i]);
                         // caso seja localizado apenas um shape dentro do group paro
                         // a pesquisa para não add o mesmo grou mais de uma vez
                         break;
                     }
                     ii++;
-                } while (ii < shapes.length)
+                } while (ii < children.length)
                 i++;
             } while (i < groups.length)
         }

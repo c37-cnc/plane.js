@@ -229,11 +229,16 @@
             // primeiro - os groups
             var groups = plane.group.find(rectangle, layers[i].uuid);
 
-            // temos groups para render?
-            if (groups.length > 0) {
+            // os COM estilos
+            var groupsWithStyle = groups.filter(function (group) {
+                return group.style;
+            });
+
+            // temos shapes COM estilo para render?
+            if (groupsWithStyle.length > 0) {
                 var ii = 0;
                 do {
-                    groups[ii]._render(
+                    groupsWithStyle[ii]._render(
                         _context,
                         Math.sqrt(_matrix.a * _matrix.d),
                         {
@@ -242,8 +247,40 @@
                         }
                     );
                     ii++;
-                } while (ii < groups.length)
+                } while (ii < groupsWithStyle.length)
             }
+
+            // os SEM estilos
+            var groupsWithoutStyle = groups.filter(function (group) {
+                return !group.style;
+            });
+
+            // temos shapes SEM estilo para render?
+            if (groupsWithoutStyle.length > 0) {
+                var ii = 0;
+                do {
+                    // inicio o conjunto de shapes no contexto
+                    _context.beginPath();
+
+                    groupsWithoutStyle[ii]._render(
+                        _context,
+                        Math.sqrt(_matrix.a * _matrix.d),
+                        {
+                            x: _matrix.tx,
+                            y: _matrix.ty
+                        }
+                    );
+
+                    // desenho o conjunto de shapes no contexto
+                    _context.stroke();
+
+                    ii++;
+                } while (ii < groupsWithoutStyle.length)
+            }
+
+
+
+
 
 
             // segundo - todos os demais shapes
