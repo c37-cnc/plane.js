@@ -78,7 +78,21 @@
                     });
 
                     var group2 = plane.group.create({
-                        children: [arc1, group1],
+                        children: [arc1, group1]
+                    });
+                    
+                    var ellipse1 = plane.shape.create({
+                        type: 'ellipse',
+                        center: [400, 300],
+                        radiusY: 50,
+                        radiusX: 100
+                    });
+                    var group3 = plane.group.create({
+                        children: [ellipse1]
+                    });
+                    
+                    plane.group.create({
+                        children: [group2, group3],
                         style: {
                             lineColor: '#ff9791'
                         }
@@ -116,15 +130,7 @@
                         radius: 50
                     });
 
-                    var ellipse1 = plane.shape.create({
-                        type: 'ellipse',
-                        center: [400, 300],
-                        radiusY: 50,
-                        radiusX: 100
-                    });
-                    plane.group.create({
-                        children: [ellipse1]
-                    });
+                    
 
                     plane.shape.create({
                         type: 'line',

@@ -3,7 +3,7 @@
 
     var BezierCubic = plane.utility.object.inherits(function BezierCubic(attrs) {
 
-       /**
+        /**
          * A Universally unique identifier for
          * a single instance of Object
          *
@@ -25,7 +25,7 @@
 
         this.status = null;
         this.style = null;
-        
+
         this.points = attrs.points;
 
         this._initialize(attrs);
@@ -120,7 +120,7 @@
 
             // 4 - caso update de um shape não merge em segments
             delete attrs['segments'];
-
+            
             // 5 - criando um novo shape do tipo arco
             return new BezierCubic(attrs);
         }

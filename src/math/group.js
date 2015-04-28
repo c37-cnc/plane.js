@@ -4,151 +4,116 @@
 
         this.uuid = null;
         this.name = null;
-        this._segments = [];
+        this._segments = null;
         this._bounds = null;
         this.status = null;
         this.style = null;
         this.children = null;
-        this._initialize(attrs);
-    }
 
-    Group.create = function (attrs) {
-        return new Group(attrs);
-    };
+        this._initialize(attrs);
+
+    }
 
     Group.prototype = {
         _initialize: function (attrs) {
 
-            var uuid = plane.utility.math.uuid(9, 16), // identificador do group
-                children = attrs.children.slice(); // os objects filhos
+            // identificador do group
+            var uuid = plane.utility.math.uuid(9, 16);
 
-            delete attrs.children;
             // (attributos || parametros) para o novo Group
             attrs = plane.utility.object.merge({
                 uuid: uuid,
-                name: 'Group - '.concat(uuid),
-                children: plane.math.dictionary.create()
+                name: 'Group - '.concat(uuid)
             }, attrs);
-            
-            
-            
 
-            // parse to group
-            var i = 0;
-            do {
-
-                if (children[i] instanceof Group) {
-                    
-                    //debugger;                    
-                    
-                    plane.group.remove(children[i].uuid);
-                    
-                    children[i].children.list().forEach(function (shape){
-                        plane.shape.remove(shape.uuid);
-                    });
-                    
-                } 
-                
-                if (children[i] instanceof plane.math.shape) {
-
-                    this._segments = children[i]._segments.concat(this._segments);
-                    plane.shape.remove(children[i].uuid);
-
-                }
-
-                attrs.children.add(children[i].uuid, children[i]);
-                i++;
-            } while (i < children.length);
             // completando os campos do group
             plane.utility.object.extend(this, attrs);
-            //debugger;
+
+            // limpando os segments
+            this._segments = [];
+
+            // calculando os segmentos
+            this._calculeSegments();
 
             // calculando os limites
             this._calculeBounds();
+
             return true;
+        },
+        _calculeSegments: function () {
+
+            var i = 0;
+            do {
+                this._segments = this.children[i]._segments.concat(this._segments);
+                i++;
+            } while (i < this.children.length);
+
         },
         _calculeBounds: function () {
 
-            var shapes = shapesOfChildren(this);
-            var from = plane.point.create(shapes[0]._segments[0]),
-                to = plane.point.create(shapes[0]._segments[0]);
-            shapes.forEach(function (shape) {
-                shape._segments.forEach(function (segment) {
-                    from = operation.minimum(segment, from);
-                    to = operation.maximum(segment, to);
-                });
+            var from = plane.point.create(this._segments[0]),
+                to = plane.point.create(this._segments[0]);
+
+            this._segments.forEach(function (segment) {
+                from = operation.minimum(segment, from);
+                to = operation.maximum(segment, to);
             });
+
             this._bounds = plane.math.bounds.create(from, to);
-            return true;
-        },
-        contains: function (position, transform) {
-
-            return false;
-        },
-        intersect: function (rectangle) {
 
             return true;
         },
-//        _remove: function (uuid) {
-//
-//            var group = plane.group.get(uuid);
-//
-//            debugger;
-//
-//            var children = group.children.list(),
-//                i = 0;
-//
-//            do {
-//                if (children[i] instanceof plane.math.group) {
-//
-//                    plane.group.create(children[i]);
-//
-//                }
-//
-//                if (children[i] instanceof plane.math.shape) {
-//                    plane.shape.create(children[i]);
-//                }
-//
-//                i++;
-//            } while (i < children.length);
-//
-//
-//            plane.group.remove(uuid);
-//
-//            return true;
-//
-//        },
         _render: function (context, zoom, motion) {
 
-            var children = this.children.list();
+            //debugger;
+
             // sort, todo(s) o(s) group(s) devem ser as primeiras
             // para organizarmos o context.beginPath()
-            children.sort(function (object) {
+            this.children.sort(function (object) {
                 if (!(object instanceof  Group))
                     return 1;
                 if ((object instanceof  Group))
                     return -1;
                 return 0;
             });
-            // se não tenho estilo
-            if (!this.style) {
-                // inicio o conjunto de shapes no contexto
+
+            // possivel personalização
+            if (this.style) {
+                // salvo as configurações de estilo atuais do contexto
+                context.save();
+
+                // personalização para linha pontilhada
+                if (this.style.lineDash)
+                    context.setLineDash([5, 2]);
+
+                // personalização para a espessura da linha
+                if (this.style.lineWidth)
+                    context.lineWidth = this.style.lineWidth;
+
+                // personalização para a cor da linha
+                if (this.style.lineColor)
+                    context.strokeStyle = this.style.lineColor;
+
+                // e deixo iniciado um novo shape
                 context.beginPath();
             }
 
             var i = 0;
             do {
-                // se tenho estilo, passo a herança, caso contrario, limpo qualquer estilo
-                children[i].style = this.style ? this.style : null;
-                children[i]._render(context, zoom, motion);
+                this.children[i].style = this.children[i].style ? this.children[i].style : null;
+                this.children[i]._render(context, zoom, motion);
                 i++;
-            } while (i < children.length)
-
-            // se não tenho estilo
-            if (!this.style) {
-                // desenho o conjunto de shapes no contexto
+            } while (i < this.children.length)
+                
+                
+            // quando possivel personalização
+            if (this.style) {
+                // desenho o shape no contexto
                 context.stroke();
+                // restauro as configurações de estilo anteriores do contexto
+                context.restore();
             }
+        
 
             return true;
         },
@@ -157,24 +122,13 @@
                 uuid: this.uuid,
                 name: this.name,
                 status: this.status, // para ativo || não ativo
-                children: this.children.list().map(function (shape) {
+                children: this.children.map(function (shape) {
                     return shape.toObject();
                 })
             };
         }
     };
-    function shapesOfChildren(group) {
 
-        var shapes = [];
-        group.children.list().forEach(function (children) {
-            if (children instanceof  Group) {
-                shapes = shapes.concat(shapesOfChildren(children));
-            } else {
-                shapes.push(children);
-            }
-        });
-        return shapes;
-    }
 
     var operation = {
         minimum: function (a, b) {
@@ -190,5 +144,8 @@
             };
         }
     };
+
     plane.math.group = Group;
+
+
 })(c37.library.plane);
