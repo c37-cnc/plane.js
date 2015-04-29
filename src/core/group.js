@@ -34,6 +34,10 @@
                 // se não existir, crio
                 _groups.add(layer.uuid, plane.math.store.create());
             }
+            
+            // verifico se devo criar as intancias dos children
+            
+            
 
             // crio o novo Group
             var group = new plane.math.group(attrs);
@@ -55,7 +59,7 @@
 
 
             // de acordo com a layer - add bounds in store
-            _groups.get(layer.uuid).add(group.uuid, [group._bounds.from.x, group._bounds.from.y, group._bounds.to.x, group._bounds.to.y, group]);
+            _groups.get(layer.uuid).add(group.uuid, [group.bounds.from.x, group.bounds.from.y, group.bounds.to.x, group.bounds.to.y, group]);
 
             return group;
         },

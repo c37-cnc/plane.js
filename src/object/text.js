@@ -15,13 +15,8 @@
         this.type = null;
         this.name = null;
 
-        this._segments = [];
-        this._bounds = {
-            from: null,
-            to: null,
-            center: null,
-            radius: null
-        };
+        this.segments = [];
+        this.bounds = null;
 
         this.status = null;
         this.style = null;
@@ -38,11 +33,11 @@
 
     Text.prototype._calculeSegments = function () {
 
-        this._segments.push({
+        this.segments.push({
             x: this.from.x,
             y: this.from.y
         });
-        this._segments.push({
+        this.segments.push({
             x: this.to.x,
             y: this.to.y
         });
