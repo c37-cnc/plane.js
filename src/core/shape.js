@@ -55,15 +55,17 @@
 
             return true;
         },
-        remove: function (shapeUuid, layerUuid) {
-            if ((!shapeUuid) || (typeof shapeUuid !== 'string')) {
+        remove: function (uuid) {
+            if ((!uuid) || (typeof uuid !== 'string')) {
                 throw new Error('shape - remove - shapeUuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
-
                 // sempre trabalhamos com uma layer
-                var layer = plane.layer.get(layerUuid);
+                var layer = plane.layer.active;
+                
                 // removendo shape
-                _shapes.get(layer.uuid).remove(shapeUuid);
+                if (_shapes.get(layer.uuid)) {
+                    _shapes.get(layer.uuid).remove(uuid);
+                }
 
                 return true;
             }
@@ -81,9 +83,9 @@
         list: function (uuid) {
             // sempre trabalhamos com uma layer
             var layer = plane.layer.get(uuid);
-            
+
             // temos groups para esta layer?
-            if (_shapes.get(layer.uuid)){
+            if (_shapes.get(layer.uuid)) {
                 return _shapes.get(layer.uuid).list();
             } else {
                 return [];
