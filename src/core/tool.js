@@ -381,29 +381,60 @@
 
     function groupFind(rectangle) {
 
-        var groupFinded = [];
+//        return plane.group.find(rectangle).filter(function (group){
+//            return plane.math.intersect(group.segments, rectangle);
+//        });
 
-        var groups = plane.group.find(rectangle);
-        if (groups.length > 0) {
-            var i = 0;
-            do {
-                var ii = 0,
-                    children = groups[i].children;
-                do {
-                    if (plane.math.intersect(children[ii].segments, rectangle)) {
-                        groupFinded.push(groups[i]);
-                        // caso seja localizado apenas um shape dentro do group paro
-                        // a pesquisa para não add o mesmo grou mais de uma vez
-                        break;
-                    }
-                    ii++;
-                } while (ii < children.length)
-                i++;
-            } while (i < groups.length)
-        }
+        return plane.group.find(rectangle).filter(function (group) {
+            return intersectChildren(group, rectangle);
+        });
 
-        return groupFinded;
+
+//        var groupFinded = [];
+//
+//        var groups = plane.group.find(rectangle);
+//        if (groups.length > 0) {
+//            var i = 0;
+//            do {
+//                var ii = 0,
+//                    children = groups[i].children;
+//                do {
+//                    if (plane.math.intersect(children[ii].segments, rectangle)) {
+//                        groupFinded.push(groups[i]);
+//                        // caso seja localizado apenas um shape dentro do group paro
+//                        // a pesquisa para não add o mesmo grou mais de uma vez
+//                        break;
+//                    }
+//                    ii++;
+//                } while (ii < children.length)
+//                i++;
+//            } while (i < groups.length)
+//        }
+//
+//        return groupFinded;
 
     }
+
+    function intersectChildren(group, rectangle) {
+
+        for (var i = 0; i < group.children.length; i++) {
+
+            if (group.children[i].type === 'group') {
+                if (intersectChildren(group.children[i], rectangle)) {
+                    return true;
+                }
+            }
+
+            if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier-cubic', 'bezier-quadratic', 'spline', 'text', 'quote'].indexOf(group.children[i].type) !== -1) {
+                if (plane.math.intersect(group.children[i].segments, rectangle)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+
+    }
+
 
 })(c37.library.plane);
