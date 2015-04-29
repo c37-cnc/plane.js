@@ -5,7 +5,7 @@
 
         this.uuid = null;
         this.name = null;
-        this.segments = null;
+        this.segments = [];
         this.bounds = null;
         this.status = null;
         this.style = null;
@@ -29,9 +29,6 @@
 
             // completando os campos do group
             plane.utility.object.extend(this, attrs);
-
-            // limpando os segments
-            this.segments = [];
 
             // calculando os segmentos
             this._calculeSegments();
@@ -123,10 +120,13 @@
                 uuid: this.uuid,
                 name: this.name,
                 status: this.status, // para ativo || não ativo
-                children: this.children.map(function (shape) {
-                    return shape.toObject();
+                children: this.children.map(function (object) {
+                    return object.toObject();
                 })
             };
+        },
+        fromObject: function (object) {
+
         }
     };
 

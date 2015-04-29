@@ -34,10 +34,16 @@
                 // se não existir, crio
                 _groups.add(layer.uuid, plane.math.store.create());
             }
-            
+
             // verifico se devo criar as intancias dos children
-            
-            
+
+            attrs.children.forEach(function (object) {
+
+                if ((!(object instanceof plane.math.group)) && (!(object instanceof plane.math.shape))) {
+                    debugger;
+                }
+
+            });
 
             // crio o novo Group
             var group = new plane.math.group(attrs);
@@ -71,13 +77,11 @@
                 var layer = plane.layer.active,
                     group = _groups.get(layer.uuid).get(uuid);
 
-                //debugger;
-
                 var i = 0;
                 do {
                     // limpo qualquer estilo de children
                     group.children[i].style = null;
-                    
+
                     if (group.children[i] instanceof plane.math.group) {
                         plane.group.create(group.children[i]);
                     }
@@ -96,7 +100,7 @@
             }
         },
         clear: function (uuid) {
-            
+
             // sempre trabalhamos com uma layer
             var layer = plane.layer.get(uuid);
 
@@ -108,10 +112,10 @@
             return true;
         },
         list: function (uuid) {
-            
+
             // sempre trabalhamos com uma layer
             var layer = plane.layer.get(uuid);
-            
+
             // temos groups para esta layer?
             if (_groups.get(layer.uuid)) {
                 return _groups.get(layer.uuid).list();
@@ -119,6 +123,7 @@
                 return [];
             }
         },
+        // uuid = respectivo do group
         get: function (uuid) {
             if ((!uuid) || (typeof uuid !== 'string')) {
                 throw new Error('group - get - uuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');

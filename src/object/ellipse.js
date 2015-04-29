@@ -46,7 +46,7 @@
         var radiusX = this.radiusX;
         var radiusY = this.radiusY;
 
-        var num18 = Math.PI / 60.0;
+        var num18 = Math.PI / 40.0;
 
 
         var num = Math.cos(angle);

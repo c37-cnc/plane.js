@@ -282,6 +282,13 @@
 
             return true;
         },
+        fromJson: function (stringJson) {
+
+            var objectPlane = JSON.parse(stringJson);
+
+            return plane.importer.fromObject(objectPlane);
+
+        },
         fromObject: function (objectPlane) {
 
             objectPlane.layers.forEach(function (layer) {
@@ -293,27 +300,13 @@
                     style: layer.style
                 });
 
-//                objectLayer.children.groups.forEach(function (objectShape) {
-//                    plane.shape.create(objectShape);
-//                });
+                layer.children.groups.forEach(function (group) {
+                    plane.group.create(group);
+                });
 
-                try {
-                    // versao 3
-                    layer.children.forEach(function (shape) {
-                        plane.shape.create(shape);
-                    });
-                } catch (e) {
-                    try {
-                        // versao 4
-                        layer.children.shapes.forEach(function (shape) {
-                            plane.shape.create(shape);
-                        });
-                    } catch (e) {
-
-                    }
-                }
-
-
+                layer.children.shapes.forEach(function (shape) {
+                    plane.shape.create(shape);
+                });
 
             });
 

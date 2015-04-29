@@ -7,15 +7,7 @@
     plane.exporter = {
         toJson: function () {
 
-            var objectPlane = {
-                center: plane.view.center.toObject(),
-                zoom: plane.view.zoom,
-                layers: plane.layer.list().filter(function (layer) {
-                    return layer.status !== 'system';
-                }).map(function (layer) {
-                    return layer.toObject();
-                })
-            };
+            var objectPlane = plane.exporter.toObject();
 
             return JSON.stringify(objectPlane);
         },

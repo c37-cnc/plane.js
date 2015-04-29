@@ -2,8 +2,8 @@
     "use strict";
 
     var Arc = plane.utility.object.inherits(function Arc(attrs) {
-        
-       /**
+
+        /**
          * A Universally unique identifier for
          * a single instance of Object
          *
@@ -19,7 +19,7 @@
         this.bounds = null;
 
         this.status = null;
-        this.style = null;        
+        this.style = null;
 
         this.center = null;
         this.radius = null;
@@ -31,14 +31,14 @@
     }, plane.math.shape);
 
     Arc.prototype._calculeSegments = function () {
-        
+
         var end = this.endAngle - this.startAngle;
         if (end < 0.0) {
             end += 360.0;
         }
 
         // 1 resolution
-        var num1 = 1.5 / 180.0 * Math.PI;
+        var num1 = 7 / 180.0 * Math.PI;
 
         var num2 = this.startAngle / 180.0 * Math.PI;
         var num3 = end / 180.0 * Math.PI;
@@ -71,7 +71,6 @@
             y: yval1
         });
 
-
         return true;
     };
 
@@ -86,7 +85,7 @@
 
 
         var middlePoint = this.getMiddle();
-        if (point.distanceTo(middlePoint) <= distance){
+        if (point.distanceTo(middlePoint) <= distance) {
             return {
                 status: true,
                 point: middlePoint
@@ -118,7 +117,7 @@
             status: false,
             point: null
         };
-        
+
     };
 
     Arc.prototype.toObject = function () {
@@ -142,10 +141,10 @@
 
         // o tamanho de cada passo
         var num1 = .3 / 180.0 * Math.PI;
-        
+
         // o inicio em graus
         var num2 = this.startAngle / 180.0 * Math.PI;
-        
+
         // o fim em graus
         var num3 = end / 180.0 * Math.PI;
 
@@ -155,8 +154,8 @@
 
         var index = 0;
         var num4 = num2;
-        
-        
+
+
         while (index <= (size / 2)) {
 
             var xval = this.center.x + this.radius * Math.cos(num4);
@@ -166,7 +165,7 @@
             num4 += num1;
         }
         return plane.point.create(xval, yval);
-        
+
 
     };
 
