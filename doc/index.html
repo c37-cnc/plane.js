@@ -33,6 +33,8 @@
             /* application structure */
         </style>
         <script src="../dist/plane.js"></script>
+        <script src="FileSaver.js"></script>
+        <script src="moment.min.js"></script>
         <script>
             window.onload = function () {
 
@@ -80,7 +82,7 @@
                     var group2 = plane.group.create({
                         children: [arc1, group1]
                     });
-                    
+
                     var ellipse1 = plane.shape.create({
                         type: 'ellipse',
                         center: [400, 300],
@@ -90,7 +92,7 @@
                     var group3 = plane.group.create({
                         children: [ellipse1]
                     });
-                    
+
                     plane.group.create({
                         children: [group2, group3],
                         style: {
@@ -130,7 +132,7 @@
                         radius: 50
                     });
 
-                    
+
 
                     plane.shape.create({
                         type: 'line',
@@ -193,7 +195,7 @@
                         plane.view.update(true);
                     });
 
-                    document.getElementById('fileManager').addEventListener('change', function () {
+                    document.getElementById('file-open').addEventListener('change', function () {
 
                         var file = this.files[0],
                             filename = file.name;
@@ -208,9 +210,13 @@
 
                             switch (fileExtension) {
                                 case 'dxf':
+                                    plane.reset();
+                                    plane.layer.create();
                                     plane.importer.fromDxf(fileData);
                                     break;
                                 case 'json':
+                                    plane.reset();
+                                    plane.layer.create();
                                     plane.importer.fromJson(fileData);
                                     break;
                                 default:
@@ -221,6 +227,21 @@
                         reader.readAsText(file);
 
                         this.value = '';
+                    });
+
+                    document.getElementById('file-save').addEventListener('click', function () {
+
+                        var fileName = moment().format('YYYY-MM-DD HH:mm:ss').concat('.json'),
+                            fileData = plane.exporter.toObject();
+
+                        fileData = JSON.stringify(fileData);
+
+                        var bb = new Blob([fileData], {
+                            type: 'text/plain;charset=utf-8'
+                        });
+
+                        return saveAs(bb, fileName);
+
                     });
 
                     var wheel = plane.tool.create({
@@ -243,9 +264,9 @@
                     var mouseMove = plane.tool.create({
                         active: true
                     });
-                    mouseMove.events.listen('onMouseMove', function (event) {
-                        console.log(event.objects);
-                    });
+//                    mouseMove.events.listen('onMouseMove', function (event) {
+//                        console.log(event.objects);
+//                    });
 
 
 
@@ -259,7 +280,8 @@
 
     <body>
         <header>
-            <input id="fileManager" type="file" style="width:390px;margin-top: 9px;margin-left: 9px;"/>
+            <input id="file-open" type="file" style="width:390px;margin-top: 9px;margin-left: 9px;"/>
+            <button id="file-save">Salvar Arquivo</button>
         </header>
         <main>
         </main>

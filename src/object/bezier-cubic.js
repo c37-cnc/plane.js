@@ -30,7 +30,7 @@
     BezierCubic.prototype._calculeSegments = function () {
         // https://github.com/MartinDoms/Splines/blob/master/cubicBezier.js
 
-        var lineSegments = 100;
+        var lineSegments = 50;
 
         var dot = function (v1, v2) {
             var sum = 0;
@@ -88,7 +88,7 @@
             uuid: this.uuid,
             type: this.type,
             points: this.points.map(function (point) {
-                return plane.point.toObject();
+                return point.toObject();
             })
         };
     };

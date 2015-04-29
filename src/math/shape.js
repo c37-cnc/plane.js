@@ -42,15 +42,18 @@
         },
         _calculeBounds: function () {
 
-            var from = plane.point.create(this.segments[0]),
-                to = plane.point.create(this.segments[0]);
+            if (!(this.bounds instanceof plane.math.bounds)) {
+                
+                var from = plane.point.create(this.segments[0]),
+                    to = plane.point.create(this.segments[0]);
 
-            this.segments.forEach(function (segment) {
-                from = operation.minimum(segment, from);
-                to = operation.maximum(segment, to);
-            });
+                this.segments.forEach(function (segment) {
+                    from = operation.minimum(segment, from);
+                    to = operation.maximum(segment, to);
+                });
 
-            this.bounds = plane.math.bounds.create(from, to);
+                this.bounds = plane.math.bounds.create(from, to);
+            }
 
             return true;
 

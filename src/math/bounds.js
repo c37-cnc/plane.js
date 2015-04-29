@@ -6,6 +6,10 @@
         this.to = to;
     }
 
+    Bounds.create = function (from, to) {
+        return new Bounds(from, to);
+    };
+
     /**
      * Calculates the MBR when rotated some number of radians about an origin point o.
      * Necessary on a rotation, or a resize
@@ -36,10 +40,6 @@
         }
     };
 
-    plane.math.bounds = {
-        create: function (from, to) {
-            return new Bounds(from, to);
-        }
-    };
+    plane.math.bounds = Bounds;
 
 })(c37.library.plane);

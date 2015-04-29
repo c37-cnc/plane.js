@@ -60,7 +60,7 @@
                 point: this.from.midTo(this.to)
             };
         }
-        
+
         // fim 
         if (point.distanceTo(this.to) <= distance) {
             return {
