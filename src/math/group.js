@@ -4,6 +4,7 @@
     function Group(attrs) {
 
         this.uuid = null;
+        this.type = 'group';
         this.name = null;
         this.segments = [];
         this.bounds = null;
@@ -118,15 +119,13 @@
         toObject: function () {
             return {
                 uuid: this.uuid,
+                type: this.type,
                 name: this.name,
                 status: this.status, // para ativo || não ativo
                 children: this.children.map(function (object) {
                     return object.toObject();
                 })
             };
-        },
-        fromObject: function (object) {
-
         }
     };
 

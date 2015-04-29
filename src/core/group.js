@@ -36,14 +36,9 @@
             }
 
             // verifico se devo criar as intancias dos children
-
-            attrs.children.forEach(function (object) {
-
-                if ((!(object instanceof plane.math.group)) && (!(object instanceof plane.math.shape))) {
-                    debugger;
-                }
-
-            });
+            if ((!(attrs.children[0] instanceof plane.math.group)) && (!(attrs.children[0] instanceof plane.math.shape))) {
+                mountChildren(attrs);
+            }
 
             // crio o novo Group
             var group = new plane.math.group(attrs);
@@ -157,5 +152,26 @@
             }
         }
     };
+
+
+    function mountChildren(attrs) {
+
+        for (var i = 0; i < attrs.children.length; i++) {
+
+            if (attrs.children[i].type === 'group') {
+
+                mountChildren(attrs.children[i]);
+
+                attrs.children[i] = new plane.math.group(attrs.children[i]);
+            }
+
+            if (['polyline', 'polygon', 'rectangle', 'line', 'arc', 'circle', 'ellipse', 'bezier-cubic', 'bezier-quadratic', 'spline', 'text', 'quote'].indexOf(attrs.children[i].type) !== -1) {
+                attrs.children[i] = plane.object[attrs.children[i].type].create(attrs.children[i]);
+            }
+        }
+
+        return true;
+    }
+
 
 })(c37.library.plane);
