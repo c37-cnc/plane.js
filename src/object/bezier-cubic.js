@@ -15,13 +15,8 @@
         this.type = null;
         this.name = null;
 
-        this._segments = [];
-        this._bounds = {
-            from: null,
-            to: null,
-            center: null,
-            radius: null
-        };
+        this.segments = [];
+        this.bounds = null;
 
         this.status = null;
         this.style = null;
@@ -63,7 +58,7 @@
         };
 
         for (var j = 0; j < lineSegments + 1; j++) {
-            this._segments.push(cubicBezier(this.points, j / lineSegments));
+            this.segments.push(cubicBezier(this.points, j / lineSegments));
         }
 
         return true;

@@ -15,13 +15,8 @@
         this.type = null;
         this.name = null;
 
-        this._segments = [];
-        this._bounds = {
-            from: null,
-            to: null,
-            center: null,
-            radius: null
-        };
+        this.segments = [];
+        this.bounds = null;
 
         this.status = null;
         this.style = null;
@@ -34,7 +29,7 @@
 
     Polyline.prototype._calculeSegments = function () {
 
-        this._segments = this.points;
+        this.segments = this.points;
 
         return true;
     };

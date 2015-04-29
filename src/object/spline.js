@@ -3,7 +3,7 @@
 
     var Spline = plane.utility.object.inherits(function Spline(attrs) {
 
-       /**
+        /**
          * A Universally unique identifier for
          * a single instance of Object
          *
@@ -15,17 +15,12 @@
         this.type = null;
         this.name = null;
 
-        this._segments = [];
-        this._bounds = {
-            from: null,
-            to: null,
-            center: null,
-            radius: null
-        };
+        this.segments = [];
+        this.bounds = null;
 
         this.status = null;
         this.style = null;
-        
+
         this.degree = attrs.degree;
         this.knots = attrs.knots;
         this.points = attrs.points;
@@ -192,7 +187,7 @@
             return point3Farray;
         }
 
-        this._segments = LEUWF3cpo(17, this.degree, this.knots, this.points);
+        this.segments = LEUWF3cpo(17, this.degree, this.knots, this.points);
 
 
         return true;

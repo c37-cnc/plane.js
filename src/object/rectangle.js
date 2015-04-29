@@ -15,13 +15,8 @@
         this.type = null;
         this.name = null;
 
-        this._segments = [];
-        this._bounds = {
-            from: null,
-            to: null,
-            center: null,
-            radius: null
-        };
+        this.segments = [];
+        this.bounds = null;
 
         this.status = null;
         this.style = null;
@@ -36,27 +31,27 @@
     Rectangle.prototype._calculeSegments = function () {
 
         //  left + bottom 
-        this._segments.push({
+        this.segments.push({
             x: this.from.x,
             y: this.from.y
         });
         // left + top
-        this._segments.push({
+        this.segments.push({
             x: this.from.x,
             y: this.to.y
         });
         // right + top
-        this._segments.push({
+        this.segments.push({
             x: this.to.x,
             y: this.to.y
         });
         // right + bottom 
-        this._segments.push({
+        this.segments.push({
             x: this.to.x,
             y: this.from.y
         });
         // base
-        this._segments.push({
+        this.segments.push({
             x: this.from.x,
             y: this.from.y
         });
@@ -67,9 +62,9 @@
     Rectangle.prototype.fromSnap = function (point, distance) {
 
         // pelas pontas
-        for (var i = 0; i < this._segments.length; i++) {
+        for (var i = 0; i < this.segments.length; i++) {
 
-            var calculatePoint = plane.point.create(this._segments[i]);
+            var calculatePoint = plane.point.create(this.segments[i]);
 
             if (calculatePoint.distanceTo(point) <= distance) {
                 return {
@@ -80,8 +75,8 @@
         }
 
         // pelos meios 
-        var p1 = plane.point.create(this._segments[0]),
-            p2 = plane.point.create(this._segments[1]);
+        var p1 = plane.point.create(this.segments[0]),
+            p2 = plane.point.create(this.segments[1]);
 
         if (point.distanceTo(p1.midTo(p2)) <= distance) {
             return {
@@ -90,8 +85,8 @@
             };
         }
 
-        var p3 = plane.point.create(this._segments[1]),
-            p4 = plane.point.create(this._segments[2]);
+        var p3 = plane.point.create(this.segments[1]),
+            p4 = plane.point.create(this.segments[2]);
 
         if (point.distanceTo(p3.midTo(p4)) <= distance) {
             return {
@@ -100,8 +95,8 @@
             };
         }
 
-        var p5 = plane.point.create(this._segments[2]),
-            p6 = plane.point.create(this._segments[3]);
+        var p5 = plane.point.create(this.segments[2]),
+            p6 = plane.point.create(this.segments[3]);
 
         if (point.distanceTo(p5.midTo(p6)) <= distance) {
             return {
@@ -110,8 +105,8 @@
             };
         }
 
-        var p7 = plane.point.create(this._segments[3]),
-            p8 = plane.point.create(this._segments[4]);
+        var p7 = plane.point.create(this.segments[3]),
+            p8 = plane.point.create(this.segments[4]);
 
         if (point.distanceTo(p7.midTo(p8)) <= distance) {
             return {

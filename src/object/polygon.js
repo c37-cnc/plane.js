@@ -3,7 +3,7 @@
 
     var Polygon = plane.utility.object.inherits(function Polygon(attrs) {
 
-       /**
+        /**
          * A Universally unique identifier for
          * a single instance of Object
          *
@@ -15,17 +15,12 @@
         this.type = null;
         this.name = null;
 
-        this._segments = [];
-        this._bounds = {
-            from: null,
-            to: null,
-            center: null,
-            radius: null
-        };
+        this.segments = [];
+        this.bounds = null;
 
         this.status = null;
         this.style = null;
-        
+
         this.center = null;
         this.sides = null;
         this.radius = null;
@@ -41,7 +36,7 @@
             var pointX = (this.radius * Math.cos(((Math.PI * 2) / this.sides) * i) + this.center.x),
                 pointY = (this.radius * Math.sin(((Math.PI * 2) / this.sides) * i) + this.center.y);
 
-            this._segments.push({
+            this.segments.push({
                 x: pointX,
                 y: pointY
             });
@@ -58,12 +53,12 @@
                 point: this.center
             };
         }
-        
-        for(var i = 0; i < this._segments.length; i++){
-            
-            var calculatePoint = plane.point.create(this._segments[i]);
-                
-            if (calculatePoint.distanceTo(point) <= distance){
+
+        for (var i = 0; i < this.segments.length; i++) {
+
+            var calculatePoint = plane.point.create(this.segments[i]);
+
+            if (calculatePoint.distanceTo(point) <= distance) {
                 return {
                     status: true,
                     point: calculatePoint
@@ -75,7 +70,7 @@
             status: false,
             point: null
         };
-        
+
     };
 
     Polygon.prototype.toObject = function () {

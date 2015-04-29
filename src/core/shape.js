@@ -46,7 +46,7 @@
             }
 
             // de acordo com a layer - add bounds in store
-            _shapes.get(layer.uuid).add(shape.uuid, [shape._bounds.from.x, shape._bounds.from.y, shape._bounds.to.x, shape._bounds.to.y, shape]);
+            _shapes.get(layer.uuid).add(shape.uuid, [shape.bounds.from.x, shape.bounds.from.y, shape.bounds.to.x, shape.bounds.to.y, shape]);
 
             return shape;
         },

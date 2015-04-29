@@ -15,13 +15,8 @@
         this.type = null;
         this.name = null;
 
-        this._segments = [];
-        this._bounds = {
-            from: null,
-            to: null,
-            center: null,
-            radius: null
-        };
+        this.segments = [];
+        this.bounds = null;
 
         this.status = null;
         this.style = null;        
@@ -59,7 +54,7 @@
             var xval = this.center.x + this.radius * Math.cos(num4);
             var yval = this.center.y + this.radius * Math.sin(num4);
 
-            this._segments.push({
+            this.segments.push({
                 x: xval,
                 y: yval
             });
@@ -71,7 +66,7 @@
         var xval1 = this.center.x + this.radius * Math.cos(num2 + num3);
         var yval1 = this.center.y + this.radius * Math.sin(num2 + num3);
 
-        this._segments.push({
+        this.segments.push({
             x: xval1,
             y: yval1
         });

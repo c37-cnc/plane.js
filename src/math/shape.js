@@ -27,7 +27,7 @@
             plane.utility.object.extend(this, attrs);
 
             // limpando os segments
-            this._segments = [];
+            this.segments = [];
 
             // calculando os segmentos
             this._calculeSegments();
@@ -42,15 +42,15 @@
         },
         _calculeBounds: function () {
 
-            var from = plane.point.create(this._segments[0]),
-                to = plane.point.create(this._segments[0]);
+            var from = plane.point.create(this.segments[0]),
+                to = plane.point.create(this.segments[0]);
 
-            this._segments.forEach(function (segment) {
+            this.segments.forEach(function (segment) {
                 from = operation.minimum(segment, from);
                 to = operation.maximum(segment, to);
             });
 
-            this._bounds = plane.math.bounds.create(from, to);
+            this.bounds = plane.math.bounds.create(from, to);
 
             return true;
 
@@ -75,28 +75,28 @@
             this._cache.context.clearRect(0, 0, this._cache.canvas.width + 1, this._cache.canvas.height + 1);
 
 
-            var moveX = ~~(0.5 + (this._segments[0].x)),
-                moveY = ~~(0.5 + (this._segments[0].y));
+            var moveX = ~~(0.5 + (this.segments[0].x)),
+                moveY = ~~(0.5 + (this.segments[0].y));
 
             // movendo para o inicio do shape para não criar uma linha
             this._cache.context.moveTo(moveX, moveY);
 
             this._cache.context.beginPath();
             // para cada segmento, vou traçando uma linha
-            for (var i = 0; i < this._segments.length; i++) {
+            for (var i = 0; i < this.segments.length; i++) {
 
-                var x = ~~(0.5 + (this._segments[i].x));
-                var y = ~~(0.5 + (this._segments[i].y));
+                var x = ~~(0.5 + (this.segments[i].x));
+                var y = ~~(0.5 + (this.segments[i].y));
 
                 this._cache.context.lineTo(x, y);
             }
             this._cache.context.stroke();
 
             // https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D/getImageData
-            var x = plane.utility.math.parseFloat(this._bounds.from.x, 5),
-                y = plane.utility.math.parseFloat(this._bounds.from.y, 5),
-                width = this._bounds.width === 0 ? 1 : this._bounds.width,
-                height = this._bounds.height === 0 ? 1 : this._bounds.height;
+            var x = plane.utility.math.parseFloat(this.bounds.from.x, 5),
+                y = plane.utility.math.parseFloat(this.bounds.from.y, 5),
+                width = this.bounds.width === 0 ? 1 : this.bounds.width,
+                height = this.bounds.height === 0 ? 1 : this.bounds.height;
 
             this._cache.image = this._cache.context.getImageData(x, y, width, height);
 
@@ -142,19 +142,19 @@
             //     context.putImageData(this._cache.image, moveX, moveY);
             // }
 
-            var moveX = ~~(0.5 + (this._segments[0].x * zoom + motion.x)),
-                moveY = ~~(0.5 + (this._segments[0].y * zoom + motion.y));
+            var moveX = ~~(0.5 + (this.segments[0].x * zoom + motion.x)),
+                moveY = ~~(0.5 + (this.segments[0].y * zoom + motion.y));
 
             // movendo para o inicio do shape para não criar uma linha
             context.moveTo(moveX, moveY);
 
             // para cada segmento, vou traçando uma linha
-            for (var i = 0; i < this._segments.length; i++) {
+            for (var i = 0; i < this.segments.length; i++) {
                 // http://seb.ly/2011/02/html5-canvas-sprite-optimisation/
                 // http://jsperf.com/math-round-vs-hack/3
                 // http://www.ibm.com/developerworks/library/wa-canvashtml5layering/
-                var x = ~~(0.5 + (this._segments[i].x * zoom + motion.x));
-                var y = ~~(0.5 + (this._segments[i].y * zoom + motion.y));
+                var x = ~~(0.5 + (this.segments[i].x * zoom + motion.x));
+                var y = ~~(0.5 + (this.segments[i].y * zoom + motion.y));
 
                 context.lineTo(x, y);
             }

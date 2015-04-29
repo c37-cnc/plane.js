@@ -15,13 +15,8 @@
         this.type = null;
         this.name = null;
 
-        this._segments = [];
-        this._bounds = {
-            from: null,
-            to: null,
-            center: null,
-            radius: null
-        };
+        this.segments = [];
+        this.bounds = null;
 
         this.status = null;
         this.style = null;
@@ -43,7 +38,7 @@
         var num2 = 0.0;
 
         while (index < size - 1) {
-            this._segments.push({
+            this.segments.push({
                 x: this.center.x + this.radius * Math.cos(num2),
                 y: this.center.y + this.radius * Math.sin(num2)
             });

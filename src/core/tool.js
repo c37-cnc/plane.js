@@ -186,6 +186,7 @@
                 groups: groupFind(rectangle),
                 shapes: shapesFind(rectangle)
             },
+            target: event.target,
             point: plane.point.create(pointInView),
             now: new Date().toISOString()
         };
@@ -367,7 +368,7 @@
         if (shapes.length > 0) {
             var i = 0;
             do {
-                if (plane.math.intersect(shapes[i]._segments, rectangle)) {
+                if (plane.math.intersect(shapes[i].segments, rectangle)) {
                     shapesFinded.push(shapes[i]);
                 }
                 i++;
@@ -389,7 +390,7 @@
                 var ii = 0,
                     children = groups[i].children;
                 do {
-                    if (plane.math.intersect(children[ii]._segments, rectangle)) {
+                    if (plane.math.intersect(children[ii].segments, rectangle)) {
                         groupFinded.push(groups[i]);
                         // caso seja localizado apenas um shape dentro do group paro
                         // a pesquisa para não add o mesmo grou mais de uma vez

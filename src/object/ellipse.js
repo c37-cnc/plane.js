@@ -3,7 +3,7 @@
 
     var Ellipse = plane.utility.object.inherits(function Ellipse(attrs) {
 
-       /**
+        /**
          * A Universally unique identifier for
          * a single instance of Object
          *
@@ -15,17 +15,12 @@
         this.type = null;
         this.name = null;
 
-        this._segments = [];
-        this._bounds = {
-            from: null,
-            to: null,
-            center: null,
-            radius: null
-        };
+        this.segments = [];
+        this.bounds = null;
 
         this.status = null;
         this.style = null;
-        
+
         this.center = null;
         this.radiusY = null;
         this.radiusX = null;
@@ -80,7 +75,7 @@
             };
 
             // armazenando no array
-            this._segments.push(p3);
+            this.segments.push(p3);
 
             // continuando até a volta completa
             if (startAngle !== endAngle)

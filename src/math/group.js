@@ -1,11 +1,12 @@
 (function (plane) {
     "use strict";
+
     function Group(attrs) {
 
         this.uuid = null;
         this.name = null;
-        this._segments = null;
-        this._bounds = null;
+        this.segments = null;
+        this.bounds = null;
         this.status = null;
         this.style = null;
         this.children = null;
@@ -30,7 +31,7 @@
             plane.utility.object.extend(this, attrs);
 
             // limpando os segments
-            this._segments = [];
+            this.segments = [];
 
             // calculando os segmentos
             this._calculeSegments();
@@ -44,22 +45,22 @@
 
             var i = 0;
             do {
-                this._segments = this.children[i]._segments.concat(this._segments);
+                this.segments = this.children[i].segments.concat(this.segments);
                 i++;
             } while (i < this.children.length);
 
         },
         _calculeBounds: function () {
 
-            var from = plane.point.create(this._segments[0]),
-                to = plane.point.create(this._segments[0]);
+            var from = plane.point.create(this.segments[0]),
+                to = plane.point.create(this.segments[0]);
 
-            this._segments.forEach(function (segment) {
+            this.segments.forEach(function (segment) {
                 from = operation.minimum(segment, from);
                 to = operation.maximum(segment, to);
             });
 
-            this._bounds = plane.math.bounds.create(from, to);
+            this.bounds = plane.math.bounds.create(from, to);
 
             return true;
         },
@@ -104,8 +105,8 @@
                 this.children[i]._render(context, zoom, motion);
                 i++;
             } while (i < this.children.length)
-                
-                
+
+
             // quando possivel personalização
             if (this.style) {
                 // desenho o shape no contexto
@@ -113,7 +114,7 @@
                 // restauro as configurações de estilo anteriores do contexto
                 context.restore();
             }
-        
+
 
             return true;
         },
