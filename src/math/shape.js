@@ -5,6 +5,8 @@
 
         // NÃO COLOCAR OS FIELDS AQUI!!!
         // ele ira herder como prototype
+        
+        // https://github.com/mrdoob/three.js/blob/master/src/core/Object3D.js#L395
 
     }
 
@@ -42,6 +44,8 @@
         },
         _calculeBounds: function () {
 
+            // https://github.com/mrdoob/three.js/blob/master/src/core/Geometry.js#L562
+            // https://github.com/mrdoob/three.js/blob/master/src/math/Box3.js#L185
             if (!(this.bounds instanceof plane.math.bounds)) {
                 
                 var from = plane.point.create(this.segments[0]),
