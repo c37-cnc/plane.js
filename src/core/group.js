@@ -64,7 +64,7 @@
 
             return group;
         },
-        remove: function (uuid) {
+        remove: function (uuid, type) {
             if ((!uuid) || (typeof uuid !== 'string')) {
                 throw new Error('group - remove - uuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
@@ -72,21 +72,24 @@
                 var layer = plane.layer.active,
                     group = _groups.get(layer.uuid).get(uuid);
 
-                var i = 0;
-                do {
-                    // limpo qualquer estilo de children
-                    group.children[i].style = null;
+                if (type && (type === 'unGroup')) {
+                    var i = 0;
+                    do {
+                        // limpo qualquer estilo de children
+                        group.children[i].style = null;
 
-                    if (group.children[i] instanceof plane.math.group) {
-                        plane.group.create(group.children[i]);
-                    }
+                        if (group.children[i] instanceof plane.math.group) {
+                            plane.group.create(group.children[i]);
+                        }
 
-                    if (group.children[i] instanceof plane.math.shape) {
-                        plane.shape.create(group.children[i]);
-                    }
+                        if (group.children[i] instanceof plane.math.shape) {
+                            plane.shape.create(group.children[i]);
+                        }
 
-                    i++;
-                } while (i < group.children.length);
+                        i++;
+                    } while (i < group.children.length);
+                }
+
 
                 // removo o group do dictionary de _groups
                 _groups.get(layer.uuid).remove(uuid);
