@@ -20,7 +20,7 @@
         _initialize: function (attrs) {
 
             // identificador do group
-            var uuid = plane.utility.math.uuid(9, 16);
+            var uuid = attrs.uuid ? attrs.uuid : plane.utility.math.uuid(9, 16);
 
             // (attributos || parametros) para o novo Group
             attrs = plane.utility.object.merge({
