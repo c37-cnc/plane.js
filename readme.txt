@@ -45,6 +45,8 @@ https://gist.github.com/lilo003/7d0dc21d883d4a705fa7
 *Software architecture*
 http://backbonetutorials.com/organizing-backbone-using-modules/
 
+*HTML 5 Canvas*
+http://www.w3.org/TR/2dcontext
 
 *Developer tools*
 https://www.npmjs.com/package/grunt-contrib-compress
