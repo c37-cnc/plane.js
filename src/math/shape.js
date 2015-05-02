@@ -5,7 +5,7 @@
 
         // NÃO COLOCAR OS FIELDS AQUI!!!
         // ele ira herder como prototype
-        
+
         // https://github.com/mrdoob/three.js/blob/master/src/core/Object3D.js#L395
 
     }
@@ -47,7 +47,7 @@
             // https://github.com/mrdoob/three.js/blob/master/src/core/Geometry.js#L562
             // https://github.com/mrdoob/three.js/blob/master/src/math/Box3.js#L185
             if (!(this.bounds instanceof plane.math.bounds)) {
-                
+
                 var from = plane.point.create(this.segments[0]),
                     to = plane.point.create(this.segments[0]);
 
@@ -122,9 +122,15 @@
         _render: function (context, zoom, motion) {
 
             // possivel personalização
+            // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Applying_styles_and_colors
             if (this.style) {
                 // salvo as configurações de estilo atuais do contexto
                 context.save();
+
+                if (this.style.fillColor) {
+                    context.fillStyle = this.style.fillColor;
+                    context.strokeStyle = this.style.fillColor;
+                }
 
                 // personalização para linha pontilhada
                 if (this.style.lineDash)
@@ -168,6 +174,10 @@
 
             // quando possivel personalização
             if (this.style) {
+                // para fazer o preenchimento quando necessário
+                if (this.style.fillColor)
+                    context.fill();
+
                 // desenho o shape no contexto
                 context.stroke();
                 // restauro as configurações de estilo anteriores do contexto
