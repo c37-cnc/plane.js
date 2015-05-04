@@ -19,7 +19,7 @@
             return true;
 
         },
-        create: function (attrs, layerUuid) {
+        create: function (attrs, uuid) {
 
             if ((typeof attrs === "function") || (attrs === null)) {
                 throw new Error('shape - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
@@ -29,7 +29,7 @@
                 throw new Error('shape - create - type is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
 
-            var layer = plane.layer.get(layerUuid);
+            var layer = plane.layer.get(uuid);
 
             // atributos 
             attrs = plane.utility.object.merge({
@@ -50,20 +50,37 @@
 
             return shape;
         },
-        update: function (shapeUuid) {
-
-
-            return true;
-        },
-        remove: function (uuid) {
-            if ((!uuid) || (typeof uuid !== 'string')) {
-                throw new Error('shape - remove - shapeUuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+        update: function (attrs) {
+            if ((!attrs) || (typeof attrs !== 'object')) {
+                throw new Error('shape - update - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
                 // sempre trabalhamos com uma layer
                 var layer = plane.layer.active;
-                
-                // removendo shape
+
+                // tenho ao menos um shape na layer ativa?
                 if (_shapes.get(layer.uuid)) {
+                    // removendo shape
+                    _shapes.get(layer.uuid).remove(attrs.uuid);
+
+                    var shape = plane.object[attrs.type].create(attrs);
+
+                    // de acordo com a layer - add bounds in store
+                    _shapes.get(layer.uuid).add(shape.uuid, [shape.bounds.from.x, shape.bounds.from.y, shape.bounds.to.x, shape.bounds.to.y, shape]);
+                }
+
+                return true;
+            }
+        },
+        remove: function (uuid) {
+            if ((!uuid) || (typeof uuid !== 'string')) {
+                throw new Error('shape - remove - uuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+            } else {
+                // sempre trabalhamos com uma layer
+                var layer = plane.layer.active;
+
+                // tenho ao menos um shape na layer ativa?
+                if (_shapes.get(layer.uuid)) {
+                    // removendo shape
                     _shapes.get(layer.uuid).remove(uuid);
                 }
 
