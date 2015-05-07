@@ -129,23 +129,23 @@
 
                 if (this.style.fillColor) {
                     context.fillStyle = this.style.fillColor;
-                    context.strokeStyle = this.style.fillColor;
+                    //context.strokeStyle = this.style.fillColor;
+                } else {
+                    // personalização para a cor da linha
+                    if (this.style.lineColor)
+                        context.strokeStyle = this.style.lineColor;
+
+                    // personalização para linha pontilhada
+                    if (this.style.lineDash)
+                        context.setLineDash([5, 2]);
+
+                    // personalização para a espessura da linha
+                    if (this.style.lineWidth)
+                        context.lineWidth = this.style.lineWidth;
+
+                    // e deixo iniciado um novo shape
+                    context.beginPath();
                 }
-
-                // personalização para linha pontilhada
-                if (this.style.lineDash)
-                    context.setLineDash([5, 2]);
-
-                // personalização para a espessura da linha
-                if (this.style.lineWidth)
-                    context.lineWidth = this.style.lineWidth;
-
-                // personalização para a cor da linha
-                if (this.style.lineColor)
-                    context.strokeStyle = this.style.lineColor;
-
-                // e deixo iniciado um novo shape
-                context.beginPath();
             }
 
             // context.globalCompositeOperation = 'source-in';
@@ -175,11 +175,13 @@
             // quando possivel personalização
             if (this.style) {
                 // para fazer o preenchimento quando necessário
-                if (this.style.fillColor)
+                if (this.style.fillColor) {
+                    // preencho o shape no contexto
                     context.fill();
-
-                // desenho o shape no contexto
-                context.stroke();
+                } else {
+                    // desenho o shape no contexto
+                    context.stroke();
+                }
                 // restauro as configurações de estilo anteriores do contexto
                 context.restore();
             }
