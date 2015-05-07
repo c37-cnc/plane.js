@@ -142,10 +142,9 @@
                     // personalização para a espessura da linha
                     if (this.style.lineWidth)
                         context.lineWidth = this.style.lineWidth;
-
-                    // e deixo iniciado um novo shape
-                    context.beginPath();
                 }
+                // e deixo iniciado um novo shape
+                context.beginPath();
             }
 
             // context.globalCompositeOperation = 'source-in';
