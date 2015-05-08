@@ -37,7 +37,7 @@
             plane.group._reset();
             plane.shape._reset();
             
-            plane.view._reset();
+            plane.view.reset();
             
         },
         math: {},
