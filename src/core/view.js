@@ -65,7 +65,7 @@
             return true;
         },
         events: null,
-        _reset: function () {
+        reset: function () {
 
             // o centro inicial
             _center = plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2);
