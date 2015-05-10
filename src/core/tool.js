@@ -150,6 +150,17 @@
 
         var tools = _tools.list(),
             t = tools.length;
+        
+        // sort, toda(s) a(s) layer(s) system(s) devem ser as primeiras
+        // para os demais layers/objetos virem depois 'em cima'
+        tools.sort(function (a, b) {
+            if (!a.priority)
+                return 1;
+            if (a.priority)
+                return -1;
+            return 0;
+        });
+        
         while (t--) {
             if (tools[t].active) {
                 tools[t].events.notify('onMouseWheel', event);
