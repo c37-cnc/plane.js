@@ -12,6 +12,7 @@
         this.uuid = attrs.uuid;
         this.name = attrs.name;
         this.events = attrs.events;
+        this.priority = attrs.priority;
 
         Object.defineProperty(this, 'active', {
             get: function () {
@@ -73,7 +74,8 @@
                 uuid: uuid,
                 name: 'tool - '.concat(uuid),
                 events: plane.utility.object.event.create(),
-                active: false
+                active: false,
+                priority: false
             }, attrs);
 
             // nova tool
@@ -150,23 +152,32 @@
 
         var tools = _tools.list(),
             t = tools.length;
-        
+
         // sort, toda(s) a(s) layer(s) system(s) devem ser as primeiras
         // para os demais layers/objetos virem depois 'em cima'
         tools.sort(function (a, b) {
             if (!a.priority)
-                return 1;
-            if (a.priority)
                 return -1;
+            if (a.priority)
+                return 1;
             return 0;
         });
-        
+
         while (t--) {
             if (tools[t].active) {
                 tools[t].events.notify('onMouseWheel', event);
+//                if (tools[t].priority){
+//                    sleepFor(1000);
+//                }
             }
         }
     }
+
+//    function sleepFor(sleepDuration) {
+//        var now = new Date().getTime();
+//        while (new Date().getTime() < now + sleepDuration) { /* do nothing */
+//        }
+//    }
 
     function onMouseDown(event) {
 
