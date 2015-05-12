@@ -60,6 +60,57 @@
             };
         }
 
+        // para 0º
+        var x = this.center.x + (this.radius * -Math.sin(0)),
+            y = this.center.y + (this.radius * Math.cos(0)),
+            p0 = plane.point.create(x, y);
+        
+        if (point.distanceTo(p0) <= distance) {
+            return {
+                status: true,
+                point: p0
+            };
+        }
+        
+        
+        // para 270º
+        var x = this.center.x + (this.radius * -Math.sin(4.7123889804)),
+            y = this.center.y + (this.radius * Math.cos(4.7123889804)),
+            p270 = plane.point.create(x, y);
+        
+        if (point.distanceTo(p270) <= distance) {
+            return {
+                status: true,
+                point: p270
+            };
+        }
+
+        // para 180º
+        var x = this.center.x + (this.radius * -Math.sin(3.1415926536)),
+            y = this.center.y + (this.radius * Math.cos(3.1415926536)),
+            p180 = plane.point.create(x, y);
+
+        if (point.distanceTo(p180) <= distance) {
+            return {
+                status: true,
+                point: p180
+            };
+        }
+
+        // para 90º
+        var x = this.center.x + (this.radius * -Math.sin(1.5707963268)),
+            y = this.center.y + (this.radius * Math.cos(1.5707963268)),
+            p90 = plane.point.create(x, y);
+
+        if (point.distanceTo(p90) <= distance) {
+            return {
+                status: true,
+                point: p90
+            };
+        }
+
+
+
 //        // radius
 //        var x = this.center.x + (this.radius * Math.cos(this.center.angleTo(point))),
 //            y = this.center.y + (this.radius * Math.sin(this.center.angleTo(point)));
