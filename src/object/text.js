@@ -117,7 +117,6 @@
 
         // para a fonte + seu tamanho
         context.font = plane.utility.string.format('{0}px arial', [parseInt(this.size * zoom)]);
-        context.canvas.font = plane.utility.string.format('{0}px arial', [parseInt(this.size * zoom)]);
 
         // para o movimento até o ponto inicial
         context.translate(this.from.x * zoom + motion.x, this.from.y * zoom + motion.y);

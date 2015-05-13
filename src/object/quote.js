@@ -45,7 +45,24 @@
 
     Quote.prototype.fromSnap = function (point, distance) {
 
-        //return true;
+        if (point.distanceTo(this.from) <= distance) {
+            return {
+                status: true,
+                point: this.from
+            };
+        }
+
+        if (point.distanceTo(this.to) <= distance) {
+            return {
+                status: true,
+                point: this.to
+            };
+        }
+
+        return {
+            status: false,
+            point: null
+        };
 
     };
 
@@ -86,16 +103,31 @@
         //p3 = plane.point.create(p3.x + ((-2 / plane.view.zoom) * Math.cos(angleInRadian0)), p3.y + ((-2 / plane.view.zoom) * Math.sin(angleInRadian0)));
         p3 = plane.point.create(p3.x + (-1 * Math.cos(angleInRadian0)), p3.y + (-1 * Math.sin(angleInRadian0)));
 
-
         // salvo as configurações de estilo atuais do contexto
         context.save();
 
-        context.setLineDash([5, 2]);
-        //context.strokeStyle = '#007efc';
-        context.strokeStyle = '#0f8fff';
 
-        context.beginPath();
+        if (this.style) {
 
+
+            context.fillStyle = this.style.fillColor || this.style.lineColor;
+            context.strokeStyle = this.style.fillColor || this.style.lineColor;
+
+            // personalização para linha pontilhada
+            if (this.style.lineDash)
+                context.setLineDash([5, 2]);
+
+            context.beginPath();
+
+        }
+
+//        if (this.style) {
+//            context.fillStyle = this.style.lineColor || this.style.fillColor;
+//            context.strokeStyle = this.style.lineColor || this.style.fillColor;
+//        } else {
+//            context.fillStyle = '#0f8fff';
+//            context.strokeStyle = '#0f8fff';
+//        }
 
         context.moveTo(this.from.x * zoom + motion.x, this.from.y * zoom + motion.y);
 
@@ -105,18 +137,12 @@
         context.lineTo(p3.x * zoom + motion.x, p3.y * zoom + motion.y);
         context.lineTo(p4.x * zoom + motion.x, p4.y * zoom + motion.y);
 
-        context.stroke();
+        if (this.style) {
+            context.stroke();
+        }
 
 
 
-
-
-
-
-        // para a fonte + seu tamanho
-        context.font = plane.utility.string.format('{0}px arial', [parseInt(10 * zoom)]);
-        //context.fillStyle = '#007efc';
-        context.fillStyle = '#0f8fff';
 
 
 
@@ -173,13 +199,13 @@
         // o flip para o texto estar correto
         context.scale(1, -1);
 
-
+        // para a fonte + seu tamanho
+        context.font = plane.utility.string.format('{0}px arial', [parseInt(10 * zoom)]);
         // escrevo o texto no context
         context.fillText(Math.round(textAlpha) + 'mm', 0, 0);
 
         // restauro as configurações de estilo anteriores do contexto
         context.restore();
-
     };
 
 
