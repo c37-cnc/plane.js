@@ -49,16 +49,17 @@
             lineSizeValue = plane.view.context.measureText(this.value).width / plane.view.zoom;
             
         plane.view.context.restore();
-
-        var pointTo = plane.point.create(this.from.x + (lineSizeValue * Math.cos(angleInRadian)), this.from.y + (lineSizeValue * Math.sin(angleInRadian)));
         
-        this.segments.push(pointTo);
+        var x = this.from.x + (lineSizeValue * Math.cos(angleInRadian)),
+            y = this.from.y + (lineSizeValue * Math.sin(angleInRadian));
         
-//        this.segments.push({
-//            x: this.to.x,
-//            y: this.to.y
-//        });
-
+        this.segments.push({
+            x: x,
+            y: y
+        });
+        
+        this.to = plane.point.create(x, y);
+        
         return true;
     };
 
@@ -71,10 +72,10 @@
             };
         }
 
-        if (point.distanceTo(this.segments[1]) <= distance) {
+        if (point.distanceTo(this.to) <= distance) {
             return {
                 status: true,
-                point: plane.point.create(this.segments[1])
+                point: this.to
             };
         }
 
