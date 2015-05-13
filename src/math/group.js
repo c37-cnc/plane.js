@@ -88,6 +88,9 @@
                 // personalização para a espessura da linha
                 if (this.style.lineWidth)
                     context.lineWidth = this.style.lineWidth;
+                
+                // personalização para texto
+                context.fillStyle = this.style.fillColor || this.style.lineColor;
 
                 // personalização para a cor da linha
                 if (this.style.lineColor)
