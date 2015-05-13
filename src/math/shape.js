@@ -109,16 +109,6 @@
 
             return true;
         },
-        contains: function (position, transform) {
-
-            return false;
-
-        },
-        intersect: function (rectangle) {
-
-            return true;
-
-        },
         _render: function (context, zoom, motion) {
 
             // possivel personalização
@@ -184,16 +174,32 @@
                 // restauro as configurações de estilo anteriores do contexto
                 context.restore();
             }
+        },
+        move: function () {
+
+        },
+        copy: function () {
+
+        },
+        mirror: function () {
+            // http://www.mathopenref.com/reflectpoint.html
+            // http://math.stackexchange.com/questions/65503/point-reflection-over-a-line
+        },
+        rotate: function () {
+
+        },
+        scale: function () {
+
         }
     };
 
-    var renderToCanvas = function (width, height, renderFunction) {
-        var buffer = document.createElement('canvas');
-        buffer.width = width;
-        buffer.height = height;
-        renderFunction(buffer.getContext('2d'));
-        return buffer;
-    };
+//    var renderToCanvas = function (width, height, renderFunction) {
+//        var buffer = document.createElement('canvas');
+//        buffer.width = width;
+//        buffer.height = height;
+//        renderFunction(buffer.getContext('2d'));
+//        return buffer;
+//    };
 
     var operation = {
         minimum: function (a, b) {
