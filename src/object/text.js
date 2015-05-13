@@ -37,10 +37,27 @@
             x: this.from.x,
             y: this.from.y
         });
-        this.segments.push({
-            x: this.to.x,
-            y: this.to.y
-        });
+        
+        plane.view.context.save();
+
+        // para a fonte + seu tamanho
+        plane.view.context.font = plane.utility.string.format('{0}px arial', [parseInt(this.size * plane.view.zoom)]);
+        
+        // um remendo para o calculo
+        var angleInRadian = this.from.angleTo(this.to),
+            //lineSizeValue = this.measure.width - (.5 / plane.view.zoom);
+            lineSizeValue = plane.view.context.measureText(this.value).width / plane.view.zoom;
+            
+        plane.view.context.restore();
+
+        var pointTo = plane.point.create(this.from.x + (lineSizeValue * Math.cos(angleInRadian)), this.from.y + (lineSizeValue * Math.sin(angleInRadian)));
+        
+        this.segments.push(pointTo);
+        
+//        this.segments.push({
+//            x: this.to.x,
+//            y: this.to.y
+//        });
 
         return true;
     };
@@ -54,16 +71,10 @@
             };
         }
 
-        // um remendo para o calculo
-        var angleInRadian = this.from.angleTo(this.to),
-            lineSizeValue = this.measure.width - (.5 / plane.view.zoom);
-
-        var pointTo = plane.point.create(this.from.x + (lineSizeValue * Math.cos(angleInRadian)), this.from.y + (lineSizeValue * Math.sin(angleInRadian)));
-
-        if (point.distanceTo(pointTo) <= distance) {
+        if (point.distanceTo(this.segments[1]) <= distance) {
             return {
                 status: true,
-                point: pointTo
+                point: plane.point.create(this.segments[1])
             };
         }
 
@@ -91,6 +102,18 @@
         // salvo as configurações de estilo atuais do contexto
         context.save();
 
+        // possivel personalização
+        // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Applying_styles_and_colors
+        if (this.style) {
+
+            context.fillStyle = this.style.fillColor || this.style.lineColor;
+
+            // personalização para linha pontilhada
+            if (this.style.lineDash)
+                context.setLineDash([5, 2]);
+
+        }
+
         // para a fonte + seu tamanho
         context.font = plane.utility.string.format('{0}px arial', [parseInt(this.size * zoom)]);
         context.canvas.font = plane.utility.string.format('{0}px arial', [parseInt(this.size * zoom)]);
@@ -105,8 +128,7 @@
 
         // o flip para o texto estar correto
         context.scale(1, -1);
-
-
+        
         if (!this.measure) {
 
             this.measure = {
@@ -116,6 +138,7 @@
 
         }
 
+        // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
         // escrevo o texto no context
         context.fillText(this.value, 0, 0);
 

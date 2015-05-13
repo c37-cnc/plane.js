@@ -186,6 +186,9 @@
                 height: _viewPort.clientHeight,
                 width: _viewPort.clientWidth
             };
+        },
+        get context(){
+            return _context;
         }
     };
 
