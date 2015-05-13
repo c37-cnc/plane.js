@@ -291,7 +291,8 @@
 
             // os COM estilos
             var shapesWithStyle = shapes.filter(function (shape) {
-                return shape.style || shape.type === 'quote';
+                //return shape.style || shape.type === 'quote';
+                return shape.style;
             });
 
             // temos shapes COM estilo para render?
@@ -349,7 +350,8 @@
 
             // os SEM estilos
             var shapesWithoutStyle = shapes.filter(function (shape) {
-                return !shape.style && shape.type !== 'quote';
+                //return !shape.style && shape.type !== 'quote';
+                return !shape.style;
             });
 
             // temos shapes SEM estilo para render?

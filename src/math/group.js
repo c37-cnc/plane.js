@@ -88,7 +88,7 @@
                 // personalização para a espessura da linha
                 if (this.style.lineWidth)
                     context.lineWidth = this.style.lineWidth;
-                
+
                 // personalização para texto
                 context.fillStyle = this.style.fillColor || this.style.lineColor;
 
@@ -102,7 +102,11 @@
 
             var i = 0;
             do {
-                this.children[i].style = this.children[i].style ? this.children[i].style : null;
+                if ((this.children[i].style === 'quote') && (this.style)) {
+                    this.children[i].style = this.style;
+                } else {
+                    this.children[i].style = this.children[i].style ? this.children[i].style : null;
+                }
                 this.children[i]._render(context, zoom, motion);
                 i++;
             } while (i < this.children.length)
