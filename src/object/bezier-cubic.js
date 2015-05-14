@@ -93,6 +93,11 @@
         };
     };
 
+    BezierCubic.prototype.toPoint = function () {
+
+        return this.points.slice();
+
+    };
 
     plane.object['bezier-cubic'] = {
         create: function (attrs) {

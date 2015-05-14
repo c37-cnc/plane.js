@@ -139,6 +139,36 @@
             radius: this.radius
         };
     };
+    
+    Circle.prototype.toPoint = function () {
+
+        // https://www.mathsisfun.com/algebra/trig-four-quadrants.html
+        // http://www.rapidtables.com/convert/number/degrees-to-radians.htm
+        var points = [];
+
+        // para 0º
+        var x = this.center.x + (this.radius * -Math.sin(0)),
+            y = this.center.y + (this.radius * Math.cos(0));
+        points.push(plane.point.create(x, y));
+
+        // para 270º
+        var x = this.center.x + (this.radius * -Math.sin(4.7123889804)),
+            y = this.center.y + (this.radius * Math.cos(4.7123889804));
+        points.push(plane.point.create(x, y));
+
+        // para 180º
+        var x = this.center.x + (this.radius * -Math.sin(3.1415926536)),
+            y = this.center.y + (this.radius * Math.cos(3.1415926536));
+        points.push(plane.point.create(x, y));
+
+        // para 90º
+        var x = this.center.x + (this.radius * -Math.sin(1.5707963268)),
+            y = this.center.y + (this.radius * Math.cos(1.5707963268));
+        points.push(plane.point.create(x, y));
+
+        return points;
+
+    };
 
 
     plane.object.circle = {

@@ -86,6 +86,17 @@
         };
     };
 
+    Line.prototype.toPoint = function () {
+
+        var points = [];
+
+        points.push(this.from);
+        points.push(this.to);
+
+        return points;
+
+    };
+
 
     plane.object.line = {
         create: function (attrs) {
