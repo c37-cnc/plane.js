@@ -131,6 +131,28 @@
         };
     };
 
+    Arc.prototype.toPoints = function () {
+
+        var points = [];
+
+        var sX = this.center.x + this.radius * Math.cos(Math.PI * this.startAngle / 180.0),
+            sY = this.center.y + this.radius * Math.sin(Math.PI * this.startAngle / 180.0),
+            startPoint = plane.point.create(sX, sY);
+        points.push(startPoint);
+
+        var middlePoint = this.getMiddle();
+        points.push(middlePoint);
+
+        var eX = this.center.x + this.radius * Math.cos(Math.PI * this.endAngle / 180.0),
+            eY = this.center.y + this.radius * Math.sin(Math.PI * this.endAngle / 180.0),
+            endPoint = plane.point.create(eX, eY);
+        points.push(endPoint);
+
+        return points;
+
+    };
+
+
     Arc.prototype.getMiddle = function () {
 
         var end = this.endAngle - this.startAngle;

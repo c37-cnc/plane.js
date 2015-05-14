@@ -224,6 +224,11 @@
         };
     };
 
+    Spline.prototype.toPoints = function () {
+
+        return this.points.slice();
+
+    };
 
     plane.object.spline = {
         create: function (attrs) {

@@ -75,6 +75,18 @@
             height: this.height
         };
     };
+    
+    Quote.prototype.toPoints = function () {
+
+        var points = [];
+
+        points.push(this.from);
+        points.push(this.to);
+
+        return points;
+
+    };
+    
 
     // https://developer.mozilla.org/en-US/docs/Web/API/Canvas_API/Tutorial/Drawing_text
     Quote.prototype._render = function (context, zoom, motion) {

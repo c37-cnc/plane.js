@@ -132,6 +132,16 @@
         };
     };
 
+    Rectangle.prototype.toPoints = function () {
+
+        var points = [];
+
+        points.push(this.from);
+        points.push(this.to);
+
+        return points;
+
+    };
 
     plane.object.rectangle = {
         create: function (attrs) {

@@ -83,6 +83,20 @@
         };
     };
 
+    Polygon.prototype.toPoints = function () {
+
+        var points = [];
+
+        for (var i = 0; i < this.segments.length; i++) {
+
+            points.push(plane.point.create(this.segments[i]));
+
+        }
+
+        return points;
+
+    };
+
 
     plane.object.polygon = {
         create: function (attrs) {

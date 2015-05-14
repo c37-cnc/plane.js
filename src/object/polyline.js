@@ -62,6 +62,12 @@
         };
     };
 
+    Polyline.prototype.toPoints = function () {
+
+        return this.points.slice();
+
+    };
+
 
     plane.object.polyline = {
         create: function (attrs) {

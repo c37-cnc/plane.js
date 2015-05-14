@@ -92,7 +92,7 @@
         };
     };
 
-    BezierQuadratic.prototype.toPoint = function () {
+    BezierQuadratic.prototype.toPoints = function () {
 
         return this.points.slice();
 
