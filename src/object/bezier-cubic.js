@@ -93,7 +93,7 @@
         };
     };
 
-    BezierCubic.prototype.toPoint = function () {
+    BezierCubic.prototype.toPoints = function () {
 
         return this.points.slice();
 

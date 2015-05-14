@@ -140,7 +140,7 @@
         };
     };
     
-    Circle.prototype.toPoint = function () {
+    Circle.prototype.toPoints = function () {
 
         // https://www.mathsisfun.com/algebra/trig-four-quadrants.html
         // http://www.rapidtables.com/convert/number/degrees-to-radians.htm

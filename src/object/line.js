@@ -86,7 +86,7 @@
         };
     };
 
-    Line.prototype.toPoint = function () {
+    Line.prototype.toPoints = function () {
 
         var points = [];
 
