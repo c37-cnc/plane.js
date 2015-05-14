@@ -92,6 +92,11 @@
         };
     };
 
+    BezierQuadratic.prototype.toPoint = function () {
+
+        return this.points.slice();
+
+    };
 
     plane.object['bezier-quadratic'] = {
         create: function (attrs) {
