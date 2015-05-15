@@ -80,8 +80,8 @@
 
         var points = [];
 
-        points.push(this.from);
-        points.push(this.to);
+        points.push(this.from.clone());
+        points.push(this.to.clone());
 
         return points;
 

@@ -68,6 +68,9 @@
         greater: function (point) {
             return (this.x > point.x && this.y > point.y);
         },
+        clone: function () {
+            return new Point(this.x, this.y);
+        },
         toJson: function () {
             return JSON.stringify(this);
             //            JSON.stringify(utility.string.format('[', []))
