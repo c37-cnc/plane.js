@@ -225,7 +225,7 @@
     };
 
     Spline.prototype.toPoints = function () {
-
+        // uma cópia do array
         return this.points.slice();
 
     };
