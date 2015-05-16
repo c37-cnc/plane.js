@@ -174,22 +174,6 @@
                 // restauro as configurações de estilo anteriores do contexto
                 context.restore();
             }
-        },
-        move: function () {
-
-        },
-        copy: function () {
-
-        },
-        mirror: function () {
-            // http://www.mathopenref.com/reflectpoint.html
-            // http://math.stackexchange.com/questions/65503/point-reflection-over-a-line
-        },
-        rotate: function () {
-
-        },
-        scale: function () {
-
         }
     };
 
