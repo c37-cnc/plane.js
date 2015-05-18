@@ -28,9 +28,12 @@
             return plane.point.create(center);
         },
         get radius() {
-            if (this.center) {
-                return Math.sqrt((this.to.x - this.from.x) * (this.to.x - this.from.x) + (this.to.y - this.from.y) * (this.to.y - this.from.y)) / 2;
-            }
+            
+//            var from = plane.point.create(this.from),
+//                to = plane.point.create(this.to);
+//            
+//            return from.distanceTo(to) / 2;
+            return Math.sqrt(((this.to.x - this.from.x) * (this.to.x - this.from.x)) + ((this.to.y - this.from.y) * (this.to.y - this.from.y))) / 2;
         },
         get width() {
             return this.to.x - this.from.x;

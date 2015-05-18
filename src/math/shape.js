@@ -46,18 +46,15 @@
 
             // https://github.com/mrdoob/three.js/blob/master/src/core/Geometry.js#L562
             // https://github.com/mrdoob/three.js/blob/master/src/math/Box3.js#L185
-            if (!(this.bounds instanceof plane.math.bounds)) {
+            var from = plane.point.create(this.segments[0]),
+                to = plane.point.create(this.segments[0]);
 
-                var from = plane.point.create(this.segments[0]),
-                    to = plane.point.create(this.segments[0]);
+            this.segments.forEach(function (segment) {
+                from = operation.minimum(segment, from);
+                to = operation.maximum(segment, to);
+            });
 
-                this.segments.forEach(function (segment) {
-                    from = operation.minimum(segment, from);
-                    to = operation.maximum(segment, to);
-                });
-
-                this.bounds = plane.math.bounds.create(from, to);
-            }
+            this.bounds = plane.math.bounds.create(from, to);
 
             return true;
 
