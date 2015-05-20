@@ -94,7 +94,9 @@
 
     BezierQuadratic.prototype.toPoints = function () {
 
-        return this.points.slice();
+        return this.points.map(function (point){
+            return point.clone();
+        });
 
     };
 
