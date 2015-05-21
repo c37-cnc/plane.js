@@ -133,6 +133,21 @@
     };
 
     Rectangle.prototype.toPoints = function () {
+        
+//        var points = [];
+//
+//        // os segmentos
+//        for (var i = 0; i < this.segments.length; i++) {
+//
+//            points.push(plane.point.create(this.segments[i]));
+//
+//        }
+//        
+//        // o centro
+//        points.push(this.bounds.center.clone());
+//
+//        return points;
+        
 
         var points = [];
 
