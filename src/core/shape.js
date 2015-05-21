@@ -1,20 +1,19 @@
 (function (plane) {
     "use strict";
 
-    var _shapes = null;
-
+    var _store = null;
 
     plane.shape = {
         _initialize: function (config) {
 
-            _shapes = plane.math.dictionary.create();
+            _store = plane.math.dictionary.create();
 
             return true;
 
         },
         _reset: function () {
 
-            _shapes = plane.math.dictionary.create();
+            _store = plane.math.dictionary.create();
 
             return true;
 
@@ -29,24 +28,27 @@
                 throw new Error('shape - create - type is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
 
+            // a layer que vamos trabalhar
             var layer = plane.layer.get(uuid);
+
+            // verifico se temos os stores para a layer que estamos trabalhando
+            if (!_store.get(layer.uuid)) {
+                // se não existir, crio
+                _store.add(layer.uuid, plane.math.store.create());
+            }
 
             // atributos 
             attrs = plane.utility.object.merge({
-                uuid: plane.utility.math.uuid(9, 16)
+                uuid: plane.utility.math.uuid(9, 16),
+                // criando a referencia de store
+                _store: _store.get(layer.uuid)
             }, attrs);
 
             // criando pelo type
             var shape = plane.object[attrs.type].create(attrs);
 
-            // verifico se temos os stores para a layer que estamos trabalhando
-            if (!_shapes.get(layer.uuid)) {
-                // se não existir, crio
-                _shapes.add(layer.uuid, plane.math.store.create());
-            }
-
             // de acordo com a layer - add bounds in store
-            _shapes.get(layer.uuid).add(shape.uuid, [shape.bounds.from.x, shape.bounds.from.y, shape.bounds.to.x, shape.bounds.to.y, shape]);
+            _store.get(layer.uuid).add(shape.uuid, [shape.bounds.from.x, shape.bounds.from.y, shape.bounds.to.x, shape.bounds.to.y, shape]);
 
             return shape;
         },
@@ -58,14 +60,14 @@
                 var layer = plane.layer.active;
 
                 // tenho ao menos um shape na layer ativa?
-                if (_shapes.get(layer.uuid)) {
+                if (_store.get(layer.uuid)) {
                     // removendo shape
-                    _shapes.get(layer.uuid).remove(attrs.uuid);
+                    _store.get(layer.uuid).remove(attrs.uuid);
 
                     var shape = plane.object[attrs.type].create(attrs);
 
                     // de acordo com a layer - add bounds in store
-                    _shapes.get(layer.uuid).add(shape.uuid, [shape.bounds.from.x, shape.bounds.from.y, shape.bounds.to.x, shape.bounds.to.y, shape]);
+                    _store.get(layer.uuid).add(shape.uuid, [shape.bounds.from.x, shape.bounds.from.y, shape.bounds.to.x, shape.bounds.to.y, shape]);
                 }
 
                 return true;
@@ -79,9 +81,9 @@
                 var layer = plane.layer.active;
 
                 // tenho ao menos um shape na layer ativa?
-                if (_shapes.get(layer.uuid)) {
+                if (_store.get(layer.uuid)) {
                     // removendo shape
-                    _shapes.get(layer.uuid).remove(uuid);
+                    _store.get(layer.uuid).remove(uuid);
                 }
 
                 return true;
@@ -91,8 +93,8 @@
             // sempre trabalhamos com uma layer
             var layer = plane.layer.get(uuid);
 
-            if (_shapes.get(layer.uuid)) {
-                _shapes.get(layer.uuid).clear();
+            if (_store.get(layer.uuid)) {
+                _store.get(layer.uuid).clear();
             }
 
             return true;
@@ -102,8 +104,8 @@
             var layer = plane.layer.get(uuid);
 
             // temos groups para esta layer?
-            if (_shapes.get(layer.uuid)) {
-                return _shapes.get(layer.uuid).list();
+            if (_store.get(layer.uuid)) {
+                return _store.get(layer.uuid).list();
             } else {
                 return [];
             }
@@ -115,7 +117,7 @@
                 // a layer que vamos trabalhar
                 var layer = plane.layer.get(layerUuid);
 
-                return _shapes.get(layer.uuid).get(shapeUuid);
+                return _store.get(layer.uuid).get(shapeUuid);
             }
         },
         find: function (rectangle, uuid, type) {
@@ -127,9 +129,9 @@
                     shapes, shapesIntersect = [];
 
                 // se tenho ao menos um shape, então, tenho uma layer
-                if (_shapes.get(layer.uuid)) {
+                if (_store.get(layer.uuid)) {
                     // os rectangles selecionados
-                    var rectangles = _shapes.get(layer.uuid).search(rectangle);
+                    var rectangles = _store.get(layer.uuid).search(rectangle);
 
                     // um mapeamendo para separar os shapes dos rectangles
                     shapes = rectangles.map(function (data) {

@@ -130,6 +130,9 @@
         // https://www.mathsisfun.com/algebra/trig-four-quadrants.html
         // http://www.rapidtables.com/convert/number/degrees-to-radians.htm
         var points = [];
+        
+        // para o centro
+        points.push(this.center.clone());
 
         // para 0º
         var x = this.center.x + (this.radius * -Math.sin(0)),
