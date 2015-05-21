@@ -210,7 +210,7 @@
             }
 
 
-            if ((group.children[i].type === 'circle') || (group.children[i].type === 'polygon') || (group.children[i].type === 'ellipse')) {
+            if ((group.children[i].type === 'circle') || (group.children[i].type === 'polygon') || (group.children[i].type === 'rectangle') || (group.children[i].type === 'ellipse')) {
                 if (plane.math.intersect(group.children[i].segments, rectangle, 'close')) {
                     return true;
                 }
