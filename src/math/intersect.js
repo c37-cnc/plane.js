@@ -1,106 +1,23 @@
 (function (plane) {
     "use strict";
 
-
-    function segmentsInRectangle(x, y, z1, z2, z3, z4) {
-        var x1 = z1.minimum(z3);
-        var x2 = z1.maximum(z3);
-        var y1 = z2.minimum(z4);
-        var y2 = z2.maximum(z4);
-
-        return ((x1.x <= x) && (x <= x2.x) && (y1.y <= y) && (y <= y2.y));
-    }
-
-    function rectangleInSegments(segments, rectangle) {
-    }
-
-    function isClosed(segments) {
-
-        if (segments.length > 2) {
-
-            // pela CÓPIA - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice
-            // não pela REFERENCIA
-            // o primeiro e o ultimo
-            var first = segments.slice(0, 1),
-                last = segments.slice(segments.length - 1, 1);
-
-            // round nos valores - para first
-            first.x = Math.round(first.x);
-            first.y = Math.round(first.y);
-
-            // round nos valores - para last
-            last.x = Math.round(last.x);
-            last.y = Math.round(last.y);
-
-            // realizo a comparação para saber se temos um shape fechado
-            return (first.x === last.x) && (first.y === last.y);
-
-        } else {
-            return false;
-        }
-
-    }
-
-
-    function segmentsRectangle(segments, rectangle) {
-
-        var tl = plane.point.create(rectangle.from.x, rectangle.to.y), // top left
-            tr = plane.point.create(rectangle.to.x, rectangle.to.y), // top right
-            bl = plane.point.create(rectangle.from.x, rectangle.from.y), // bottom left
-            br = plane.point.create(rectangle.to.x, rectangle.from.y), // bottom right
-            result = false;
-
-
-        var inter1 = intersectSegmentsLine(tl, tr, segments),
-            inter2 = intersectSegmentsLine(tr, br, segments),
-            inter3 = intersectSegmentsLine(br, bl, segments),
-            inter4 = intersectSegmentsLine(bl, tl, segments);
-
-        if (inter1 || inter2 || inter3 || inter4) {
-            return true;
-        }
-
-        if (isClosed(segments)) {
-
-            //console.log('fechado');
-            
-            return true;
-
-        } else {
-            for (var i = 0; i < segments.length; i++) {
-                if (segmentsInRectangle(segments[i].x, segments[i].y, bl, tl, tr, br)) {
-                    return true;
-                }
-            }
-        }
-
-
-
-        return false;
-    }
-
-
-    function intersectSegmentsLine(a1, a2, points) {
-        var length = points.length;
+    function sideSegments(a1, a2, segments) {
+        var length = segments.length;
 
         for (var i = 0; i < length; i++) {
 
-            var b1 = points[i],
-                b2 = points[((i + 1) === length) ? (i - 1) : (i + 1)];
+            var b1 = segments[i],
+                b2 = segments[((i + 1) === length) ? (i - 1) : (i + 1)];
 
-            if (lineLine(a1, a2, b1, b2)) {
+            if (lineInSegments(a1, a2, b1, b2)) {
                 return true;
             }
         }
         return false;
     }
 
-
-
-
-    function lineLine(a1, a2, b1, b2) {
-
-//        debugger;
+    // https://github.com/lilo003/algorithm-002/blob/master/src/intersection/Intersection.js#L1384
+    function lineInSegments(a1, a2, b1, b2) {
 
         var result,
             uaT = (b2.x - b1.x) * (a1.y - b1.y) - (b2.y - b1.y) * (a1.x - b1.x),
@@ -110,30 +27,120 @@
             var ua = uaT / uB,
                 ub = ubT / uB;
             if (0 <= ua && ua <= 1 && 0 <= ub && ub <= 1) {
-//                result = new Intersection('Intersection');
                 result = [];
                 result.push(plane.point.create(a1.x + ua * (a2.x - a1.x), a1.y + ua * (a2.y - a1.y)));
             } else {
                 result = false;
-//                result = new Intersection();
             }
         } else {
             if (uaT === 0 || ubT === 0) {
                 result = false;
-//                result = new Intersection('Coincident');
             } else {
                 result = false;
-//                result = new Intersection('Parallel');
             }
         }
         return result;
+
+    }
+
+    // http://stackoverflow.com/questions/11716268/point-in-polygon-algorithm
+    function pointInSegments(point, segments) {
+
+        var i, j, nvert = segments.length;
+        var c = false;
+
+        for (i = 0, j = nvert - 1; i < nvert; j = i++) {
+
+            if (((segments[i].y >= point.y) !== (segments[j].y >= point.y)) && (point.x <= (segments[j].x - segments[i].x) * (point.y - segments[i].y) / (segments[j].y - segments[i].y) + segments[i].x)) {
+                c = !c;
+            }
+
+        }
+
+        return c;
+
     }
 
 
+    function segmentsOpen(segments, rectangle) {
+
+        var tl = plane.point.create(rectangle.from.x, rectangle.to.y), // top left
+            tr = plane.point.create(rectangle.to.x, rectangle.to.y), // top right
+            bl = plane.point.create(rectangle.from.x, rectangle.from.y), // bottom left
+            br = plane.point.create(rectangle.to.x, rectangle.from.y); // bottom right
+
+        // estou em cima dos dos segmentos?
+        // top left + top right
+        if (sideSegments(tl, tr, segments)) {
+            return true;
+        }
+        // top right + bottom right
+        if (sideSegments(tr, br, segments)) {
+            return true;
+        }
+        // bottom right + bottom left
+        if (sideSegments(br, bl, segments)) {
+            return true;
+        }
+        // bottom left + top left
+        if (sideSegments(bl, tl, segments)) {
+            return true;
+        }
+        // estou em cima dos dos segmentos?
+
+        return false;
+    }
+
+    function segmentsClose(segments, rectangle) {
+
+        var tl = plane.point.create(rectangle.from.x, rectangle.to.y), // top left
+            tr = plane.point.create(rectangle.to.x, rectangle.to.y), // top right
+            bl = plane.point.create(rectangle.from.x, rectangle.from.y), // bottom left
+            br = plane.point.create(rectangle.to.x, rectangle.from.y); // bottom right
 
 
+        // estou dentro dos segmentos?
+        if (pointInSegments(rectangle.from, segments)) {
+            return true;
+        }
+        if (pointInSegments(rectangle.to, segments)) {
+            return true;
+        }
+        // estou dentro dos segmentos?
 
-    //plane.math.intersect = validate;
-    plane.math.intersect = segmentsRectangle;
+        // estou em cima dos dos segmentos?
+        // top left + top right
+        if (sideSegments(tl, tr, segments)) {
+            return true;
+        }
+        // top right + bottom right
+        if (sideSegments(tr, br, segments)) {
+            return true;
+        }
+        // bottom right + bottom left
+        if (sideSegments(br, bl, segments)) {
+            return true;
+        }
+        // bottom left + top left
+        if (sideSegments(bl, tl, segments)) {
+            return true;
+        }
+        // estou em cima dos dos segmentos?
+
+        return false;
+    }
+
+
+    plane.math.intersect = function (segments, rectangle, type) {
+
+        if (type === 'open') {
+            return segmentsOpen(segments, rectangle);
+        }
+
+        if (type === 'close') {
+            return segmentsClose(segments, rectangle);
+        }
+
+    };
 
 })(c37.library.plane);

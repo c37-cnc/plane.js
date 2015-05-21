@@ -109,21 +109,6 @@
             };
         }
 
-
-
-//        // radius
-//        var x = this.center.x + (this.radius * Math.cos(this.center.angleTo(point))),
-//            y = this.center.y + (this.radius * Math.sin(this.center.angleTo(point)));
-//
-//        var pointRadius = plane.point.create(x, y);
-//
-//        if (point.distanceTo(pointRadius) <= distance) {
-//            return {
-//                status: true,
-//                point: pointRadius
-//            };
-//        }
-
         return {
             status: false,
             point: null
