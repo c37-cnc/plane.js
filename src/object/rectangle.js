@@ -24,6 +24,8 @@
         this.from = null;
         this.to = null;
 
+        this.angle = null;
+
         this._initialize(attrs);
 
     }, plane.math.shape);
@@ -55,9 +57,42 @@
             x: this.from.x,
             y: this.from.y
         });
+        
+        if ((this.angle) && (this.angle > 0)){
+            
+            var angleInRadian = plane.utility.math.radians(this.angle),
+                centerPoint = this.from.midTo(this.to);
+            
+            for(var i = 0; i < this.segments.length; i++){
+                // para point
+                this.segments[i] = plane.point.create(this.segments[i]);
+                
+                this.segments[i] = rotate(centerPoint, this.segments[i], angleInRadian);
+            }
+            
+        }
+        
 
         return true;
     };
+    
+    // https://github.com/paperjs/paper.js/blob/master/src/basic/Point.js#L458
+    function rotate(center, point, angle) {
+
+        if (angle === 0) {
+            return point.clone();
+        }
+
+        //angle = angle * Math.PI / 180;
+
+        var pointRotate = center ? point.subtract(center) : point,
+            s = Math.sin(angle),
+            c = Math.cos(angle);
+
+        pointRotate = plane.point.create(pointRotate.x * c - pointRotate.y * s, pointRotate.x * s + pointRotate.y * c);
+
+        return center ? pointRotate.sum(center) : point;
+    }    
 
     Rectangle.prototype.fromSnap = function (point, distance) {
 
@@ -128,12 +163,13 @@
             uuid: this.uuid,
             type: this.type,
             from: this.from.toObject(),
-            to: this.to.toObject()
+            to: this.to.toObject(),
+            angle: this.angle
         };
     };
 
     Rectangle.prototype.toPoints = function () {
-        
+
 //        var points = [];
 //
 //        // os segmentos
@@ -147,7 +183,7 @@
 //        points.push(this.bounds.center.clone());
 //
 //        return points;
-        
+
 
         var points = [];
 
