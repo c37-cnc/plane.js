@@ -230,7 +230,7 @@
         do {
 
             // primeiro - os groups
-            var groups = plane.group.find(rectangle, layers[i].uuid);
+            var groups = plane.group.find(rectangle, layers[i].uuid, 'rectangles');
 
             // os COM estilos
             var groupsWithStyle = groups.filter(function (group) {
@@ -287,7 +287,7 @@
 
 
             // segundo - todos os demais shapes
-            var shapes = plane.shape.find(rectangle, layers[i].uuid);
+            var shapes = plane.shape.find(rectangle, layers[i].uuid, 'rectangles');
 
             // os COM estilos
             var shapesWithStyle = shapes.filter(function (shape) {

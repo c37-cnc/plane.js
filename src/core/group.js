@@ -131,23 +131,39 @@
         },
         // rectangle = area da procura
         // uuid = respectivo da layer
-        find: function (rectangle, uuid) {
+        find: function (rectangle, uuid, type) {
             if ((!rectangle) || (typeof rectangle !== 'object')) {
                 throw new Error('group - find - rectangle is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
-                var layer = plane.layer.get(uuid);
+
+                var layer = plane.layer.get(uuid),
+                    groups;
 
                 // verifico se criei ao menos um group para a layer
                 if (_groups.get(layer.uuid)) {
-
                     // os rectangles selecionados
                     var rectangles = _groups.get(layer.uuid).search(rectangle);
 
                     // mapeamendo para separar os shapes dos rectangles selecionados
-                    return rectangles.map(function (data) {
+                    groups = rectangles.map(function (data) {
                         return data[4];
                     });
 
+                    if (type === 'rectangles') {
+                        return groups;
+                    }
+
+                    if (type === 'shapes') {
+                        if (groups.length > 0) {
+                            return groups.filter(function (group) {
+                                return intersectChildren(group, rectangle);
+                            });
+
+                        } else {
+                            return [];
+                        }
+                    }
+                    
                 } else {
                     return [];
                 }
@@ -155,6 +171,7 @@
             }
         }
     };
+
 
 
     function mountChildren(attrs) {
@@ -175,6 +192,33 @@
 
         return true;
     }
+
+    function intersectChildren(group, rectangle) {
+
+        for (var i = 0; i < group.children.length; i++) {
+
+            if (group.children[i].type === 'group') {
+                if (intersectChildren(group.children[i], rectangle)) {
+                    return true;
+                }
+            }
+            
+            
+            if ((group.children[i].type === 'circle') || (group.children[i].type === 'polygon') || (group.children[i].type === 'ellipse')) {
+                if (plane.math.intersect(group.children[i].segments, rectangle, 'close')) {
+                    return true;
+                }
+            } else {
+                if (plane.math.intersect(group.children[i].segments, rectangle, 'open')) {
+                    return true;
+                }
+            }
+
+        }
+
+        return false;
+    }
+
 
 
 })(c37.library.plane);

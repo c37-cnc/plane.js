@@ -118,23 +118,49 @@
                 return _shapes.get(layer.uuid).get(shapeUuid);
             }
         },
-        find: function (rectangle, layerUuid) {
+        find: function (rectangle, uuid, type) {
             if ((!rectangle) || (typeof rectangle !== 'object')) {
                 throw new Error('shape - find - rectangle is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
 
-                var layer = plane.layer.get(layerUuid);
+                var layer = plane.layer.get(uuid),
+                    shapes, shapesIntersect = [];
 
                 // se tenho ao menos um shape, então, tenho uma layer
                 if (_shapes.get(layer.uuid)) {
+                    // os rectangles selecionados
                     var rectangles = _shapes.get(layer.uuid).search(rectangle);
 
                     // um mapeamendo para separar os shapes dos rectangles
-                    return rectangles.map(function (data) {
+                    shapes = rectangles.map(function (data) {
                         return data[4];
                     });
+
+                    if (type === 'rectangles') {
+                        return shapes;
+                    }
+
+                    if (type === 'shapes') {
+                        if (shapes.length > 0) {
+                            var i = 0;
+                            do {
+                                if ((shapes[i].type === 'circle') || (shapes[i].type === 'polygon') || (shapes[i].type === 'ellipse')) {
+                                    if (plane.math.intersect(shapes[i].segments, rectangle, 'close')) {
+                                        shapesIntersect.push(shapes[i]);
+                                    }
+                                } else {
+                                    if (plane.math.intersect(shapes[i].segments, rectangle, 'open')) {
+                                        shapesIntersect.push(shapes[i]);
+                                    }
+                                }
+                                i++;
+                            } while (i < shapes.length)
+                        }
+                        return shapesIntersect;
+                    }
+
                 } else {
-                    return [];
+                    return shapesIntersect;
                 }
 
             }
