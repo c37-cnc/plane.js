@@ -1,6 +1,15 @@
 (function (plane) {
     "use strict";
 
+    function isInside(x, y, z1, z2, z3, z4) {
+        var x1 = z1.minimum(z3);
+        var x2 = z1.maximum(z3);
+        var y1 = z2.minimum(z4);
+        var y2 = z2.maximum(z4);
+
+        return ((x1.x <= x) && (x <= x2.x) && (y1.y <= y) && (y <= y2.y));
+    }
+
     function sideSegments(a1, a2, segments) {
         var length = segments.length;
 
@@ -88,6 +97,14 @@
         }
         // estou em cima dos dos segmentos?
 
+        // os segmentos estão dentro do rectangle?
+        for (var i = 0; i < segments.length; i++) {
+            if (isInside(segments[i].x, segments[i].y, bl, tl, tr, br)) {
+                return true;
+            }
+        }
+        // os segmentos estão dentro do rectangle?
+
         return false;
     }
 
@@ -107,7 +124,15 @@
             return true;
         }
         // estou dentro dos segmentos?
-
+        
+        // os segmentos estão dentro do rectangle?
+        for (var i = 0; i < segments.length; i++) {
+            if (isInside(segments[i].x, segments[i].y, bl, tl, tr, br)) {
+                return true;
+            }
+        }
+        // os segmentos estão dentro do rectangle?
+        
         // estou em cima dos dos segmentos?
         // top left + top right
         if (sideSegments(tl, tr, segments)) {
