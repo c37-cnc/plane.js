@@ -146,7 +146,7 @@
                         if (shapes.length > 0) {
                             var i = 0;
                             do {
-                                if ((shapes[i].type === 'circle') || (shapes[i].type === 'polygon') || (shapes[i].type === 'ellipse')) {
+                                if ((shapes[i].type === 'circle') || (shapes[i].type === 'polygon') || (shapes[i].type === 'rectangle') || (shapes[i].type === 'ellipse')) {
                                     if (plane.math.intersect(shapes[i].segments, rectangle, 'close')) {
                                         shapesIntersect.push(shapes[i]);
                                     }
