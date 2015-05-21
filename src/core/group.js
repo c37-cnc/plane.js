@@ -1,19 +1,19 @@
 (function (plane) {
     "use strict";
 
-    var _groups = null; // store - para armazenamento 
+    var _store = null; // store - para armazenamento 
 
     plane.group = {
         _initialize: function (config) {
 
-            _groups = plane.math.dictionary.create();
+            _store = plane.math.dictionary.create();
 
             return true;
 
         },
         _reset: function () {
 
-            _groups = plane.math.dictionary.create();
+            _store = plane.math.dictionary.create();
 
             return true;
 
@@ -30,15 +30,18 @@
             var layer = plane.layer.active;
 
             // verifico se temos os stores para a layer que estamos trabalhando
-            if (!_groups.get(layer.uuid)) {
+            if (!_store.get(layer.uuid)) {
                 // se não existir, crio
-                _groups.add(layer.uuid, plane.math.store.create());
+                _store.add(layer.uuid, plane.math.store.create());
             }
 
             // verifico se devo criar as intancias dos children
             if ((!(attrs.children[0] instanceof plane.math.group)) && (!(attrs.children[0] instanceof plane.math.shape))) {
                 mountChildren(attrs);
             }
+
+            // criando a referencia de store
+            attrs._store = _store.get(layer.uuid);
 
             // crio o novo Group
             var group = new plane.math.group(attrs);
@@ -48,19 +51,22 @@
             var i = 0;
             do {
                 if (group.children[i] instanceof plane.math.group) {
-                    _groups.get(layer.uuid).remove(group.children[i].uuid);
+                    _store.get(layer.uuid).remove(group.children[i].uuid);
                 }
 
                 if (group.children[i] instanceof plane.math.shape) {
                     plane.shape.remove(group.children[i].uuid);
                 }
 
+                // apagando a referencia de store
+                delete group.children[i]._store;
+
                 i++;
             } while (i < group.children.length);
 
 
             // de acordo com a layer - add bounds in store
-            _groups.get(layer.uuid).add(group.uuid, [group.bounds.from.x, group.bounds.from.y, group.bounds.to.x, group.bounds.to.y, group]);
+            _store.get(layer.uuid).add(group.uuid, [group.bounds.from.x, group.bounds.from.y, group.bounds.to.x, group.bounds.to.y, group]);
 
             return group;
         },
@@ -70,7 +76,7 @@
             } else {
                 // a layer que vamos trabalhar
                 var layer = plane.layer.active,
-                    group = _groups.get(layer.uuid).get(uuid);
+                    group = _store.get(layer.uuid).get(uuid);
 
                 if (type && (type === 'unGroup')) {
                     var i = 0;
@@ -92,7 +98,7 @@
 
 
                 // removo o group do dictionary de _groups
-                _groups.get(layer.uuid).remove(uuid);
+                _store.get(layer.uuid).remove(uuid);
 
                 return true;
             }
@@ -103,8 +109,8 @@
             var layer = plane.layer.get(uuid);
 
             // temos groups para esta layer?
-            if (_groups.get(layer.uuid)) {
-                _groups.get(layer.uuid).clear();
+            if (_store.get(layer.uuid)) {
+                _store.get(layer.uuid).clear();
             }
 
             return true;
@@ -115,8 +121,8 @@
             var layer = plane.layer.get(uuid);
 
             // temos groups para esta layer?
-            if (_groups.get(layer.uuid)) {
-                return _groups.get(layer.uuid).list();
+            if (_store.get(layer.uuid)) {
+                return _store.get(layer.uuid).list();
             } else {
                 return [];
             }
@@ -126,7 +132,7 @@
             if ((!uuid) || (typeof uuid !== 'string')) {
                 throw new Error('group - get - uuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
-                return _groups.get(plane.layer.active.uuid).get(uuid);
+                return _store.get(plane.layer.active.uuid).get(uuid);
             }
         },
         // rectangle = area da procura
@@ -140,9 +146,9 @@
                     groups;
 
                 // verifico se criei ao menos um group para a layer
-                if (_groups.get(layer.uuid)) {
+                if (_store.get(layer.uuid)) {
                     // os rectangles selecionados
-                    var rectangles = _groups.get(layer.uuid).search(rectangle);
+                    var rectangles = _store.get(layer.uuid).search(rectangle);
 
                     // mapeamendo para separar os shapes dos rectangles selecionados
                     groups = rectangles.map(function (data) {
@@ -163,7 +169,7 @@
                             return [];
                         }
                     }
-                    
+
                 } else {
                     return [];
                 }
@@ -202,8 +208,8 @@
                     return true;
                 }
             }
-            
-            
+
+
             if ((group.children[i].type === 'circle') || (group.children[i].type === 'polygon') || (group.children[i].type === 'ellipse')) {
                 if (plane.math.intersect(group.children[i].segments, rectangle, 'close')) {
                     return true;
