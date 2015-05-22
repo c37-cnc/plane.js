@@ -21,79 +21,69 @@
         this.status = null;
         this.style = null;
 
-        this.from = null;
-        this.to = null;
-
-        this.angle = null;
+        this.points = null;
 
         this._initialize(attrs);
 
     }, plane.math.shape);
 
     Rectangle.prototype._calculeSegments = function () {
-
-        //  left + bottom 
-        this.segments.push({
-            x: this.from.x,
-            y: this.from.y
-        });
-        // left + top
-        this.segments.push({
-            x: this.from.x,
-            y: this.to.y
-        });
-        // right + top
-        this.segments.push({
-            x: this.to.x,
-            y: this.to.y
-        });
-        // right + bottom 
-        this.segments.push({
-            x: this.to.x,
-            y: this.from.y
-        });
-        // base
-        this.segments.push({
-            x: this.from.x,
-            y: this.from.y
-        });
         
-        if ((this.angle) && (this.angle > 0)){
+        if (this.points.length === 2){
             
-            var angleInRadian = plane.utility.math.radians(this.angle),
-                centerPoint = this.from.midTo(this.to);
+            var from = this.points[0],
+                to = this.points[1];
             
-            for(var i = 0; i < this.segments.length; i++){
-                // para point
-                this.segments[i] = plane.point.create(this.segments[i]);
-                
-                this.segments[i] = rotate(centerPoint, this.segments[i], angleInRadian);
-            }
+            //  left + bottom 
+            this.segments.push({
+                x: from.x,
+                y: from.y
+            });
+            // left + top
+            this.segments.push({
+                x: from.x,
+                y: to.y
+            });
+            // right + top
+            this.segments.push({
+                x: to.x,
+                y: to.y
+            });
+            // right + bottom 
+            this.segments.push({
+                x: to.x,
+                y: from.y
+            });
+            //  left + bottom 
+            this.segments.push({
+                x: from.x,
+                y: from.y
+            });
+        } 
+        
+        if (this.points.length === 4){
+            
+            var leftBottom = this.points[0],
+                leftTop = this.points[1],
+                rightTop = this.points[2],
+                rightBottom = this.points[3];
+            
+            //  left + bottom 
+            this.segments.push(leftBottom.toObject());
+            // left + top
+            this.segments.push(leftTop.toObject());
+            // right + top
+            this.segments.push(rightTop.toObject());
+            // right + bottom 
+            this.segments.push(rightBottom.toObject());
+            //  left + bottom 
+            this.segments.push(leftBottom.toObject());
             
         }
         
-
         return true;
     };
     
-    // https://github.com/paperjs/paper.js/blob/master/src/basic/Point.js#L458
-    function rotate(center, point, angle) {
-
-        if (angle === 0) {
-            return point.clone();
-        }
-
-        //angle = angle * Math.PI / 180;
-
-        var pointRotate = center ? point.subtract(center) : point,
-            s = Math.sin(angle),
-            c = Math.cos(angle);
-
-        pointRotate = plane.point.create(pointRotate.x * c - pointRotate.y * s, pointRotate.x * s + pointRotate.y * c);
-
-        return center ? pointRotate.sum(center) : point;
-    }    
-
     Rectangle.prototype.fromSnap = function (point, distance) {
 
         // pelas pontas
@@ -162,33 +152,26 @@
         return {
             uuid: this.uuid,
             type: this.type,
-            from: this.from.toObject(),
-            to: this.to.toObject(),
-            angle: this.angle
+            points: this.points.map(function (point) {
+                return point.toObject();
+            })
         };
     };
 
     Rectangle.prototype.toPoints = function () {
 
-//        var points = [];
-//
-//        // os segmentos
-//        for (var i = 0; i < this.segments.length; i++) {
-//
-//            points.push(plane.point.create(this.segments[i]));
-//
-//        }
-//        
-//        // o centro
-//        points.push(this.bounds.center.clone());
-//
-//        return points;
-
-
         var points = [];
 
-        points.push(this.from.clone());
-        points.push(this.to.clone());
+        // os segmentos
+        // MENOS o ponto de ligação
+        for (var i = 0; i < this.segments.length -1; i++) {
+
+            points.push(plane.point.create(this.segments[i]));
+
+        }
+
+        // o centro
+        //points.push(this.bounds.center.clone());
 
         return points;
 
@@ -200,6 +183,9 @@
             if (typeof attrs === 'function') {
                 throw new Error('rectangle - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             }
+            if ((!attrs.points) || (attrs.points.length !== 2) && (attrs.points.length !== 4)) {
+                throw new Error('rectangle - create - attrs is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
+            }
 
             // 1 - verificações de quais atributos são usados
 
@@ -208,8 +194,9 @@
 
 
             // 3 - conversões dos atributos
-            attrs.from = plane.point.create(attrs.from);
-            attrs.to = plane.point.create(attrs.to);
+            attrs.points = attrs.points.map(function (point) {
+                return plane.point.create(point);
+            });
 
             // 4 - caso update de um shape não merge em segments
             delete attrs['segments'];
