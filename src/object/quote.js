@@ -158,7 +158,7 @@
 
 
 
-        var hAlpha = this.height + 3;
+        var hAlpha = this.height + 1;
 
         var pAlpha1 = {
             x: this.from.x + hAlpha * (this.from.y - this.to.y) / length,
@@ -171,31 +171,38 @@
 
 
         // o primeiro tamanho do texto
-        if (!this.measure) {
+//        if (!this.measure) {
+//
+//            this.measure = {
+//                height: 0,
+//                width: context.measureText(this.value).width
+//            };
+//
+//        }
 
-            this.measure = {
-                height: 0,
-                width: context.measureText(this.value).width
-            };
+        // a medida arredondada entre o ponto inicial e o pointo final
+        var textValue = plane.point.create(pAlpha1).distanceTo(plane.point.create(pAlpha2));
 
-        }
 
-        // o tamanho do texto 
-        var widthTextAlpha = this.measure.width;
-        //var widthTextAlpha = context.measureText(this.value).width;
+        // para a fonte + seu tamanho
+        context.font = plane.utility.string.format('{0}px arial', [parseInt(5 * zoom)]);
+        var textWidth = plane.view.context.measureText(Math.round(textValue)).width / plane.view.zoom;
+
+        //console.log(textWidth);
 
         // o angulo para a inclinação dos pontos alpha
         var angleInRadian = this.from.angleTo(this.to);
 
         // o ponto final + medida total do texto para um novo pointo final
-        var pAlpha3 = plane.point.create(pAlpha2.x + (-widthTextAlpha * Math.cos(angleInRadian)), pAlpha2.y + (-widthTextAlpha * Math.sin(angleInRadian)));
+        
 
         // o meio entre o inicio estático e o novo pointo final
         var midAlpha = plane.point.create(pAlpha1).midTo(plane.point.create(pAlpha2));
+        //var midAlpha = plane.point.create(pAlpha1).midTo(plane.point.create(pAlpha3));
+        
 
-        // a medida arredondada entre o ponto inicial e o pointo final
-        var textAlpha = plane.point.create(pAlpha1).distanceTo(plane.point.create(pAlpha2));
-
+        midAlpha = plane.point.create(midAlpha.x + ((-textWidth / 2) * Math.cos(angleInRadian)), midAlpha.y + ((-textWidth / 2) * Math.sin(angleInRadian)));
+        //midAlpha = plane.point.create(midAlpha.x + ((-widthTextAlpha) * Math.cos(angleInRadian)), midAlpha.y + ((-widthTextAlpha) * Math.sin(angleInRadian)));
 
 
 
@@ -211,10 +218,9 @@
         // o flip para o texto estar correto
         context.scale(1, -1);
 
-        // para a fonte + seu tamanho
-        context.font = plane.utility.string.format('{0}px arial', [parseInt(10 * zoom)]);
         // escrevo o texto no context
-        context.fillText(Math.round(textAlpha) + 'mm', 0, 0);
+        //context.fillText(Math.round(textAlpha) + 'mm', 0, 0);
+        context.fillText(Math.round(textValue), 0, 0);
 
         // restauro as configurações de estilo anteriores do contexto
         context.restore();
