@@ -25,21 +25,38 @@
         this.sides = null;
         this.radius = null;
 
+        this.points = null;
+
         this._initialize(attrs);
 
     }, plane.math.shape);
 
     Polygon.prototype._calculeSegments = function () {
+        
+        if (this.points === null){
+            
+            for (var i = 0; i <= this.sides; i++) {
 
-        for (var i = 0; i <= this.sides; i++) {
+                var pointX = (this.radius * Math.cos(((Math.PI * 2) / this.sides) * i) + this.center.x),
+                    pointY = (this.radius * Math.sin(((Math.PI * 2) / this.sides) * i) + this.center.y);
 
-            var pointX = (this.radius * Math.cos(((Math.PI * 2) / this.sides) * i) + this.center.x),
-                pointY = (this.radius * Math.sin(((Math.PI * 2) / this.sides) * i) + this.center.y);
+                this.segments.push({
+                    x: pointX,
+                    y: pointY
+                });
+            }
+        
+        }
+        
+        if (this.points !== null){
 
-            this.segments.push({
-                x: pointX,
-                y: pointY
-            });
+            for(var i = 0; i < this.points.length; i++){
+                this.segments.push(this.points[i].toObject());
+            }
+            
+            // o primeiro ponto novemente para fechar o polygon
+            this.segments.push(this.points[0].toObject());
+            
         }
 
         return true;
@@ -47,10 +64,12 @@
 
     Polygon.prototype.fromSnap = function (point, distance) {
 
-        if (point.distanceTo(this.center) <= distance) {
+        var center = plane.point.create(get_polygon_centroid(this.segments));
+        
+        if (point.distanceTo(center) <= distance) {
             return {
                 status: true,
-                point: this.center
+                point: center
             };
         }
 
@@ -74,13 +93,25 @@
     };
 
     Polygon.prototype.toObject = function () {
-        return {
-            uuid: this.uuid,
-            type: this.type,
-            center: this.center.toObject(),
-            sides: this.sides,
-            radius: this.radius
-        };
+        
+        if (this.center !== null){
+            return {
+                uuid: this.uuid,
+                type: this.type,
+                center: this.center.toObject(),
+                sides: this.sides,
+                radius: this.radius
+            };
+        } else {
+            return {
+                uuid: this.uuid,
+                type: this.type,
+                points: this.points.map(function (point) {
+                    return point.toObject();
+                })
+            };
+        }
+        
     };
 
     Polygon.prototype.toPoints = function () {
@@ -92,10 +123,33 @@
             points.push(plane.point.create(this.segments[i]));
 
         }
+        
+        var center = plane.point.create(get_polygon_centroid(this.segments));
+        
+        // o centro 
+        points.push(plane.point.create(center));
 
         return points;
 
     };
+    
+    
+    // http://stackoverflow.com/a/9939071
+    function get_polygon_centroid(pts) {
+       var twicearea=0,
+       x=0, y=0,
+       nPts = pts.length,
+       p1, p2, f;
+       for ( var i=0, j=nPts-1 ; i<nPts ; j=i++ ) {
+          p1 = pts[i]; p2 = pts[j];
+          f = p1.x*p2.y - p2.x*p1.y;
+          twicearea += f;          
+          x += ( p1.x + p2.x ) * f;
+          y += ( p1.y + p2.y ) * f;
+       }
+       f = twicearea * 3;
+       return { x:x/f, y:y/f };
+    }    
 
 
     plane.object.polygon = {
@@ -112,7 +166,14 @@
 
 
             // 3 - conversões dos atributos
-            attrs.center = plane.point.create(attrs.center);
+            if (attrs.center) {
+                attrs.center = plane.point.create(attrs.center);
+            }
+            if (attrs.points) {
+                attrs.points = attrs.points.map(function (point) {
+                    return plane.point.create(point);
+                });
+            }
 
             // 4 - caso update de um shape não merge em segments
             delete attrs['segments'];
