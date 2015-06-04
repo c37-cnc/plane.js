@@ -28,12 +28,12 @@
     }, plane.math.shape);
 
     Rectangle.prototype._calculeSegments = function () {
-        
-        if (this.points.length === 2){
-            
+
+        if (this.points.length === 2) {
+
             var from = this.points[0],
                 to = this.points[1];
-            
+
             //  left + bottom 
             this.segments.push({
                 x: from.x,
@@ -59,15 +59,15 @@
                 x: from.x,
                 y: from.y
             });
-        } 
-        
-        if (this.points.length === 4){
-            
+        }
+
+        if (this.points.length === 4) {
+
             var leftBottom = this.points[0],
                 leftTop = this.points[1],
                 rightTop = this.points[2],
                 rightBottom = this.points[3];
-            
+
             //  left + bottom 
             this.segments.push(leftBottom.toObject());
             // left + top
@@ -78,12 +78,12 @@
             this.segments.push(rightBottom.toObject());
             //  left + bottom 
             this.segments.push(leftBottom.toObject());
-            
+
         }
-        
+
         return true;
     };
-    
+
     Rectangle.prototype.fromSnap = function (point, distance) {
 
         // pelas pontas
@@ -164,7 +164,7 @@
 
         // os segmentos
         // MENOS o ponto de ligação
-        for (var i = 0; i < this.segments.length -1; i++) {
+        for (var i = 0; i < this.segments.length - 1; i++) {
 
             points.push(plane.point.create(this.segments[i]));
 
@@ -174,6 +174,23 @@
         //points.push(this.bounds.center.clone());
 
         return points;
+
+    };
+
+    Rectangle.prototype.toVertices = function () {
+
+        var vertices = [];
+
+        // left
+        vertices.push([this.segments[0], this.segments[1]]);
+        // top
+        vertices.push([this.segments[1], this.segments[2]]);
+        // right
+        vertices.push([this.segments[2], this.segments[3]]);
+        // botton
+        vertices.push([this.segments[3], this.segments[4]]);
+
+        return vertices;
 
     };
 
