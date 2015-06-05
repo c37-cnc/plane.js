@@ -39,26 +39,27 @@
                 x: from.x,
                 y: from.y
             });
-            // left + top
+            // right + bottom 
             this.segments.push({
-                x: from.x,
-                y: to.y
+                x: to.x,
+                y: from.y
             });
             // right + top
             this.segments.push({
                 x: to.x,
                 y: to.y
             });
-            // right + bottom 
+            // left + top
             this.segments.push({
-                x: to.x,
-                y: from.y
+                x: from.x,
+                y: to.y
             });
             //  left + bottom 
             this.segments.push({
                 x: from.x,
                 y: from.y
             });
+            
         }
 
         if (this.points.length === 4) {
@@ -70,12 +71,12 @@
 
             //  left + bottom 
             this.segments.push(leftBottom.toObject());
-            // left + top
-            this.segments.push(leftTop.toObject());
-            // right + top
-            this.segments.push(rightTop.toObject());
             // right + bottom 
             this.segments.push(rightBottom.toObject());
+            // right + top
+            this.segments.push(rightTop.toObject());
+            // left + top
+            this.segments.push(leftTop.toObject());
             //  left + bottom 
             this.segments.push(leftBottom.toObject());
 
