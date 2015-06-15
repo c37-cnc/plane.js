@@ -152,15 +152,15 @@
                         return 1;
                     return 0;
                 });
-
+                
                 // insiro o primeiro shape na lista dos 'ordenados'
                 orderShapes.push(disorderShapes.splice(0, 1).first());
                 orderShapes.last().segments.slice().forEach(function (segment) {
                     orderSegments.push(segment);
                 });
-
+                
                 // enquanto houver shapes desordenados
-                while (disorderShapes.length !== 0) {
+                for (var ii = 0; ii <= disorderShapes.length; ii++) {
 
                     // o ultimo shape da lista dos ordenados
                     var lastOrderShape = orderShapes.last(),
@@ -186,6 +186,8 @@
                                 });
 
                                 actualPointTest = 'end';
+
+                                ii = 0;
 
                                 isBreak = true;
 
@@ -215,6 +217,8 @@
                                 });
 
                                 actualPointTest = 'start';
+
+                                ii = 0;
 
                                 isBreak = true;
 
@@ -250,6 +254,8 @@
 
                                 actualPointTest = 'end';
 
+                                ii = 0;
+
                                 isBreak = true;
 
                                 break;
@@ -279,6 +285,8 @@
 
                                 actualPointTest = 'start';
 
+                                ii = 0;
+
                                 break;
                             }
 
@@ -290,38 +298,12 @@
 
 
                 // do primeiro shape os segmentos
-                var firstShapeSegmentFirst = orderShapes.first().segments.first(),
-                    firstShapeSegmentLast = orderShapes.first().segments.last();
-
-                // do ultimo shape os segmentos
-                var lastShapeSegmentFirst = orderShapes.last().segments.first(),
-                    lastShapeSegmentLast = orderShapes.last().segments.last();
-
+                var firstSegment = orderSegments.first(),
+                    lastSegment = orderSegments.last();
 
                 //verifico se o group formou um polygon 'fechado'
-                // AS POSSIBILIDADES
-
-                // o PRIMEIRO shape com o PRIMEIRO segmento vs o ULTIMO shape com o ULTIMO segmento
-                if ((Math.abs((plane.utility.math.parseFloat(firstShapeSegmentFirst.x, 3) - plane.utility.math.parseFloat(lastShapeSegmentLast.x, 3))) <= 2) &&
-                    (Math.abs((plane.utility.math.parseFloat(firstShapeSegmentFirst.y, 3) - plane.utility.math.parseFloat(lastShapeSegmentLast.y, 3))) <= 2)) {
-                    return true;
-                }
-
-                // o PRIMEIRO shape com o PRIMEIRO segmento vs o ULTIMO shape com o PRIMEIRO segmento
-                if ((plane.utility.math.parseFloat(firstShapeSegmentFirst.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.x, 3)) &&
-                    (plane.utility.math.parseFloat(firstShapeSegmentFirst.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.y, 3))) {
-                    return true;
-                }
-
-                // o PRIMEIRO shape com o ULTIMO segmento vs o ULTIMO shape com o ULTIMO segmento
-                if ((plane.utility.math.parseFloat(firstShapeSegmentLast.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentLast.x, 3)) &&
-                    (plane.utility.math.parseFloat(firstShapeSegmentLast.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentLast.y, 3))) {
-                    return true;
-                }
-
-                // o PRIMEIRO shape com o ULTIMO segmento vs o ULTIMO shape com o PRIMEIRO segmento
-                if ((plane.utility.math.parseFloat(firstShapeSegmentLast.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.x, 3)) &&
-                    (plane.utility.math.parseFloat(firstShapeSegmentLast.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.y, 3))) {
+                if ((Math.abs((plane.utility.math.parseFloat(firstSegment.x, 3) - plane.utility.math.parseFloat(lastSegment.x, 3))) <= 2) &&
+                    (Math.abs((plane.utility.math.parseFloat(firstSegment.y, 3) - plane.utility.math.parseFloat(lastSegment.y, 3))) <= 2)) {
                     return true;
                 }
 
@@ -356,7 +338,7 @@
                 });
 
                 // enquanto houver shapes desordenados
-                while (disorderShapes.length !== 0) {
+                for (var ii = 0; ii <= disorderShapes.length; ii++) {
 
                     // o ultimo shape da lista dos ordenados
                     var lastOrderShape = orderShapes.last(),
@@ -382,6 +364,8 @@
                                 });
 
                                 actualPointTest = 'end';
+
+                                ii = 0;
 
                                 isBreak = true;
 
@@ -411,6 +395,8 @@
                                 });
 
                                 actualPointTest = 'start';
+
+                                ii = 0;
 
                                 isBreak = true;
 
@@ -446,6 +432,8 @@
 
                                 actualPointTest = 'end';
 
+                                ii = 0;
+
                                 isBreak = true;
 
                                 break;
@@ -475,6 +463,8 @@
 
                                 actualPointTest = 'start';
 
+                                ii = 0;
+
                                 break;
                             }
 
@@ -486,38 +476,12 @@
 
 
                 // do primeiro shape os segmentos
-                var firstShapeSegmentFirst = orderShapes.first().segments.first(),
-                    firstShapeSegmentLast = orderShapes.first().segments.last();
-
-                // do ultimo shape os segmentos
-                var lastShapeSegmentFirst = orderShapes.last().segments.first(),
-                    lastShapeSegmentLast = orderShapes.last().segments.last();
-
+                var firstSegment = orderSegments.first(),
+                    lastSegment = orderSegments.last();
 
                 //verifico se o group formou um polygon 'fechado'
-                // AS POSSIBILIDADES
-
-                // o PRIMEIRO shape com o PRIMEIRO segmento vs o ULTIMO shape com o ULTIMO segmento
-                if ((Math.abs((plane.utility.math.parseFloat(firstShapeSegmentFirst.x, 3) - plane.utility.math.parseFloat(lastShapeSegmentLast.x, 3))) <= 2) &&
-                    (Math.abs((plane.utility.math.parseFloat(firstShapeSegmentFirst.y, 3) - plane.utility.math.parseFloat(lastShapeSegmentLast.y, 3))) <= 2)) {
-                    return orderSegments;
-                }
-
-                // o PRIMEIRO shape com o PRIMEIRO segmento vs o ULTIMO shape com o PRIMEIRO segmento
-                if ((plane.utility.math.parseFloat(firstShapeSegmentFirst.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.x, 3)) &&
-                    (plane.utility.math.parseFloat(firstShapeSegmentFirst.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.y, 3))) {
-                    return orderSegments;
-                }
-
-                // o PRIMEIRO shape com o ULTIMO segmento vs o ULTIMO shape com o ULTIMO segmento
-                if ((plane.utility.math.parseFloat(firstShapeSegmentLast.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentLast.x, 3)) &&
-                    (plane.utility.math.parseFloat(firstShapeSegmentLast.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentLast.y, 3))) {
-                    return orderSegments;
-                }
-
-                // o PRIMEIRO shape com o ULTIMO segmento vs o ULTIMO shape com o PRIMEIRO segmento
-                if ((plane.utility.math.parseFloat(firstShapeSegmentLast.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.x, 3)) &&
-                    (plane.utility.math.parseFloat(firstShapeSegmentLast.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.y, 3))) {
+                if ((Math.abs((plane.utility.math.parseFloat(firstSegment.x, 3) - plane.utility.math.parseFloat(lastSegment.x, 3))) <= 2) &&
+                    (Math.abs((plane.utility.math.parseFloat(firstSegment.y, 3) - plane.utility.math.parseFloat(lastSegment.y, 3))) <= 2)) {
                     return orderSegments;
                 }
 
