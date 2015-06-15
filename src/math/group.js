@@ -133,9 +133,411 @@
                     return object.toObject();
                 })
             };
+        },
+        isClosed: function () {
+            // DESENVOLVER A FUNÇÃO PARA UNIÃO DE PONTOS DA DURU!!
+            if (isOnlyShapes(this)) {
+
+                var disorderShapes = this.children.slice(),
+                    orderShapes = [],
+                    orderSegments = [],
+                    actualPointTest = 'end',
+                    isBreak = false;
+
+
+                disorderShapes.sort(function (a, b) {
+                    if (a.type === 'line')
+                        return -1;
+                    if (a.type !== 'line')
+                        return 1;
+                    return 0;
+                });
+
+                // insiro o primeiro shape na lista dos 'ordenados'
+                orderShapes.push(disorderShapes.splice(0, 1).first());
+                orderShapes.last().segments.slice().forEach(function (segment) {
+                    orderSegments.push(segment);
+                });
+
+                // enquanto houver shapes desordenados
+                while (disorderShapes.length !== 0) {
+
+                    // o ultimo shape da lista dos ordenados
+                    var lastOrderShape = orderShapes.last(),
+                        lastOrderShapeStartPoint = lastOrderShape.segments.first(),
+                        lastOrderShapeEndPoint = lastOrderShape.segments.last();
+
+                    // testo o ponto end do ultimo shape
+                    if (actualPointTest === 'end') {
+
+                        for (var i = 0; i < disorderShapes.length; i++) {
+
+                            var actualDisorderShape = disorderShapes[i],
+                                actualDisorderShapeStartPoint = actualDisorderShape.segments.first();
+
+                            if ((plane.utility.math.parseFloat(lastOrderShapeEndPoint.x, 3) === plane.utility.math.parseFloat(actualDisorderShapeStartPoint.x, 3)) &&
+                                (plane.utility.math.parseFloat(lastOrderShapeEndPoint.y, 3) === plane.utility.math.parseFloat(actualDisorderShapeStartPoint.y, 3))) {
+
+                                // add a lista dos ordenados
+                                orderShapes.push(disorderShapes.splice(i, 1).first());
+
+                                orderShapes.last().segments.slice().forEach(function (segment) {
+                                    orderSegments.push(segment);
+                                });
+
+                                actualPointTest = 'end';
+
+                                isBreak = true;
+
+                                break;
+                            }
+
+                        }
+
+                        if (isBreak) {
+                            isBreak = false;
+                            continue;
+                        }
+
+                        for (var i = 0; i < disorderShapes.length; i++) {
+
+                            var actualDisorderShape = disorderShapes[i],
+                                actualDisorderShapeEndPoint = actualDisorderShape.segments.last();
+
+                            if ((plane.utility.math.parseFloat(lastOrderShapeEndPoint.x, 3) === plane.utility.math.parseFloat(actualDisorderShapeEndPoint.x, 3)) &&
+                                (plane.utility.math.parseFloat(lastOrderShapeEndPoint.y, 3) === plane.utility.math.parseFloat(actualDisorderShapeEndPoint.y, 3))) {
+
+                                // add a lista dos ordenados
+                                orderShapes.push(disorderShapes.splice(i, 1).first());
+
+                                orderShapes.last().segments.slice().reverse().forEach(function (segment) {
+                                    orderSegments.push(segment);
+                                });
+
+                                actualPointTest = 'start';
+
+                                isBreak = true;
+
+                                break;
+                            }
+
+                        }
+
+                    }
+
+                    if (isBreak) {
+                        isBreak = false;
+                        continue;
+                    }
+
+                    // testo o ponto start do ultimo shape
+                    if (actualPointTest === 'start') {
+
+                        for (var i = 0; i < disorderShapes.length; i++) {
+
+                            var actualDisorderShape = disorderShapes[i],
+                                actualDisorderShapeStartPoint = actualDisorderShape.segments.first();
+
+                            if ((plane.utility.math.parseFloat(lastOrderShapeStartPoint.x, 3) === plane.utility.math.parseFloat(actualDisorderShapeStartPoint.x, 3)) &&
+                                (plane.utility.math.parseFloat(lastOrderShapeStartPoint.y, 3) === plane.utility.math.parseFloat(actualDisorderShapeStartPoint.y, 3))) {
+
+                                // add a lista dos ordenados
+                                orderShapes.push(disorderShapes.splice(i, 1).first());
+
+                                orderShapes.last().segments.slice().forEach(function (segment) {
+                                    orderSegments.push(segment);
+                                });
+
+                                actualPointTest = 'end';
+
+                                isBreak = true;
+
+                                break;
+                            }
+
+                        }
+
+                        if (isBreak) {
+                            isBreak = false;
+                            continue;
+                        }
+
+                        for (var i = 0; i < disorderShapes.length; i++) {
+
+                            var actualDisorderShape = disorderShapes[i],
+                                actualDisorderShapeEndPoint = actualDisorderShape.segments.last();
+
+                            if ((plane.utility.math.parseFloat(lastOrderShapeStartPoint.x, 3) === plane.utility.math.parseFloat(actualDisorderShapeEndPoint.x, 3)) &&
+                                (plane.utility.math.parseFloat(lastOrderShapeStartPoint.y, 3) === plane.utility.math.parseFloat(actualDisorderShapeEndPoint.y, 3))) {
+
+                                // add a lista dos ordenados
+                                orderShapes.push(disorderShapes.splice(i, 1).first());
+
+                                orderShapes.last().segments.slice().reverse().forEach(function (segment) {
+                                    orderSegments.push(segment);
+                                });
+
+                                actualPointTest = 'start';
+
+                                break;
+                            }
+
+                        }
+
+                    }
+
+                }
+
+
+                // do primeiro shape os segmentos
+                var firstShapeSegmentFirst = orderShapes.first().segments.first(),
+                    firstShapeSegmentLast = orderShapes.first().segments.last();
+
+                // do ultimo shape os segmentos
+                var lastShapeSegmentFirst = orderShapes.last().segments.first(),
+                    lastShapeSegmentLast = orderShapes.last().segments.last();
+
+
+                //verifico se o group formou um polygon 'fechado'
+                // AS POSSIBILIDADES
+
+                // o PRIMEIRO shape com o PRIMEIRO segmento vs o ULTIMO shape com o ULTIMO segmento
+                if ((Math.abs((plane.utility.math.parseFloat(firstShapeSegmentFirst.x, 3) - plane.utility.math.parseFloat(lastShapeSegmentLast.x, 3))) <= 2) &&
+                    (Math.abs((plane.utility.math.parseFloat(firstShapeSegmentFirst.y, 3) - plane.utility.math.parseFloat(lastShapeSegmentLast.y, 3))) <= 2)) {
+                    return true;
+                }
+
+                // o PRIMEIRO shape com o PRIMEIRO segmento vs o ULTIMO shape com o PRIMEIRO segmento
+                if ((plane.utility.math.parseFloat(firstShapeSegmentFirst.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.x, 3)) &&
+                    (plane.utility.math.parseFloat(firstShapeSegmentFirst.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.y, 3))) {
+                    return true;
+                }
+
+                // o PRIMEIRO shape com o ULTIMO segmento vs o ULTIMO shape com o ULTIMO segmento
+                if ((plane.utility.math.parseFloat(firstShapeSegmentLast.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentLast.x, 3)) &&
+                    (plane.utility.math.parseFloat(firstShapeSegmentLast.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentLast.y, 3))) {
+                    return true;
+                }
+
+                // o PRIMEIRO shape com o ULTIMO segmento vs o ULTIMO shape com o PRIMEIRO segmento
+                if ((plane.utility.math.parseFloat(firstShapeSegmentLast.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.x, 3)) &&
+                    (plane.utility.math.parseFloat(firstShapeSegmentLast.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.y, 3))) {
+                    return true;
+                }
+
+                return false;
+            } else {
+                return false;
+            }
+        },
+        toPolyline: function () {
+            // DESENVOLVER A FUNÇÃO PARA UNIÃO DE PONTOS DA DURU!!
+            if (isOnlyShapes(this)) {
+
+                var disorderShapes = this.children.slice(),
+                    orderShapes = [],
+                    orderSegments = [],
+                    actualPointTest = 'end',
+                    isBreak = false;
+
+
+                disorderShapes.sort(function (a, b) {
+                    if (a.type === 'line')
+                        return -1;
+                    if (a.type !== 'line')
+                        return 1;
+                    return 0;
+                });
+
+                // insiro o primeiro shape na lista dos 'ordenados'
+                orderShapes.push(disorderShapes.splice(0, 1).first());
+                orderShapes.last().segments.slice().forEach(function (segment) {
+                    orderSegments.push(segment);
+                });
+
+                // enquanto houver shapes desordenados
+                while (disorderShapes.length !== 0) {
+
+                    // o ultimo shape da lista dos ordenados
+                    var lastOrderShape = orderShapes.last(),
+                        lastOrderShapeStartPoint = lastOrderShape.segments.first(),
+                        lastOrderShapeEndPoint = lastOrderShape.segments.last();
+
+                    // testo o ponto end do ultimo shape
+                    if (actualPointTest === 'end') {
+
+                        for (var i = 0; i < disorderShapes.length; i++) {
+
+                            var actualDisorderShape = disorderShapes[i],
+                                actualDisorderShapeStartPoint = actualDisorderShape.segments.first();
+
+                            if ((plane.utility.math.parseFloat(lastOrderShapeEndPoint.x, 3) === plane.utility.math.parseFloat(actualDisorderShapeStartPoint.x, 3)) &&
+                                (plane.utility.math.parseFloat(lastOrderShapeEndPoint.y, 3) === plane.utility.math.parseFloat(actualDisorderShapeStartPoint.y, 3))) {
+
+                                // add a lista dos ordenados
+                                orderShapes.push(disorderShapes.splice(i, 1).first());
+
+                                orderShapes.last().segments.slice().forEach(function (segment) {
+                                    orderSegments.push(segment);
+                                });
+
+                                actualPointTest = 'end';
+
+                                isBreak = true;
+
+                                break;
+                            }
+
+                        }
+
+                        if (isBreak) {
+                            isBreak = false;
+                            continue;
+                        }
+
+                        for (var i = 0; i < disorderShapes.length; i++) {
+
+                            var actualDisorderShape = disorderShapes[i],
+                                actualDisorderShapeEndPoint = actualDisorderShape.segments.last();
+
+                            if ((plane.utility.math.parseFloat(lastOrderShapeEndPoint.x, 3) === plane.utility.math.parseFloat(actualDisorderShapeEndPoint.x, 3)) &&
+                                (plane.utility.math.parseFloat(lastOrderShapeEndPoint.y, 3) === plane.utility.math.parseFloat(actualDisorderShapeEndPoint.y, 3))) {
+
+                                // add a lista dos ordenados
+                                orderShapes.push(disorderShapes.splice(i, 1).first());
+
+                                orderShapes.last().segments.slice().reverse().forEach(function (segment) {
+                                    orderSegments.push(segment);
+                                });
+
+                                actualPointTest = 'start';
+
+                                isBreak = true;
+
+                                break;
+                            }
+
+                        }
+
+                    }
+
+                    if (isBreak) {
+                        isBreak = false;
+                        continue;
+                    }
+
+                    // testo o ponto start do ultimo shape
+                    if (actualPointTest === 'start') {
+
+                        for (var i = 0; i < disorderShapes.length; i++) {
+
+                            var actualDisorderShape = disorderShapes[i],
+                                actualDisorderShapeStartPoint = actualDisorderShape.segments.first();
+
+                            if ((plane.utility.math.parseFloat(lastOrderShapeStartPoint.x, 3) === plane.utility.math.parseFloat(actualDisorderShapeStartPoint.x, 3)) &&
+                                (plane.utility.math.parseFloat(lastOrderShapeStartPoint.y, 3) === plane.utility.math.parseFloat(actualDisorderShapeStartPoint.y, 3))) {
+
+                                // add a lista dos ordenados
+                                orderShapes.push(disorderShapes.splice(i, 1).first());
+
+                                orderShapes.last().segments.slice().forEach(function (segment) {
+                                    orderSegments.push(segment);
+                                });
+
+                                actualPointTest = 'end';
+
+                                isBreak = true;
+
+                                break;
+                            }
+
+                        }
+
+                        if (isBreak) {
+                            isBreak = false;
+                            continue;
+                        }
+
+                        for (var i = 0; i < disorderShapes.length; i++) {
+
+                            var actualDisorderShape = disorderShapes[i],
+                                actualDisorderShapeEndPoint = actualDisorderShape.segments.last();
+
+                            if ((plane.utility.math.parseFloat(lastOrderShapeStartPoint.x, 3) === plane.utility.math.parseFloat(actualDisorderShapeEndPoint.x, 3)) &&
+                                (plane.utility.math.parseFloat(lastOrderShapeStartPoint.y, 3) === plane.utility.math.parseFloat(actualDisorderShapeEndPoint.y, 3))) {
+
+                                // add a lista dos ordenados
+                                orderShapes.push(disorderShapes.splice(i, 1).first());
+
+                                orderShapes.last().segments.slice().reverse().forEach(function (segment) {
+                                    orderSegments.push(segment);
+                                });
+
+                                actualPointTest = 'start';
+
+                                break;
+                            }
+
+                        }
+
+                    }
+
+                }
+
+
+                // do primeiro shape os segmentos
+                var firstShapeSegmentFirst = orderShapes.first().segments.first(),
+                    firstShapeSegmentLast = orderShapes.first().segments.last();
+
+                // do ultimo shape os segmentos
+                var lastShapeSegmentFirst = orderShapes.last().segments.first(),
+                    lastShapeSegmentLast = orderShapes.last().segments.last();
+
+
+                //verifico se o group formou um polygon 'fechado'
+                // AS POSSIBILIDADES
+
+                // o PRIMEIRO shape com o PRIMEIRO segmento vs o ULTIMO shape com o ULTIMO segmento
+                if ((Math.abs((plane.utility.math.parseFloat(firstShapeSegmentFirst.x, 3) - plane.utility.math.parseFloat(lastShapeSegmentLast.x, 3))) <= 2) &&
+                    (Math.abs((plane.utility.math.parseFloat(firstShapeSegmentFirst.y, 3) - plane.utility.math.parseFloat(lastShapeSegmentLast.y, 3))) <= 2)) {
+                    return orderSegments;
+                }
+
+                // o PRIMEIRO shape com o PRIMEIRO segmento vs o ULTIMO shape com o PRIMEIRO segmento
+                if ((plane.utility.math.parseFloat(firstShapeSegmentFirst.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.x, 3)) &&
+                    (plane.utility.math.parseFloat(firstShapeSegmentFirst.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.y, 3))) {
+                    return orderSegments;
+                }
+
+                // o PRIMEIRO shape com o ULTIMO segmento vs o ULTIMO shape com o ULTIMO segmento
+                if ((plane.utility.math.parseFloat(firstShapeSegmentLast.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentLast.x, 3)) &&
+                    (plane.utility.math.parseFloat(firstShapeSegmentLast.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentLast.y, 3))) {
+                    return orderSegments;
+                }
+
+                // o PRIMEIRO shape com o ULTIMO segmento vs o ULTIMO shape com o PRIMEIRO segmento
+                if ((plane.utility.math.parseFloat(firstShapeSegmentLast.x, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.x, 3)) &&
+                    (plane.utility.math.parseFloat(firstShapeSegmentLast.y, 3) === plane.utility.math.parseFloat(lastShapeSegmentFirst.y, 3))) {
+                    return orderSegments;
+                }
+
+                return [];
+            } else {
+                return [];
+            }
         }
     };
 
+    function isOnlyShapes(group) {
+
+        for (var i = 0; i < group.children.length; i++) {
+            if (group.children[i].type === 'group') {
+                return false;
+            }
+        }
+
+        return true;
+    }
 
     var operation = {
         minimum: function (a, b) {
