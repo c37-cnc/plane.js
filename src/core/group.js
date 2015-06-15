@@ -40,6 +40,45 @@
                 mountChildren(attrs);
             }
 
+            // verifico quais os shapes que são duplicados
+            var verifyHash = [],
+                duplicatesShapes = attrs.children.slice(),
+                onlyShapes = [];
+
+            for (var i = 0; i < duplicatesShapes.length; i++) {
+
+                // verificação para os shapes
+                if (duplicatesShapes[i].type !== 'group') {
+
+                    var arrayPoints = duplicatesShapes[i].toPoints().map(function (point) {
+
+                        var pointObject = point.toObject();
+                        // o round para pontos proximos
+                        return JSON.stringify({
+                            x: plane.utility.math.parseFloat(pointObject.x, 2),
+                            y: plane.utility.math.parseFloat(pointObject.y, 2)
+                        });
+                        
+                    }),
+                        hashCode = plane.utility.string.hashCode(arrayPoints.join(''));
+
+                    if (verifyHash.indexOf(hashCode) === -1) {
+
+                        verifyHash.push(hashCode);
+                        onlyShapes.push(duplicatesShapes.slice(i, i + 1)[0]);
+
+                    }
+
+                } else {
+                    onlyShapes.push(duplicatesShapes.slice(i, i + 1)[0]);
+                }
+
+            }
+            // apenas os shapes 
+            attrs.children = onlyShapes;
+
+
+
             // criando a referencia de store
             attrs._store = _store.get(layer.uuid);
 
