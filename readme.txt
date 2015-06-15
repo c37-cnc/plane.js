@@ -67,3 +67,11 @@ http://semver.org/lang/pt-BR/
 https://jscrambler.com/pt/
 https://www.npmjs.com/package/js-obfuscator
 https://www.npmjs.com/package/grunt-obfuscator
+
+
+
+*Algoritimos de proximidade*
+https://github.com/lilo003/polygon.js
+https://gist.github.com/lilo003/abe2ffe24b372c4b2bc1
+https://github.com/lilo003/kd-tree-javascript
+https://en.wikipedia.org/wiki/Nearest_neighbor_search
