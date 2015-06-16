@@ -52,9 +52,6 @@
                 canvas.width = _viewPort.clientWidth;
                 canvas.height = _viewPort.clientHeight;
 
-                // o centro atualizado
-                _center = plane.point.create(_viewPort.clientWidth / 2, _viewPort.clientHeight / 2);
-
                 // atualizo o sistema cartesiano de coordenadas
                 _context.translate(0, _viewPort.clientHeight);
                 _context.scale(1, -1);
