@@ -44,7 +44,6 @@
 
             _tools = plane.math.dictionary.create();
 
-
             // vinculo o event keydown ao window
             window.addEventListener('keydown', onKeyDown, false);
 
