@@ -111,7 +111,7 @@
             }
         },
         get: function (shapeUuid, layerUuid) {
-            if ((!shapeUuid) || (typeof shapeUuid === 'string')) {
+            if ((!shapeUuid) || (typeof shapeUuid !== 'string')) {
                 throw new Error('shape - find - uuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
                 // a layer que vamos trabalhar
