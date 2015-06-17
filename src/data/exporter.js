@@ -23,11 +23,15 @@
                     var mountLayer = layer.toObject();
 
                     mountLayer.children = {
-                        groups: plane.group.list(layer.uuid).map(function (group){
-                            return group.toObject();
+                        groups: plane.group.list(layer.uuid).map(function (group) {
+                            if (group.status !== 'temporary') {
+                                return group.toObject();
+                            }
                         }),
                         shapes: plane.shape.list(layer.uuid).map(function (shape) {
-                            return shape.toObject();
+                            if (shape.status !== 'temporary') {
+                                return shape.toObject();
+                            }
                         })
                     };
 
