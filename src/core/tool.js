@@ -182,7 +182,12 @@
 
         // dizendo que o MouseDown preenche o evento down
         // apenas se for o click com left
-        if (event.button === 0) {
+//        if (event.button === 0) {
+//            _mouseDown = pointInView;
+//        }
+        if ((event.button === 0) && (_tools.list().filter(function (tool) {
+            return tool.active;
+        }).length > 0)) {
             _mouseDown = pointInView;
         }
 
