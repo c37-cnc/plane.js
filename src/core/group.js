@@ -58,7 +58,7 @@
                             x: plane.utility.math.parseFloat(pointObject.x, 2),
                             y: plane.utility.math.parseFloat(pointObject.y, 2)
                         });
-                        
+
                     }),
                         hashCode = plane.utility.string.hashCode(arrayPoints.join(''));
 
@@ -171,7 +171,7 @@
             if ((!uuid) || (typeof uuid !== 'string')) {
                 throw new Error('group - get - uuid is not valid \n http://plane.c37.co/docs/errors.html#' + 'errorCode');
             } else {
-                return _store.get(plane.layer.active.uuid).get(uuid);
+                return _store.get(plane.layer.active.uuid) ? _store.get(plane.layer.active.uuid).get(uuid) : null;
             }
         },
         // rectangle = area da procura
