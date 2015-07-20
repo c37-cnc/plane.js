@@ -142,7 +142,8 @@
                     orderShapes = [],
                     orderSegments = [],
                     actualPointTest = 'end',
-                    isBreak = false;
+                    isBreak = false,
+                    resultClosed = [];
 
 
                 disorderShapes.sort(function (a, b) {
@@ -152,13 +153,13 @@
                         return 1;
                     return 0;
                 });
-                
+
                 // insiro o primeiro shape na lista dos 'ordenados'
                 orderShapes.push(disorderShapes.splice(0, 1).first());
                 orderShapes.last().segments.slice().forEach(function (segment) {
                     orderSegments.push(segment);
                 });
-                
+
                 // enquanto houver shapes desordenados
                 for (var ii = 0; ii <= disorderShapes.length; ii++) {
 
@@ -294,17 +295,36 @@
 
                     }
 
+                    // do primeiro shape os segmentos
+                    var firstSegment = orderSegments.first(),
+                        lastSegment = orderSegments.last();
+
+                    //verifico se o group formou um polygon 'fechado'
+                    if ((Math.abs((plane.utility.math.parseFloat(firstSegment.x, 3) - plane.utility.math.parseFloat(lastSegment.x, 3))) <= 2) &&
+                        (Math.abs((plane.utility.math.parseFloat(firstSegment.y, 3) - plane.utility.math.parseFloat(lastSegment.y, 3))) <= 2)) {
+                        resultClosed.push(true);
+                    } else {
+                        resultClosed.push(false);
+                    }
+
                 }
 
+                if (resultClosed.length > 0) {
+                    
+                    // se estou aqui dentro significa que:
+                    // estou em um group que contem shapes FECHADOS e ABERTOS, exemplo - o esqueleto do halloween de testes
+                    // desta forma NO FUTURO vamos considerar se formamos um group com TODOS os shapes aberto formando um objeto FECHADO!
 
-                // do primeiro shape os segmentos
-                var firstSegment = orderSegments.first(),
-                    lastSegment = orderSegments.last();
+                } else {
+                    // do primeiro shape os segmentos
+                    var firstSegment = orderSegments.first(),
+                        lastSegment = orderSegments.last();
 
-                //verifico se o group formou um polygon 'fechado'
-                if ((Math.abs((plane.utility.math.parseFloat(firstSegment.x, 3) - plane.utility.math.parseFloat(lastSegment.x, 3))) <= 2) &&
-                    (Math.abs((plane.utility.math.parseFloat(firstSegment.y, 3) - plane.utility.math.parseFloat(lastSegment.y, 3))) <= 2)) {
-                    return true;
+                    //verifico se o group formou um polygon 'fechado'
+                    if ((Math.abs((plane.utility.math.parseFloat(firstSegment.x, 3) - plane.utility.math.parseFloat(lastSegment.x, 3))) <= 2) &&
+                        (Math.abs((plane.utility.math.parseFloat(firstSegment.y, 3) - plane.utility.math.parseFloat(lastSegment.y, 3))) <= 2)) {
+                        return true;
+                    }
                 }
 
                 return false;
