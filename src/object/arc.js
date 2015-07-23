@@ -155,37 +155,73 @@
 
     Arc.prototype.getMiddle = function () {
 
-        var sX = this.center.x + this.radius * Math.cos(Math.PI * this.startAngle / 180.0),
-            sY = this.center.y + this.radius * Math.sin(Math.PI * this.startAngle / 180.0),
-            startPoint = plane.point.create(sX, sY);
 
-        var eX = this.center.x + this.radius * Math.cos(Math.PI * this.endAngle / 180.0),
-            eY = this.center.y + this.radius * Math.sin(Math.PI * this.endAngle / 180.0),
-            endPoint = plane.point.create(eX, eY);
+        var end = this.endAngle - this.startAngle;
 
-        var line1 = {
-            from: this.center,
-            to: startPoint
-        };
+        if (end < 0.0) {
+            end += 360.0;
+        }
 
-        var line2 = {
-            from: this.center,
-            to: endPoint
-        };
+        // o tamanho de cada passo
+        var num1 = .3 / 180.0 * Math.PI;
 
+        // o inicio em graus
+        var num2 = this.startAngle / 180.0 * Math.PI;
 
-        var angleLines = angleBetween2Lines(line1, line2);
+        // o fim em graus
+        var num3 = end / 180.0 * Math.PI;
 
+        // meia correção por aproximação, pois não estou conseguindo entender esta conta 
+        // para redesenhar toda a lógica do arco
+        var size = (num3 / num1) + 1.2;
 
-        var mX = this.center.x + this.radius * Math.cos(Math.PI * (angleLines / 2) / 180.0),
-            mY = this.center.y + this.radius * Math.sin(Math.PI * (angleLines / 2) / 180.0);
+        var index = 0;
+        var num4 = num2;
 
 
-        return plane.point.create(mX, mY);
+        while (index <= (size / 2)) {
+
+            var xval = this.center.x + this.radius * Math.cos(num4);
+            var yval = this.center.y + this.radius * Math.sin(num4);
+
+            ++index;
+            num4 += num1;
+        }
+        return plane.point.create(xval, yval);
+
+
+        // AINDA TEM ALGO ERRADO AQUI!!!
+//        var sX = this.center.x + this.radius * Math.cos(Math.PI * this.startAngle / 180.0),
+//            sY = this.center.y + this.radius * Math.sin(Math.PI * this.startAngle / 180.0),
+//            startPoint = plane.point.create(sX, sY);
+//
+//        var eX = this.center.x + this.radius * Math.cos(Math.PI * this.endAngle / 180.0),
+//            eY = this.center.y + this.radius * Math.sin(Math.PI * this.endAngle / 180.0),
+//            endPoint = plane.point.create(eX, eY);
+//
+//        var line1 = {
+//            from: this.center,
+//            to: startPoint
+//        };
+//
+//        var line2 = {
+//            from: this.center,
+//            to: endPoint
+//        };
+//
+//
+//        var angleLines = angleBetween2Lines(line1, line2);
+//
+//
+//        var mX = this.center.x + this.radius * Math.cos(Math.PI * (angleLines / 2) / 180.0),
+//            mY = this.center.y + this.radius * Math.sin(Math.PI * (angleLines / 2) / 180.0);
+//
+//
+//        return plane.point.create(mX, mY);
 
     };
-    
-    
+
+
     // http://stackoverflow.com/questions/3365171/calculating-the-angle-between-two-lines-without-having-to-calculate-the-slope
     function angleBetween2Lines(line1, line2)
     {
@@ -194,7 +230,7 @@
 
         return (angle1 - angle2) * (180 / Math.PI); // to degrees;
     }
-    
+
 
     plane.object.arc = {
         create: function (attrs) {
