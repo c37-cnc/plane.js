@@ -29,6 +29,8 @@
                 right: 0px;
                 bottom: 0px;
                 background-color: rgb(255, 255, 255);
+                overflow-x: hidden;
+                overflow-y: hidden;
             }
             /* application structure */
         </style>
@@ -40,12 +42,12 @@
 
                 (function (plane) {
 
-                    var viewPort = document.querySelector("main");
+                    var config = {
+                        viewPort: document.querySelector('main')
+                    };
 
                     // plane - initialize
-                    plane.initialize({
-                        viewPort: viewPort
-                    });
+                    plane.initialize(config);
 
                     plane.layer.create();
                     // plane - initialize
@@ -114,7 +116,7 @@
                         startAngle: 180,
                         endAngle: 90
                     });
-                    
+
                     plane.shape.create({
                         type: 'arc',
                         center: [700, 250],
@@ -175,7 +177,7 @@
 
                     plane.shape.create({
                         type: 'rectangle',
-                        points:[[1350, 100], [1550, 300]]
+                        points: [[1350, 100], [1550, 300]]
                     });
 
                     plane.shape.create({
@@ -225,9 +227,12 @@
                             var fileData = event.target.result;
 
                             switch (fileExtension) {
+                                case 'svg':
+                                    plane.reset();
+                                    plane.importer.fromSvg(fileData);
+                                    break;
                                 case 'dxf':
                                     plane.reset();
-                                    plane.layer.create();
                                     plane.importer.fromDxf(fileData);
                                     break;
                                 case 'json':
@@ -281,7 +286,7 @@
                         active: true
                     });
                     mouseMove.events.listen('onMouseMove', function (event) {
-                        console.log(event.objects);
+//                        console.log(event.objects);
                     });
 
 
@@ -299,7 +304,7 @@
             <input id="file-open" type="file" style="width:390px;margin-top: 9px;margin-left: 9px;"/>
             <button id="file-save">Salvar Arquivo</button>
         </header>
-        <main>
+        <main id="edgar">
         </main>
     </body>
 
