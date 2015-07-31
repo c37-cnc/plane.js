@@ -361,7 +361,7 @@
 
             [].forEach.call(svgPaths, function (svgPath) {
 
-                debugger;
+//                debugger;
 
                 // http://www.unet.univie.ac.at/~a9900479/svg4tom/svg4tom1.html
 //                svgPath.setAttribute("transform", "scale(" + 6 + " " + 6 + ")");
