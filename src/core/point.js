@@ -71,6 +71,27 @@
         clone: function () {
             return new Point(this.x, this.y);
         },
+        mirror: function (x0, y0, x1, y1) {
+
+            var dx, dy, a, b, x2, y2, p1; //reflected point to be returned 
+
+            dx = (x1 - x0);
+            dy = (y1 - y0);
+
+            a = (dx * dx - dy * dy) / (dx * dx + dy * dy);
+            b = 2 * dx * dy / (dx * dx + dy * dy);
+
+            x2 = (a * (this.x - x0) + b * (this.y - y0) + x0);
+            y2 = (b * (this.x - x0) - a * (this.y - y0) + y0);
+
+            p1 = {
+                x: x2,
+                y: y2
+            };
+
+            return p1;
+
+        },
         toJson: function () {
             return JSON.stringify(this);
             //            JSON.stringify(utility.string.format('[', []))
