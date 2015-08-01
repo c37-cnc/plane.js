@@ -352,6 +352,34 @@
 
     }
 
+    function parseImg(fileImg, callback) {
+
+        function toObject(svgPoints) {
+            return {"type": "polyline", "points": svgPoints};
+        }
+
+        var arrayImg = [],
+            arrayPoints = [];
+
+        Potrace.loadImageFromFile(fileImg);
+        Potrace.process(function () {
+
+//            debugger;
+
+            arrayPoints = Potrace.getPoints(1);
+
+            arrayPoints.forEach(function (points) {
+
+                arrayImg.push(toObject(points));
+
+            });
+
+            return callback(arrayImg);
+
+        });
+
+    }
+
     plane.importer = {
         fromDxf: function (stringDxf) {
 
@@ -468,12 +496,86 @@
 
             }
 
-
-
-
-
-
             return true;
+
+        },
+        fromImg: function (fileImg) {
+
+            plane.layer.create();
+
+            parseImg(fileImg, function (arrayImgs) {
+
+                var arrayPolygons = [];
+
+                if (arrayImgs.length > 0) {
+
+                    var i = 0;
+                    do {
+                        arrayPolygons.push(plane.shape.create(arrayImgs[i]));
+                        i++;
+                    } while (i < arrayImgs.length);
+
+                }
+
+                if (arrayPolygons.length > 0) {
+
+                    var from = arrayPolygons[0].bounds.from,
+                        to = arrayPolygons[0].bounds.to,
+                        bounds, lineCenter;
+
+                    arrayPolygons.forEach(function (polygon) {
+                        from = plane.point.create(polygon.bounds.from).minimum(from);
+                        to = plane.point.create(polygon.bounds.to).maximum(to);
+                    });
+
+                    bounds = plane.math.bounds.create(from, to);
+
+                    lineCenter = {
+                        from: {
+                            x: bounds.from.x,
+                            y: bounds.center.y
+                        },
+                        to: {
+                            x: bounds.to.x,
+                            y: bounds.center.y
+                        }
+                    };
+
+                    arrayPolygons.forEach(function (polygon) {
+
+                        var polygonPoints = polygon.points.map(function (point) {
+                            return point.mirror(lineCenter.from.x, lineCenter.from.y, lineCenter.to.x, lineCenter.to.y);
+                        });
+
+                        polygonPoints = simplify(polygonPoints, .009, true);
+
+                        plane.shape.remove(polygon.uuid);
+                        plane.shape.create({
+                            type: 'polyline',
+                            points: polygonPoints
+                        });
+
+                    });
+
+
+                    // https://github.com/ariutta/svg-pan-zoom/blob/789552c17c90ba881ab5abb41242ac942cc34eac/dist/svg-pan-zoom.js#L254
+                    // o comprimento + o valor do zoom para estar em relação a bounds de view
+                    var width = bounds.width / plane.view.zoom,
+                        // a altura + o valor do zoom para estar em relação a bounds de view
+                        height = bounds.height / plane.view.zoom;
+
+                    // a escala
+                    var scale = Math.min((plane.view.bounds.width - 450) / width, (plane.view.bounds.height - 200) / height);
+
+                    plane.view.zoomTo(scale, bounds.center);
+                    plane.view.update(true);
+
+                }
+
+
+                return true;
+
+            });
 
         }
     };
