@@ -235,6 +235,13 @@
                                     plane.reset();
                                     plane.importer.fromDxf(fileData);
                                     break;
+                                case 'jpg':
+                                case 'jpeg':
+                                case 'gif':
+                                case 'png':
+                                    plane.reset();
+                                    plane.importer.fromImg(file);
+                                    break;
                                 case 'json':
                                     plane.reset();
                                     plane.layer.create();
