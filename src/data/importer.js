@@ -379,7 +379,7 @@
                 svgTolerance = 0;
 
             if (svgWidth >= 0) {
-                svgTolerance = .1;
+                svgTolerance = .07;
             }
             if (svgWidth >= 150) {
                 svgTolerance = .5;
@@ -552,11 +552,16 @@
             return true;
 
         },
-        fromImg: function (fileImg) {
+        fromImg: function (fileImg, update, cccc) {
 
-            plane.layer.create();
+            if (update || (update === null) || (update === undefined)) {
+                plane.layer.create();
+            }
+
+
 
             Potrace.loadImageFromFile(fileImg);
+
             Potrace.process(function () {
 
                 var svgString;
@@ -566,9 +571,13 @@
 
                     plane.importer.fromSvg(svgString);
 
-                    plane.view.update(true);
+                    if (update || (update === null) || (update === undefined)) {
+                        plane.view.update(true);
+                    }
 
                 }
+
+                return cccc ? cccc(true) : true;
 
             });
 
