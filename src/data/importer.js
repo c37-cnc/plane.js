@@ -382,17 +382,8 @@
                 svgTolerance = .07;
             }
             if (svgWidth >= 150) {
-                svgTolerance = .5;
+                svgTolerance = .1;
             }
-            if (svgWidth >= 350) {
-                svgTolerance = 1;
-            }
-            if (svgWidth >= 1100) {
-                svgTolerance = 132;
-            }
-
-
-
 
             // http://www.w3schools.com/svg/svg_path.asp
             [].forEach.call(svgPaths, function (svgPath) {
