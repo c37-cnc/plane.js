@@ -427,16 +427,43 @@
     plane.importer = {
         fromDxf: function (stringDxf) {
 
-            var arrayDxf = parseDxf(stringDxf);
+            var arrayDxf = parseDxf(stringDxf),
+                arrayObjects = [];
 
             if (arrayDxf.length > 0) {
                 plane.layer.create();
                 var i = 0;
                 do {
-                    plane.shape.create(arrayDxf[i]);
+                    arrayObjects.push(plane.shape.create(arrayDxf[i]));
                     i++;
                 } while (i < arrayDxf.length);
             }
+            
+            if (arrayObjects.length > 0) {
+
+                var from = arrayObjects[0].bounds.from,
+                    to = arrayObjects[0].bounds.to,
+                    bounds;
+
+                arrayObjects.forEach(function (polygon) {
+                    from = plane.point.create(polygon.bounds.from).minimum(from);
+                    to = plane.point.create(polygon.bounds.to).maximum(to);
+                });
+
+                bounds = plane.math.bounds.create(from, to);
+
+                // https://github.com/ariutta/svg-pan-zoom/blob/789552c17c90ba881ab5abb41242ac942cc34eac/dist/svg-pan-zoom.js#L254
+                // o comprimento + o valor do zoom para estar em relação a bounds de view
+                var width = bounds.width / plane.view.zoom,
+                    // a altura + o valor do zoom para estar em relação a bounds de view
+                    height = bounds.height / plane.view.zoom;
+
+                // a escala
+                var scale = Math.min((plane.view.bounds.width - 150) / width, (plane.view.bounds.height - 50) / height);
+
+                plane.view.zoomTo(scale, bounds.center);
+
+            }            
 
             return true;
         },
@@ -548,8 +575,6 @@
             if (update || (update === null) || (update === undefined)) {
                 plane.layer.create();
             }
-
-
 
             Potrace.loadImageFromFile(fileImg);
 
