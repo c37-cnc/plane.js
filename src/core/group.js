@@ -122,6 +122,9 @@
                     do {
                         // limpo qualquer estilo de children
                         group.children[i].style = null;
+                        // limpo qualquer status de children
+                        group.children[i].status = null;
+
 
                         if (group.children[i] instanceof plane.math.group) {
                             plane.group.create(group.children[i]);
