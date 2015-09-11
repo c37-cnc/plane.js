@@ -18,6 +18,7 @@
 
 
     Bounds.prototype = {
+        constructor: Bounds,
         get center() {
             // https://github.com/craftyjs/Crafty/blob/bcd581948c61966ed589c457feb32358a0afd9c8/src/spatial/collision.js#L154
             var center = {
@@ -28,7 +29,7 @@
             return plane.point.create(center);
         },
         get radius() {
-            
+
 //            var from = plane.point.create(this.from),
 //                to = plane.point.create(this.to);
 //            
@@ -40,6 +41,80 @@
         },
         get height() {
             return this.to.y - this.from.y;
+        },
+        toMarkedPoints: function () {
+
+            var points = [];
+
+            var from = this.from,
+                to = this.to;
+
+            var leftBotton = plane.point.create(from),
+                leftTop = plane.point.create(from.x, to.y),
+                leftMiddle = leftBotton.midTo(leftTop);
+
+            var rightTop = plane.point.create(to),
+                rightBottom = plane.point.create(to.x, from.y),
+                rightMiddle = rightBottom.midTo(rightTop);
+
+            var topMiddle = leftTop.midTo(rightTop),
+                bottomMidle = rightBottom.midTo(leftBotton);
+
+            points.push(leftBotton);
+            points.push(leftMiddle);
+            points.push(leftTop);
+
+            points.push(topMiddle);
+
+            points.push(rightTop);
+            points.push(rightMiddle);
+            points.push(rightBottom);
+
+            points.push(bottomMidle);
+
+            points.push(this.center);
+
+            points.push(bottomMidle);
+            points.push(leftBotton);
+            
+            return points;
+
+        },
+        toPolygonPoints: function () {
+
+            var points = [];
+
+            var from = this.from,
+                to = this.to;
+
+            var leftBotton = plane.point.create(from),
+                leftTop = plane.point.create(from.x, to.y),
+                leftMiddle = leftBotton.midTo(leftTop);
+
+            var rightTop = plane.point.create(to),
+                rightBottom = plane.point.create(to.x, from.y),
+                rightMiddle = rightBottom.midTo(rightTop);
+
+            var topMiddle = leftTop.midTo(rightTop),
+                bottomMidle = rightBottom.midTo(leftBotton);
+
+            points.push(leftBotton);
+            points.push(leftMiddle);
+            points.push(leftTop);
+
+            points.push(topMiddle);
+
+            points.push(rightTop);
+            points.push(rightMiddle);
+            points.push(rightBottom);
+
+            points.push(bottomMidle);
+
+            points.push(bottomMidle);
+            points.push(leftBotton);
+            
+            return points;
+
         }
     };
 
