@@ -438,7 +438,7 @@
                     i++;
                 } while (i < arrayDxf.length);
             }
-            
+
             if (arrayObjects.length > 0) {
 
                 var from = arrayObjects[0].bounds.from,
@@ -463,7 +463,7 @@
 
                 plane.view.zoomTo(scale, bounds.center);
 
-            }            
+            }
 
             return true;
         },
@@ -596,6 +596,13 @@
                 return cccc ? cccc(true) : true;
 
             });
+
+        },
+        fromPicture: function (filePicture, update) {
+
+            plane.layer.create();
+
+
 
         }
     };
