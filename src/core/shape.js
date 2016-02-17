@@ -126,7 +126,7 @@
             } else {
 
                 var layer = plane.layer.get(uuid),
-                    shapes, shapesIntersect = [];
+                        shapes, shapesIntersect = [];
 
                 // se tenho ao menos um shape, então, tenho uma layer
                 if (_store.get(layer.uuid)) {
@@ -146,15 +146,21 @@
                         if (shapes.length > 0) {
                             var i = 0;
                             do {
-                                if ((shapes[i].type === 'circle') || (shapes[i].type === 'polygon') || (shapes[i].type === 'rectangle') || (shapes[i].type === 'ellipse')) {
-                                    if (plane.math.intersect(shapes[i].segments, rectangle, 'close')) {
-                                        shapesIntersect.push(shapes[i]);
-                                    }
-                                } else {
-                                    if (plane.math.intersect(shapes[i].segments, rectangle, 'open')) {
-                                        shapesIntersect.push(shapes[i]);
-                                    }
+                                //                                if ((shapes[i].type === 'circle') || (shapes[i].type === 'polygon') || (shapes[i].type === 'rectangle') || (shapes[i].type === 'ellipse')) {
+                                //                                    if (plane.math.intersect(shapes[i].segments, rectangle, 'close')) {
+                                //                                        shapesIntersect.push(shapes[i]);
+                                //                                    }
+                                //                                } else {
+                                //                                    if (plane.math.intersect(shapes[i].segments, rectangle, 'open')) {
+                                //                                        shapesIntersect.push(shapes[i]);
+                                //                                    }
+                                //                                }
+                                // Ciro - 2016.02.16 - Andréa Soliciando que todos os shapes sejam tratados de forma aberta
+                                
+                                if (plane.math.intersect(shapes[i].segments, rectangle, 'open')) {
+                                    shapesIntersect.push(shapes[i]);
                                 }
+                                
                                 i++;
                             } while (i < shapes.length)
                         }
